@@ -1,0 +1,19 @@
+.brc-chart-pie {
+  width: 100%
+}
+
+.brc-chart-pie-title {
+  font-size: 1.5em
+}
+
+.brc-chart-pie-legend {
+  float:left;
+  /* width:25%; */
+  overflow:hidden;
+}
+
+.brc-chart-pie-chart {
+  float:left;
+  /* width:75%; */
+  overflow:hidden;
+}
