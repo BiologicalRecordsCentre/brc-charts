@@ -17,10 +17,13 @@ import { dataAccessors } from './dataAccess.js'
  * @param {string} opts.labelFontSize - Set to a font size (pixels).
  * @param {string} opts.labelColour - Specifies the colour of label text.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element.
- * @param {Object} opts.accessFns - Sets an object whose properties are data access functions. The property
- * names are the 'keys'.
- * @param {string} opts.accessorKey - Sets the key of the selected data accessor function.
  * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
+ * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
+ * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
+ * @param {string} opts.title - Title for the chart.
+ * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+ * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * @returns {module:pie~api} api - Returns an API for the map.
  */
 export function pie({
@@ -33,10 +36,14 @@ export function pie({
   label = '',
   labelFontSize = 10,
   labelColour = 'black',
-  //expand = false,
-  accessFns = dataAccessors,
-  fnKey = 'test',
+  expand = false,
   //backgroundFill = 'white',
+  legendSwatchSize = 30,
+  legendSwatchGap = 10,
+  title = '',
+  titleFontSize = 24,
+  titleAlign = 'left',
+  data = []
 } = {}) {
 
   const mainDiv = d3.select(`${selector}`)
@@ -46,104 +53,253 @@ export function pie({
     .style('position', 'relative')
     .style('display', 'inline')
 
-  const titleDiv = mainDiv
-    .append('div')
-    .attr('class', 'brc-chart-pie-title')
-  const legendDiv = mainDiv
-    .append('div')
-    .attr('class', 'brc-chart-pie-legend')
   const chartDiv = mainDiv
     .append('div')
-    .attr('class', 'brc-chart-pie-chart')
 
-  accessFns[fnKey]().then((odata) => {
-    makeTitle(odata)
-    makeLegend(odata)
-    makeChart(odata)
-  })
+  const svg = chartDiv.append('svg')
 
-  function makeTitle(odata) {
-    const title = titleDiv
-      .append('h4')
-      .text(odata.meta.title)
+  const svgLegend = makeLegend(data, svg)
+  const svgPie = makePie(data, svg)
+  
+  // Can calcualte with at this point since only legend and chart affect width
+  const width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
+
+  const svgTitle = makeTitle(svg, width)
+
+  svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
+  svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
+  svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
+  
+  const height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")))
+
+  if (expand) {
+    svg.attr("viewBox", "0 0 " + width + " " +  height)
+  } else {
+    svg.attr("width", width)
+    svg.attr("height", height)
   }
 
-  function makeLegend(odata) {
-    const legend = legendDiv
-      .append('h4')
-      .text('Legend')
-  }
+  function wrapText(text, svgTitle, maxWidth) {
 
-  function makeChart(odata) {
+    const textSplit = text.split(" ")
+    const lines = ['']
+    let line = 0
 
-    const width = 2 * radius + 100
-    const height = 2 * radius + 100
-    
-    const svg = chartDiv
-      .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-      .append('g')
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+    for (let i=0; i < textSplit.length; i++) {
 
-    // Read the data and then create the pie chart
-    //fn().then((odata) => {
-      console.log(odata)
+      let workingText = `${lines[line]} ${textSplit[i]}`
+      workingText = workingText.trim()
 
-      const total = odata.data.reduce((t, c) => {return t + c.number}, 0)
+      const txt = svgTitle.append('text')
+        .text(workingText)
+        .style('font-size', titleFontSize)
 
-      let fnSort
-      if (sort === 'asc') {
-        fnSort = (a,b) => b-a
-      } else if (sort === 'desc') {
-        fnSort = (a,b) => a-b
+      const width = txt.node().getBBox().width
+
+      if (width > maxWidth) {
+        line++
+        lines[line] = textSplit[i]
       } else {
-        fnSort = null
+        lines[line] = workingText
       }
-      const arcs = d3.pie().value(d => d.number).sortValues(fnSort)(odata.data)
-      const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius)
-      console.log(arcs)
 
-      // map to data
-      const u = svg.selectAll('path')
+      txt.remove()
+    }
+    return lines
+  }
+
+  function makeTitle (svg, chartWidth) {
+    const svgTitle = svg.append('svg')
+    
+    const lines = wrapText(title, svgTitle, chartWidth)
+
+    const uTitleText = svgTitle.selectAll('.titleText')
+      .data(lines)
+
+    uTitleText.enter()
+      .append('text')
+      .merge(uTitleText)
+      .text(d => {
+        console.log(d)
+        return d
+      })
+      .attr("class", "titleText")
+      .style('font-size', titleFontSize)
+
+    uTitleText.exit()
+      .remove()
+
+    const height = d3.select('.titleText').node().getBBox().height
+    const widths = d3.selectAll('.titleText').nodes().map(n => (n.getBBox().width))
+
+    svgTitle.selectAll('.titleText')
+      .attr('y', (d, i) => (i + 1) * height)
+      .attr('x', (d, i) => {
+        if (titleAlign === 'centre') {
+          return (chartWidth - widths[i]) / 2
+        } else if(titleAlign === 'right') {
+          return chartWidth - widths[i]
+        } else {
+          return 0
+        }
+      })
+    svgTitle.attr("height", height * lines.length)
+    return svgTitle
+  }
+
+  function makeLegend (data, svg) {
+    const svgLegend = svg.append('svg')
+
+    const uLegendSwatch = svgLegend.selectAll('.legendSwatch')
+      .data(data)
+
+    uLegendSwatch.enter()
+      .append('rect')
+      .merge(uLegendSwatch)
+      .attr('id', (d, i) => `swatch-${i}`)
+      .attr("class", "legendSwatch")
+      .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
+      .attr('width', legendSwatchSize)
+      .attr('height', legendSwatchSize)
+      .style('fill', d => d.colour)
+      .on("mouseover", function(d, i) {
+        highlightItem(i, true)
+      })
+      .on("mouseout", function(d, i) {
+        highlightItem(i, false)
+      })
+
+    uLegendSwatch.exit()
+      .remove()
+
+    const uLegendText = svgLegend.selectAll('.legendText')
+      .data(data)
+
+    uLegendText.enter()
+      .append('text')
+      .merge(uLegendText)
+      .text(d => d.name)
+      .attr('id', (d,i) => `legend-${i}`)
+      .attr("class", "legendText")
+      .attr('x', () => legendSwatchSize + legendSwatchGap)
+      .style('font-size', labelFontSize)
+      .on("mouseover", function(d, i) {
+        highlightItem(i, true)
+      })
+      .on("mouseout", function(d, i) {
+        highlightItem(i, false)
+      })
+
+    uLegendText.exit()
+      .remove()
+
+    const legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
+    const legendTextHeight = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().height)
+
+    // We delay setting vertical position of legend text until we know the text height so that
+    // we can centre with swatch
+
+    svgLegend.selectAll('.legendText')
+      .data(data)
+      .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 4))
+
+    svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
+    svgLegend.attr("height", data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap)
+    return svgLegend
+  }
+
+  function makePie (data, svg) {
+
+    const svgPie = svg.append('svg')
+      .attr('width', 2 * radius)
+      .attr('height', 2 * radius)
+
+    const gPie = svgPie.append('g')
+      //.attr('transform', `translate(${legendWidth + radius} ${radius})`)
+      .attr('transform', `translate(${radius} ${radius})`)
+
+    let fnSort
+    if (sort === 'asc') {
+      fnSort = (a,b) => b-a
+    } else if (sort === 'desc') {
+      fnSort = (a,b) => a-b
+    } else {
+      fnSort = null
+    }
+    const arcs = d3.pie().value(d => d.number).sortValues(fnSort)(data)
+    const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius)
+
+    // map to data
+    const uPie = gPie.selectAll('path')
+      .data(arcs)
+
+    uPie.enter()
+      .append('path')
+      .merge(uPie)
+      .attr('id', (d, i) => `pie-${i}`)
+      .attr('d', arcGenerator)
+      .attr('fill', d => d.data.colour)
+      .attr('stroke', 'white')
+      .style('stroke-width', '2px')
+      .style('opacity', 1)
+      .on("mouseover", function(d, i) {
+        highlightItem(i, true)
+      })
+      .on("mouseout", function(d, i) {
+        highlightItem(i, false)
+      })
+
+    uPie.exit()
+      .remove()
+
+    if (label) {
+      const uPieLabels = gPie.selectAll('.labelsPie')
         .data(arcs)
+        
+      const total = data.reduce((t, c) => {return t + c.number}, 0)
 
-      u.enter()
-        .append('path')
-        .merge(u)
-        .attr('d', arcGenerator)
-        .attr('fill', d => d.data.colour)
-        .attr('stroke', 'white')
-        .style('stroke-width', '2px')
-        .style('opacity', 1)
+      uPieLabels.enter()
+        .append('text')
+        .merge(uPieLabels)
+        .text(d => {
+          if (label ==='value') {
+            return d.data.number
+          } else if (label ==='percent') {
+              return `${Math.round(d.data.number / total * 100)}%`
+          }
+        })
+        .attr("class", "labelsPie")
+        .attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
+        .style('text-anchor', 'middle')
+        .style('font-size', labelFontSize)
+        .style('fill', labelColour)
+        .on("mouseover", function(d, i) {
+          highlightItem(i, true)
+        })
+        .on("mouseout", function(d, i) {
+          highlightItem(i, false)
+        })
 
-      u.exit()
+      uPieLabels.exit()
         .remove()
+    }
 
-      if (label) {
-        console.log('label', label)
+    return svgPie
+  }
 
-        const l = svg.selectAll('text')
-          .data(arcs)
-          
-        l.enter()
-          .append('text')
-          .text(d => {
-            if (label ==='value') {
-              return d.data.number
-            } else if (label ==='percent') {
-                return `${Math.round(d.data.number / total * 100)}%`
-            }
-          })
-          .attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
-          .style('text-anchor', 'middle')
-          .style('font-size', labelFontSize)
-          .style('fill', labelColour)
-
-        l.exit()
-          .remove()
-      }
-    //})
+  function highlightItem (i, show) {
+    console.log(svg.select(`#pie-${i}`))
+    
+    if (show) {
+      svg.selectAll('path').classed('brc-lowlight', true)
+      svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
+      svg.selectAll('.legendText').classed('brc-lowlight', true)
+      svg.select(`#swatch-${i}`).classed('brc-lowlight', false)
+      svg.select(`#legend-${i}`).classed('brc-lowlight', false)
+      svg.select(`#pie-${i}`).classed('brc-lowlight', false)
+    } else {
+      svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
+    }
   }
 
 /** @function getChartHeight

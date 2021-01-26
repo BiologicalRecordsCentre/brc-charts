@@ -67,6 +67,8 @@
   };
 
   /** @module pie */
+  //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
+
   /** 
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
@@ -78,10 +80,13 @@
    * @param {string} opts.labelFontSize - Set to a font size (pixels).
    * @param {string} opts.labelColour - Specifies the colour of label text.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element.
-   * @param {Object} opts.accessFns - Sets an object whose properties are data access functions. The property
-   * names are the 'keys'.
-   * @param {string} opts.accessorKey - Sets the key of the selected data accessor function.
    * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
+   * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
+   * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
+   * @param {string} opts.title - Title for the chart.
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * @returns {module:pie~api} api - Returns an API for the map.
    */
 
@@ -103,39 +108,141 @@
         labelFontSize = _ref$labelFontSize === void 0 ? 10 : _ref$labelFontSize,
         _ref$labelColour = _ref.labelColour,
         labelColour = _ref$labelColour === void 0 ? 'black' : _ref$labelColour,
-        _ref$accessFns = _ref.accessFns,
-        accessFns = _ref$accessFns === void 0 ? dataAccessors : _ref$accessFns,
-        _ref$fnKey = _ref.fnKey,
-        fnKey = _ref$fnKey === void 0 ? 'test' : _ref$fnKey;
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$legendSwatchSize = _ref.legendSwatchSize,
+        legendSwatchSize = _ref$legendSwatchSize === void 0 ? 30 : _ref$legendSwatchSize,
+        _ref$legendSwatchGap = _ref.legendSwatchGap,
+        legendSwatchGap = _ref$legendSwatchGap === void 0 ? 10 : _ref$legendSwatchGap,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data;
 
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
-    var titleDiv = mainDiv.append('div').attr('class', 'brc-chart-pie-title');
-    var legendDiv = mainDiv.append('div').attr('class', 'brc-chart-pie-legend');
-    var chartDiv = mainDiv.append('div').attr('class', 'brc-chart-pie-chart');
-    accessFns[fnKey]().then(function (odata) {
-      makeTitle(odata);
-      makeLegend();
-      makeChart(odata);
-    });
+    var chartDiv = mainDiv.append('div');
+    var svg = chartDiv.append('svg');
+    var svgLegend = makeLegend(data, svg);
+    var svgPie = makePie(data, svg); // Can calcualte with at this point since only legend and chart affect width
 
-    function makeTitle(odata) {
-      var title = titleDiv.append('h4').text(odata.meta.title);
+    var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+    var svgTitle = makeTitle(svg, width);
+    svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
+    svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
+    svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
+    var height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")));
+
+    if (expand) {
+      svg.attr("viewBox", "0 0 " + width + " " + height);
+    } else {
+      svg.attr("width", width);
+      svg.attr("height", height);
     }
 
-    function makeLegend(odata) {
-      var legend = legendDiv.append('h4').text('Legend');
+    function wrapText(text, svgTitle, maxWidth) {
+      var textSplit = text.split(" ");
+      var lines = [''];
+      var line = 0;
+
+      for (var i = 0; i < textSplit.length; i++) {
+        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+        workingText = workingText.trim();
+        var txt = svgTitle.append('text').text(workingText).style('font-size', titleFontSize);
+        var _width = txt.node().getBBox().width;
+
+        if (_width > maxWidth) {
+          line++;
+          lines[line] = textSplit[i];
+        } else {
+          lines[line] = workingText;
+        }
+
+        txt.remove();
+      }
+
+      return lines;
     }
 
-    function makeChart(odata) {
-      var width = 2 * radius + 100;
-      var height = 2 * radius + 100;
-      var svg = chartDiv.append('svg').attr('width', width).attr('height', height).append('g').attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')'); // Read the data and then create the pie chart
-      //fn().then((odata) => {
+    function makeTitle(svg, chartWidth) {
+      var svgTitle = svg.append('svg');
+      var lines = wrapText(title, svgTitle, chartWidth);
+      var uTitleText = svgTitle.selectAll('.titleText').data(lines);
+      uTitleText.enter().append('text').merge(uTitleText).text(function (d) {
+        console.log(d);
+        return d;
+      }).attr("class", "titleText").style('font-size', titleFontSize);
+      uTitleText.exit().remove();
+      var height = d3.select('.titleText').node().getBBox().height;
+      var widths = d3.selectAll('.titleText').nodes().map(function (n) {
+        return n.getBBox().width;
+      });
+      svgTitle.selectAll('.titleText').attr('y', function (d, i) {
+        return (i + 1) * height;
+      }).attr('x', function (d, i) {
+        if (titleAlign === 'centre') {
+          return (chartWidth - widths[i]) / 2;
+        } else if (titleAlign === 'right') {
+          return chartWidth - widths[i];
+        } else {
+          return 0;
+        }
+      });
+      svgTitle.attr("height", height * lines.length);
+      return svgTitle;
+    }
 
-      console.log(odata);
-      var total = odata.data.reduce(function (t, c) {
-        return t + c.number;
-      }, 0);
+    function makeLegend(data, svg) {
+      var svgLegend = svg.append('svg');
+      var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data);
+      uLegendSwatch.enter().append('rect').merge(uLegendSwatch).attr('id', function (d, i) {
+        return "swatch-".concat(i);
+      }).attr("class", "legendSwatch").attr('y', function (d, i) {
+        return i * (legendSwatchSize + legendSwatchGap);
+      }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
+        return d.colour;
+      }).on("mouseover", function (d, i) {
+        highlightItem(i, true);
+      }).on("mouseout", function (d, i) {
+        highlightItem(i, false);
+      });
+      uLegendSwatch.exit().remove();
+      var uLegendText = svgLegend.selectAll('.legendText').data(data);
+      uLegendText.enter().append('text').merge(uLegendText).text(function (d) {
+        return d.name;
+      }).attr('id', function (d, i) {
+        return "legend-".concat(i);
+      }).attr("class", "legendText").attr('x', function () {
+        return legendSwatchSize + legendSwatchGap;
+      }).style('font-size', labelFontSize).on("mouseover", function (d, i) {
+        highlightItem(i, true);
+      }).on("mouseout", function (d, i) {
+        highlightItem(i, false);
+      });
+      uLegendText.exit().remove();
+      var legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
+        return n.getBBox().width;
+      });
+      var legendTextHeight = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
+        return n.getBBox().height;
+      }); // We delay setting vertical position of legend text until we know the text height so that
+      // we can centre with swatch
+
+      svgLegend.selectAll('.legendText').data(data).attr('y', function (d, i) {
+        return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 4;
+      });
+      svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth);
+      svgLegend.attr("height", data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap);
+      return svgLegend;
+    }
+
+    function makePie(data, svg) {
+      var svgPie = svg.append('svg').attr('width', 2 * radius).attr('height', 2 * radius);
+      var gPie = svgPie.append('g') //.attr('transform', `translate(${legendWidth + radius} ${radius})`)
+      .attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
       var fnSort;
 
       if (sort === 'asc') {
@@ -152,31 +259,58 @@
 
       var arcs = d3.pie().value(function (d) {
         return d.number;
-      }).sortValues(fnSort)(odata.data);
-      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius);
-      console.log(arcs); // map to data
+      }).sortValues(fnSort)(data);
+      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // map to data
 
-      var u = svg.selectAll('path').data(arcs);
-      u.enter().append('path').merge(u).attr('d', arcGenerator).attr('fill', function (d) {
+      var uPie = gPie.selectAll('path').data(arcs);
+      uPie.enter().append('path').merge(uPie).attr('id', function (d, i) {
+        return "pie-".concat(i);
+      }).attr('d', arcGenerator).attr('fill', function (d) {
         return d.data.colour;
-      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1);
-      u.exit().remove();
+      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).on("mouseover", function (d, i) {
+        highlightItem(i, true);
+      }).on("mouseout", function (d, i) {
+        highlightItem(i, false);
+      });
+      uPie.exit().remove();
 
       if (label) {
-        console.log('label', label);
-        var l = svg.selectAll('text').data(arcs);
-        l.enter().append('text').text(function (d) {
+        var uPieLabels = gPie.selectAll('.labelsPie').data(arcs);
+        var total = data.reduce(function (t, c) {
+          return t + c.number;
+        }, 0);
+        uPieLabels.enter().append('text').merge(uPieLabels).text(function (d) {
           if (label === 'value') {
             return d.data.number;
           } else if (label === 'percent') {
             return "".concat(Math.round(d.data.number / total * 100), "%");
           }
-        }).attr('transform', function (d) {
+        }).attr("class", "labelsPie").attr('transform', function (d) {
           return "translate(".concat(arcGenerator.centroid(d), ")");
-        }).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
-        l.exit().remove();
-      } //})
+        }).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour).on("mouseover", function (d, i) {
+          highlightItem(i, true);
+        }).on("mouseout", function (d, i) {
+          highlightItem(i, false);
+        });
+        uPieLabels.exit().remove();
+      }
 
+      return svgPie;
+    }
+
+    function highlightItem(i, show) {
+      console.log(svg.select("#pie-".concat(i)));
+
+      if (show) {
+        svg.selectAll('path').classed('brc-lowlight', true);
+        svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
+        svg.selectAll('.legendText').classed('brc-lowlight', true);
+        svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
+        svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
+        svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
+      } else {
+        svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
+      }
     }
     /** @function getChartHeight
       * @description <b>This function is exposed as a method on the API returned from the svgMap function</b>.

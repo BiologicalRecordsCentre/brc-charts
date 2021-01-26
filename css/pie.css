@@ -8,12 +8,14 @@
 
 .brc-chart-pie-legend {
   float:left;
-  /* width:25%; */
   overflow:hidden;
 }
 
 .brc-chart-pie-chart {
   float:left;
-  /* width:75%; */
   overflow:hidden;
+}
+
+path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
+  opacity: 0.3 !important;
 }

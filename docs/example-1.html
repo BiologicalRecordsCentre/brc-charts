@@ -3,6 +3,12 @@
 <head>
   <meta charset="utf-8">
   <title>BRC Charts Library example 1</title>
+  <style>
+    .divfl {
+      float: left;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
   <div class="content">
@@ -25,7 +31,13 @@
 <code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
 </pre>
 
-    <div id="chart"></div>
+
+    <div id="chart1" style="max-width: 500px"></div>
+    <div>
+      <div id="chart2" class="divfl"></div>
+      <div id="chart3" class="divfl"></div>
+    </div>
+
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -46,15 +58,78 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
-      var chart = brccharts.pie({
-        selector: "#chart",
-        innerRadius: 120,
-        radius: 200,
-        sort: '',
-        label: 'percent',
-        labelFontSize: 15,
-        labelColour: 'white'
-      })
+
+      function makePie(sel) {
+        var chart = brccharts.pie({
+          selector: sel,
+          innerRadius: 120,
+          radius: 200,
+          sort: '',
+          label: 'percent',
+          titleFontSize: 30,
+          titleAlign: 'left',
+          labelFontSize: 15,
+          labelColour: 'white',
+          expand: true,
+          title: 'FIT Counts: insects counted on hawthorn flowers 2017 to 2020',
+          data: [
+            {
+                name: "bumblebees",
+                number: 3,
+                colour: '#5A99D3'
+            },
+            {
+                name: "honeybees",
+                number: 10,
+                colour: '#EB7C30'
+            },
+            {
+                name: "solitary bees",
+                number: 7,
+                colour: '#A3A3A3'
+            },
+            {
+                name: "wasps",
+                number: 4,
+                colour: '#FFBF00'
+            },
+            {
+                name: "hoverflies",
+                number: 12,
+                colour: '#4472C3'
+            },
+            {
+                name: "other flies",
+                number: 34,
+                colour: '#70AB46'
+            },
+            {
+                name: "butterflies & moths",
+                number: 1,
+                colour: '#1F5380'
+            },
+            {
+                name: "beetles",
+                number: 6,
+                colour: '#9D480E'
+            },
+            {
+                name: "small insects",
+                number: 17,
+                colour: '#626262'
+            },
+            {
+                name: "other insects",
+                number: 6,
+                colour: '#977200'
+            },
+          ]
+        })
+      }
+      
+      makePie('#chart1')
+      //makePie('#chart2')
+      //makePie('#chart3')
     </script>
   </div>
 </body>
