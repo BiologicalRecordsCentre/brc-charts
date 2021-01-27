@@ -19,3 +19,7 @@
 path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
   opacity: 0.3 !important;
 }
+
+.brc-item-image-hide {
+  display: none;
+}

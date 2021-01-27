@@ -120,6 +120,8 @@
         titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$imageWidth = _ref.imageWidth,
+        imageWidth = _ref$imageWidth === void 0 ? 150 : _ref$imageWidth,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
 
@@ -127,7 +129,8 @@
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg');
     var svgLegend = makeLegend(data, svg);
-    var svgPie = makePie(data, svg); // Can calcualte with at this point since only legend and chart affect width
+    var svgPie = makePie(data, svg);
+    var imgSelected = makeImage(svg); // Can calcualte with at this point since only legend and chart affect width
 
     var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
     var svgTitle = makeTitle(svg, width);
@@ -141,30 +144,6 @@
     } else {
       svg.attr("width", width);
       svg.attr("height", height);
-    }
-
-    function wrapText(text, svgTitle, maxWidth) {
-      var textSplit = text.split(" ");
-      var lines = [''];
-      var line = 0;
-
-      for (var i = 0; i < textSplit.length; i++) {
-        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
-        workingText = workingText.trim();
-        var txt = svgTitle.append('text').text(workingText).style('font-size', titleFontSize);
-        var _width = txt.node().getBBox().width;
-
-        if (_width > maxWidth) {
-          line++;
-          lines[line] = textSplit[i];
-        } else {
-          lines[line] = workingText;
-        }
-
-        txt.remove();
-      }
-
-      return lines;
     }
 
     function makeTitle(svg, chartWidth) {
@@ -298,9 +277,37 @@
       return svgPie;
     }
 
-    function highlightItem(i, show) {
-      console.log(svg.select("#pie-".concat(i)));
+    function makeImage(svg) {
+      var img = svg.append('image').classed('brc-item-image-hide', true) //.attr('xlink:href', 'images/Bumblebees.png')
+      .attr('width', imageWidth);
+      return img;
+    }
 
+    function wrapText(text, svgTitle, maxWidth) {
+      var textSplit = text.split(" ");
+      var lines = [''];
+      var line = 0;
+
+      for (var i = 0; i < textSplit.length; i++) {
+        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+        workingText = workingText.trim();
+        var txt = svgTitle.append('text').text(workingText).style('font-size', titleFontSize);
+        var _width = txt.node().getBBox().width;
+
+        if (_width > maxWidth) {
+          line++;
+          lines[line] = textSplit[i];
+        } else {
+          lines[line] = workingText;
+        }
+
+        txt.remove();
+      }
+
+      return lines;
+    }
+
+    function highlightItem(i, show) {
       if (show) {
         svg.selectAll('path').classed('brc-lowlight', true);
         svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
@@ -308,9 +315,46 @@
         svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
         svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
         svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
+
+        if (data[i].image) {
+          // Loading image into SVG and setting to specified width
+          // and then querying bbox returns zero height. So in order
+          // to get the height of the image (required for correct)
+          // positioning, it is necessary first to load the image and
+          // get the dimensions.
+          if (data[i].imageHeight) {
+            if (imgSelected.attr('xlink:href') !== data[i].image) {
+              // The loaded image is different from that of the
+              // highlighted item, so load.
+              loadImage(data[i]);
+            }
+
+            imgSelected.classed('brc-item-image-hide', false);
+          } else {
+            var img = new Image();
+
+            img.onload = function () {
+              data[i].imageWidth = imageWidth;
+              data[i].imageHeight = imageWidth * this.height / this.width;
+              loadImage(data[i]);
+            };
+
+            img.src = 'images/Bumblebees.png';
+            imgSelected.classed('brc-item-image-hide', false);
+          }
+        }
       } else {
         svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
+        imgSelected.classed('brc-item-image-hide', true);
       }
+    }
+
+    function loadImage(d) {
+      imgSelected.attr('xlink:href', d.image);
+      imgSelected.attr('width', d.imageWidth);
+      imgSelected.attr('height', d.imageHeight);
+      imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2);
+      imgSelected.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
     }
     /** @function getChartHeight
       * @description <b>This function is exposed as a method on the API returned from the svgMap function</b>.

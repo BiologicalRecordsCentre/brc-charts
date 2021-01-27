@@ -43,6 +43,7 @@ export function pie({
   title = '',
   titleFontSize = 24,
   titleAlign = 'left',
+  imageWidth = 150,
   data = []
 } = {}) {
 
@@ -60,6 +61,7 @@ export function pie({
 
   const svgLegend = makeLegend(data, svg)
   const svgPie = makePie(data, svg)
+  const imgSelected = makeImage(svg)
   
   // Can calcualte with at this point since only legend and chart affect width
   const width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
@@ -69,7 +71,7 @@ export function pie({
   svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
   svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
   svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
-  
+
   const height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")))
 
   if (expand) {
@@ -77,35 +79,6 @@ export function pie({
   } else {
     svg.attr("width", width)
     svg.attr("height", height)
-  }
-
-  function wrapText(text, svgTitle, maxWidth) {
-
-    const textSplit = text.split(" ")
-    const lines = ['']
-    let line = 0
-
-    for (let i=0; i < textSplit.length; i++) {
-
-      let workingText = `${lines[line]} ${textSplit[i]}`
-      workingText = workingText.trim()
-
-      const txt = svgTitle.append('text')
-        .text(workingText)
-        .style('font-size', titleFontSize)
-
-      const width = txt.node().getBBox().width
-
-      if (width > maxWidth) {
-        line++
-        lines[line] = textSplit[i]
-      } else {
-        lines[line] = workingText
-      }
-
-      txt.remove()
-    }
-    return lines
   }
 
   function makeTitle (svg, chartWidth) {
@@ -287,9 +260,44 @@ export function pie({
     return svgPie
   }
 
+  function makeImage(svg) {
+    const img = svg.append('image')
+      .classed('brc-item-image-hide', true)
+      //.attr('xlink:href', 'images/Bumblebees.png')
+      .attr('width', imageWidth)
+    return img
+  }
+
+  function wrapText(text, svgTitle, maxWidth) {
+
+    const textSplit = text.split(" ")
+    const lines = ['']
+    let line = 0
+
+    for (let i=0; i < textSplit.length; i++) {
+
+      let workingText = `${lines[line]} ${textSplit[i]}`
+      workingText = workingText.trim()
+
+      const txt = svgTitle.append('text')
+        .text(workingText)
+        .style('font-size', titleFontSize)
+
+      const width = txt.node().getBBox().width
+
+      if (width > maxWidth) {
+        line++
+        lines[line] = textSplit[i]
+      } else {
+        lines[line] = workingText
+      }
+
+      txt.remove()
+    }
+    return lines
+  }
+
   function highlightItem (i, show) {
-    console.log(svg.select(`#pie-${i}`))
-    
     if (show) {
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
@@ -297,9 +305,43 @@ export function pie({
       svg.select(`#swatch-${i}`).classed('brc-lowlight', false)
       svg.select(`#legend-${i}`).classed('brc-lowlight', false)
       svg.select(`#pie-${i}`).classed('brc-lowlight', false)
+
+      if (data[i].image) {
+        // Loading image into SVG and setting to specified width
+        // and then querying bbox returns zero height. So in order
+        // to get the height of the image (required for correct)
+        // positioning, it is necessary first to load the image and
+        // get the dimensions.
+        if (data[i].imageHeight) {
+          if (imgSelected.attr('xlink:href') !== data[i].image) {
+            // The loaded image is different from that of the
+            // highlighted item, so load.
+            loadImage(data[i])
+          }
+          imgSelected.classed('brc-item-image-hide', false)
+        } else {
+          const img = new Image
+          img.onload = function() {
+            data[i].imageWidth = imageWidth 
+            data[i].imageHeight = imageWidth * this.height / this.width
+            loadImage(data[i])
+          }
+          img.src = 'images/Bumblebees.png'
+          imgSelected.classed('brc-item-image-hide', false)
+        }
+      }
     } else {
       svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
+      imgSelected.classed('brc-item-image-hide', true)
     }
+  }
+
+  function loadImage(d) {
+    imgSelected.attr('xlink:href', d.image)
+    imgSelected.attr('width', d.imageWidth)
+    imgSelected.attr('height', d.imageHeight)
+    imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2)
+    imgSelected.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
   }
 
 /** @function getChartHeight
