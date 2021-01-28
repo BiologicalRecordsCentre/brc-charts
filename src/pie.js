@@ -23,6 +23,7 @@ import { dataAccessors } from './dataAccess.js'
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+ * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * @returns {module:pie~api} api - Returns an API for the map.
  */
@@ -44,6 +45,7 @@ export function pie({
   titleFontSize = 24,
   titleAlign = 'left',
   imageWidth = 150,
+  interactivity = 'mousemove',
   data = []
 } = {}) {
 
@@ -58,6 +60,12 @@ export function pie({
     .append('div')
 
   const svg = chartDiv.append('svg')
+
+  svg.on("click", function() {
+    if (interactivity === 'mouseclick') {
+      highlightItem(null, false)
+    }
+  })
 
   const svgLegend = makeLegend(data, svg)
   const svgPie = makePie(data, svg)
@@ -120,27 +128,43 @@ export function pie({
     return svgTitle
   }
 
+  function addEventHandlers(sel) {
+    sel
+      .on("mouseover", function(d, i) {
+      if (interactivity === 'mousemove') {
+          highlightItem(i, true)
+        }
+      })
+      .on("mouseout", function(d, i) {
+        if (interactivity === 'mousemove') {
+          highlightItem(i, false)
+        }
+      })
+      .on("click", function(d, i) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(i, true)
+          d3.event.stopPropagation()
+        }
+      })
+  }
+
   function makeLegend (data, svg) {
     const svgLegend = svg.append('svg')
 
     const uLegendSwatch = svgLegend.selectAll('.legendSwatch')
       .data(data)
 
-    uLegendSwatch.enter()
+    const eLegendSwatch = uLegendSwatch.enter()
       .append('rect')
-      .merge(uLegendSwatch)
+    addEventHandlers(eLegendSwatch)
+
+    eLegendSwatch.merge(uLegendSwatch)
       .attr('id', (d, i) => `swatch-${i}`)
       .attr("class", "legendSwatch")
       .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
       .attr('width', legendSwatchSize)
       .attr('height', legendSwatchSize)
       .style('fill', d => d.colour)
-      .on("mouseover", function(d, i) {
-        highlightItem(i, true)
-      })
-      .on("mouseout", function(d, i) {
-        highlightItem(i, false)
-      })
 
     uLegendSwatch.exit()
       .remove()
@@ -148,21 +172,17 @@ export function pie({
     const uLegendText = svgLegend.selectAll('.legendText')
       .data(data)
 
-    uLegendText.enter()
+    const eLegendText = uLegendText.enter()
       .append('text')
-      .merge(uLegendText)
+    addEventHandlers(eLegendText)
+
+    eLegendText.merge(uLegendText)
       .text(d => d.name)
       .attr('id', (d,i) => `legend-${i}`)
       .attr("class", "legendText")
       .attr('x', () => legendSwatchSize + legendSwatchGap)
       .style('font-size', labelFontSize)
-      .on("mouseover", function(d, i) {
-        highlightItem(i, true)
-      })
-      .on("mouseout", function(d, i) {
-        highlightItem(i, false)
-      })
-
+      
     uLegendText.exit()
       .remove()
 
@@ -206,21 +226,17 @@ export function pie({
     const uPie = gPie.selectAll('path')
       .data(arcs)
 
-    uPie.enter()
+    const ePie = uPie.enter()
       .append('path')
-      .merge(uPie)
+    addEventHandlers(ePie)
+
+    ePie.merge(uPie)
       .attr('id', (d, i) => `pie-${i}`)
       .attr('d', arcGenerator)
       .attr('fill', d => d.data.colour)
       .attr('stroke', 'white')
       .style('stroke-width', '2px')
       .style('opacity', 1)
-      .on("mouseover", function(d, i) {
-        highlightItem(i, true)
-      })
-      .on("mouseout", function(d, i) {
-        highlightItem(i, false)
-      })
 
     uPie.exit()
       .remove()
@@ -231,9 +247,11 @@ export function pie({
         
       const total = data.reduce((t, c) => {return t + c.number}, 0)
 
-      uPieLabels.enter()
+      const ePieLabels = uPieLabels.enter()
         .append('text')
-        .merge(uPieLabels)
+      addEventHandlers(ePieLabels)
+
+      ePieLabels.merge(uPieLabels)
         .text(d => {
           if (label ==='value') {
             return d.data.number
@@ -246,12 +264,6 @@ export function pie({
         .style('text-anchor', 'middle')
         .style('font-size', labelFontSize)
         .style('fill', labelColour)
-        .on("mouseover", function(d, i) {
-          highlightItem(i, true)
-        })
-        .on("mouseout", function(d, i) {
-          highlightItem(i, false)
-        })
 
       uPieLabels.exit()
         .remove()

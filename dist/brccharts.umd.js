@@ -86,6 +86,7 @@
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * @returns {module:pie~api} api - Returns an API for the map.
    */
@@ -122,12 +123,19 @@
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$imageWidth = _ref.imageWidth,
         imageWidth = _ref$imageWidth === void 0 ? 150 : _ref$imageWidth,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
 
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem(null, false);
+      }
+    });
     var svgLegend = makeLegend(data, svg);
     var svgPie = makePie(data, svg);
     var imgSelected = makeImage(svg); // Can calcualte with at this point since only legend and chart affect width
@@ -174,33 +182,46 @@
       return svgTitle;
     }
 
+    function addEventHandlers(sel) {
+      sel.on("mouseover", function (d, i) {
+        if (interactivity === 'mousemove') {
+          highlightItem(i, true);
+        }
+      }).on("mouseout", function (d, i) {
+        if (interactivity === 'mousemove') {
+          highlightItem(i, false);
+        }
+      }).on("click", function (d, i) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(i, true);
+          d3.event.stopPropagation();
+        }
+      });
+    }
+
     function makeLegend(data, svg) {
       var svgLegend = svg.append('svg');
       var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data);
-      uLegendSwatch.enter().append('rect').merge(uLegendSwatch).attr('id', function (d, i) {
+      var eLegendSwatch = uLegendSwatch.enter().append('rect');
+      addEventHandlers(eLegendSwatch);
+      eLegendSwatch.merge(uLegendSwatch).attr('id', function (d, i) {
         return "swatch-".concat(i);
       }).attr("class", "legendSwatch").attr('y', function (d, i) {
         return i * (legendSwatchSize + legendSwatchGap);
       }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
         return d.colour;
-      }).on("mouseover", function (d, i) {
-        highlightItem(i, true);
-      }).on("mouseout", function (d, i) {
-        highlightItem(i, false);
       });
       uLegendSwatch.exit().remove();
       var uLegendText = svgLegend.selectAll('.legendText').data(data);
-      uLegendText.enter().append('text').merge(uLegendText).text(function (d) {
+      var eLegendText = uLegendText.enter().append('text');
+      addEventHandlers(eLegendText);
+      eLegendText.merge(uLegendText).text(function (d) {
         return d.name;
       }).attr('id', function (d, i) {
         return "legend-".concat(i);
       }).attr("class", "legendText").attr('x', function () {
         return legendSwatchSize + legendSwatchGap;
-      }).style('font-size', labelFontSize).on("mouseover", function (d, i) {
-        highlightItem(i, true);
-      }).on("mouseout", function (d, i) {
-        highlightItem(i, false);
-      });
+      }).style('font-size', labelFontSize);
       uLegendText.exit().remove();
       var legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
         return n.getBBox().width;
@@ -242,15 +263,13 @@
       var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // map to data
 
       var uPie = gPie.selectAll('path').data(arcs);
-      uPie.enter().append('path').merge(uPie).attr('id', function (d, i) {
+      var ePie = uPie.enter().append('path');
+      addEventHandlers(ePie);
+      ePie.merge(uPie).attr('id', function (d, i) {
         return "pie-".concat(i);
       }).attr('d', arcGenerator).attr('fill', function (d) {
         return d.data.colour;
-      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).on("mouseover", function (d, i) {
-        highlightItem(i, true);
-      }).on("mouseout", function (d, i) {
-        highlightItem(i, false);
-      });
+      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1);
       uPie.exit().remove();
 
       if (label) {
@@ -258,7 +277,9 @@
         var total = data.reduce(function (t, c) {
           return t + c.number;
         }, 0);
-        uPieLabels.enter().append('text').merge(uPieLabels).text(function (d) {
+        var ePieLabels = uPieLabels.enter().append('text');
+        addEventHandlers(ePieLabels);
+        ePieLabels.merge(uPieLabels).text(function (d) {
           if (label === 'value') {
             return d.data.number;
           } else if (label === 'percent') {
@@ -266,11 +287,7 @@
           }
         }).attr("class", "labelsPie").attr('transform', function (d) {
           return "translate(".concat(arcGenerator.centroid(d), ")");
-        }).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour).on("mouseover", function (d, i) {
-          highlightItem(i, true);
-        }).on("mouseout", function (d, i) {
-          highlightItem(i, false);
-        });
+        }).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
         uPieLabels.exit().remove();
       }
 
