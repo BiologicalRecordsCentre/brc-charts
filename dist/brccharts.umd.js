@@ -66,7 +66,55 @@
     'test': testData
   };
 
-  /** @module pie */
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
+      if (i % 2) {
+        ownKeys(Object(source), true).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        });
+      } else if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+      } else {
+        ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+      }
+    }
+
+    return target;
+  }
+
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
   /** 
@@ -128,6 +176,7 @@
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
 
+    var duration = 1000; // (parameterise)
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg');
@@ -136,30 +185,44 @@
         highlightItem(null, false);
       }
     });
+    var svgPie;
     var svgLegend = makeLegend(data, svg);
-    var svgPie = makePie(data, svg);
-    var imgSelected = makeImage(svg); // Can calcualte with at this point since only legend and chart affect width
+    setChartData(data, true);
+    console.log("pie is made");
+    var imgSelected = makeImage(svg); // Title must come after chart and legend because the 
+    // width of those is required to do wrapping for title
 
-    var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-    var svgTitle = makeTitle(svg, width);
-    svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
-    svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
-    svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
-    var height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")));
+    var svgTitle = makeTitle();
+    positionElements();
 
-    if (expand) {
-      svg.attr("viewBox", "0 0 " + width + " " + height);
-    } else {
-      svg.attr("width", width);
-      svg.attr("height", height);
+    function positionElements() {
+      var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+      svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
+      svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
+      svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
+      var height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")));
+
+      if (expand) {
+        svg.attr("viewBox", "0 0 " + width + " " + height);
+      } else {
+        svg.attr("width", width);
+        svg.attr("height", height);
+      }
     }
 
-    function makeTitle(svg, chartWidth) {
-      var svgTitle = svg.append('svg');
+    function makeTitle() {
+      var svgTitle;
+
+      if (svg.select('.brc-chart-title').size()) {
+        svgTitle = svg.select('.brc-chart-title');
+      } else {
+        svgTitle = svg.append('svg').classed('brc-chart-title', true);
+      }
+
+      var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
       var lines = wrapText(title, svgTitle, chartWidth);
       var uTitleText = svgTitle.selectAll('.titleText').data(lines);
-      uTitleText.enter().append('text').merge(uTitleText).text(function (d) {
-        console.log(d);
+      uTitleText.enter().append('text').text(function (d) {
         return d;
       }).attr("class", "titleText").style('font-size', titleFontSize);
       uTitleText.exit().remove();
@@ -180,23 +243,6 @@
       });
       svgTitle.attr("height", height * lines.length);
       return svgTitle;
-    }
-
-    function addEventHandlers(sel) {
-      sel.on("mouseover", function (d, i) {
-        if (interactivity === 'mousemove') {
-          highlightItem(i, true);
-        }
-      }).on("mouseout", function (d, i) {
-        if (interactivity === 'mousemove') {
-          highlightItem(i, false);
-        }
-      }).on("click", function (d, i) {
-        if (interactivity === 'mouseclick') {
-          highlightItem(i, true);
-          d3.event.stopPropagation();
-        }
-      });
     }
 
     function makeLegend(data, svg) {
@@ -228,21 +274,32 @@
       });
       var legendTextHeight = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
         return n.getBBox().height;
-      }); // We delay setting vertical position of legend text until we know the text height so that
+      }); // Prevent code failures if no data specified
+
+      legendTextWidth = legendTextWidth ? legendTextWidth : 0;
+      legendTextHeight = legendTextHeight ? legendTextHeight : 0; // We delay setting vertical position of legend text until we know the text height so that
       // we can centre with swatch
 
       svgLegend.selectAll('.legendText').data(data).attr('y', function (d, i) {
         return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 4;
       });
       svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth);
-      svgLegend.attr("height", data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap);
+      var legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap;
+      svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0);
       return svgLegend;
     }
 
-    function makePie(data, svg) {
-      var svgPie = svg.append('svg').attr('width', 2 * radius).attr('height', 2 * radius);
-      var gPie = svgPie.append('g') //.attr('transform', `translate(${legendWidth + radius} ${radius})`)
-      .attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
+    function makePie(piedata, duration, delay) {
+      var svgPie, gPie;
+
+      if (svg.select('.brc-chart-pie').size()) {
+        svgPie = svg.select('.brc-chart-pie');
+        gPie = svgPie.select('g');
+      } else {
+        svgPie = svg.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
+        gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
+      }
+
       var fnSort;
 
       if (sort === 'asc') {
@@ -259,25 +316,100 @@
 
       var arcs = d3.pie().value(function (d) {
         return d.number;
-      }).sortValues(fnSort)(data);
-      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // map to data
+      }).sortValues(fnSort)(piedata);
+      console.log('arcs', arcs);
+      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Code for arcTween from https://bl.ocks.org/mbostock/1346410
+      // Store the displayed angles in _current.
+      // Then, interpolate from _current to the new angles.
+      // During the transition, _current is updated in-place by d3.interpolate.
 
-      var uPie = gPie.selectAll('path').data(arcs);
-      var ePie = uPie.enter().append('path');
-      addEventHandlers(ePie);
-      ePie.merge(uPie).attr('id', function (d, i) {
+      function arcTween(arc) {
+        console.log(arc);
+        var i = d3.interpolate(this._current, arc);
+        var rad0 = innerRadius;
+        var rad1 = innerRadius + (radius - innerRadius) / 2;
+        var rad2 = radius;
+        var iRad_0_2 = d3.interpolate(rad0, rad2);
+        var iRad_2_0 = d3.interpolate(rad2, rad0);
+        var iRad_2_1 = d3.interpolate(rad2, rad1);
+        var iRad_0_1 = d3.interpolate(rad0, rad1);
+        this._current = i(0);
+        return function (t) {
+          //arcGenerator.outerRadius(arc.index%2 == 0 ? radius * 0.9 : radius) 
+          //arcGenerator.outerRadius(iRad(t)) 
+          //arcGenerator.outerRadius(arc.data.delete ? innerRadius : radius) 
+          if (arc.data.sliceType === 'delete') {
+            if (arc.data.pieRing === 'full') {
+              arcGenerator.outerRadius(iRad_2_0(t));
+              arcGenerator.innerRadius(rad0);
+            } else {
+              arcGenerator.outerRadius(iRad_2_1(t));
+              arcGenerator.innerRadius(iRad_0_1(t));
+            }
+          } else if (arc.data.sliceType === 'deleted') {
+            if (arc.data.pieRing === 'full') {
+              arcGenerator.outerRadius(rad0);
+              arcGenerator.innerRadius(rad0);
+            } else {
+              arcGenerator.outerRadius(rad1);
+              arcGenerator.innerRadius(rad1);
+            }
+          } else if (arc.data.sliceType === 'changed') {
+            if (arc.data.pieRing === 'full') {
+              arcGenerator.outerRadius(rad2);
+              arcGenerator.innerRadius(rad0);
+            } //} else if (arc.data.sliceType === 'retained') {
+            //   arcGenerator.outerRadius(radius)
+            //   arcGenerator.innerRadius(iInnerRad_1(t)) 
+
+          } else if (arc.data.sliceType === 'new') {
+            arcGenerator.outerRadius(iRad_0_2(t));
+            arcGenerator.innerRadius(innerRadius);
+          } else {
+            arcGenerator.outerRadius(radius);
+            arcGenerator.innerRadius(innerRadius);
+          }
+
+          return arcGenerator(i(t));
+        };
+      }
+
+      function centroidTween(a) {
+        var i = d3.interpolate(this._current, a);
+        this._current = i(0);
+        return function (t) {
+          return "translate(".concat(arcGenerator.centroid(i(t)), ")");
+        };
+      } // map to data
+
+
+      var uPie = gPie.selectAll('path').data(arcs, function (d) {
+        return d.data.name;
+      });
+      var ePie = uPie.enter().append('path').attr('id', function (d, i) {
         return "pie-".concat(i);
-      }).attr('d', arcGenerator).attr('fill', function (d) {
+      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
         return d.data.colour;
-      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1);
+      });
+      addEventHandlers(ePie);
+
+      if (duration) {
+        ePie.merge(uPie).transition().delay(delay).duration(duration).attrTween('d', arcTween);
+      } else {
+        ePie.merge(uPie).attr('d', function (a) {
+          this._current = a;
+          arcGenerator(a);
+        });
+      }
+
       uPie.exit().remove();
 
       if (label) {
         var uPieLabels = gPie.selectAll('.labelsPie').data(arcs);
-        var total = data.reduce(function (t, c) {
+        var total = piedata.reduce(function (t, c) {
           return t + c.number;
         }, 0);
-        var ePieLabels = uPieLabels.enter().append('text');
+        var ePieLabels = uPieLabels.enter().append('text').attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
         addEventHandlers(ePieLabels);
         ePieLabels.merge(uPieLabels).text(function (d) {
           if (label === 'value') {
@@ -285,9 +417,8 @@
           } else if (label === 'percent') {
             return "".concat(Math.round(d.data.number / total * 100), "%");
           }
-        }).attr("class", "labelsPie").attr('transform', function (d) {
-          return "translate(".concat(arcGenerator.centroid(d), ")");
-        }).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
+        }) //.attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
+        .transition().delay(delay).duration(duration).attrTween('transform', centroidTween);
         uPieLabels.exit().remove();
       }
 
@@ -309,9 +440,9 @@
         var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
         workingText = workingText.trim();
         var txt = svgTitle.append('text').text(workingText).style('font-size', titleFontSize);
-        var _width = txt.node().getBBox().width;
+        var width = txt.node().getBBox().width;
 
-        if (_width > maxWidth) {
+        if (width > maxWidth) {
           line++;
           lines[line] = textSplit[i];
         } else {
@@ -322,6 +453,23 @@
       }
 
       return lines;
+    }
+
+    function addEventHandlers(sel) {
+      sel.on("mouseover", function (d, i) {
+        if (interactivity === 'mousemove') {
+          highlightItem(i, true);
+        }
+      }).on("mouseout", function (d, i) {
+        if (interactivity === 'mousemove') {
+          highlightItem(i, false);
+        }
+      }).on("click", function (d, i) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(i, true);
+          d3.event.stopPropagation();
+        }
+      });
     }
 
     function highlightItem(i, show) {
@@ -373,24 +521,134 @@
       imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2);
       imgSelected.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
     }
+
+    function cloneData(data) {
+      return data.map(function (d) {
+        return _objectSpread2({}, d);
+      });
+    }
+    /** @function setChartTitle
+      * @param {string} text - text for chart title.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Set's the value of the chart title.
+      */
+
+
+    function setChartTitle(text) {
+      title = text;
+      makeTitle();
+      positionElements();
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
     /** @function getChartHeight
-      * @description <b>This function is exposed as a method on the API returned from the svgMap function</b>.
-      * Return the blah.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Return the full height of the chart svg.
       */
 
 
     function getChartHeight() {
-      //todo
-      return height;
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /** @function setChartData
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Set's the data array to be bound to the chart.
+      */
+
+
+    function setChartData(newData, init) {
+      var oldNames = data.map(function (d) {
+        return d.name;
+      });
+      var newNames = newData.map(function (d) {
+        return d.name;
+      });
+      var deletedNames = oldNames.filter(function (d) {
+        return !newNames.includes(d);
+      });
+      var insertedNames = newNames.filter(function (d) {
+        return !oldNames.includes(d);
+      });
+      console.log('oldNames', oldNames);
+      console.log('newNames', newNames);
+      console.log('deletedNames', deletedNames);
+      console.log('insertedNames', insertedNames);
+      var inserted = insertedNames.length > 0;
+      var deleted = deletedNames.length > 0;
+
+      if (init) {
+        console.log('init');
+        var d0 = cloneData(newData);
+        d0.forEach(function (d) {
+          d.sliceType = 'new';
+          d.pieRing = 'full';
+        });
+        svgPie = makePie(d0, duration, 0);
+      } else if (!inserted && !deleted) {
+        console.log('!inserted && !deleted');
+
+        var _d = cloneData(newData);
+
+        _d.forEach(function (d) {
+          d.sliceType = 'changed';
+          d.pieRing = 'full';
+        });
+
+        makePie(_d, duration, 0);
+      } else if (deleted && !inserted) {
+        console.log('deleted && !inserted');
+
+        var _d2 = cloneData(data);
+
+        _d2.forEach(function (d) {
+          if (newNames.includes(d.name)) {
+            d.sliceType = 'unchanged';
+          } else {
+            d.sliceType = 'delete';
+          }
+
+          d.pieRing = 'full';
+        });
+
+        makePie(_d2, duration, 0);
+        var d1 = cloneData(_d2);
+        d1.forEach(function (d) {
+          if (d.sliceType === 'delete') {
+            d.number = 0;
+            d.sliceType = 'deleted';
+          }
+        });
+        setTimeout(function () {
+          makePie(d1, duration, 0);
+        }, duration);
+      } else {
+        console.log('else...');
+      }
+
+      data = newData;
     }
     /**
      * @typedef {Object} api
+     * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     */
+     * @property {module:pie~setChartTitle} setChartTitle - Sets the title of the chart. 
+     * @property {module:pie~setChartData} setChartData - Sets the data for the chart. 
+       */
 
 
     return {
-      getChartHeight: getChartHeight
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartTitle: setChartTitle,
+      setChartData: setChartData
     };
   }
 
