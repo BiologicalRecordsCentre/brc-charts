@@ -410,101 +410,102 @@
       dataPrev = data;
       console.log('arcsComb', arcsComb);
       var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
-      // Code for arcTween from https://bl.ocks.org/mbostock/1346410
+      // and here https://bl.ocks.org/mbostock/1346410
       // Store the displayed angles in _current.
       // Then, interpolate from _current to the new angles.
       // During the transition, _current is updated in-place by d3.interpolate.
 
-      function arcTween(arc, _this, stage) {
+      function arcTween(arc, _this, trans) {
         var i;
         var iPrev = d3.interpolate(_this._current, arc.prevArc);
         var iCurr = d3.interpolate(_this._current, arc);
         var midRadius = innerRadius + (radius - innerRadius) / 2;
         return function (t) {
-          if (stage === 'init') {
-            i = iCurr;
-            var iRad = d3.interpolate(innerRadius, radius);
-            arcGenerator.outerRadius(iRad(t));
-            arcGenerator.innerRadius(innerRadius);
-          }
-
-          if (stage === 'changed') {
-            i = iCurr;
-            arcGenerator.outerRadius(radius);
-            arcGenerator.innerRadius(innerRadius);
-          }
-
-          if (stage === 'delete') {
-            i = iPrev;
-
-            if (arc.deleted) {
-              var _iRad = d3.interpolate(radius, innerRadius);
-
-              arcGenerator.outerRadius(_iRad(t));
+          if (trans === 1) {
+            if (init) {
+              i = iCurr;
+              arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t));
               arcGenerator.innerRadius(innerRadius);
+            } else if (dataInserted.length) {
+              if (arc.deleted) {
+                // Previous arcs to be deleted
+                i = iPrev;
+                arcGenerator.outerRadius(d3.interpolate(radius, midRadius)(t));
+                arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
+              } else if (arc.inserted) {
+                // New arcs to be inserted (invisibly)
+                i = iCurr;
+                arcGenerator.outerRadius(innerRadius);
+                arcGenerator.innerRadius(innerRadius);
+              } else {
+                // Existing arcs to be shrunk to outer ring
+                i = iPrev;
+                arcGenerator.outerRadius(radius);
+                arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
+              }
+            } else if (dataDeleted.length) {
+              if (arc.deleted) {
+                // Previous arcs to be deleted
+                i = iPrev;
+                arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t));
+                arcGenerator.innerRadius(innerRadius);
+              } else {
+                i = iPrev;
+                arcGenerator.outerRadius(radius);
+                arcGenerator.innerRadius(innerRadius);
+              }
             } else {
+              i = iCurr;
               arcGenerator.outerRadius(radius);
               arcGenerator.innerRadius(innerRadius);
             }
           }
 
-          if (stage === 'delete2') {
-            i = iCurr;
-
-            if (arc.deleted) {
-              arcGenerator.outerRadius(innerRadius);
-              arcGenerator.innerRadius(innerRadius);
+          if (trans === 2) {
+            if (dataInserted.length) {
+              if (arc.inserted) {
+                // Shown inserted arcs in inner ring
+                i = iCurr;
+                arcGenerator.outerRadius(d3.interpolate(innerRadius, midRadius)(t));
+                arcGenerator.innerRadius(innerRadius);
+              } else if (arc.deleted) {
+                // Delted arcs to be kept with inner & outer radius the same (invisible)
+                i = iCurr;
+                arcGenerator.outerRadius(midRadius);
+                arcGenerator.innerRadius(midRadius);
+              } else {
+                // Existing arcs to be shown in new positions in outer ring
+                i = iCurr;
+                arcGenerator.outerRadius(radius);
+                arcGenerator.innerRadius(midRadius);
+              }
             } else {
-              arcGenerator.outerRadius(radius);
-              arcGenerator.innerRadius(innerRadius);
+              if (arc.deleted) {
+                i = iCurr;
+                arcGenerator.outerRadius(innerRadius);
+                arcGenerator.innerRadius(innerRadius);
+              } else {
+                i = iCurr;
+                arcGenerator.outerRadius(radius);
+                arcGenerator.innerRadius(innerRadius);
+              }
             }
           }
 
-          if (stage === 'insert') {
-            if (arc.deleted) {
-              i = iPrev;
-
-              var _iRad2 = d3.interpolate(radius, midRadius);
-
-              arcGenerator.outerRadius(_iRad2(t));
-              var iRad2 = d3.interpolate(innerRadius, midRadius);
-              arcGenerator.innerRadius(iRad2(t));
-            } else if (arc.inserted) {
+          if (trans === 3) {
+            if (arc.inserted) {
+              // Shown inserted arcs in inner ring
               i = iCurr;
-
-              var _iRad3 = d3.interpolate(innerRadius, midRadius);
-
-              arcGenerator.outerRadius(_iRad3(t));
+              arcGenerator.outerRadius(d3.interpolate(midRadius, radius)(t));
               arcGenerator.innerRadius(innerRadius);
-            } else {
-              i = iPrev;
-              arcGenerator.outerRadius(radius);
-
-              var _iRad4 = d3.interpolate(innerRadius, midRadius);
-
-              arcGenerator.innerRadius(_iRad4(t));
-            }
-          }
-
-          if (stage === 'insert2') {
-            if (arc.deleted) {
-              i = iCurr;
-              arcGenerator.outerRadius(innerRadius);
-              arcGenerator.innerRadius(innerRadius);
-            } else if (arc.inserted) {
-              i = iCurr;
-
-              var _iRad5 = d3.interpolate(midRadius, radius);
-
-              arcGenerator.outerRadius(_iRad5(t));
-              arcGenerator.innerRadius(innerRadius);
-            } else {
+            } else if (!arc.deleted) {
+              // Existing arcs to be shown in new positions in outer ring
               i = iCurr;
               arcGenerator.outerRadius(radius);
-
-              var _iRad6 = d3.interpolate(midRadius, innerRadius);
-
-              arcGenerator.innerRadius(_iRad6(t));
+              arcGenerator.innerRadius(d3.interpolate(midRadius, innerRadius)(t));
+            } else {
+              // Deletions - do nothing
+              i = iCurr;
             }
           }
 
@@ -545,76 +546,22 @@
       });
       addEventHandlers(ePie);
       var mPie = ePie.merge(uPie);
-      var trans; // if (init) {
-      //   console.log("init")
-      //   trans = mPie.transition()
-      //     .duration(duration)
-      //     .attrTween('d', function (arc) {
-      //       return arcTween(arc, this, 'init')
-      //   })
-      // } else if (!dataDeleted.length && !dataInserted.length) {
-      //   console.log("changed")
-      //   trans = mPie.transition()
-      //     .duration(duration)
-      //     .attrTween('d', function (arc) {
-      //       return arcTween(arc, this, 'changed')
-      //   })
-      // } else if (dataInserted.length) {
-      //   console.log("insert")
-      //   trans = mPie
-      //     .transition()
-      //       .duration(duration)
-      //       .attrTween('d', function (arc) {
-      //         return arcTween(arc, this, 'insert')
-      //       })
-      //     .transition()
-      //       .duration(duration)
-      //       .attrTween('d', function (arc) {
-      //         return arcTween(arc, this, 'insert2')
-      //       })
-      // } else if (dataDeleted.length) {
-      //   console.log("delete")
-      //   trans = mPie
-      //     .transition()
-      //       .duration(duration)
-      //       .attrTween('d', function (arc) {
-      //         return arcTween(arc, this, 'delete')
-      //       })
-      //     .transition()
-      //       .duration(duration)
-      //       .attrTween('d', function (arc) {
-      //         return arcTween(arc, this, 'delete2')
-      //       })
-      // }
-      // Transition part 1
+      var trans; // Transition 1
 
       trans = mPie.transition().duration(duration).attrTween('d', function (arc) {
-        var stage;
-
-        if (init) {
-          stage = 'init';
-        } else if (!dataDeleted.length && !dataInserted.length) {
-          stage = 'changed';
-        } else if (dataInserted.length) {
-          stage = 'insert';
-        } else if (dataDeleted.length) {
-          stage = 'delete';
-        }
-
-        return arcTween(arc, this, stage);
-      }); // Transition part 2
+        return arcTween(arc, this, 1);
+      }); // Transition 2 
 
       if (dataDeleted.length || dataInserted.length) {
         trans = trans.transition().duration(duration).attrTween('d', function (arc) {
-          var stage;
+          return arcTween(arc, this, 2);
+        });
+      } // Transition 3
 
-          if (dataInserted.length) {
-            stage = 'insert2';
-          } else if (dataDeleted.length) {
-            stage = 'delete2';
-          }
 
-          return arcTween(arc, this, stage);
+      if (dataInserted.length) {
+        trans = trans.transition().duration(duration).attrTween('d', function (arc) {
+          return arcTween(arc, this, 3);
         });
       } // Because we always retain deleted items in order
       // to make smooth transitions, the D3 exit selection
