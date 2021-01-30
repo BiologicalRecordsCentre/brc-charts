@@ -77,8 +77,7 @@ export function pie({
   let svgPie, svgLegend
   makeLegend(data)
   makePie(data) 
-
-  const imgSelected = makeImage(svg)
+  const imgSelected = makeImage()
   // Title must come after chart and legend because the 
   // width of those is required to do wrapping for title
   const svgTitle = makeTitle()
@@ -118,8 +117,11 @@ export function pie({
     const uTitleText = svgTitle.selectAll('.titleText')
       .data(lines)
 
-    uTitleText.enter()
+    const eTitleText = uTitleText.enter()
       .append('text')
+
+    uTitleText
+      .merge(eTitleText)
       .text(d => {
         return d
       })
@@ -527,7 +529,7 @@ export function pie({
     }
   }
 
-  function makeImage(svg) {
+  function makeImage() {
     const img = svg.append('image')
       .classed('brc-item-image-hide', true)
       //.attr('xlink:href', 'images/Bumblebees.png')
@@ -623,6 +625,8 @@ export function pie({
           img.src = 'images/Bumblebees.png'
           imgSelected.classed('brc-item-image-hide', false)
         }
+      } else {
+        imgSelected.classed('brc-item-image-hide', true)
       }
     } else {
       svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
@@ -648,6 +652,7 @@ export function pie({
   * Set's the value of the chart title.
   */
   function setChartTitle(text){
+
     title = text
     makeTitle()
     positionElements()

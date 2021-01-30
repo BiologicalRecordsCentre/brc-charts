@@ -227,7 +227,7 @@
     var svgPie, svgLegend;
     makeLegend(data);
     makePie(data);
-    var imgSelected = makeImage(svg); // Title must come after chart and legend because the 
+    var imgSelected = makeImage(); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
 
     var svgTitle = makeTitle();
@@ -260,7 +260,8 @@
       var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
       var lines = wrapText(title, svgTitle, chartWidth);
       var uTitleText = svgTitle.selectAll('.titleText').data(lines);
-      uTitleText.enter().append('text').text(function (d) {
+      var eTitleText = uTitleText.enter().append('text');
+      uTitleText.merge(eTitleText).text(function (d) {
         return d;
       }).attr("class", "titleText").style('font-size', titleFontSize);
       uTitleText.exit().remove();
@@ -619,7 +620,7 @@
       }
     }
 
-    function makeImage(svg) {
+    function makeImage() {
       var img = svg.append('image').classed('brc-item-image-hide', true) //.attr('xlink:href', 'images/Bumblebees.png')
       .attr('width', imageWidth);
       return img;
@@ -711,6 +712,8 @@
             img.src = 'images/Bumblebees.png';
             imgSelected.classed('brc-item-image-hide', false);
           }
+        } else {
+          imgSelected.classed('brc-item-image-hide', true);
         }
       } else {
         svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);

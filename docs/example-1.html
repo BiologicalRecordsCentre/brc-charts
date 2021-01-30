@@ -37,11 +37,14 @@
       <div id="chart3" class="divfl"></div>
     </div>
 
+    <br/> <br/>
     <button onclick="button1Click()">Initial items</button>
     <button onclick="button2Click()">Initial items changed values</button>
     <button onclick="button3Click()">Initial items +</button>
     <button onclick="button4Click()">Initial items -</button>
     <button onclick="button5Click()">Initial items + & -</button>
+    <br/><br/>
+    <button onclick="button6Click()">Initial items & change title</button>
     
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -203,10 +206,9 @@
               image: 'images/Honeybees.png'
           },
           {
-              name: "new 1 blah blah blah blah blah",
+              name: "new 1",
               number: 10,
               colour: 'green',
-              image: 'images/Honeybees.png'
           },
           {
               name: "solitary bees",
@@ -223,14 +225,12 @@
           {
               name: "new 2",
               number: 30,
-              colour: 'yellow',
-              image: 'images/Honeybees.png'
+              colour: 'rgb(200,200,255)',
           },
           {
               name: "new 3",
               number: 10,
               colour: 'salmon',
-              image: 'images/Honeybees.png'
           },
           {
               name: "hoverflies",
@@ -321,7 +321,6 @@
               name: "new 1",
               number: 10,
               colour: 'green',
-              image: 'images/Honeybees.png'
           },
           {
               name: "solitary bees",
@@ -338,14 +337,12 @@
           {
               name: "new 2",
               number: 30,
-              colour: 'yellow',
-              image: 'images/Honeybees.png'
+              colour: 'rgb(200,200,255)',
           },
           {
               name: "new 3",
               number: 10,
               colour: 'salmon',
-              image: 'images/Honeybees.png'
           },
 
           {
@@ -406,6 +403,10 @@
       }
       function button5Click() {
         chart.setChartData(itemsPlusMinus)
+      }
+      function button6Click() {
+        chart.setChartTitle('FIT Counts: insects counted on Dog Rose flowers 2000 to 2010')
+        chart.setChartData(items)
       }
       //makePie('#chart2')
       //makePie('#chart3')
