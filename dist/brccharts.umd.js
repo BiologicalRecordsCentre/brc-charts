@@ -164,10 +164,12 @@
    * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
    * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
    * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
+   * @param {number} opts.legendWidth - The width of the legend in pixels.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * @returns {module:pie~api} api - Returns an API for the map.
    */
@@ -196,6 +198,8 @@
         legendSwatchSize = _ref$legendSwatchSize === void 0 ? 30 : _ref$legendSwatchSize,
         _ref$legendSwatchGap = _ref.legendSwatchGap,
         legendSwatchGap = _ref$legendSwatchGap === void 0 ? 10 : _ref$legendSwatchGap,
+        _ref$legendWidth = _ref.legendWidth,
+        legendWidth = _ref$legendWidth === void 0 ? 250 : _ref$legendWidth,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
         _ref$titleFontSize = _ref.titleFontSize,
@@ -204,12 +208,12 @@
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$imageWidth = _ref.imageWidth,
         imageWidth = _ref$imageWidth === void 0 ? 150 : _ref$imageWidth,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$interactivity = _ref.interactivity,
         interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
-
-    var duration = 1000; // (parameterise)
 
     var dataPrev;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
@@ -220,8 +224,8 @@
         highlightItem(null, false);
       }
     });
-    var svgPie;
-    var svgLegend = makeLegend(data, svg);
+    var svgPie, svgLegend;
+    makeLegend(data);
     makePie(data);
     var imgSelected = makeImage(svg); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
@@ -279,45 +283,53 @@
       return svgTitle;
     }
 
-    function makeLegend(data, svg) {
-      var svgLegend = svg.append('svg');
-      var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data);
-      var eLegendSwatch = uLegendSwatch.enter().append('rect');
-      addEventHandlers(eLegendSwatch);
-      eLegendSwatch.merge(uLegendSwatch).attr('id', function (d, i) {
-        return "swatch-".concat(i);
-      }).attr("class", "legendSwatch").attr('y', function (d, i) {
+    function makeLegend(data) {
+      if (!svgLegend) {
+        svgLegend = svg.append('svg').attr('overflow', 'auto');
+      }
+
+      var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data, function (d) {
+        return d.name;
+      });
+      var durationUpdate = uLegendSwatch.nodes().length ? duration : 0;
+      var durationExit = uLegendSwatch.exit().nodes().length ? duration : 0;
+      var eLegendSwatch = uLegendSwatch.enter().append('rect').attr('id', function (d) {
+        return "swatch-".concat(safeId(d.name));
+      }).classed('legendSwatch', true).attr('y', function (d, i) {
         return i * (legendSwatchSize + legendSwatchGap);
       }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
         return d.colour;
+      }).attr('opacity', 0);
+      addEventHandlers(eLegendSwatch, false);
+      eLegendSwatch.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
+      uLegendSwatch.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
+        return i * (legendSwatchSize + legendSwatchGap);
       });
-      uLegendSwatch.exit().remove();
-      var uLegendText = svgLegend.selectAll('.legendText').data(data);
-      var eLegendText = uLegendText.enter().append('text');
-      addEventHandlers(eLegendText);
-      eLegendText.merge(uLegendText).text(function (d) {
+      uLegendSwatch.exit().transition().duration(duration).attr('opacity', 0).remove();
+      var uLegendText = svgLegend.selectAll('.legendText').data(data, function (d) {
         return d.name;
-      }).attr('id', function (d, i) {
-        return "legend-".concat(i);
-      }).attr("class", "legendText").attr('x', function () {
-        return legendSwatchSize + legendSwatchGap;
-      }).style('font-size', labelFontSize);
-      uLegendText.exit().remove();
-      var legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
-        return n.getBBox().width;
       });
-      var legendTextHeight = d3.max(d3.selectAll('.legendText').nodes(), function (n) {
-        return n.getBBox().height;
-      }); // Prevent code failures if no data specified
-
-      legendTextWidth = legendTextWidth ? legendTextWidth : 0;
-      legendTextHeight = legendTextHeight ? legendTextHeight : 0; // We delay setting vertical position of legend text until we know the text height so that
-      // we can centre with swatch
-
-      svgLegend.selectAll('.legendText').data(data).attr('y', function (d, i) {
+      var dummyText = svgLegend.append('text').attr('opacity', 0).style('font-size', labelFontSize).text('Dummy');
+      var legendTextHeight = dummyText.node().getBBox().height;
+      dummyText.remove();
+      var eLegendText = uLegendText.enter().append('text').text(function (d) {
+        return d.name;
+      }).attr('alignment-baseline', 'middle').attr('id', function (d) {
+        return "legend-".concat(safeId(d.name));
+      }).classed('legendText', true).attr('x', function () {
+        return legendSwatchSize + legendSwatchGap;
+      }).attr('y', function (d, i) {
+        return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 3;
+      }).style('font-size', labelFontSize).attr('opacity', 0);
+      addEventHandlers(eLegendText, false);
+      eLegendText.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
+      uLegendText.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
         return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 4;
       });
-      svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth);
+      uLegendText.exit().transition().duration(duration).attr('opacity', 0).remove(); //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
+      //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
+
+      svgLegend.attr("width", legendWidth);
       var legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap;
       svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0);
       return svgLegend;
@@ -409,7 +421,8 @@
 
       dataPrev = data;
       console.log('arcsComb', arcsComb);
-      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
+      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius);
+      var arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
       // and here https://bl.ocks.org/mbostock/1346410
       // Store the displayed angles in _current.
       // Then, interpolate from _current to the new angles.
@@ -518,7 +531,7 @@
         var i = d3.interpolate(this._current, a);
         this._current = i(0);
         return function (t) {
-          return "translate(".concat(arcGenerator.centroid(i(t)), ")");
+          return "translate(".concat(arcGeneratorLables.centroid(i(t)), ")");
         };
       } //let svgPie, gPie
 
@@ -537,16 +550,17 @@
       var uPie = gPie.selectAll('path').data(arcsComb, function (d) {
         return d.data.name;
       });
-      var ePie = uPie.enter().append('path').attr('id', function (d, i) {
-        return "pie-".concat(i);
+      var ePie = uPie.enter().append('path').attr('id', function (d) {
+        return "pie-".concat(safeId(d.data.name));
       }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
         return d.data.colour;
       }).each(function (d) {
         this._current = d;
       });
-      addEventHandlers(ePie);
+      addEventHandlers(ePie, true);
       var mPie = ePie.merge(uPie);
-      var trans; // Transition 1
+      var trans;
+      var transDuration = duration; // Transition 1
 
       trans = mPie.transition().duration(duration).attrTween('d', function (arc) {
         return arcTween(arc, this, 1);
@@ -556,6 +570,7 @@
         trans = trans.transition().duration(duration).attrTween('d', function (arc) {
           return arcTween(arc, this, 2);
         });
+        transDuration += duration;
       } // Transition 3
 
 
@@ -563,6 +578,7 @@
         trans = trans.transition().duration(duration).attrTween('d', function (arc) {
           return arcTween(arc, this, 3);
         });
+        transDuration += duration;
       } // Because we always retain deleted items in order
       // to make smooth transitions, the D3 exit selection
       // is never populated. Instead we have to remove
@@ -579,20 +595,26 @@
       });
 
       if (label) {
-        var uPieLabels = gPie.selectAll('.labelsPie').data(arcsComb);
+        var arcsNew = d3.pie().value(function (d) {
+          return d.number;
+        }).sortValues(fnSort)(dataNew);
+        var uPieLabels = gPie.selectAll('.labelsPie').data(arcsNew, function (d) {
+          return d.data.name;
+        });
         var total = dataNew.reduce(function (t, c) {
           return t + c.number;
         }, 0);
-        var ePieLabels = uPieLabels.enter().append('text').attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
-        addEventHandlers(ePieLabels);
+        var ePieLabels = uPieLabels.enter().append('text').attr('id', function (d) {
+          return "label-".concat(safeId(d.data.name));
+        }).attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
+        addEventHandlers(ePieLabels, true);
         ePieLabels.merge(uPieLabels).text(function (d) {
           if (label === 'value') {
             return d.data.number;
           } else if (label === 'percent') {
             return "".concat(Math.round(d.data.number / total * 100), "%");
           }
-        }) //.attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
-        .transition().duration(duration).attrTween('transform', centroidTween);
+        }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', 1);
         uPieLabels.exit().remove();
       }
     }
@@ -627,24 +649,30 @@
       return lines;
     }
 
-    function addEventHandlers(sel) {
-      sel.on("mouseover", function (d, i) {
+    function addEventHandlers(sel, isArc) {
+      sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(i, true);
+          highlightItem(isArc ? d.data.name : d.name, true);
         }
-      }).on("mouseout", function (d, i) {
+      }).on("mouseout", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(i, false);
+          highlightItem(isArc ? d.data.name : d.name, false);
         }
-      }).on("click", function (d, i) {
+      }).on("click", function (d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(i, true);
+          highlightItem(isArc ? d.data.name : d.name, true);
           d3.event.stopPropagation();
         }
       });
     }
 
-    function highlightItem(i, show) {
+    function safeId(text) {
+      return text ? text.replace(/\W/g, '_') : null;
+    }
+
+    function highlightItem(name, show) {
+      var i = safeId(name);
+
       if (show) {
         svg.selectAll('path').classed('brc-lowlight', true);
         svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
@@ -653,17 +681,21 @@
         svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
         svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
 
-        if (data[i].image) {
+        var _data = dataPrev.find(function (d) {
+          return name === d.name;
+        });
+
+        if (_data && _data.image) {
           // Loading image into SVG and setting to specified width
           // and then querying bbox returns zero height. So in order
           // to get the height of the image (required for correct)
           // positioning, it is necessary first to load the image and
           // get the dimensions.
-          if (data[i].imageHeight) {
-            if (imgSelected.attr('xlink:href') !== data[i].image) {
+          if (_data.imageHeight) {
+            if (imgSelected.attr('xlink:href') !== _data.image) {
               // The loaded image is different from that of the
               // highlighted item, so load.
-              loadImage(data[i]);
+              loadImage(_data);
             }
 
             imgSelected.classed('brc-item-image-hide', false);
@@ -671,9 +703,9 @@
             var img = new Image();
 
             img.onload = function () {
-              data[i].imageWidth = imageWidth;
-              data[i].imageHeight = imageWidth * this.height / this.width;
-              loadImage(data[i]);
+              _data.imageWidth = imageWidth;
+              _data.imageHeight = imageWidth * this.height / this.width;
+              loadImage(_data);
             };
 
             img.src = 'images/Bumblebees.png';
@@ -737,7 +769,10 @@
 
 
     function setChartData(newData) {
+      highlightItem(null, false);
       makePie(newData);
+      makeLegend(newData);
+      positionElements();
     }
     /**
      * @typedef {Object} api

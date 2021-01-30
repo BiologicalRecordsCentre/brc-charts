@@ -20,10 +20,12 @@ import { dataAccessors } from './dataAccess.js'
  * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
  * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
  * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
+ * @param {number} opts.legendWidth - The width of the legend in pixels.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
+ * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * @returns {module:pie~api} api - Returns an API for the map.
  */
@@ -41,15 +43,15 @@ export function pie({
   //backgroundFill = 'white',
   legendSwatchSize = 30,
   legendSwatchGap = 10,
+  legendWidth = 250,
   title = '',
   titleFontSize = 24,
   titleAlign = 'left',
   imageWidth = 150,
+  duration = 1000,
   interactivity = 'mousemove',
   data = []
 } = {}) {
-
-  const duration =  1000  // (parameterise)
 
   let dataPrev
 
@@ -72,8 +74,8 @@ export function pie({
     }
   })
 
-  let svgPie
-  const svgLegend = makeLegend(data, svg)
+  let svgPie, svgLegend
+  makeLegend(data)
   makePie(data) 
 
   const imgSelected = makeImage(svg)
@@ -145,59 +147,87 @@ export function pie({
     return svgTitle
   }
 
-  function makeLegend (data, svg) {
-    const svgLegend = svg.append('svg')
+  function makeLegend (data) {
 
+    if (!svgLegend) {
+      svgLegend = svg.append('svg').attr('overflow', 'auto')
+    }
+  
     const uLegendSwatch = svgLegend.selectAll('.legendSwatch')
-      .data(data)
+      .data(data, d => d.name)
+
+    const durationUpdate = uLegendSwatch.nodes().length ? duration : 0
+    const durationExit = uLegendSwatch.exit().nodes().length ? duration : 0
 
     const eLegendSwatch = uLegendSwatch.enter()
       .append('rect')
-    addEventHandlers(eLegendSwatch)
-
-    eLegendSwatch.merge(uLegendSwatch)
-      .attr('id', (d, i) => `swatch-${i}`)
-      .attr("class", "legendSwatch")
+      .attr('id', (d) => `swatch-${safeId(d.name)}`)
+      .classed('legendSwatch', true)
       .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
       .attr('width', legendSwatchSize)
       .attr('height', legendSwatchSize)
       .style('fill', d => d.colour)
+      .attr('opacity', 0)
 
+    addEventHandlers(eLegendSwatch, false)
+
+    eLegendSwatch.transition()
+      .delay(durationExit + durationUpdate)
+      .duration(duration)
+      .attr('opacity', 1)
+
+    uLegendSwatch
+      .transition()
+      .delay(durationExit)
+      .duration(duration)
+      .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
+      
     uLegendSwatch.exit()
+      .transition()
+      .duration(duration)
+      .attr('opacity', 0)
       .remove()
 
     const uLegendText = svgLegend.selectAll('.legendText')
-      .data(data)
+      .data(data, d => d.name)
+
+    const dummyText = svgLegend.append('text').attr('opacity', 0).style('font-size', labelFontSize).text('Dummy')
+    let legendTextHeight = dummyText.node().getBBox().height
+    dummyText.remove()
 
     const eLegendText = uLegendText.enter()
       .append('text')
-    addEventHandlers(eLegendText)
-
-    eLegendText.merge(uLegendText)
       .text(d => d.name)
-      .attr('id', (d,i) => `legend-${i}`)
-      .attr("class", "legendText")
+      .attr('alignment-baseline', 'middle')
+      .attr('id', (d) => `legend-${safeId(d.name)}`)
+      .classed('legendText', true)
       .attr('x', () => legendSwatchSize + legendSwatchGap)
+      .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 3))
       .style('font-size', labelFontSize)
+      .attr('opacity', 0)
+
+    addEventHandlers(eLegendText, false)
+
+    eLegendText.transition()
+      .delay(durationExit + durationUpdate)
+      .duration(duration)
+      .attr('opacity', 1)
+
+    uLegendText
+      .transition()
+      .delay(durationExit)
+      .duration(duration)
+      .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 4))
       
     uLegendText.exit()
+      .transition()
+      .duration(duration)
+      .attr('opacity', 0)
       .remove()
 
-    let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
-    let legendTextHeight = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().height)
-
-    // Prevent code failures if no data specified
-    legendTextWidth = legendTextWidth ? legendTextWidth : 0
-    legendTextHeight = legendTextHeight ? legendTextHeight : 0
- 
-    // We delay setting vertical position of legend text until we know the text height so that
-    // we can centre with swatch
-
-    svgLegend.selectAll('.legendText')
-      .data(data)
-      .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 4))
-
-    svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
+    //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
+    //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
+    svgLegend.attr("width", legendWidth)
     const legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap
     svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0)
 
@@ -252,7 +282,7 @@ export function pie({
 
     const arcsPrev = d3.pie().value(d => d.number).sortValues(fnSort)(dataPrev)
     const arcsComb = d3.pie().value(d => d.number).sortValues(fnSort)(dataComb) 
-
+    
     arcsComb.forEach(arcComb => {
       const prevArc = arcsPrev.find(arcPrev => arcComb.data.name === arcPrev.data.name)
       if (prevArc) {
@@ -272,6 +302,7 @@ export function pie({
     console.log('arcsComb', arcsComb)
 
     const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius)
+    const arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius)
 
     // Good stuff here: https://bl.ocks.org/mbostock/4341417
     // and here https://bl.ocks.org/mbostock/1346410
@@ -381,7 +412,7 @@ export function pie({
       const i = d3.interpolate(this._current, a)
       this._current = i(0)
       return function(t) {
-        return `translate(${arcGenerator.centroid(i(t))})`
+        return `translate(${arcGeneratorLables.centroid(i(t))})`
       }
     }
 
@@ -404,17 +435,19 @@ export function pie({
 
     const ePie = uPie.enter()
       .append('path')
-      .attr('id', (d, i) => `pie-${i}`)
+      .attr('id', (d) => `pie-${safeId(d.data.name)}`)
       .attr('stroke', 'white')
       .style('stroke-width', '2px')
       .style('opacity', 1)
       .attr('fill', d => d.data.colour)
       .each(function(d) { this._current = d })
 
-    addEventHandlers(ePie)
+    addEventHandlers(ePie, true)
 
     const mPie = ePie.merge(uPie)
     let trans
+    let transDuration = duration
+    
     // Transition 1
     trans = mPie.transition()
       .duration(duration)
@@ -429,6 +462,7 @@ export function pie({
         .attrTween('d', function (arc) {
           return arcTween(arc, this, 2)
         })
+      transDuration += duration
     }
 
     // Transition 3
@@ -438,6 +472,7 @@ export function pie({
         .attrTween('d', function (arc) {
           return arcTween(arc, this, 3)
         })
+      transDuration += duration
     }
 
     // Because we always retain deleted items in order
@@ -454,19 +489,23 @@ export function pie({
     })
 
     if (label) {
+
+      const arcsNew = d3.pie().value(d => d.number).sortValues(fnSort)(dataNew) 
+
       const uPieLabels = gPie.selectAll('.labelsPie')
-        .data(arcsComb)
+        .data(arcsNew, d => d.data.name)
         
       const total = dataNew.reduce((t, c) => {return t + c.number}, 0)
 
       const ePieLabels = uPieLabels.enter()
         .append('text')
+        .attr('id', (d) => `label-${safeId(d.data.name)}`)
         .attr("class", "labelsPie")
         .style('text-anchor', 'middle')
         .style('font-size', labelFontSize)
         .style('fill', labelColour)
 
-      addEventHandlers(ePieLabels)
+      addEventHandlers(ePieLabels, true)
 
       ePieLabels.merge(uPieLabels)
         .text(d => {
@@ -476,11 +515,13 @@ export function pie({
               return `${Math.round(d.data.number / total * 100)}%`
           }
         })
-        //.attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
+        .attr('opacity', 0)
         .transition()
-        .duration(duration)
+        .duration(transDuration)
         .attrTween('transform', centroidTween)
-
+        .transition()
+        .duration(0)
+        .attr('opacity', 1)
       uPieLabels.exit()
         .remove()
     }
@@ -523,27 +564,32 @@ export function pie({
     return lines
   }
 
-  function addEventHandlers(sel) {
+  function addEventHandlers(sel, isArc) {
     sel
-      .on("mouseover", function(d, i) {
+      .on("mouseover", function(d) {
       if (interactivity === 'mousemove') {
-          highlightItem(i, true)
+          highlightItem(isArc ? d.data.name : d.name, true)
         }
       })
-      .on("mouseout", function(d, i) {
+      .on("mouseout", function(d) {
         if (interactivity === 'mousemove') {
-          highlightItem(i, false)
+          highlightItem(isArc ? d.data.name : d.name, false)
         }
       })
-      .on("click", function(d, i) {
+      .on("click", function(d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(i, true)
+          highlightItem(isArc ? d.data.name : d.name, true)
           d3.event.stopPropagation()
         }
       })
   }
 
-  function highlightItem (i, show) {
+  function safeId(text) {
+    return text ? text.replace(/\W/g,'_') : null
+  }
+
+  function highlightItem (name, show) {
+    const i = safeId(name)
     if (show) {
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
@@ -552,25 +598,27 @@ export function pie({
       svg.select(`#legend-${i}`).classed('brc-lowlight', false)
       svg.select(`#pie-${i}`).classed('brc-lowlight', false)
 
-      if (data[i].image) {
+      const data = dataPrev.find(d => name === d.name)
+
+      if (data && data.image) {
         // Loading image into SVG and setting to specified width
         // and then querying bbox returns zero height. So in order
         // to get the height of the image (required for correct)
         // positioning, it is necessary first to load the image and
         // get the dimensions.
-        if (data[i].imageHeight) {
-          if (imgSelected.attr('xlink:href') !== data[i].image) {
+        if (data.imageHeight) {
+          if (imgSelected.attr('xlink:href') !== data.image) {
             // The loaded image is different from that of the
             // highlighted item, so load.
-            loadImage(data[i])
+            loadImage(data)
           }
           imgSelected.classed('brc-item-image-hide', false)
         } else {
           const img = new Image
           img.onload = function() {
-            data[i].imageWidth = imageWidth 
-            data[i].imageHeight = imageWidth * this.height / this.width
-            loadImage(data[i])
+            data.imageWidth = imageWidth 
+            data.imageHeight = imageWidth * this.height / this.width
+            loadImage(data)
           }
           img.src = 'images/Bumblebees.png'
           imgSelected.classed('brc-item-image-hide', false)
@@ -628,7 +676,10 @@ export function pie({
   */
   function setChartData(newData){
     
+    highlightItem(null, false)
     makePie(newData)
+    makeLegend(newData)
+    positionElements()
   }
 
   /**
