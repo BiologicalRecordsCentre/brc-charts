@@ -216,22 +216,23 @@
         data = _ref$data === void 0 ? [] : _ref$data;
 
     var dataPrev;
+    var block = false;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
-    var svg = chartDiv.append('svg');
+    var svg = chartDiv.append('svg').attr('overflow', 'visible');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
         highlightItem(null, false);
       }
     });
-    var svgPie, svgLegend;
+    var svgPie, svgLegend, svgTitle;
     makeLegend(data);
-    makePie(data);
-    var imgSelected = makeImage(); // Title must come after chart and legend because the 
+    makePie(data); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
 
-    var svgTitle = makeTitle();
+    makeTitle();
     positionElements();
+    var imgSelected = makeImage();
 
     function positionElements() {
       var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
@@ -249,11 +250,7 @@
     }
 
     function makeTitle() {
-      var svgTitle;
-
-      if (svg.select('.brc-chart-title').size()) {
-        svgTitle = svg.select('.brc-chart-title');
-      } else {
+      if (!svgTitle) {
         svgTitle = svg.append('svg').classed('brc-chart-title', true);
       }
 
@@ -333,10 +330,10 @@
       svgLegend.attr("width", legendWidth);
       var legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap;
       svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0);
-      return svgLegend;
     }
 
     function makePie(data) {
+      block = true;
       var dataDeleted, dataInserted, dataRetained;
       var init = !dataPrev;
       var dataNew = cloneData(data);
@@ -593,6 +590,8 @@
         if (arc.deleted) {
           d3.select(this).remove();
         }
+
+        block = false;
       });
 
       if (label) {
@@ -772,10 +771,14 @@
 
 
     function setChartData(newData) {
-      highlightItem(null, false);
-      makePie(newData);
-      makeLegend(newData);
-      positionElements();
+      if (!block) {
+        highlightItem(null, false);
+        makePie(newData);
+        makeLegend(newData);
+        positionElements();
+      } else {
+        console.log('Transition in progress');
+      }
     }
     /**
      * @typedef {Object} api

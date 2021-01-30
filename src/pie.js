@@ -17,7 +17,6 @@ import { dataAccessors } from './dataAccess.js'
  * @param {string} opts.labelFontSize - Set to a font size (pixels).
  * @param {string} opts.labelColour - Specifies the colour of label text.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element.
- * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
  * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
  * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
  * @param {number} opts.legendWidth - The width of the legend in pixels.
@@ -40,7 +39,6 @@ export function pie({
   labelFontSize = 10,
   labelColour = 'black',
   expand = false,
-  //backgroundFill = 'white',
   legendSwatchSize = 30,
   legendSwatchGap = 10,
   legendWidth = 250,
@@ -54,6 +52,7 @@ export function pie({
 } = {}) {
 
   let dataPrev
+  let block = false
 
   const mainDiv = d3.select(`${selector}`)
     .append('div')
@@ -65,8 +64,7 @@ export function pie({
   const chartDiv = mainDiv
     .append('div')
 
-  const svg = chartDiv.append('svg')
-
+  const svg = chartDiv.append('svg').attr('overflow', 'visible')
 
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
@@ -74,15 +72,15 @@ export function pie({
     }
   })
 
-  let svgPie, svgLegend
+  let svgPie, svgLegend, svgTitle
   makeLegend(data)
   makePie(data) 
-  const imgSelected = makeImage()
   // Title must come after chart and legend because the 
   // width of those is required to do wrapping for title
-  const svgTitle = makeTitle()
-
+  makeTitle()
   positionElements()
+
+  const imgSelected = makeImage()
 
   function positionElements() {
 
@@ -104,13 +102,10 @@ export function pie({
 
   function makeTitle () {
 
-    let svgTitle
-    if (svg.select('.brc-chart-title').size()) {
-      svgTitle = svg.select('.brc-chart-title')
-    } else {
+    if (!svgTitle) {
       svgTitle = svg.append('svg').classed('brc-chart-title', true)
     }
-    
+
     const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
     const lines = wrapText(title, svgTitle, chartWidth)
 
@@ -227,16 +222,16 @@ export function pie({
       .attr('opacity', 0)
       .remove()
 
-    //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
-    //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
-    svgLegend.attr("width", legendWidth)
-    const legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap
-    svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0)
-
-    return svgLegend
+      //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
+      //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
+      svgLegend.attr("width", legendWidth)
+      const legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap
+      svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0)
   }
 
   function makePie (data) {
+
+    block = true
 
     let dataDeleted, dataInserted, dataRetained
     const init = !dataPrev
@@ -488,6 +483,7 @@ export function pie({
       if (arc.deleted) {
         d3.select(this).remove()
       }
+      block = false
     })
 
     if (label) {
@@ -681,10 +677,15 @@ export function pie({
   */
   function setChartData(newData){
     
-    highlightItem(null, false)
-    makePie(newData)
-    makeLegend(newData)
-    positionElements()
+    if (!block) {
+      highlightItem(null, false)
+      makePie(newData)
+      makeLegend(newData)
+      positionElements()
+    } else {
+      console.log('Transition in progress')
+    }
+    
   }
 
   /**
