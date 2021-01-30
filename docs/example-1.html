@@ -37,8 +37,12 @@
       <div id="chart3" class="divfl"></div>
     </div>
 
-    <button onclick="button1Click()">Button 1</button>
-
+    <button onclick="button1Click()">Initial items</button>
+    <button onclick="button2Click()">Initial items changed values</button>
+    <button onclick="button3Click()">Initial items +</button>
+    <button onclick="button4Click()">Initial items -</button>
+    <button onclick="button5Click()">Initial items + & -</button>
+    
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
@@ -59,20 +63,7 @@
 
     <script>
 
-      var newPie = {
-        selector: '#chart1',
-        innerRadius: 100,
-        radius: 200,
-        sort: '',
-        //label: 'percent',
-        titleFontSize: 30,
-        titleAlign: 'left',
-        labelFontSize: 15,
-        labelColour: 'white',
-        expand: true,
-        title: 'FIT Counts: insects counted on hawthorn flowers 2017 to 2020',
-        interactivity: 'mouseclick',
-        data: [
+      var items = [
           {
               name: "bumblebees",
               number: 3,
@@ -134,71 +125,265 @@
               image: 'images/Other insects.png'
           },
         ]
+
+      var itemsChangedVals =  [
+          {
+              name: "bumblebees",
+              number: 12,
+              colour: '#5A99D3',
+              image: 'images/Bumblebees.png'
+          },
+          {
+              name: "honeybees",
+              number: 15,
+              colour: '#EB7C30',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "solitary bees",
+              number: 27,
+              colour: '#A3A3A3',
+              image: 'images/Solitary bees.png'
+          },
+          {
+              name: "wasps",
+              number: 40,
+              colour: '#FFBF00',
+              image: 'images/Wasps.png'
+          },
+          {
+              name: "hoverflies",
+              number: 5,
+              colour: '#4472C3',
+              image: 'images/Hoverflies.png'
+          },
+          {
+              name: "other flies",
+              number: 30,
+              colour: '#70AB46',
+              image: 'images/Other flies.png'
+          },
+          {
+              name: "butterflies and moths",
+              number: 5,
+              colour: '#1F5380',
+              image: 'images/Butterflies and moths.png'
+          },
+          {
+              name: "beetles",
+              number: 6,
+              colour: '#9D480E',
+              image: 'images/Beetles.png'
+          },
+          {
+              name: "small insects",
+              number: 17,
+              colour: '#626262',
+              image: 'images/Aphid_BHL.png'
+          },
+          {
+              name: "other insects",
+              number: 3,
+              colour: '#977200',
+              image: 'images/Other insects.png'
+          },
+        ]
+
+      var itemsPlus = [
+          {
+              name: "bumblebees",
+              number: 3,
+              colour: '#5A99D3',
+              image: 'images/Bumblebees.png'
+          },
+          {
+              name: "honeybees",
+              number: 10,
+              colour: '#EB7C30',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "new 1",
+              number: 10,
+              colour: 'green',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "solitary bees",
+              number: 7,
+              colour: '#A3A3A3',
+              image: 'images/Solitary bees.png'
+          },
+          {
+              name: "wasps",
+              number: 4,
+              colour: '#FFBF00',
+              image: 'images/Wasps.png'
+          },
+          {
+              name: "new 2",
+              number: 30,
+              colour: 'yellow',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "new 3",
+              number: 10,
+              colour: 'salmon',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "hoverflies",
+              number: 12,
+              colour: '#4472C3',
+              image: 'images/Hoverflies.png'
+          },
+          {
+              name: "other flies",
+              number: 34,
+              colour: '#70AB46',
+              image: 'images/Other flies.png'
+          },
+          {
+              name: "butterflies and moths",
+              number: 1,
+              colour: '#1F5380',
+              image: 'images/Butterflies and moths.png'
+          },
+          {
+              name: "beetles",
+              number: 6,
+              colour: '#9D480E',
+              image: 'images/Beetles.png'
+          },
+          {
+              name: "small insects",
+              number: 17,
+              colour: '#626262',
+              image: 'images/Aphid_BHL.png'
+          },
+          {
+              name: "other insects",
+              number: 6,
+              colour: '#977200',
+              image: 'images/Other insects.png'
+          },
+        ]
+
+      var itemsMinus = [
+          {
+              name: "bumblebees",
+              number: 3,
+              colour: '#5A99D3',
+              image: 'images/Bumblebees.png'
+          },
+          {
+              name: "wasps",
+              number: 4,
+              colour: '#FFBF00',
+              image: 'images/Wasps.png'
+          },
+          {
+              name: "hoverflies",
+              number: 12,
+              colour: '#4472C3',
+              image: 'images/Hoverflies.png'
+          },
+
+          {
+              name: "butterflies and moths",
+              number: 1,
+              colour: '#1F5380',
+              image: 'images/Butterflies and moths.png'
+          },
+          {
+              name: "beetles",
+              number: 6,
+              colour: '#9D480E',
+              image: 'images/Beetles.png'
+          },
+          {
+              name: "other insects",
+              number: 6,
+              colour: '#977200',
+              image: 'images/Other insects.png'
+          },
+        ]
+
+      var itemsPlusMinus = [
+          {
+              name: "bumblebees",
+              number: 3,
+              colour: '#5A99D3',
+              image: 'images/Bumblebees.png'
+          },
+          {
+              name: "new 1",
+              number: 10,
+              colour: 'green',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "solitary bees",
+              number: 7,
+              colour: '#A3A3A3',
+              image: 'images/Solitary bees.png'
+          },
+          {
+              name: "wasps",
+              number: 4,
+              colour: '#FFBF00',
+              image: 'images/Wasps.png'
+          },
+          {
+              name: "new 2",
+              number: 30,
+              colour: 'yellow',
+              image: 'images/Honeybees.png'
+          },
+          {
+              name: "new 3",
+              number: 10,
+              colour: 'salmon',
+              image: 'images/Honeybees.png'
+          },
+
+          {
+              name: "other flies",
+              number: 34,
+              colour: '#70AB46',
+              image: 'images/Other flies.png'
+          },
+          {
+              name: "small insects",
+              number: 17,
+              colour: '#626262',
+              image: 'images/Aphid_BHL.png'
+          },
+          {
+              name: "other insects",
+              number: 6,
+              colour: '#977200',
+              image: 'images/Other insects.png'
+          },
+        ]
+
+      var newPie = {
+        selector: '#chart1',
+        innerRadius: 100,
+        radius: 200,
+        sort: '',
+        //label: 'percent',
+        titleFontSize: 30,
+        titleAlign: 'left',
+        labelFontSize: 15,
+        labelColour: 'white',
+        expand: true,
+        title: 'FIT Counts: insects counted on hawthorn flowers 2017 to 2020',
+        interactivity: 'mouseclick',
+        data: items
       }
 
-      var data2 = [
-            {
-                name: "bumblebees",
-                number: 3,
-                colour: '#5A99D3',
-                image: 'images/Bumblebees.png'
-            },
-            {
-                name: "honeybees",
-                number: 10,
-                colour: '#EB7C30',
-                image: 'images/Honeybees.png'
-            },
-            {
-                name: "solitary bees",
-                number: 7,
-                colour: '#A3A3A3',
-                image: 'images/Solitary bees.png'
-            },
-            {
-                name: "wasps",
-                number: 14,
-                colour: '#FFBF00',
-                image: 'images/Wasps.png'
-            },
-            // {
-            //     name: "hoverflies",
-            //     number: 12,
-            //     colour: '#4472C3',
-            //     image: 'images/Hoverflies.png'
-            // },
-            {
-                name: "other flies",
-                number: 40,
-                colour: '#70AB46',
-                image: 'images/Other flies.png'
-            },
-            {
-                name: "butterflies and moths",
-                number: 11,
-                colour: '#1F5380',
-                image: 'images/Butterflies and moths.png'
-            },
-            {
-                name: "beetles",
-                number: 26,
-                colour: '#9D480E',
-                image: 'images/Beetles.png'
-            },
-            {
-                name: "small insects",
-                number: 77,
-                colour: '#626262',
-                image: 'images/Aphid_BHL.png'
-            },
-            {
-                name: "other insects",
-                number: 16,
-                colour: '#977200',
-                image: 'images/Other insects.png'
-            },
-          ]
-      
       //var chart = brccharts.pie({selector: '#chart1'})
       var chart = brccharts.pie(newPie)
 
@@ -206,13 +391,19 @@
       //console.log(chart.getChartHeight())
 
       function button1Click() {
-
-        // chart.setChartTitle("New chart title")
-        // setTimeout(function(){ chart.setChartTitle("Hello"); }, 3000);
-        // setTimeout(function(){ chart.setChartTitle("May had a little lamb whose fleece was white as snow and everywhere that Mary went blah blah"); }, 6000);
-        // setTimeout(function(){ chart.setChartTitle("Hello again"); }, 9000);
-
-        chart.setChartData(data2)
+        chart.setChartData(items)
+      }
+      function button2Click() {
+        chart.setChartData(itemsChangedVals)
+      }
+      function button3Click() {
+        chart.setChartData(itemsPlus)
+      }
+      function button4Click() {
+        chart.setChartData(itemsMinus)
+      }
+      function button5Click() {
+        chart.setChartData(itemsPlusMinus)
       }
       //makePie('#chart2')
       //makePie('#chart3')

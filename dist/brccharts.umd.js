@@ -115,6 +115,39 @@
     return target;
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
   /** 
@@ -177,6 +210,8 @@
         data = _ref$data === void 0 ? [] : _ref$data;
 
     var duration = 1000; // (parameterise)
+
+    var dataPrev;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg');
@@ -187,8 +222,7 @@
     });
     var svgPie;
     var svgLegend = makeLegend(data, svg);
-    setChartData(data, true);
-    console.log("pie is made");
+    makePie(data);
     var imgSelected = makeImage(svg); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
 
@@ -289,15 +323,35 @@
       return svgLegend;
     }
 
-    function makePie(piedata, duration, delay) {
-      var svgPie, gPie;
+    function makePie(data) {
+      var dataDeleted, dataInserted, dataRetained;
+      var init = !dataPrev;
+      var dataNew = cloneData(data);
 
-      if (svg.select('.brc-chart-pie').size()) {
-        svgPie = svg.select('.brc-chart-pie');
-        gPie = svgPie.select('g');
+      if (init) {
+        dataInserted = [];
+        dataDeleted = [];
+        dataRetained = [];
+        dataPrev = [];
       } else {
-        svgPie = svg.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
-        gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
+        var prevNames = dataPrev.map(function (d) {
+          return d.name;
+        });
+        var newNames = dataNew.map(function (d) {
+          return d.name;
+        });
+        dataDeleted = dataPrev.filter(function (d) {
+          return !newNames.includes(d.name);
+        });
+        dataDeleted = cloneData(dataDeleted);
+        dataInserted = dataNew.filter(function (d) {
+          return !prevNames.includes(d.name);
+        });
+        dataInserted = cloneData(dataInserted);
+        dataRetained = dataNew.filter(function (d) {
+          return prevNames.includes(d.name);
+        });
+        dataRetained = cloneData(dataRetained);
       }
 
       var fnSort;
@@ -314,62 +368,147 @@
         fnSort = null;
       }
 
-      var arcs = d3.pie().value(function (d) {
+      var dataDeleted2 = dataDeleted.map(function (d) {
+        var nd = _objectSpread2({}, d);
+
+        nd.number = 0;
+        return nd;
+      });
+      var dataComb = cloneData([].concat(_toConsumableArray(dataNew), _toConsumableArray(dataDeleted2)));
+      console.log('dataDeleted', dataDeleted);
+      console.log('dataDeleted2', dataDeleted2);
+      console.log('dataInserted', dataInserted);
+      console.log('dataComb', dataComb);
+      var arcsPrev = d3.pie().value(function (d) {
         return d.number;
-      }).sortValues(fnSort)(piedata);
-      console.log('arcs', arcs);
-      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Code for arcTween from https://bl.ocks.org/mbostock/1346410
+      }).sortValues(fnSort)(dataPrev);
+      var arcsComb = d3.pie().value(function (d) {
+        return d.number;
+      }).sortValues(fnSort)(dataComb);
+      arcsComb.forEach(function (arcComb) {
+        var prevArc = arcsPrev.find(function (arcPrev) {
+          return arcComb.data.name === arcPrev.data.name;
+        });
+
+        if (prevArc) {
+          arcComb.prevArc = prevArc;
+
+          if (dataDeleted.find(function (d) {
+            return d.name === arcComb.data.name;
+          })) {
+            arcComb.deleted = true;
+          }
+        }
+
+        if (dataInserted.find(function (d) {
+          return d.name === arcComb.data.name;
+        })) {
+          arcComb.inserted = true;
+        }
+      }); // Now data processing complete, reset dataPrev variable
+
+      dataPrev = data;
+      console.log('arcsComb', arcsComb);
+      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
+      // Code for arcTween from https://bl.ocks.org/mbostock/1346410
       // Store the displayed angles in _current.
       // Then, interpolate from _current to the new angles.
       // During the transition, _current is updated in-place by d3.interpolate.
 
-      function arcTween(arc) {
-        console.log(arc);
-        var i = d3.interpolate(this._current, arc);
-        var rad0 = innerRadius;
-        var rad1 = innerRadius + (radius - innerRadius) / 2;
-        var rad2 = radius;
-        var iRad_0_2 = d3.interpolate(rad0, rad2);
-        var iRad_2_0 = d3.interpolate(rad2, rad0);
-        var iRad_2_1 = d3.interpolate(rad2, rad1);
-        var iRad_0_1 = d3.interpolate(rad0, rad1);
-        this._current = i(0);
+      function arcTween(arc, _this, stage) {
+        var i;
+        var iPrev = d3.interpolate(_this._current, arc.prevArc);
+        var iCurr = d3.interpolate(_this._current, arc);
+        var midRadius = innerRadius + (radius - innerRadius) / 2;
         return function (t) {
-          //arcGenerator.outerRadius(arc.index%2 == 0 ? radius * 0.9 : radius) 
-          //arcGenerator.outerRadius(iRad(t)) 
-          //arcGenerator.outerRadius(arc.data.delete ? innerRadius : radius) 
-          if (arc.data.sliceType === 'delete') {
-            if (arc.data.pieRing === 'full') {
-              arcGenerator.outerRadius(iRad_2_0(t));
-              arcGenerator.innerRadius(rad0);
-            } else {
-              arcGenerator.outerRadius(iRad_2_1(t));
-              arcGenerator.innerRadius(iRad_0_1(t));
-            }
-          } else if (arc.data.sliceType === 'deleted') {
-            if (arc.data.pieRing === 'full') {
-              arcGenerator.outerRadius(rad0);
-              arcGenerator.innerRadius(rad0);
-            } else {
-              arcGenerator.outerRadius(rad1);
-              arcGenerator.innerRadius(rad1);
-            }
-          } else if (arc.data.sliceType === 'changed') {
-            if (arc.data.pieRing === 'full') {
-              arcGenerator.outerRadius(rad2);
-              arcGenerator.innerRadius(rad0);
-            } //} else if (arc.data.sliceType === 'retained') {
-            //   arcGenerator.outerRadius(radius)
-            //   arcGenerator.innerRadius(iInnerRad_1(t)) 
-
-          } else if (arc.data.sliceType === 'new') {
-            arcGenerator.outerRadius(iRad_0_2(t));
+          if (stage === 'init') {
+            i = iCurr;
+            var iRad = d3.interpolate(innerRadius, radius);
+            arcGenerator.outerRadius(iRad(t));
             arcGenerator.innerRadius(innerRadius);
-          } else {
+          }
+
+          if (stage === 'changed') {
+            i = iCurr;
             arcGenerator.outerRadius(radius);
             arcGenerator.innerRadius(innerRadius);
           }
 
+          if (stage === 'delete') {
+            i = iPrev;
+
+            if (arc.deleted) {
+              var _iRad = d3.interpolate(radius, innerRadius);
+
+              arcGenerator.outerRadius(_iRad(t));
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(innerRadius);
+            }
+          }
+
+          if (stage === 'delete2') {
+            i = iCurr;
+
+            if (arc.deleted) {
+              arcGenerator.outerRadius(innerRadius);
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(innerRadius);
+            }
+          }
+
+          if (stage === 'insert') {
+            if (arc.deleted) {
+              i = iPrev;
+
+              var _iRad2 = d3.interpolate(radius, midRadius);
+
+              arcGenerator.outerRadius(_iRad2(t));
+              var iRad2 = d3.interpolate(innerRadius, midRadius);
+              arcGenerator.innerRadius(iRad2(t));
+            } else if (arc.inserted) {
+              i = iCurr;
+
+              var _iRad3 = d3.interpolate(innerRadius, midRadius);
+
+              arcGenerator.outerRadius(_iRad3(t));
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              i = iPrev;
+              arcGenerator.outerRadius(radius);
+
+              var _iRad4 = d3.interpolate(innerRadius, midRadius);
+
+              arcGenerator.innerRadius(_iRad4(t));
+            }
+          }
+
+          if (stage === 'insert2') {
+            if (arc.deleted) {
+              i = iCurr;
+              arcGenerator.outerRadius(innerRadius);
+              arcGenerator.innerRadius(innerRadius);
+            } else if (arc.inserted) {
+              i = iCurr;
+
+              var _iRad5 = d3.interpolate(midRadius, radius);
+
+              arcGenerator.outerRadius(_iRad5(t));
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              i = iCurr;
+              arcGenerator.outerRadius(radius);
+
+              var _iRad6 = d3.interpolate(midRadius, innerRadius);
+
+              arcGenerator.innerRadius(_iRad6(t));
+            }
+          }
+
+          _this._current = i(0);
           return arcGenerator(i(t));
         };
       }
@@ -380,33 +519,121 @@
         return function (t) {
           return "translate(".concat(arcGenerator.centroid(i(t)), ")");
         };
+      } //let svgPie, gPie
+
+
+      var gPie;
+
+      if (svg.select('.brc-chart-pie').size()) {
+        svgPie = svg.select('.brc-chart-pie');
+        gPie = svgPie.select('g');
+      } else {
+        svgPie = svg.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
+        gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
       } // map to data
 
 
-      var uPie = gPie.selectAll('path').data(arcs, function (d) {
+      var uPie = gPie.selectAll('path').data(arcsComb, function (d) {
         return d.data.name;
       });
       var ePie = uPie.enter().append('path').attr('id', function (d, i) {
         return "pie-".concat(i);
       }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
         return d.data.colour;
+      }).each(function (d) {
+        this._current = d;
       });
       addEventHandlers(ePie);
+      var mPie = ePie.merge(uPie);
+      var trans; // if (init) {
+      //   console.log("init")
+      //   trans = mPie.transition()
+      //     .duration(duration)
+      //     .attrTween('d', function (arc) {
+      //       return arcTween(arc, this, 'init')
+      //   })
+      // } else if (!dataDeleted.length && !dataInserted.length) {
+      //   console.log("changed")
+      //   trans = mPie.transition()
+      //     .duration(duration)
+      //     .attrTween('d', function (arc) {
+      //       return arcTween(arc, this, 'changed')
+      //   })
+      // } else if (dataInserted.length) {
+      //   console.log("insert")
+      //   trans = mPie
+      //     .transition()
+      //       .duration(duration)
+      //       .attrTween('d', function (arc) {
+      //         return arcTween(arc, this, 'insert')
+      //       })
+      //     .transition()
+      //       .duration(duration)
+      //       .attrTween('d', function (arc) {
+      //         return arcTween(arc, this, 'insert2')
+      //       })
+      // } else if (dataDeleted.length) {
+      //   console.log("delete")
+      //   trans = mPie
+      //     .transition()
+      //       .duration(duration)
+      //       .attrTween('d', function (arc) {
+      //         return arcTween(arc, this, 'delete')
+      //       })
+      //     .transition()
+      //       .duration(duration)
+      //       .attrTween('d', function (arc) {
+      //         return arcTween(arc, this, 'delete2')
+      //       })
+      // }
+      // Transition part 1
 
-      if (duration) {
-        ePie.merge(uPie).transition().delay(delay).duration(duration).attrTween('d', arcTween);
-      } else {
-        ePie.merge(uPie).attr('d', function (a) {
-          this._current = a;
-          arcGenerator(a);
+      trans = mPie.transition().duration(duration).attrTween('d', function (arc) {
+        var stage;
+
+        if (init) {
+          stage = 'init';
+        } else if (!dataDeleted.length && !dataInserted.length) {
+          stage = 'changed';
+        } else if (dataInserted.length) {
+          stage = 'insert';
+        } else if (dataDeleted.length) {
+          stage = 'delete';
+        }
+
+        return arcTween(arc, this, stage);
+      }); // Transition part 2
+
+      if (dataDeleted.length || dataInserted.length) {
+        trans = trans.transition().duration(duration).attrTween('d', function (arc) {
+          var stage;
+
+          if (dataInserted.length) {
+            stage = 'insert2';
+          } else if (dataDeleted.length) {
+            stage = 'delete2';
+          }
+
+          return arcTween(arc, this, stage);
         });
-      }
+      } // Because we always retain deleted items in order
+      // to make smooth transitions, the D3 exit selection
+      // is never populated. Instead we have to remove
+      // invisible deleted DOM items (SVG paths) ourselves after 
+      // the last transition to avoid messing up the transition
+      // next time the data changes.
+      //uPie.exit().remove()
 
-      uPie.exit().remove();
+
+      trans.on("end", function (arc) {
+        if (arc.deleted) {
+          d3.select(this).remove();
+        }
+      });
 
       if (label) {
-        var uPieLabels = gPie.selectAll('.labelsPie').data(arcs);
-        var total = piedata.reduce(function (t, c) {
+        var uPieLabels = gPie.selectAll('.labelsPie').data(arcsComb);
+        var total = dataNew.reduce(function (t, c) {
           return t + c.number;
         }, 0);
         var ePieLabels = uPieLabels.enter().append('text').attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
@@ -418,11 +645,9 @@
             return "".concat(Math.round(d.data.number / total * 100), "%");
           }
         }) //.attr('transform', d => `translate(${arcGenerator.centroid(d)})`)
-        .transition().delay(delay).duration(duration).attrTween('transform', centroidTween);
+        .transition().duration(duration).attrTween('transform', centroidTween);
         uPieLabels.exit().remove();
       }
-
-      return svgPie;
     }
 
     function makeImage(svg) {
@@ -564,76 +789,8 @@
       */
 
 
-    function setChartData(newData, init) {
-      var oldNames = data.map(function (d) {
-        return d.name;
-      });
-      var newNames = newData.map(function (d) {
-        return d.name;
-      });
-      var deletedNames = oldNames.filter(function (d) {
-        return !newNames.includes(d);
-      });
-      var insertedNames = newNames.filter(function (d) {
-        return !oldNames.includes(d);
-      });
-      console.log('oldNames', oldNames);
-      console.log('newNames', newNames);
-      console.log('deletedNames', deletedNames);
-      console.log('insertedNames', insertedNames);
-      var inserted = insertedNames.length > 0;
-      var deleted = deletedNames.length > 0;
-
-      if (init) {
-        console.log('init');
-        var d0 = cloneData(newData);
-        d0.forEach(function (d) {
-          d.sliceType = 'new';
-          d.pieRing = 'full';
-        });
-        svgPie = makePie(d0, duration, 0);
-      } else if (!inserted && !deleted) {
-        console.log('!inserted && !deleted');
-
-        var _d = cloneData(newData);
-
-        _d.forEach(function (d) {
-          d.sliceType = 'changed';
-          d.pieRing = 'full';
-        });
-
-        makePie(_d, duration, 0);
-      } else if (deleted && !inserted) {
-        console.log('deleted && !inserted');
-
-        var _d2 = cloneData(data);
-
-        _d2.forEach(function (d) {
-          if (newNames.includes(d.name)) {
-            d.sliceType = 'unchanged';
-          } else {
-            d.sliceType = 'delete';
-          }
-
-          d.pieRing = 'full';
-        });
-
-        makePie(_d2, duration, 0);
-        var d1 = cloneData(_d2);
-        d1.forEach(function (d) {
-          if (d.sliceType === 'delete') {
-            d.number = 0;
-            d.sliceType = 'deleted';
-          }
-        });
-        setTimeout(function () {
-          makePie(d1, duration, 0);
-        }, duration);
-      } else {
-        console.log('else...');
-      }
-
-      data = newData;
+    function setChartData(newData) {
+      makePie(newData);
     }
     /**
      * @typedef {Object} api
