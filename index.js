@@ -1,4 +1,3 @@
-import { dataAccessors } from './src/dataAccess'
 import { pie } from './src/pie'
 import pkg from './package.json'
 
@@ -7,6 +6,5 @@ import pkg from './package.json'
 console.log(`Running ${pkg.name} version ${pkg.version}`)
 
 export {
-  dataAccessors,
   pie,
 } 

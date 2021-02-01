@@ -4,68 +4,6 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.brccharts = {}, global.d3));
 }(this, (function (exports, d3) { 'use strict';
 
-  //import * as d3 from 'd3'
-  function testData() {
-    return new Promise(function (resolve) {
-      resolve({
-        meta: {
-          title: 'FIT Counts: insects counted on hawthorn flowers 2017 to 2020'
-        },
-        data: [{
-          name: "bumblebees",
-          number: 3,
-          colour: '#5A99D3'
-        }, {
-          name: "honeybees",
-          number: 10,
-          colour: '#EB7C30'
-        }, {
-          name: "solitary bees",
-          number: 7,
-          colour: '#A3A3A3'
-        }, {
-          name: "wasps",
-          number: 4,
-          colour: '#FFBF00'
-        }, {
-          name: "hoverflies",
-          number: 12,
-          colour: '#4472C3'
-        }, {
-          name: "other flies",
-          number: 34,
-          colour: '#70AB46'
-        }, {
-          name: "butterflies & moths",
-          number: 1,
-          colour: '#1F5380'
-        }, {
-          name: "beetles",
-          number: 6,
-          colour: '#9D480E'
-        }, {
-          name: "small insects",
-          number: 17,
-          colour: '#626262'
-        }, {
-          name: "other insects",
-          number: 6,
-          colour: '#977200'
-        }]
-      });
-    });
-  }
-  /** @constant
-  * @description This object has properties corresponding to a number of data access
-  * functions that can be used to load data provided in standard formats.
-  *  @type {object}
-  */
-
-
-  var dataAccessors = {
-    'test': testData
-  };
-
   function _defineProperty(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
@@ -160,17 +98,31 @@
    * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
    * @param {string} opts.labelFontSize - Set to a font size (pixels).
    * @param {string} opts.labelColour - Specifies the colour of label text.
-   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element.
-   * @param {string} opts.backgroundFill - Specifies the background colour of the chart.
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
    * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
    * @param {number} opts.legendWidth - The width of the legend in pixels.
    * @param {string} opts.title - Title for the chart.
+   * @param {string} opts.subtitle - Subtitle for the chart.
+   * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.
+   * <li> <b>number</b> - a numeric value associated with the item.
+   * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, 
+   * RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.
+   * <li> <b>image</b> - this optional property allows you to specify the url of an image file
+   * which can be displayed when a user selects the associated item.
+   * </ul>
    * @returns {module:pie~api} api - Returns an API for the map.
    */
 
@@ -181,17 +133,17 @@
         _ref$elid = _ref.elid,
         elid = _ref$elid === void 0 ? 'piechart' : _ref$elid,
         _ref$radius = _ref.radius,
-        radius = _ref$radius === void 0 ? 200 : _ref$radius,
+        radius = _ref$radius === void 0 ? 180 : _ref$radius,
         _ref$innerRadius = _ref.innerRadius,
         innerRadius = _ref$innerRadius === void 0 ? 0 : _ref$innerRadius,
         _ref$sort = _ref.sort,
         sort = _ref$sort === void 0 ? '' : _ref$sort,
         _ref$label = _ref.label,
-        label = _ref$label === void 0 ? '' : _ref$label,
+        label = _ref$label === void 0 ? 'percent' : _ref$label,
         _ref$labelFontSize = _ref.labelFontSize,
-        labelFontSize = _ref$labelFontSize === void 0 ? 10 : _ref$labelFontSize,
+        labelFontSize = _ref$labelFontSize === void 0 ? 14 : _ref$labelFontSize,
         _ref$labelColour = _ref.labelColour,
-        labelColour = _ref$labelColour === void 0 ? 'black' : _ref$labelColour,
+        labelColour = _ref$labelColour === void 0 ? 'white' : _ref$labelColour,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$legendSwatchSize = _ref.legendSwatchSize,
@@ -199,13 +151,25 @@
         _ref$legendSwatchGap = _ref.legendSwatchGap,
         legendSwatchGap = _ref$legendSwatchGap === void 0 ? 10 : _ref$legendSwatchGap,
         _ref$legendWidth = _ref.legendWidth,
-        legendWidth = _ref$legendWidth === void 0 ? 250 : _ref$legendWidth,
+        legendWidth = _ref$legendWidth === void 0 ? 200 : _ref$legendWidth,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
         _ref$titleFontSize = _ref.titleFontSize,
         titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 14 : _ref$footerFontSize,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
         _ref$imageWidth = _ref.imageWidth,
         imageWidth = _ref$imageWidth === void 0 ? 150 : _ref$imageWidth,
         _ref$duration = _ref.duration,
@@ -217,6 +181,7 @@
 
     var dataPrev;
     var block = false;
+    colourData(data);
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg').attr('overflow', 'visible');
@@ -225,21 +190,26 @@
         highlightItem(null, false);
       }
     });
-    var svgPie, svgLegend, svgTitle;
+    var svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter;
     makeLegend(data);
     makePie(data); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
+    //makeTitle()
 
-    makeTitle();
+    svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
+    svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
+    svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
     positionElements();
     var imgSelected = makeImage();
 
     function positionElements() {
       var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
+      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
+      svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
       svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
-      svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap);
-      var height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")));
+      svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
+      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
+      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + Number(svgFooter.attr("height"));
 
       if (expand) {
         svg.attr("viewBox", "0 0 " + width + " " + height);
@@ -249,36 +219,37 @@
       }
     }
 
-    function makeTitle() {
-      if (!svgTitle) {
-        svgTitle = svg.append('svg').classed('brc-chart-title', true);
+    function makeText(text, svgText, classText, fontSize, textAlign) {
+      if (!svgText) {
+        svgText = svg.append('svg');
       }
 
       var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      var lines = wrapText(title, svgTitle, chartWidth);
-      var uTitleText = svgTitle.selectAll('.titleText').data(lines);
-      var eTitleText = uTitleText.enter().append('text');
-      uTitleText.merge(eTitleText).text(function (d) {
+      var lines = wrapText(text, svgText, chartWidth, fontSize);
+      var uText = svgText.selectAll(".".concat(classText)).data(lines);
+      var eText = uText.enter().append('text');
+      uText.merge(eText).text(function (d) {
         return d;
-      }).attr("class", "titleText").style('font-size', titleFontSize);
-      uTitleText.exit().remove();
-      var height = d3.select('.titleText').node().getBBox().height;
-      var widths = d3.selectAll('.titleText').nodes().map(function (n) {
+      }).attr("class", classText).style('font-size', fontSize);
+      uText.exit().remove();
+      var height = d3.select(".".concat(classText)).node().getBBox().height;
+      var widths = d3.selectAll(".".concat(classText)).nodes().map(function (n) {
         return n.getBBox().width;
       });
-      svgTitle.selectAll('.titleText').attr('y', function (d, i) {
+      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
         return (i + 1) * height;
       }).attr('x', function (d, i) {
-        if (titleAlign === 'centre') {
+        if (textAlign === 'centre') {
           return (chartWidth - widths[i]) / 2;
-        } else if (titleAlign === 'right') {
+        } else if (textAlign === 'right') {
           return chartWidth - widths[i];
         } else {
           return 0;
         }
       });
-      svgTitle.attr("height", height * lines.length);
-      return svgTitle;
+      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
+
+      return svgText;
     }
 
     function makeLegend(data) {
@@ -625,25 +596,30 @@
       return img;
     }
 
-    function wrapText(text, svgTitle, maxWidth) {
+    function wrapText(text, svgTitle, maxWidth, fontSize) {
       var textSplit = text.split(" ");
       var lines = [''];
       var line = 0;
 
       for (var i = 0; i < textSplit.length; i++) {
-        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
-        workingText = workingText.trim();
-        var txt = svgTitle.append('text').text(workingText).style('font-size', titleFontSize);
-        var width = txt.node().getBBox().width;
-
-        if (width > maxWidth) {
+        if (textSplit[i] === '\n') {
           line++;
-          lines[line] = textSplit[i];
+          lines[line] = '';
         } else {
-          lines[line] = workingText;
-        }
+          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+          workingText = workingText.trim();
+          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
+          var width = txt.node().getBBox().width;
 
-        txt.remove();
+          if (width > maxWidth) {
+            line++;
+            lines[line] = textSplit[i];
+          } else {
+            lines[line] = workingText;
+          }
+
+          txt.remove();
+        }
       }
 
       return lines;
@@ -725,7 +701,7 @@
       imgSelected.attr('width', d.imageWidth);
       imgSelected.attr('height', d.imageHeight);
       imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2);
-      imgSelected.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
+      imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
     }
 
     function cloneData(data) {
@@ -733,16 +709,79 @@
         return _objectSpread2({}, d);
       });
     }
-    /** @function setChartTitle
-      * @param {string} text - text for chart title.
+
+    function colourData(data) {
+      data.forEach(function (d, i) {
+        if (!d.colour) {
+          if (i < 10) {
+            d.colour = d3.schemeCategory10[i];
+          } else if (i < 18) {
+            d.colour = d3.schemeDark2[i - 10];
+          } else if (i < 26) {
+            d.colour = d3.schemeAccent[i - 18];
+          } else {
+            d.colour = d3.interpolateSpectral(Math.random());
+          }
+        }
+      });
+    }
+    /** @function setChartText
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-      * Set's the value of the chart title.
+      * Set's the value of the chart title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
       */
 
 
-    function setChartTitle(text) {
-      title = text;
-      makeTitle();
+    function setChartText(textopts) {
+      if (textopts.title) {
+        title = textopts.title;
+      }
+
+      if (textopts.subtitle) {
+        subtitle = textopts.subtitle;
+      }
+
+      if (textopts.footer) {
+        footer = textopts.footer;
+      }
+
+      if (textopts.titleFontSize) {
+        titleFontSize = textopts.titleFontSize;
+      }
+
+      if (textopts.subtitleFontSize) {
+        subtitleFontSize = textopts.subtitleFontSize;
+      }
+
+      if (textopts.footerFontSize) {
+        footerFontSize = textopts.footerFontSize;
+      }
+
+      if (textopts.titleAlign) {
+        titleAlign = textopts.titleAlign;
+      }
+
+      if (textopts.subtitleAlign) {
+        subtitleAlign = textopts.subtitleAlign;
+      }
+
+      if (textopts.footerAlign) {
+        footerAlign = textopts.footerAlign;
+      }
+
+      svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
+      svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
+      svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
       positionElements();
     }
     /** @function getChartWidth
@@ -772,6 +811,7 @@
 
     function setChartData(newData) {
       if (!block) {
+        colourData(newData);
         highlightItem(null, false);
         makePie(newData);
         makeLegend(newData);
@@ -784,21 +824,21 @@
      * @typedef {Object} api
      * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:pie~setChartTitle} setChartTitle - Sets the title of the chart. 
      * @property {module:pie~setChartData} setChartData - Sets the data for the chart. 
+     * @property {module:pie~setChartText} setChartText - Sets text options for the chart. 
        */
 
 
     return {
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
-      setChartTitle: setChartTitle,
-      setChartData: setChartData
+      setChartData: setChartData,
+      setChartText: setChartText
     };
   }
 
   var name = "brc-d3";
-  var version = "0.0.1";
+  var version = "0.0.2";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -856,7 +896,6 @@
 
   console.log("Running ".concat(pkg.name, " version ").concat(pkg.version));
 
-  exports.dataAccessors = dataAccessors;
   exports.pie = pie;
 
   Object.defineProperty(exports, '__esModule', { value: true });

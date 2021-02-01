@@ -192,7 +192,7 @@
 
         <tr>
             
-                <td class="name"><code>width</code></td>
+                <td class="name"><code>radius</code></td>
             
 
             <td class="type">
@@ -208,14 +208,14 @@
 
             
 
-            <td class="description last">The desired width of the chart.</td>
+            <td class="description last">The desired radius of the chart in pixels.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>height</code></td>
+                <td class="name"><code>innerRadius</code></td>
             
 
             <td class="type">
@@ -231,7 +231,99 @@
 
             
 
-            <td class="description last">The desired height of the chart.</td>
+            <td class="description last">The desired inner radius of the chart in pixels. Default of zero gives a pie char. Specify a value for donut chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sort</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>label</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>labelFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Set to a font size (pixels).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>labelColour</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies the colour of label text.</td>
         </tr>
 
     
@@ -254,37 +346,14 @@
 
             
 
-            <td class="description last">Indicates whether or not the chart will expand to fill parent element.</td>
+            <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>accessFns</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Sets an object whose properties are data access functions. The propertynames are the 'keys'.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>accessorKey</code></td>
+                <td class="name"><code>legendSwatchSize</code></td>
             
 
             <td class="type">
@@ -300,14 +369,14 @@
 
             
 
-            <td class="description last">Sets the key of the selected data accessor function.</td>
+            <td class="description last">Specifies the size of legend swatches.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>backgroundFill</code></td>
+                <td class="name"><code>legendSwatchGap</code></td>
             
 
             <td class="type">
@@ -323,7 +392,306 @@
 
             
 
-            <td class="description last">Specifies the background colour of the chart.</td>
+            <td class="description last">Specifies the size of gap between legend swatches.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendWidth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The width of the legend in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Title for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Subtitle for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Footer for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>titleFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitleFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footerFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>titleAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart title: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitleAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart subtitle: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footerAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart footer: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>interactivity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>duration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The duration of each transition phase in milliseconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.<li> <b>number</b> - a numeric value associated with the item.<li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.<li> <b>image</b> - this optional property allows you to specify the url of an image filewhich can be displayed when a user selects the associated item.</ul></td>
         </tr>
 
     
@@ -371,7 +739,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line19">line 19</a>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -437,7 +805,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the svgMap function</b>.Return the blah.
+    <b>This function is exposed as a method on the API returned from the pie function</b>.Return the full height of the chart svg.
 </div>
 
 
@@ -481,7 +849,602 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line84">line 84</a>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line761">line 761</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~getChartWidth"><span class="type-signature">(inner) </span>getChartWidth<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <b>This function is exposed as a method on the API returned from the pie function</b>.Return the full width of the chart svg.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line753">line 753</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setChartData"><span class="type-signature">(inner) </span>setChartData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <b>This function is exposed as a method on the API returned from the pie function</b>.Set's the data array to be bound to the chart.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts.data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies an array of data objects.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line769">line 769</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setChartText"><span class="type-signature">(inner) </span>setChartText<span class="signature">(opts)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <b>This function is exposed as a method on the API returned from the pie function</b>.Set's the value of the chart title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">text options.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Title for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Subtitle for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Footer for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>titleFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitleFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footerFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of chart title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>titleAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart title: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subtitleAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart subtitle: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>footerAlign</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Alignment of chart footer: either 'left', 'right' or 'centre'.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line703">line 703</a>
     </li></ul></dd>
     
 
@@ -566,6 +1529,29 @@
 
         <tr>
             
+                <td class="name"><code>getChartWidth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-pie.html#~getChartWidth">module:pie~getChartWidth</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Gets and returns the current width of the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>getChartHeight</code></td>
             
 
@@ -583,6 +1569,52 @@
             
 
             <td class="description last">Gets and returns the current height of the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setChartData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-pie.html#~setChartData">module:pie~setChartData</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Sets the data for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setChartText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-pie.html#~setChartText">module:pie~setChartText</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Sets text options for the chart.</td>
         </tr>
 
     
@@ -621,7 +1653,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line93">line 93</a>
+        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line788">line 788</a>
     </li></ul></dd>
     
 
@@ -651,13 +1683,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pie.html">pie</a></li></ul><h3>Global</h3><ul><li><a href="global.html#dataAccessors">dataAccessors</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-pie.html">pie</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Fri Jan 22 2021 14:56:20 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Feb 01 2021 11:53:46 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

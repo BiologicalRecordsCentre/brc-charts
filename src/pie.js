@@ -1,7 +1,6 @@
 /** @module pie */
 
 import * as d3 from 'd3'
-import { dataAccessors } from './dataAccess.js'
 
 //https://www.d3-graph-gallery.com/graph/pie_annotation.html
 //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
@@ -16,35 +15,57 @@ import { dataAccessors } from './dataAccess.js'
  * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
  * @param {string} opts.labelFontSize - Set to a font size (pixels).
  * @param {string} opts.labelColour - Specifies the colour of label text.
- * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element.
+ * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
  * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
  * @param {number} opts.legendWidth - The width of the legend in pixels.
  * @param {string} opts.title - Title for the chart.
+ * @param {string} opts.subtitle - Subtitle for the chart.
+ * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+ * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+ * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+ * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+ * <ul>
+ * <li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.
+ * <li> <b>number</b> - a numeric value associated with the item.
+ * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, 
+ * RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.
+ * <li> <b>image</b> - this optional property allows you to specify the url of an image file
+ * which can be displayed when a user selects the associated item.
+ * </ul>
  * @returns {module:pie~api} api - Returns an API for the map.
  */
+
 export function pie({
   // Default options in here
   selector = 'body',
   elid = 'piechart',
-  radius = 200,
+  radius = 180,
   innerRadius = 0,
   sort = '',
-  label = '',
-  labelFontSize = 10,
-  labelColour = 'black',
+  label = 'percent',
+  labelFontSize = 14,
+  labelColour = 'white',
   expand = false,
   legendSwatchSize = 30,
   legendSwatchGap = 10,
-  legendWidth = 250,
+  legendWidth = 200,
   title = '',
+  subtitle = '',
+  footer = '',
   titleFontSize = 24,
+  subtitleFontSize = 16,
+  footerFontSize = 14,
   titleAlign = 'left',
+  subtitleAlign = 'left',
+  footerAlign = 'left',
   imageWidth = 150,
   duration = 1000,
   interactivity = 'mousemove',
@@ -53,6 +74,8 @@ export function pie({
 
   let dataPrev
   let block = false
+
+  colourData(data)
 
   const mainDiv = d3.select(`${selector}`)
     .append('div')
@@ -72,12 +95,16 @@ export function pie({
     }
   })
 
-  let svgPie, svgLegend, svgTitle
+  let svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter
   makeLegend(data)
   makePie(data) 
   // Title must come after chart and legend because the 
   // width of those is required to do wrapping for title
-  makeTitle()
+  //makeTitle()
+  svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+  svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+  svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+
   positionElements()
 
   const imgSelected = makeImage()
@@ -86,11 +113,17 @@ export function pie({
 
     const width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
 
-    svgLegend.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
+    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
+    svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
     svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
-    svgPie.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap)
-
-    const height = Number(svgTitle.attr("height")) + 2 * legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height")))
+    svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
+    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))))
+    
+    const height = Number(svgTitle.attr("height")) + 
+      Number(svgSubtitle.attr("height")) + 
+      legendSwatchGap + 
+      Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + 
+      Number(svgFooter.attr("height"))
 
     if (expand) {
       svg.attr("viewBox", "0 0 " + width + " " +  height)
@@ -100,48 +133,49 @@ export function pie({
     }
   }
 
-  function makeTitle () {
+  function makeText (text, svgText, classText, fontSize, textAlign) {
 
-    if (!svgTitle) {
-      svgTitle = svg.append('svg').classed('brc-chart-title', true)
+    if (!svgText) {
+      svgText = svg.append('svg')
     }
 
     const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-    const lines = wrapText(title, svgTitle, chartWidth)
+    const lines = wrapText(text, svgText, chartWidth, fontSize)
 
-    const uTitleText = svgTitle.selectAll('.titleText')
+    const uText = svgText.selectAll(`.${classText}`)
       .data(lines)
 
-    const eTitleText = uTitleText.enter()
+    const eText = uText.enter()
       .append('text')
 
-    uTitleText
-      .merge(eTitleText)
+    uText
+      .merge(eText)
       .text(d => {
         return d
       })
-      .attr("class", "titleText")
-      .style('font-size', titleFontSize)
+      .attr("class", classText)
+      .style('font-size', fontSize)
 
-    uTitleText.exit()
+    uText.exit()
       .remove()
 
-    const height = d3.select('.titleText').node().getBBox().height
-    const widths = d3.selectAll('.titleText').nodes().map(n => (n.getBBox().width))
+    const height = d3.select(`.${classText}`).node().getBBox().height
+    const widths = d3.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
 
-    svgTitle.selectAll('.titleText')
+    svgText.selectAll(`.${classText}`)
       .attr('y', (d, i) => (i + 1) * height)
       .attr('x', (d, i) => {
-        if (titleAlign === 'centre') {
+        if (textAlign === 'centre') {
           return (chartWidth - widths[i]) / 2
-        } else if(titleAlign === 'right') {
+        } else if(textAlign === 'right') {
           return chartWidth - widths[i]
         } else {
           return 0
         }
       })
-    svgTitle.attr("height", height * lines.length)
-    return svgTitle
+    svgText.attr("height", height * lines.length + height * 0.2) // The 0.2 allows for tails of letters like g, y etc.
+
+    return svgText
   }
 
   function makeLegend (data) {
@@ -533,7 +567,7 @@ export function pie({
     return img
   }
 
-  function wrapText(text, svgTitle, maxWidth) {
+  function wrapText(text, svgTitle, maxWidth, fontSize) {
 
     const textSplit = text.split(" ")
     const lines = ['']
@@ -541,23 +575,28 @@ export function pie({
 
     for (let i=0; i < textSplit.length; i++) {
 
-      let workingText = `${lines[line]} ${textSplit[i]}`
-      workingText = workingText.trim()
-
-      const txt = svgTitle.append('text')
-        .text(workingText)
-        .style('font-size', titleFontSize)
-
-      const width = txt.node().getBBox().width
-
-      if (width > maxWidth) {
+      if (textSplit[i] === '\n') {
         line++
-        lines[line] = textSplit[i]
+        lines[line] = ''
       } else {
-        lines[line] = workingText
-      }
+        let workingText = `${lines[line]} ${textSplit[i]}`
+        workingText = workingText.trim()
 
-      txt.remove()
+        const txt = svgTitle.append('text')
+          .text(workingText)
+          .style('font-size', fontSize)
+
+        const width = txt.node().getBBox().width
+
+        if (width > maxWidth) {
+          line++
+          lines[line] = textSplit[i]
+        } else {
+          lines[line] = workingText
+        }
+
+        txt.remove()
+      }
     }
     return lines
   }
@@ -635,22 +674,79 @@ export function pie({
     imgSelected.attr('width', d.imageWidth)
     imgSelected.attr('height', d.imageHeight)
     imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2)
-    imgSelected.attr("y", Number(svgTitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
+    imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
   }
 
   function cloneData(data) {
     return data.map(d => { return {...d}})
   }
 
-/** @function setChartTitle
-  * @param {string} text - text for chart title.
-  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-  * Set's the value of the chart title.
-  */
-  function setChartTitle(text){
+  function colourData(data) {
+    data.forEach((d,i) => {
+      if (!d.colour) {
+        if (i < 10) {
+          d.colour = d3.schemeCategory10[i]
+        }
+        else if (i < 18) {
+          d.colour = d3.schemeDark2[i - 10]
+        }
+        else if (i < 26) {
+          d.colour = d3.schemeAccent[i - 18]
+        }
+        else {
+          d.colour = d3.interpolateSpectral(Math.random())
+        }
+      }
+    })
+  }
 
-    title = text
-    makeTitle()
+/** @function setChartText
+  * @param {Object} opts - text options.
+  * @param {string} opts.title - Title for the chart.
+  * @param {string} opts.subtitle - Subtitle for the chart.
+  * @param {string} opts.footer - Footer for the chart.
+  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+  * Set's the value of the chart title, subtitle and/or footer. If an element is missing from the 
+  * options object, it's value is not changed.
+  */
+  function setChartText(textopts){
+
+    if (textopts.title) {
+     title = textopts.title
+    }
+    if (textopts.subtitle) {
+     subtitle = textopts.subtitle
+    }
+    if (textopts.footer) {
+     footer = textopts.footer
+    }
+    if (textopts.titleFontSize) {
+     titleFontSize = textopts.titleFontSize
+    }
+    if (textopts.subtitleFontSize) {
+     subtitleFontSize = textopts.subtitleFontSize
+    }
+    if (textopts.footerFontSize) {
+     footerFontSize = textopts.footerFontSize
+    }
+    if (textopts.titleAlign) {
+     titleAlign = textopts.titleAlign
+    }
+    if (textopts.subtitleAlign) {
+     subtitleAlign = textopts.subtitleAlign
+    }
+    if (textopts.footerAlign) {
+     footerAlign = textopts.footerAlign
+    }
+    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
     positionElements()
   }
 
@@ -676,8 +772,9 @@ export function pie({
   * Set's the data array to be bound to the chart.
   */
   function setChartData(newData){
-    
+
     if (!block) {
+      colourData(newData)
       highlightItem(null, false)
       makePie(newData)
       makeLegend(newData)
@@ -692,15 +789,15 @@ export function pie({
    * @typedef {Object} api
    * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:pie~setChartTitle} setChartTitle - Sets the title of the chart. 
    * @property {module:pie~setChartData} setChartData - Sets the data for the chart. 
+   * @property {module:pie~setChartText} setChartText - Sets text options for the chart. 
 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
-    setChartTitle: setChartTitle,
     setChartData: setChartData,
+    setChartText: setChartText,
   }
 
 }

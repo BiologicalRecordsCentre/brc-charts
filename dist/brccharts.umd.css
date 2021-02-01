@@ -4,10 +4,6 @@
   width: 100%
 }
 
-.brc-chart-pie-title {
-  font-size: 1.5em
-}
-
 .brc-chart-pie-legend {
   float:left;
   overflow:hidden;
