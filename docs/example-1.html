@@ -32,7 +32,7 @@
 </pre>
 
     <p>
-        In the page's Javascript we call the brccharts.pie method, passing in the configuration options
+        In the page's Javascript we call the <em>brccharts.pie</em> method, passing in the configuration options
         which include the data we want to display. (The data used for this chart is shown below the chart.)
     </p>
 <pre>
@@ -42,10 +42,16 @@
     <div id="chart1"></div>
 
     <p>
-      The data passed into the brccharts.pie method for this chart is shown below. URLs of images
+      The data passed into the <em>brccharts.pie</em> method for this chart is shown below. URLs of images
       (in this case relative URLs) have been provided. The chart will show these images when the mouse moves
-      over the assocated pie or legend item. This behaviour can be changed to operate only on mouse clicks by
-      setting the 
+      over the assocated pie or legend item. See further examples below for other options associated with 
+      this behaviour.
+   </p>
+   <p>
+     Text passed to the chart (title, subtitle, footer) is wrapped to fit within the bounds of the chart
+     which is calculated from the width of the legend and radius of the pie/donut chart (which can both
+     be specified in options). However, you can force line breaks in text by using the sting <em>\n</em>
+     within your text (with spaces either side) as in this example.
    </p>
 
 <pre>
@@ -119,14 +125,74 @@
 }</code>
 </pre>
 
-    <br/> <br/>
-    <button onclick="button1Click()">Initial items</button>
-    <button onclick="button2Click()">Initial items changed values</button>
-    <button onclick="button3Click()">Initial items +</button>
-    <button onclick="button4Click()">Initial items -</button>
-    <button onclick="button5Click()">Initial items + & -</button>
-    <br/><br/>
-    <button onclick="button6Click()">Initial items & change title</button>
+    <p>
+      For full documentation on various options, see here: 
+      <a href='https://biologicalrecordscentre.github.io/brc-charts/docs/api/module-pie.html'>
+        https://biologicalrecordscentre.github.io/brc-charts/docs/api/module-pie.html</a>
+      Further examples are given below to illustrate some of the features of the pie method.
+    </p>
+
+    <h2>Other options</h2>
+
+    <div>
+      <div id="chart2" style="display: inline-block; width: 45%; margin: 2%"></div>
+      <div id="chart3" style="display: inline-block; width: 45%; margin: 2%"></div>
+    </div>
+
+    <p>
+      In these two examples, displayed side by side, the <em>expand</em> option is set to true
+      so that the whole chart is scaled to fit the available space in their parent element.
+      Note that the text has also been scaled. In these examples it is rather small, but this
+      can be avoided by using options to increase the size of the text font used.
+    </p>
+    <p>
+      The API documentation describes the options used and you can view the source of this
+      page to see how they are implemented here.
+    </p>
+
+    <h2>Transitions</h2>
+    
+    <p>
+      When you call the <em>brccharts.pie</em> method, it returns an API object which you
+      can assign to a variable and then use to change properties of the chart, notably
+      text and data.
+    </p>
+<pre>
+<code class="javascript">var chart = brccharts.pie({...})</code>
+</pre>
+
+    <div id="chart4"></div>
+    <br/>
+    <button onclick="button1Click()">original</button>
+    <button onclick="button2Click()">reduced 1</button>
+    <button onclick="button3Click()">reduced 2</button>
+    <button onclick="button4Click()">something completely different...</button>
+
+    <p>
+      The pie/donut chart has been implemented with transitions that engage the user's attention
+
+    </p>
+    <p>
+      In this demonstration, the buttons above are associated with code like
+      that shown below.
+    </p>
+
+<pre>
+<code class="javascript">function button1Click() {
+  chart.setChartData(items)
+  chart.setChartText({title: 'Original data'})
+}
+function button2Click() {
+  chart.setChartData(itemsDataReduced1)
+  chart.setChartText({title: 'Original data reduce 1'})
+}
+function button3Click() {
+  chart.setChartData(itemsDataReduced2)
+  chart.setChartText({title: 'Original data reduce 2'})
+}
+
+</code>
+</pre>
     
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -141,12 +207,13 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
     <!--BRC Charts library JS and CSS-->
-    <!-- <script src="./../dist/brccharts.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css"> -->
-    <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css">
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
+
 
       var items = [
           {
@@ -211,294 +278,138 @@
           },
         ]
 
-      var itemsChangedVals =  [
-          {
-              name: "bumblebees",
-              number: 12,
-              colour: '#5A99D3',
-              image: 'images/Bumblebees.png'
-          },
-          {
-              name: "honeybees",
-              number: 15,
-              colour: '#EB7C30',
-              image: 'images/Honeybees.png'
-          },
-          {
-              name: "solitary bees",
-              number: 27,
-              colour: '#A3A3A3',
-              image: 'images/Solitary bees.png'
-          },
-          {
-              name: "wasps",
-              number: 40,
-              colour: '#FFBF00',
-              image: 'images/Wasps.png'
-          },
-          {
-              name: "hoverflies",
-              number: 5,
-              colour: '#4472C3',
-              image: 'images/Hoverflies.png'
-          },
-          {
-              name: "other flies",
-              number: 30,
-              colour: '#70AB46',
-              image: 'images/Other flies.png'
-          },
-          {
-              name: "butterflies and moths",
-              number: 5,
-              colour: '#1F5380',
-              image: 'images/Butterflies and moths.png'
-          },
-          {
-              name: "beetles",
-              number: 6,
-              colour: '#9D480E',
-              image: 'images/Beetles.png'
-          },
-          {
-              name: "small insects",
-              number: 17,
-              colour: '#626262',
-              image: 'images/Aphid_BHL.png'
-          },
-          {
-              name: "other insects",
-              number: 3,
-              colour: '#977200',
-              image: 'images/Other insects.png'
-          },
-        ]
+      var itemsNoImages = items.map(d => {
+        return {
+          name: d.name,
+          number: d.number,
+          colour: d.colour
+        }
+      })
 
-      var itemsPlus = [
-          {
-              name: "bumblebees",
-              number: 3,
-              colour: '#5A99D3',
-              image: 'images/Bumblebees.png'
-          },
-          {
-              name: "honeybees",
-              number: 10,
-              colour: '#EB7C30',
-              image: 'images/Honeybees.png'
-          },
-          {
-              name: "new 1",
-              number: 10,
-              colour: 'green',
-          },
-          {
-              name: "solitary bees",
-              number: 7,
-              colour: '#A3A3A3',
-              image: 'images/Solitary bees.png'
-          },
-          {
-              name: "wasps",
-              number: 4,
-              colour: '#FFBF00',
-              image: 'images/Wasps.png'
-          },
-          {
-              name: "new 2",
-              number: 30,
-              colour: 'rgb(200,200,255)',
-          },
-          {
-              name: "new 3",
-              number: 10,
-              colour: 'salmon',
-          },
-          {
-              name: "hoverflies",
-              number: 12,
-              colour: '#4472C3',
-              image: 'images/Hoverflies.png'
-          },
-          {
-              name: "other flies",
-              number: 34,
-              colour: '#70AB46',
-              image: 'images/Other flies.png'
-          },
-          {
-              name: "butterflies and moths",
-              number: 1,
-              colour: '#1F5380',
-              image: 'images/Butterflies and moths.png'
-          },
-          {
-              name: "beetles",
-              number: 6,
-              colour: '#9D480E',
-              image: 'images/Beetles.png'
-          },
-          {
-              name: "small insects",
-              number: 17,
-              colour: '#626262',
-              image: 'images/Aphid_BHL.png'
-          },
-          {
-              name: "other insects",
-              number: 6,
-              colour: '#977200',
-              image: 'images/Other insects.png'
-          },
-        ]
+      var itemsDataReduced1 = items.map(d => {
+        return {
+          name: d.name,
+          number: d.number,
+          colour: d.colour,
+          image: d.image
+        }
+      }).filter((d,i) => i !== 3 && i !==7)
 
-      var itemsMinus = [
-          {
-              name: "bumblebees",
-              number: 3,
-              colour: '#5A99D3',
-              image: 'images/Bumblebees.png'
-          },
-          {
-              name: "wasps",
-              number: 4,
-              colour: '#FFBF00',
-              image: 'images/Wasps.png'
-          },
-          {
-              name: "hoverflies",
-              number: 12,
-              colour: '#4472C3',
-              image: 'images/Hoverflies.png'
-          },
+      var itemsDataReduced2 = items.map(d => {
+        return {
+          name: d.name,
+          number: d.number,
+          colour: d.colour,
+          image: d.image
+        }
+      }).filter((d,i) => i !== 4 && i !==6)
 
-          {
-              name: "butterflies and moths",
-              number: 1,
-              colour: '#1F5380',
-              image: 'images/Butterflies and moths.png'
-          },
-          {
-              name: "beetles",
-              number: 6,
-              colour: '#9D480E',
-              image: 'images/Beetles.png'
-          },
-          {
-              name: "other insects",
-              number: 6,
-              colour: '#977200',
-              image: 'images/Other insects.png'
-          },
-        ]
+      var armitage = [
+        {
+          name: 'The Last Hurrah',
+          number: 24
+        },
+        {
+          name: 'The Exuberance of Youth',
+          number: 9
+        },
+        {
+          name: 'The Call of the Wild',
+          number: 17
+        },
+        {
+          name: "She's Left Me/I'll Show Him",
+          number: 16
+        },
+        {
+          name: 'Bear Grylls/Ray Mears Box Set',
+          number: 9
+        },
+        {
+          name: 'Julia Bradbury',
+          number: 4 
+        },
+        {
+          name: 'Midlife Crisis',
+          number: 11
+        },
+        {
+          name: 'Finding Myself',
+          number: 2
+        },
+        {
+          name: 'Away with the Fairies',
+          number: 1
+        },
+        {
+          name: 'Unclassifiable',
+          number: 26
+        },
+      ]
 
-      var itemsPlusMinus = [
-          {
-              name: "bumblebees",
-              number: 3,
-              colour: '#5A99D3',
-              image: 'images/Bumblebees.png'
-          },
-          {
-              name: "new 1",
-              number: 10,
-              colour: 'green',
-          },
-          {
-              name: "solitary bees",
-              number: 7,
-              colour: '#A3A3A3',
-              image: 'images/Solitary bees.png'
-          },
-          {
-              name: "wasps",
-              number: 4,
-              colour: '#FFBF00',
-              image: 'images/Wasps.png'
-          },
-          {
-              name: "new 2",
-              number: 30,
-              colour: 'rgb(200,200,255)',
-          },
-          {
-              name: "new 3",
-              number: 10,
-              colour: 'salmon',
-          },
-
-          {
-              name: "other flies",
-              number: 34,
-              colour: '#70AB46',
-              image: 'images/Other flies.png'
-          },
-          {
-              name: "small insects",
-              number: 17,
-              colour: '#626262',
-              image: 'images/Aphid_BHL.png'
-          },
-          {
-              name: "other insects",
-              number: 6,
-              colour: '#977200',
-              image: 'images/Other insects.png'
-          },
-        ]
-
-      var newPie = {
+      //var chart = brccharts.pie({selector: '#chart1'})
+      var chart = brccharts.pie({
         selector: '#chart1',
         innerRadius: 100,
         radius: 200,
-        // legendWidth: 250,
-        // duration: 1000,
-        // sort: '',
-        // label: 'percent',
-        // titleFontSize: 30,
-        // subtitleFontSize: 20,
-        //titleAlign: 'centre',
-        // labelFontSize: 18,
-        // labelColour: 'white',
-        // expand: false,
         title: 'FIT Counts: insects counted on hawthorn flowers \n 2017 to 2020',
-        //subtitle: 'blah blah blah',
-        //footer: 'Mary had a little lamb whos fleece was white as snow and everywhere that Mary went, that lamb was sure to go.',
-        // interactivity: 'mouseclick',
         data: items
-      }
+      })
 
-      //var chart = brccharts.pie({selector: '#chart1'})
-      var chart = brccharts.pie(newPie)
+      brccharts.pie({
+        selector: '#chart2',
+        innerRadius: 100,
+        radius: 200,
+        title: 'Example 2',
+        subtitle: 'Interactive on click only; sub-title text displayed; title and sub-title centred; footer text displayed',
+        footer: 'The footer could be used to display information on copyright etc',
+        titleAlign: 'centre',
+        subtitleAlign: 'centre',
+        data: items,
+        expand: true,
+        interactivity: 'mouseclick',
+      })
 
-      //console.log(chart.getChartWidth())
-      //console.log(chart.getChartHeight())
+      brccharts.pie({
+        selector: '#chart3',
+        radius: 200,
+        title: 'Example 3',
+        subtitle: 'No innerRadius specified; interactive on mousemove, but no images specified; sub-title text displayed; title and sub-title right aligned',
+        titleAlign: 'right',
+        subtitleAlign: 'right',
+        data: itemsNoImages,
+        expand: true,
+        interactivity: 'mousemove'
+      })
+
+      var chart = brccharts.pie({
+        selector: '#chart4',
+        innerRadius: 120,
+        radius: 200,
+        imageWidth: 180,
+        legendWidth: 230,
+        title: 'Original data',
+        interactivity: 'mouseclick',
+        data: items
+      })
 
       function button1Click() {
-        chart.setChartData(items)
+        chart.setChartOpts({title: 'Original data', footer: '', data: items})
       }
       function button2Click() {
-        chart.setChartData(itemsChangedVals)
+        chart.setChartOpts({title: 'Original data reduce 1', footer: '', data: itemsDataReduced1})
       }
       function button3Click() {
-        chart.setChartData(itemsPlus)
+        chart.setChartOpts({title: 'Original data reduce 2', footer: '', data: itemsDataReduced2})
       }
       function button4Click() {
-        chart.setChartData(itemsMinus)
+        chart.setChartOpts({
+          title: 'Typology of walkers on the Pennine Way', 
+          footer: 'As classified by Simon Armitage in his book Walking Home - Travels with a Troubadour on The Pennine Way',
+          data: armitage
+        })
       }
-      function button5Click() {
-        chart.setChartData(itemsPlusMinus)
-      }
-      function button6Click() {
-        chart.setChartText({
-            title: 'FIT Counts: insects counted on Dog Rose flowers 2000 to 2010', 
-            subtitle: "hello world", 
-            footer: "blah blah", 
-            footerFontSize: 30})
-        chart.setChartData(items)
-      }
-      //makePie('#chart2')
-      //makePie('#chart3')
+
     </script>
   </div>
 </body>

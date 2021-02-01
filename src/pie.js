@@ -11,6 +11,7 @@ import * as d3 from 'd3'
  * @param {string} opts.elid - The id for the dom object created.
  * @param {number} opts.radius - The desired radius of the chart in pixels.
  * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie char. Specify a value for donut chart.
+ * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
  * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
  * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
  * @param {string} opts.labelFontSize - Set to a font size (pixels).
@@ -142,6 +143,8 @@ export function pie({
     const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
     const lines = wrapText(text, svgText, chartWidth, fontSize)
 
+    console.log(classText, text, lines)
+
     const uText = svgText.selectAll(`.${classText}`)
       .data(lines)
 
@@ -159,8 +162,9 @@ export function pie({
     uText.exit()
       .remove()
 
-    const height = d3.select(`.${classText}`).node().getBBox().height
-    const widths = d3.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
+    console.log('lines', svgText.select(`.${classText}`).size())
+    const height = svgText.select(`.${classText}`).node().getBBox().height
+    const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
 
     svgText.selectAll(`.${classText}`)
       .attr('y', (d, i) => (i + 1) * height)
@@ -356,8 +360,13 @@ export function pie({
             if (arc.deleted) {
               // Previous arcs to be deleted
               i = iPrev
-              arcGenerator.outerRadius(d3.interpolate(radius, midRadius)(t))
-              arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t))
+              if (dataRetained.length) {
+                arcGenerator.outerRadius(d3.interpolate(radius, midRadius)(t))
+                arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t))
+              } else {
+                arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t))
+                arcGenerator.innerRadius(innerRadius) 
+              }
             } else if (arc.inserted) {
               // New arcs to be inserted (invisibly)
               i = iCurr
@@ -390,15 +399,25 @@ export function pie({
         if (trans === 2) {
           if (dataInserted.length) {
             if (arc.inserted) {
-              // Shown inserted arcs in inner ring
               i = iCurr
-              arcGenerator.outerRadius(d3.interpolate(innerRadius, midRadius)(t))
-              arcGenerator.innerRadius(innerRadius)
+              if (dataRetained.length) {
+                // Shown inserted arcs in inner ring
+                arcGenerator.outerRadius(d3.interpolate(innerRadius, midRadius)(t))
+                arcGenerator.innerRadius(innerRadius)
+              } else {
+                arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t))
+                arcGenerator.innerRadius(innerRadius)
+              }
             } else if (arc.deleted) {
-              // Delted arcs to be kept with inner & outer radius the same (invisible)
               i = iCurr
-              arcGenerator.outerRadius(midRadius)
-              arcGenerator.innerRadius(midRadius)
+              if (dataRetained.length) {
+                // Deleted arcs to be kept with inner & outer radius the same (invisible)
+                arcGenerator.outerRadius(midRadius)
+                arcGenerator.innerRadius(midRadius)
+              } else {
+                arcGenerator.outerRadius(innerRadius)
+                arcGenerator.innerRadius(innerRadius)
+              }
             } else {
               // Existing arcs to be shown in new positions in outer ring
               i = iCurr
@@ -497,7 +516,7 @@ export function pie({
     }
 
     // Transition 3
-    if (dataInserted.length) {
+    if (dataInserted.length && dataRetained.length) {
       trans = trans.transition()
         .duration(duration)
         .attrTween('d', function (arc) {
@@ -700,7 +719,7 @@ export function pie({
     })
   }
 
-/** @function setChartText
+/** @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
   * @param {string} opts.subtitle - Subtitle for the chart.
@@ -711,43 +730,58 @@ export function pie({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-  * Set's the value of the chart title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
-  function setChartText(textopts){
+  function setChartOpts(opts){
 
-    if (textopts.title) {
-     title = textopts.title
+    if (!block) {
+      highlightItem(null, false)
+
+      if ('title' in opts) {
+        title = opts.title
+      }
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle
+      }
+      if ('footer' in opts) {
+        footer = opts.footer
+      }
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize
+      }
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize
+      }
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize
+      }
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign
+      }
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign
+      }
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign
+      }
+
+      svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+      svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+      svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+
+      if ('data' in opts) {
+        colourData(opts.data)
+        makePie(opts.data)
+        makeLegend(opts.data)
+      }
+
+      positionElements()
+    } else {
+      console.log('Transition in progress')
     }
-    if (textopts.subtitle) {
-     subtitle = textopts.subtitle
-    }
-    if (textopts.footer) {
-     footer = textopts.footer
-    }
-    if (textopts.titleFontSize) {
-     titleFontSize = textopts.titleFontSize
-    }
-    if (textopts.subtitleFontSize) {
-     subtitleFontSize = textopts.subtitleFontSize
-    }
-    if (textopts.footerFontSize) {
-     footerFontSize = textopts.footerFontSize
-    }
-    if (textopts.titleAlign) {
-     titleAlign = textopts.titleAlign
-    }
-    if (textopts.subtitleAlign) {
-     subtitleAlign = textopts.subtitleAlign
-    }
-    if (textopts.footerAlign) {
-     footerAlign = textopts.footerAlign
-    }
-    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
-    positionElements()
   }
 
 /** @function getChartWidth
@@ -766,38 +800,17 @@ export function pie({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
-/** @function setChartData
-  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
-  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-  * Set's the data array to be bound to the chart.
-  */
-  function setChartData(newData){
-
-    if (!block) {
-      colourData(newData)
-      highlightItem(null, false)
-      makePie(newData)
-      makeLegend(newData)
-      positionElements()
-    } else {
-      console.log('Transition in progress')
-    }
-    
-  }
-
   /**
    * @typedef {Object} api
    * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:pie~setChartData} setChartData - Sets the data for the chart. 
-   * @property {module:pie~setChartText} setChartText - Sets text options for the chart. 
+   * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
-    setChartData: setChartData,
-    setChartText: setChartText,
+    setChartOpts: setChartOpts,
   }
 
 }
