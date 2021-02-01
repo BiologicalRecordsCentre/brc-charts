@@ -25,17 +25,99 @@
 &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
 </pre>
     <p>
-      First we create a div element which will contain the chart map.
+      First we create a div element which will contain the chart.
     </p>
 <pre>
 <code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
 </pre>
 
-    <div id="chart1" style="max-width: 500px"></div>
-    <div>
-      <div id="chart2" class="divfl"></div>
-      <div id="chart3" class="divfl"></div>
-    </div>
+    <p>
+        In the page's Javascript we call the brccharts.pie method, passing in the configuration options
+        which include the data we want to display. (The data used for this chart is shown below the chart.)
+    </p>
+<pre>
+<code class="javascript">brccharts.pie({...})</code>
+</pre>
+
+    <div id="chart1"></div>
+
+    <p>
+      The data passed into the brccharts.pie method for this chart is shown below. URLs of images
+      (in this case relative URLs) have been provided. The chart will show these images when the mouse moves
+      over the assocated pie or legend item. This behaviour can be changed to operate only on mouse clicks by
+      setting the 
+   </p>
+
+<pre>
+<code class="javascript">{
+  selector: '#chart1',
+  innerRadius: 100,
+  radius: 200,
+  title: 'FIT Counts: insects counted on hawthorn flowers \n 2017 to 2020',
+  data: [
+    {
+        name: "bumblebees",
+        number: 3,
+        colour: '#5A99D3',
+        image: 'images/Bumblebees.png'
+    },
+    {
+        name: "honeybees",
+        number: 10,
+        colour: '#EB7C30',
+        image: 'images/Honeybees.png'
+    },
+    {
+        name: "solitary bees",
+        number: 7,
+        colour: '#A3A3A3',
+        image: 'images/Solitary bees.png'
+    },
+    {
+        name: "wasps",
+        number: 4,
+        colour: '#FFBF00',
+        image: 'images/Wasps.png'
+    },
+    {
+        name: "hoverflies",
+        number: 12,
+        colour: '#4472C3',
+        image: 'images/Hoverflies.png'
+    },
+    {
+        name: "other flies",
+        number: 34,
+        colour: '#70AB46',
+        image: 'images/Other flies.png'
+    },
+    {
+        name: "butterflies and moths",
+        number: 1,
+        colour: '#1F5380',
+        image: 'images/Butterflies and moths.png'
+    },
+    {
+        name: "beetles",
+        number: 6,
+        colour: '#9D480E',
+        image: 'images/Beetles.png'
+    },
+    {
+        name: "small insects",
+        number: 17,
+        colour: '#626262',
+        image: 'images/Aphid_BHL.png'
+    },
+    {
+        name: "other insects",
+        number: 6,
+        colour: '#977200',
+        image: 'images/Other insects.png'
+    },
+  ]
+}</code>
+</pre>
 
     <br/> <br/>
     <button onclick="button1Click()">Initial items</button>
@@ -59,10 +141,10 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
     <!--BRC Charts library JS and CSS-->
-    <script src="./../dist/brccharts.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
-    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
+    <!-- <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css"> -->
+    <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css">
 
     <script>
 
@@ -70,61 +152,61 @@
           {
               name: "bumblebees",
               number: 3,
-              //colour: '#5A99D3',
+              colour: '#5A99D3',
               image: 'images/Bumblebees.png'
           },
           {
               name: "honeybees",
               number: 10,
-              //colour: '#EB7C30',
+              colour: '#EB7C30',
               image: 'images/Honeybees.png'
           },
           {
               name: "solitary bees",
               number: 7,
-              //colour: '#A3A3A3',
+              colour: '#A3A3A3',
               image: 'images/Solitary bees.png'
           },
           {
               name: "wasps",
               number: 4,
-              //colour: '#FFBF00',
+              colour: '#FFBF00',
               image: 'images/Wasps.png'
           },
           {
               name: "hoverflies",
               number: 12,
-              //colour: '#4472C3',
+              colour: '#4472C3',
               image: 'images/Hoverflies.png'
           },
           {
               name: "other flies",
               number: 34,
-              //colour: '#70AB46',
+              colour: '#70AB46',
               image: 'images/Other flies.png'
           },
           {
               name: "butterflies and moths",
               number: 1,
-              //colour: '#1F5380',
+              colour: '#1F5380',
               image: 'images/Butterflies and moths.png'
           },
           {
               name: "beetles",
               number: 6,
-              //colour: '#9D480E',
+              colour: '#9D480E',
               image: 'images/Beetles.png'
           },
           {
               name: "small insects",
               number: 17,
-              //colour: '#626262',
+              colour: '#626262',
               image: 'images/Aphid_BHL.png'
           },
           {
               name: "other insects",
               number: 6,
-              //colour: '#977200',
+              colour: '#977200',
               image: 'images/Other insects.png'
           },
         ]
@@ -375,13 +457,13 @@
         // label: 'percent',
         // titleFontSize: 30,
         // subtitleFontSize: 20,
-        titleAlign: 'centre',
+        //titleAlign: 'centre',
         // labelFontSize: 18,
         // labelColour: 'white',
         // expand: false,
         title: 'FIT Counts: insects counted on hawthorn flowers \n 2017 to 2020',
-        xsubtitle: 'blah blah blah',
-        footer: 'Mary had a little lamb whos fleece was white as snow and everywhere that Mary went, that lamb was sure to go.',
+        //subtitle: 'blah blah blah',
+        //footer: 'Mary had a little lamb whos fleece was white as snow and everywhere that Mary went, that lamb was sure to go.',
         // interactivity: 'mouseclick',
         data: items
       }
