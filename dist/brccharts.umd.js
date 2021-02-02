@@ -124,7 +124,7 @@
    * <li> <b>image</b> - this optional property allows you to specify the url of an image file
    * which can be displayed when a user selects the associated item.
    * </ul>
-   * @returns {module:pie~api} api - Returns an API for the map.
+   * @returns {module:pie~api} api - Returns an API for the chart.
    */
 
   function pie() {
@@ -852,6 +852,304 @@
     };
   }
 
+  /** 
+   * @param {Object} opts - Initialisation options.
+   * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
+   * @param {string} opts.elid - The id for the dom object created.
+   * @param {number} opts.width - The width of the chart in pixels.
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+   * @param {string} opts.labelP1 - Label for time period 1.
+   * @param {string} opts.labelP2 - Label for time period 2.
+   * @param {string} opts.title - Title for the chart.
+   * @param {string} opts.subtitle - Subtitle for the chart.
+   * @param {string} opts.footer - Footer for the chart.
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>week</b> - a number between 1 and 52 indicating the week of the year.
+   * <li> <b>p1</b> - a count for the first time period. 
+   * <li> <b>p2</b> - a count for the second time period. 
+   * </ul>
+   * @returns {module:phen1~api} api - Returns an API for the chart.
+   */
+
+  function phen1() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'phen1-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        _ref$labelP = _ref.labelP1,
+        _ref$labelP2 = _ref.labelP2,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 14 : _ref$footerFontSize,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$duration = _ref.duration,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline'); // const chartDiv = mainDiv
+    //   .append('div')
+
+    var svg = mainDiv.append('svg').attr('overflow', 'visible');
+    var svgPhen1, svgTitle, svgSubtitle, svgFooter;
+    makePhen(data); // Title must come after chart and legend because the 
+    // width of those is required to do wrapping for title
+    //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+    //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+    //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+    //positionElements()
+
+    function positionElements() {
+      var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
+      svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
+      svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
+      svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
+      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
+      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + Number(svgFooter.attr("height"));
+
+      if (expand) {
+        svg.attr("viewBox", "0 0 " + width + " " + height);
+      } else {
+        svg.attr("width", width);
+        svg.attr("height", height);
+      }
+    }
+
+    function makeText(text, svgText, classText, fontSize, textAlign) {
+      if (!svgText) {
+        svgText = svg.append('svg');
+      }
+
+      var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+      var lines = wrapText(text, svgText, chartWidth, fontSize);
+      console.log(classText, text, lines);
+      var uText = svgText.selectAll(".".concat(classText)).data(lines);
+      var eText = uText.enter().append('text');
+      uText.merge(eText).text(function (d) {
+        return d;
+      }).attr("class", classText).style('font-size', fontSize);
+      uText.exit().remove();
+      console.log('lines', svgText.select(".".concat(classText)).size());
+      var height = svgText.select(".".concat(classText)).node().getBBox().height;
+      var widths = svgText.selectAll(".".concat(classText)).nodes().map(function (n) {
+        return n.getBBox().width;
+      });
+      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
+        return (i + 1) * height;
+      }).attr('x', function (d, i) {
+        if (textAlign === 'centre') {
+          return (chartWidth - widths[i]) / 2;
+        } else if (textAlign === 'right') {
+          return chartWidth - widths[i];
+        } else {
+          return 0;
+        }
+      });
+      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
+
+      return svgText;
+    }
+
+    function makePhen(data) {
+      console.log(data); //const taxon = 'Aglais io'
+
+      var taxon = 'Pieris napi';
+      var cData = data.filter(function (d) {
+        return d.taxon === taxon;
+      }).sort(function (a, b) {
+        return a.week > b.week ? 1 : -1;
+      });
+      var width = 600;
+      var height = 400;
+      var margin = 50; //let gPie
+
+      if (svg.select('.brc-chart-phen1').size()) {
+        svgPhen1 = svg.select('.brc-chart-phen1'); //gPie = svgPie.select('g')
+      } else {
+        svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true).attr('width', width + 2 * margin).attr('height', height + 2 * margin); // gPie = svgPie.append('g')
+        //   .attr('transform', `translate(${radius} ${radius})`)
+      }
+
+      var yMax = Math.max.apply(Math, _toConsumableArray(cData.map(function (d) {
+        return d.p2;
+      })));
+      console.log('yMax', yMax);
+      var xScale = d3.scaleLinear().domain([1, 52]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+      var line = d3.line().curve(d3.curveBasis).x(function (d) {
+        return xScale(d.week);
+      }).y(function (d) {
+        return yScale(d.p2);
+      });
+      console.log('xScale result', xScale(12));
+      console.log('yScale result', yScale(300));
+      console.log('line result', line([{
+        week: 10,
+        p2: 200
+      }, {
+        week: 12,
+        p2: 300
+      }]));
+      var lines = svgPhen1.selectAll("lines").data([cData]).enter().append("g");
+      lines.append("path").attr("d", function (d) {
+        console.log(d);
+        return line(d);
+      });
+    }
+
+    function wrapText(text, svgTitle, maxWidth, fontSize) {
+      var textSplit = text.split(" ");
+      var lines = [''];
+      var line = 0;
+
+      for (var i = 0; i < textSplit.length; i++) {
+        if (textSplit[i] === '\n') {
+          line++;
+          lines[line] = '';
+        } else {
+          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+          workingText = workingText.trim();
+          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
+          var _width = txt.node().getBBox().width;
+
+          if (_width > maxWidth) {
+            line++;
+            lines[line] = textSplit[i];
+          } else {
+            lines[line] = workingText;
+          }
+
+          txt.remove();
+        }
+      }
+
+      return lines;
+    }
+    /** @function setChartOpts
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
+      */
+
+
+    function setChartOpts(opts) {
+      if ('title' in opts) {
+        title = opts.title;
+      }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
+      svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
+      svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+
+      if ('data' in opts) {
+        makePhen(opts.data);
+      }
+
+      positionElements();
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
+    /** @function getChartHeight
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Return the full height of the chart svg.
+      */
+
+
+    function getChartHeight() {
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /**
+     * @typedef {Object} api
+     * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
+       */
+
+
+    return {
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartOpts: setChartOpts
+    };
+  }
+
   var name = "brc-d3";
   var version = "0.0.3";
   var description = "Javscript library for various D3 visualisations of biological record data.";
@@ -911,6 +1209,7 @@
 
   console.log("Running ".concat(pkg.name, " version ").concat(pkg.version));
 
+  exports.phen1 = phen1;
   exports.pie = pie;
 
   Object.defineProperty(exports, '__esModule', { value: true });

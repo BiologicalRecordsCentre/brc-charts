@@ -1,5 +1,8 @@
 .blah {
     background: red;
+}path {
+    fill: none;
+    stroke: #ed3700;
 }.brc-chart-pie {
   width: 100%
 }

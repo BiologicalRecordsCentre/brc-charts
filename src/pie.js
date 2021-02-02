@@ -41,7 +41,7 @@ import * as d3 from 'd3'
  * <li> <b>image</b> - this optional property allows you to specify the url of an image file
  * which can be displayed when a user selects the associated item.
  * </ul>
- * @returns {module:pie~api} api - Returns an API for the map.
+ * @returns {module:pie~api} api - Returns an API for the chart.
  */
 
 export function pie({
