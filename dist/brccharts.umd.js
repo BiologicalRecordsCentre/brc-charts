@@ -856,10 +856,10 @@
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
-   * @param {number} opts.width - The width of the chart in pixels.
+   * @param {number} opts.width - The width of each sub-chart area in pixels.
+   * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {number} opts.perRow - The number of sub-charts per row.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
-   * @param {string} opts.labelP1 - Label for time period 1.
-   * @param {string} opts.labelP2 - Label for time period 2.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
@@ -869,7 +869,21 @@
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * If empty, graphs for all taxa are created.
+   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+   * data for which a line should be generated on the chart.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>prop</b> - the name of the nuemric property in the data.
+   * <li> <b>label</b> - a label for this metric.
+   * <li> <b>colour</b> - optional colour to give the line for this metric. 
+   * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
@@ -888,8 +902,11 @@
         _ref$elid = _ref.elid,
         elid = _ref$elid === void 0 ? 'phen1-chart' : _ref$elid,
         _ref$width = _ref.width,
-        _ref$labelP = _ref.labelP1,
-        _ref$labelP2 = _ref.labelP2,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$perRow = _ref.perRow,
+        perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$title = _ref.title,
@@ -910,15 +927,52 @@
         subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
         _ref$footerAlign = _ref.footerAlign,
         footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
         _ref$duration = _ref.duration,
         _ref$data = _ref.data,
-        data = _ref$data === void 0 ? [] : _ref$data;
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$taxa = _ref.taxa,
+        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
+        _ref$metrics = _ref.metrics,
+        metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline'); // const chartDiv = mainDiv
     //   .append('div')
 
     var svg = mainDiv.append('svg').attr('overflow', 'visible');
-    var svgPhen1, svgTitle, svgSubtitle, svgFooter;
-    makePhen(data); // Title must come after chart and legend because the 
+    var svgTitle, svgSubtitle, svgFooter;
+
+    if (!taxa.length) {
+      taxa = data.map(function (d) {
+        return d.taxon;
+      }).filter(function (v, i, a) {
+        return a.indexOf(v) === i;
+      });
+    }
+
+    var subChartPad = 20;
+    var svgsTaxa = taxa.map(function (t) {
+      return makePhen(t);
+    });
+    var subChartWidth = Number(svgsTaxa[0].attr("width"));
+    var subChartHeight = Number(svgsTaxa[0].attr("height"));
+    svgsTaxa.forEach(function (svgTaxon, i) {
+      var col = i % perRow;
+      var row = Math.floor(i / perRow); //console.log(i, col, row)
+
+      svgTaxon.attr("x", col * (subChartWidth + subChartPad) - subChartPad);
+      svgTaxon.attr("y", row * (subChartHeight + subChartPad) - subChartPad);
+    });
+    var cols = svgsTaxa.length % perRow + 1;
+    var rows = Math.floor(svgsTaxa.length / perRow) + 1;
+    svg.attr("width", cols * (subChartWidth + subChartPad) - subChartPad);
+    svg.attr("height", rows * (subChartHeight + subChartPad) - subChartPad); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
     //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
     //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
@@ -977,51 +1031,129 @@
       return svgText;
     }
 
-    function makePhen(data) {
-      console.log(data); //const taxon = 'Aglais io'
-
-      var taxon = 'Pieris napi';
-      var cData = data.filter(function (d) {
+    function makePhen(taxon) {
+      var dataFiltered = data.filter(function (d) {
         return d.taxon === taxon;
       }).sort(function (a, b) {
         return a.week > b.week ? 1 : -1;
       });
-      var width = 600;
-      var height = 400;
-      var margin = 50; //let gPie
+      var lineData = [];
+      metrics.forEach(function (m) {
+        lineData.push({
+          colour: m.colour,
+          points: dataFiltered.map(function (d) {
+            return {
+              n: d[m.prop],
+              week: d.week
+            };
+          })
+        });
+      });
+      var yMax = metrics.reduce(function (a, m) {
+        var mMax = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+          return d[m.prop];
+        })));
+        return a > mMax ? a : mMax;
+      }, 0);
+      if (yMax < 5) yMax = 5;
+      var svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true);
+      svgPhen1.append("rect").classed("brc-chart-phen1-back", "true").attr("width", "100%").attr("height", "100%").attr("fill", "white");
+      var gPhen1 = svgPhen1.append('g'); // For axis only
 
-      if (svg.select('.brc-chart-phen1').size()) {
-        svgPhen1 = svg.select('.brc-chart-phen1'); //gPie = svgPie.select('g')
-      } else {
-        svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true).attr('width', width + 2 * margin).attr('height', height + 2 * margin); // gPie = svgPie.append('g')
-        //   .attr('transform', `translate(${radius} ${radius})`)
+      var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
+      var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+      var tAxis;
+
+      if (axisTop === 'on') {
+        tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
       }
 
-      var yMax = Math.max.apply(Math, _toConsumableArray(cData.map(function (d) {
-        return d.p2;
-      })));
-      console.log('yMax', yMax);
-      var xScale = d3.scaleLinear().domain([1, 52]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+      var xAxis;
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        xAxis = d3.axisBottom().scale(xScaleTime);
+
+        if (axisBottom === 'tick') {
+          xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
+            if (width >= 750) {
+              return d3.timeFormat('%B')(date);
+            } else if (width >= 330) {
+              return d3.timeFormat('%b')(date);
+            } else if (width >= 200) {
+              return date.toLocaleString('default', {
+                month: 'short'
+              }).substr(0, 1);
+            } else {
+              return '';
+            }
+          });
+        } else {
+          xAxis.tickValues([]);
+        }
+      }
+
+      var rAxis;
+
+      if (axisRight === 'on') {
+        rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
+      }
+
+      var yAxis;
+
+      if (axisLeft === 'on' || axisLeft === 'tick') {
+        yAxis = d3.axisLeft().scale(yScale).ticks(5);
+
+        if (axisLeft !== 'tick') {
+          yAxis.tickValues([]);
+        } else {
+          yAxis.tickFormat(d3.format("d"));
+        }
+      }
+
       var line = d3.line().curve(d3.curveBasis).x(function (d) {
         return xScale(d.week);
       }).y(function (d) {
-        return yScale(d.p2);
+        return yScale(d.n);
       });
-      console.log('xScale result', xScale(12));
-      console.log('yScale result', yScale(300));
-      console.log('line result', line([{
-        week: 10,
-        p2: 200
-      }, {
-        week: 12,
-        p2: 300
-      }]));
-      var lines = svgPhen1.selectAll("lines").data([cData]).enter().append("g");
+      var lines = gPhen1.selectAll("lines").data(lineData).enter().append("g");
       lines.append("path").attr("d", function (d) {
-        console.log(d);
-        return line(d);
-      });
+        return line(d.points);
+      }).attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", 2);
+      var yAxisTextWidth = 0;
+      var axisPadY = axisLeft === 'tick' ? 10 : 0;
+
+      if (yAxis) {
+        var gYaxis = svgPhen1.append("g").attr("class", "y axis").call(yAxis);
+        gYaxis.selectAll("text").each(function () {
+          if (this.getBBox().width > yAxisTextWidth) yAxisTextWidth = this.getBBox().width;
+        });
+        gYaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
+      }
+
+      var axisPadX = axisBottom === 'tick' ? 15 : 0;
+
+      if (xAxis) {
+        var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
+        gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
+        gXaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",").concat(height, ")"));
+      }
+
+      if (tAxis) {
+        var gTaxis = svgPhen1.append("g").call(tAxis);
+        gTaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
+      }
+
+      if (rAxis) {
+        var gRaxis = svgPhen1.append("g").call(rAxis);
+        gRaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY + width, ",0)"));
+      }
+
+      gPhen1.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
+      svgPhen1.attr('width', width + yAxisTextWidth + axisPadY + 1).attr('height', height + axisPadX + 1);
+      return svgPhen1;
     }
 
     function wrapText(text, svgTitle, maxWidth, fontSize) {

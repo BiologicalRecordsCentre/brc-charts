@@ -1,4 +1,32 @@
-/** @module phen1 */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: phen1.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: phen1.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module phen1 */
 
 import * as d3 from 'd3'
 
@@ -6,10 +34,10 @@ import * as d3 from 'd3'
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
- * @param {number} opts.width - The width of each sub-chart area in pixels.
- * @param {number} opts.height - The height of the each sub-chart area in pixels.
- * @param {number} opts.perRow - The number of sub-charts per row.
+ * @param {number} opts.width - The width of the chart in pixels.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+ * @param {string} opts.labelP1 - Label for time period 1.
+ * @param {string} opts.labelP2 - Label for time period 2.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
@@ -19,29 +47,25 @@ import * as d3 from 'd3'
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
- * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
- * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
- * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created.
- * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+ * @param {Array.&lt;Object>} opts.metrics - An array of objects, each describing a numeric property in the input
  * data for which a line should be generated on the chart.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * <ul>
- * <li> <b>prop</b> - the name of the nuemric property in the data.
- * <li> <b>label</b> - a label for this metric.
- * <li> <b>colour</b> - optional colour to give the line for this metric. 
- * </ul>
- * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+ * &lt;ul>
+ * &lt;li> &lt;b>prop&lt;/b> - the name of the nuemric property in the data.
+ * &lt;li> &lt;b>label&lt;/b> - a label for this metric.
+ * &lt;li> &lt;b>colour&lt;/b> - optional colour to give the line for this metric. 
+ * &lt;/ul>
+ * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * <ul>
- * <li> <b>taxon</b> - name of a taxon.
- * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
- * <li> <b>p1</b> - a count for the first time period. 
- * <li> <b>p2</b> - a count for the second time period. 
- * </ul>
+ * &lt;ul>
+ * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
+ * &lt;li> &lt;b>week&lt;/b> - a number between 1 and 52 indicating the week of the year.
+ * &lt;li> &lt;b>p1&lt;/b> - a count for the first time period. 
+ * &lt;li> &lt;b>p2&lt;/b> - a count for the second time period. 
+ * &lt;/ul>
  * @returns {module:phen1~api} api - Returns an API for the chart.
  */
 
@@ -49,9 +73,9 @@ export function phen1({
   // Default options in here
   selector = 'body',
   elid = 'phen1-chart',
-  width = 300,
-  height = 200,
-  perRow = 2,
+  width = 500,
+  labelP1 = 'Period 1',
+  labelP2 = 'Period 2',
   expand = false,
   title = '',
   subtitle = '',
@@ -62,14 +86,9 @@ export function phen1({
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
-  axisLeft = 'tick',
-  axisBottom = 'tick',
-  axisRight = '',
-  axisTop = '',
   duration = 1000,
   data = [],
-  taxa = [],
-  metrics = []
+  taxa = []
 } = {}) {
 
   let dataPrev
@@ -86,34 +105,8 @@ export function phen1({
 
   const svg = mainDiv.append('svg').attr('overflow', 'visible')
 
-  let svgTitle, svgSubtitle, svgFooter
-  
-  if (!taxa.length) {
-    taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
-  }
-
-  const subChartPad = 20
-  const svgsTaxa = taxa.map(t => makePhen(t))
-  const subChartWidth = Number(svgsTaxa[0].attr("width"))
-  const subChartHeight = Number(svgsTaxa[0].attr("height"))
-
-  svgsTaxa.forEach((svgTaxon, i) => {
-    
-    const col = i%perRow
-    const row = Math.floor(i/perRow)
-
-    //console.log(i, col, row)
-
-    svgTaxon.attr("x", col * (subChartWidth + subChartPad) - subChartPad)
-    svgTaxon.attr("y", row * (subChartHeight + subChartPad) - subChartPad)
-  })
-
-  const cols = svgsTaxa.length%perRow + 1
-  const rows = Math.floor(svgsTaxa.length/perRow) + 1
-
-  svg.attr("width", cols * (subChartWidth + subChartPad) - subChartPad)
-  svg.attr("height", rows * (subChartHeight + subChartPad) - subChartPad)
-
+  let svgPhen1, svgTitle, svgSubtitle, svgFooter
+  makePhen(taxa[0]) 
   // Title must come after chart and legend because the 
   // width of those is required to do wrapping for title
   //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
@@ -196,152 +189,50 @@ export function phen1({
 
   function makePhen (taxon) {
 
-    const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
-    let lineData = [] 
-    metrics.forEach(m => {
-      lineData.push({
-        colour: m.colour,
-        points: dataFiltered.map(d => {
-          return {
-            n: d[m.prop],
-            week: d.week
-          }
-        })
-      })
-    })
+    const init = !dataPrev
 
-    let yMax = metrics.reduce((a, m) => {
-      const mMax = Math.max(...dataFiltered.map(d => d[m.prop]))
-      return a > mMax ? a : mMax
-    }, 0)
-    if (yMax < 5) yMax = 5
+    let cData = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
 
-    const svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true)
-    svgPhen1.append("rect")
-      .classed("brc-chart-phen1-back", "true")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .attr("fill", "white")
-    const gPhen1 = svgPhen1.append('g')
-    
-    // For axis only
-    const xScaleTime = d3.scaleTime()
-      .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
-      .range([0, width])
-    const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
+    const width = 600
+    const height = 400
+    const margin = 50
+  
+    //let gPie
+    if (svg.select('.brc-chart-phen1').size()) {
+      svgPhen1 = svg.select('.brc-chart-phen1')
+      //gPie = svgPie.select('g')
+    } else {
+      svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true)
+        .attr('width', width + 2 * margin)
+        .attr('height', height + 2 * margin)
+      // gPie = svgPie.append('g')
+      //   .attr('transform', `translate(${radius} ${radius})`)
+    }
+
+    columns
+
+    const yMax = Math.max(...cData.map(d => d.p2))
+
+
+    const xScale = d3.scaleLinear().domain([1, 52]).range([0, width])
     const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
 
-    let tAxis
-    if (axisTop === 'on') {
-      tAxis = d3.axisTop()
-        .scale(xScale)
-        .tickValues([])
-        .tickSizeOuter(0)
-    }
-
-    let xAxis
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      xAxis = d3.axisBottom()
-        .scale(xScaleTime)
-
-      if (axisBottom === 'tick') {
-        xAxis.ticks(d3.timeMonth)
-          .tickSize(width >= 200 ? 13 : 5, 0)
-          .tickFormat(date => {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date)
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date)
-            } else if (width >= 200) {
-              return date.toLocaleString('default', { month: 'short' }).substr(0,1)
-            } else {
-              return ''
-            }
-          })
-      } else {
-        xAxis.tickValues([])
-      }
-    }
-
-    let rAxis
-    if (axisRight === 'on') {
-      rAxis = d3.axisRight()
-        .scale(yScale)
-        .tickValues([])
-        .tickSizeOuter(0)
-    }
-
-    let yAxis
-    if (axisLeft === 'on' || axisLeft === 'tick') {
-      yAxis = d3.axisLeft()
-        .scale(yScale)
-        .ticks(5)
-      if (axisLeft !== 'tick') {
-        yAxis.tickValues([])
-      } else {
-        yAxis.tickFormat(d3.format("d"))
-      }
-    }
-    
     const line = d3.line()
       .curve(d3.curveBasis)
       .x(d => xScale(d.week))
-      .y(d => yScale(d.n))
+      .y(d => yScale(d.p2))
 
-    const lines = gPhen1.selectAll("lines")
-      .data(lineData)
+
+    const lines = svgPhen1.selectAll("lines")
+      .data([cData])
       .enter()
       .append("g")
 
     lines.append("path")
-      .attr("d", d => line(d.points))
-      .attr("stroke", d => d.colour)
-      .attr("stroke-width", 2)
-
-    let yAxisTextWidth = 0
-    const axisPadY = axisLeft === 'tick' ? 10 : 0
-    if (yAxis) {
-      const gYaxis = svgPhen1.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-      gYaxis.selectAll("text").each(function(){
-          if(this.getBBox().width > yAxisTextWidth) yAxisTextWidth = this.getBBox().width
+      .attr("d", function(d) { 
+        return line(d) 
       })
-      gYaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
-    }
 
-    const axisPadX = axisBottom === 'tick' ? 15 : 0
-    if (xAxis) {
-      const gXaxis = svgPhen1.append("g")
-        .attr("class", "x axis")
-        .call(xAxis)
-
-      gXaxis.selectAll(".tick text")
-        .style("text-anchor", "start")
-        .attr("x", 6)
-        .attr("y", 6)
-
-      gXaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},${height})`)
-    }
-
-    if (tAxis) {
-      const gTaxis = svgPhen1.append("g")
-        .call(tAxis)
-      gTaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
-    }
-
-    if (rAxis) {
-      const gRaxis = svgPhen1.append("g")
-        .call(rAxis)
-      gRaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY + width},0)`)
-    }
-
-    gPhen1.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
-    svgPhen1
-      .attr('width', width + yAxisTextWidth + axisPadY + 1)
-      .attr('height', height + axisPadX + 1)
-
-    return svgPhen1
   }
 
   function wrapText(text, svgTitle, maxWidth, fontSize) {
@@ -350,7 +241,7 @@ export function phen1({
     const lines = ['']
     let line = 0
 
-    for (let i=0; i < textSplit.length; i++) {
+    for (let i=0; i &lt; textSplit.length; i++) {
 
       if (textSplit[i] === '\n') {
         line++
@@ -393,8 +284,8 @@ export function phen1({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
-  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
+  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -440,7 +331,7 @@ export function phen1({
   }
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -448,7 +339,7 @@ export function phen1({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -468,4 +359,26 @@ export function phen1({
     setChartOpts: setChartOpts,
   }
 
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Feb 03 2021 10:34:07 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

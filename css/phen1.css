@@ -1,4 +1,11 @@
 path {
     fill: none;
-    stroke: #ed3700;
+}
+
+.brc-chart-phen1-back {
+    xfill: peachpuff;
+}
+
+.brc-chart-phen1 {
+    overflow: visible;
 }
