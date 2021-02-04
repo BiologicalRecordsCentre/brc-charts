@@ -86,6 +86,10 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
+  function safeId(text) {
+    return text ? text.replace(/\W/g, '_') : null;
+  }
+
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
   /** 
@@ -663,10 +667,6 @@
       });
     }
 
-    function safeId(text) {
-      return text ? text.replace(/\W/g, '_') : null;
-    }
-
     function highlightItem(name, show) {
       var i = safeId(name);
 
@@ -859,6 +859,7 @@
    * @param {number} opts.width - The width of each sub-chart area in pixels.
    * @param {number} opts.height - The height of the each sub-chart area in pixels.
    * @param {number} opts.perRow - The number of sub-charts per row.
+   * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
@@ -869,6 +870,9 @@
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
+   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
+   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
    * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
@@ -888,7 +892,7 @@
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
-   * <li> <b>week</b> - a number between 1 and 52 indicating the week of the year.
+   * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
    * <li> <b>p1</b> - a count for the first time period. 
    * <li> <b>p2</b> - a count for the second time period. 
    * </ul>
@@ -907,26 +911,24 @@
         height = _ref$height === void 0 ? 200 : _ref$height,
         _ref$perRow = _ref.perRow,
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
+        _ref$normalize = _ref.normalize,
+        normalize = _ref$normalize === void 0 ? false : _ref$normalize,
         _ref$expand = _ref.expand,
-        expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$title = _ref.title,
-        title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
-        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
         _ref$footer = _ref.footer,
-        footer = _ref$footer === void 0 ? '' : _ref$footer,
         _ref$titleFontSize = _ref.titleFontSize,
-        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
         _ref$subtitleFontSize = _ref.subtitleFontSize,
-        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
         _ref$footerFontSize = _ref.footerFontSize,
-        footerFontSize = _ref$footerFontSize === void 0 ? 14 : _ref$footerFontSize,
         _ref$titleAlign = _ref.titleAlign,
-        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
-        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
         _ref$footerAlign = _ref.footerAlign,
-        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$showTaxonLabel = _ref.showTaxonLabel,
+        showTaxonLabel = _ref$showTaxonLabel === void 0 ? true : _ref$showTaxonLabel,
+        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
+        taxonLabelFontSize = _ref$taxonLabelFontSi === void 0 ? 16 : _ref$taxonLabelFontSi,
+        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
+        taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
         _ref$axisLeft = _ref.axisLeft,
         axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
         _ref$axisBottom = _ref.axisBottom,
@@ -936,6 +938,7 @@
         _ref$axisTop = _ref.axisTop,
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
         _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$taxa = _ref.taxa,
@@ -945,93 +948,45 @@
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline'); // const chartDiv = mainDiv
     //   .append('div')
 
-    var svg = mainDiv.append('svg').attr('overflow', 'visible');
-    var svgTitle, svgSubtitle, svgFooter;
-
-    if (!taxa.length) {
-      taxa = data.map(function (d) {
-        return d.taxon;
-      }).filter(function (v, i, a) {
-        return a.indexOf(v) === i;
-      });
-    }
-
-    var subChartPad = 20;
-    var svgsTaxa = taxa.map(function (t) {
-      return makePhen(t);
-    });
-    var subChartWidth = Number(svgsTaxa[0].attr("width"));
-    var subChartHeight = Number(svgsTaxa[0].attr("height"));
-    svgsTaxa.forEach(function (svgTaxon, i) {
-      var col = i % perRow;
-      var row = Math.floor(i / perRow); //console.log(i, col, row)
-
-      svgTaxon.attr("x", col * (subChartWidth + subChartPad) - subChartPad);
-      svgTaxon.attr("y", row * (subChartHeight + subChartPad) - subChartPad);
-    });
-    var cols = svgsTaxa.length % perRow + 1;
-    var rows = Math.floor(svgsTaxa.length / perRow) + 1;
-    svg.attr("width", cols * (subChartWidth + subChartPad) - subChartPad);
-    svg.attr("height", rows * (subChartHeight + subChartPad) - subChartPad); // Title must come after chart and legend because the 
+    var svg = mainDiv.append('svg'); //.attr('overflow', 'visible')
+    makeChart(); // Title must come after chart and legend because the 
     // width of those is required to do wrapping for title
     //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
     //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
     //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
     //positionElements()
 
-    function positionElements() {
-      var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
-      svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
-      svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
-      svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
-      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
-      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + Number(svgFooter.attr("height"));
-
-      if (expand) {
-        svg.attr("viewBox", "0 0 " + width + " " + height);
-      } else {
-        svg.attr("width", width);
-        svg.attr("height", height);
-      }
-    }
-
-    function makeText(text, svgText, classText, fontSize, textAlign) {
-      if (!svgText) {
-        svgText = svg.append('svg');
+    function makeChart() {
+      if (!taxa.length) {
+        taxa = data.map(function (d) {
+          return d.taxon;
+        }).filter(function (v, i, a) {
+          return a.indexOf(v) === i;
+        });
       }
 
-      var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      var lines = wrapText(text, svgText, chartWidth, fontSize);
-      console.log(classText, text, lines);
-      var uText = svgText.selectAll(".".concat(classText)).data(lines);
-      var eText = uText.enter().append('text');
-      uText.merge(eText).text(function (d) {
-        return d;
-      }).attr("class", classText).style('font-size', fontSize);
-      uText.exit().remove();
-      console.log('lines', svgText.select(".".concat(classText)).size());
-      var height = svgText.select(".".concat(classText)).node().getBBox().height;
-      var widths = svgText.selectAll(".".concat(classText)).nodes().map(function (n) {
-        return n.getBBox().width;
+      var subChartPad = 10;
+      var svgsTaxa = taxa.map(function (t) {
+        return makePhen(t);
       });
-      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
-        return (i + 1) * height;
-      }).attr('x', function (d, i) {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2;
-        } else if (textAlign === 'right') {
-          return chartWidth - widths[i];
-        } else {
-          return 0;
-        }
+      var subChartWidth = Number(svgsTaxa[0].attr("width"));
+      var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      svgsTaxa.forEach(function (svgTaxon, i) {
+        var col = i % perRow;
+        var row = Math.floor(i / perRow);
+        svgTaxon.attr("x", col * (subChartWidth + subChartPad));
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad));
       });
-      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
-
-      return svgText;
+      var cols = svgsTaxa.length % perRow + 1;
+      var rows = Math.floor(svgsTaxa.length / perRow) + 1;
+      svg.attr("width", cols * (subChartWidth + subChartPad));
+      svg.attr("height", rows * (subChartHeight + subChartPad));
     }
 
     function makePhen(taxon) {
+      // Pre-process data.
+      // Filter to named taxon and sort in week order
+      // Add max value to each.
       var dataFiltered = data.filter(function (d) {
         return d.taxon === taxon;
       }).sort(function (a, b) {
@@ -1041,6 +996,10 @@
       metrics.forEach(function (m) {
         lineData.push({
           colour: m.colour,
+          max: Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+            return d[m.prop];
+          }))),
+          //total: dataFiltered.reduce((a, d) => a + d[m.prop], 0),
           points: dataFiltered.map(function (d) {
             return {
               n: d[m.prop],
@@ -1048,30 +1007,35 @@
             };
           })
         });
-      });
-      var yMax = metrics.reduce(function (a, m) {
-        var mMax = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-          return d[m.prop];
-        })));
-        return a > mMax ? a : mMax;
-      }, 0);
-      if (yMax < 5) yMax = 5;
-      var svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true);
-      svgPhen1.append("rect").classed("brc-chart-phen1-back", "true").attr("width", "100%").attr("height", "100%").attr("fill", "white");
-      var gPhen1 = svgPhen1.append('g'); // For axis only
+      }); // Set the maximum value for the y axis
 
-      var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
+      var yMax;
+
+      if (normalize) {
+        yMax = 1;
+      } else {
+        yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
+          return d.max;
+        })));
+        if (yMax < 5) yMax = 5;
+      } // Value scales
+
+
       var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]);
+      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]); // Top axis
+
       var tAxis;
 
       if (axisTop === 'on') {
         tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
-      }
+      } // X (bottom) axis
+
 
       var xAxis;
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
+        // xScaleTime is only used to create the x axis
+        var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
         xAxis = d3.axisBottom().scale(xScaleTime);
 
         if (axisBottom === 'tick') {
@@ -1089,15 +1053,17 @@
             }
           });
         } else {
-          xAxis.tickValues([]);
+          xAxis.tickValues([]).tickSizeOuter(0);
         }
-      }
+      } // Right axis
+
 
       var rAxis;
 
       if (axisRight === 'on') {
         rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
-      }
+      } // Y (left) axis
+
 
       var yAxis;
 
@@ -1105,84 +1071,98 @@
         yAxis = d3.axisLeft().scale(yScale).ticks(5);
 
         if (axisLeft !== 'tick') {
-          yAxis.tickValues([]);
-        } else {
+          yAxis.tickValues([]).tickSizeOuter(0);
+        } else if (!normalize) {
           yAxis.tickFormat(d3.format("d"));
         }
-      }
+      } // Line path generator
 
-      var line = d3.line().curve(d3.curveBasis).x(function (d) {
+
+      var line = d3.line().curve(d3.curveMonotoneX) //.curve(d3.curveCardinal)
+      .x(function (d) {
         return xScale(d.week);
       }).y(function (d) {
         return yScale(d.n);
-      });
-      var lines = gPhen1.selectAll("lines").data(lineData).enter().append("g");
-      lines.append("path").attr("d", function (d) {
-        return line(d.points);
+      }); // Create or get the relevant chart svg
+
+      var init, svgPhen1, gPhen1;
+
+      if (svg.select("#".concat(safeId(taxon))).size()) {
+        svgPhen1 = svg.select("#".concat(safeId(taxon)));
+        gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
+        init = false;
+      } else {
+        svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon));
+        gPhen1 = svgPhen1.append('g').classed('brc-chart-phen1-g', true);
+        init = true;
+      } // Create/update the line paths with D3
+
+
+      var mlines = gPhen1.selectAll("path").data(lineData);
+      var eLines = mlines.enter().append("g").append("path");
+      mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
+        if (normalize) {
+          return line(d.points.map(function (p) {
+            return {
+              n: d.max ? p.n / d.max : 0,
+              week: p.week
+            };
+          }));
+        } else {
+          return line(d.points);
+        }
       }).attr("stroke", function (d) {
         return d.colour;
       }).attr("stroke-width", 2);
-      var yAxisTextWidth = 0;
-      var axisPadY = axisLeft === 'tick' ? 10 : 0;
+      mlines.exit().remove();
 
-      if (yAxis) {
-        var gYaxis = svgPhen1.append("g").attr("class", "y axis").call(yAxis);
-        gYaxis.selectAll("text").each(function () {
-          if (this.getBBox().width > yAxisTextWidth) yAxisTextWidth = this.getBBox().width;
-        });
-        gYaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
-      }
+      if (init) {
+        // Constants for positioning
+        var axisPadX = axisLeft === 'tick' ? 35 : 0;
+        var axisPadY = axisBottom === 'tick' ? 15 : 0;
+        var labelPadY; // Taxon title
 
-      var axisPadX = axisBottom === 'tick' ? 15 : 0;
-
-      if (xAxis) {
-        var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
-        gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-        gXaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",").concat(height, ")"));
-      }
-
-      if (tAxis) {
-        var gTaxis = svgPhen1.append("g").call(tAxis);
-        gTaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
-      }
-
-      if (rAxis) {
-        var gRaxis = svgPhen1.append("g").call(rAxis);
-        gRaxis.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY + width, ",0)"));
-      }
-
-      gPhen1.attr("transform", "translate(".concat(yAxisTextWidth + axisPadY, ",0)"));
-      svgPhen1.attr('width', width + yAxisTextWidth + axisPadY + 1).attr('height', height + axisPadX + 1);
-      return svgPhen1;
-    }
-
-    function wrapText(text, svgTitle, maxWidth, fontSize) {
-      var textSplit = text.split(" ");
-      var lines = [''];
-      var line = 0;
-
-      for (var i = 0; i < textSplit.length; i++) {
-        if (textSplit[i] === '\n') {
-          line++;
-          lines[line] = '';
+        if (showTaxonLabel) {
+          var taxonLabel = svgPhen1.append('text').text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var labelHeight = taxonLabel.node().getBBox().height;
+          taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
+          labelPadY = labelHeight * 1.5;
         } else {
-          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
-          workingText = workingText.trim();
-          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
-          var _width = txt.node().getBBox().width;
+          labelPadY = 0;
+        } // Size SVG
 
-          if (_width > maxWidth) {
-            line++;
-            lines[line] = textSplit[i];
-          } else {
-            lines[line] = workingText;
-          }
 
-          txt.remove();
+        svgPhen1.attr('width', width + axisPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+
+        gPhen1.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+
+        if (yAxis) {
+          var gYaxis = svgPhen1.append("g").attr("class", "y-axis"); // .transition()
+          // .duration(duration)
+          // .call(yAxis)
+
+          gYaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+        }
+
+        if (xAxis) {
+          var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
+          gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
+          gXaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+        }
+
+        if (tAxis) {
+          var gTaxis = svgPhen1.append("g").call(tAxis);
+          gTaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+        }
+
+        if (rAxis) {
+          var gRaxis = svgPhen1.append("g").call(rAxis);
+          gRaxis.attr("transform", "translate(".concat(axisPadX + width, ",").concat(labelPadY, ")"));
         }
       }
 
-      return lines;
+      svgPhen1.select(".y-axis").transition().duration(duration).call(yAxis);
+      return svgPhen1;
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -1195,6 +1175,7 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -1204,50 +1185,57 @@
 
     function setChartOpts(opts) {
       if ('title' in opts) {
-        title = opts.title;
+        opts.title;
       }
 
       if ('subtitle' in opts) {
-        subtitle = opts.subtitle;
+        opts.subtitle;
       }
 
       if ('footer' in opts) {
-        footer = opts.footer;
+        opts.footer;
       }
 
       if ('titleFontSize' in opts) {
-        titleFontSize = opts.titleFontSize;
+        opts.titleFontSize;
       }
 
       if ('subtitleFontSize' in opts) {
-        subtitleFontSize = opts.subtitleFontSize;
+        opts.subtitleFontSize;
       }
 
       if ('footerFontSize' in opts) {
-        footerFontSize = opts.footerFontSize;
+        opts.footerFontSize;
       }
 
       if ('titleAlign' in opts) {
-        titleAlign = opts.titleAlign;
+        opts.titleAlign;
       }
 
       if ('subtitleAlign' in opts) {
-        subtitleAlign = opts.subtitleAlign;
+        opts.subtitleAlign;
       }
 
       if ('footerAlign' in opts) {
-        footerAlign = opts.footerAlign;
+        opts.footerAlign;
+      } //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+      //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+      //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+      // if ('data' in opts) {
+      //   makePhen(opts.data)
+      // }
+
+
+      if ('normalize' in opts) {
+        normalize = opts.normalize;
+        makeChart();
       }
 
-      svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
-      svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
-      svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+      if ('taxa' in opts) {
+        taxa = opts.taxa;
+        makeChart();
+      } //positionElements()
 
-      if ('data' in opts) {
-        makePhen(opts.data);
-      }
-
-      positionElements();
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.

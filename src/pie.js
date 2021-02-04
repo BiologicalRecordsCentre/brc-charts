@@ -1,6 +1,7 @@
 /** @module pie */
 
 import * as d3 from 'd3'
+import * as gen from './general'
 
 //https://www.d3-graph-gallery.com/graph/pie_annotation.html
 //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
@@ -196,7 +197,7 @@ export function pie({
 
     const eLegendSwatch = uLegendSwatch.enter()
       .append('rect')
-      .attr('id', (d) => `swatch-${safeId(d.name)}`)
+      .attr('id', (d) => `swatch-${gen.safeId(d.name)}`)
       .classed('legendSwatch', true)
       .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
       .attr('width', legendSwatchSize)
@@ -234,7 +235,7 @@ export function pie({
       .append('text')
       .text(d => d.name)
       .attr('alignment-baseline', 'middle')
-      .attr('id', (d) => `legend-${safeId(d.name)}`)
+      .attr('id', (d) => `legend-${gen.safeId(d.name)}`)
       .classed('legendText', true)
       .attr('x', () => legendSwatchSize + legendSwatchGap)
       .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 3))
@@ -485,7 +486,7 @@ export function pie({
 
     const ePie = uPie.enter()
       .append('path')
-      .attr('id', (d) => `pie-${safeId(d.data.name)}`)
+      .attr('id', (d) => `pie-${gen.safeId(d.data.name)}`)
       .attr('stroke', 'white')
       .style('stroke-width', '2px')
       .style('opacity', 1)
@@ -550,7 +551,7 @@ export function pie({
 
       const ePieLabels = uPieLabels.enter()
         .append('text')
-        .attr('id', (d) => `label-${safeId(d.data.name)}`)
+        .attr('id', (d) => `label-${gen.safeId(d.data.name)}`)
         .attr("class", "labelsPie")
         .style('text-anchor', 'middle')
         .style('font-size', labelFontSize)
@@ -640,12 +641,8 @@ export function pie({
       })
   }
 
-  function safeId(text) {
-    return text ? text.replace(/\W/g,'_') : null
-  }
-
   function highlightItem (name, show) {
-    const i = safeId(name)
+    const i = gen.safeId(name)
     if (show) {
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)

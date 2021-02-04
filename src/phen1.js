@@ -1,6 +1,7 @@
 /** @module phen1 */
 
 import * as d3 from 'd3'
+import * as gen from './general'
 
 /** 
  * @param {Object} opts - Initialisation options.
@@ -9,6 +10,7 @@ import * as d3 from 'd3'
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
  * @param {number} opts.perRow - The number of sub-charts per row.
+ * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
@@ -19,6 +21,9 @@ import * as d3 from 'd3'
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+ * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
+ * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
+ * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
@@ -52,6 +57,7 @@ export function phen1({
   width = 300,
   height = 200,
   perRow = 2,
+  normalize = false,
   expand = false,
   title = '',
   subtitle = '',
@@ -62,6 +68,9 @@ export function phen1({
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
+  showTaxonLabel = true,
+  taxonLabelFontSize = 16,
+  taxonLabelItalics = false,
   axisLeft = 'tick',
   axisBottom = 'tick',
   axisRight = '',
@@ -84,35 +93,11 @@ export function phen1({
   // const chartDiv = mainDiv
   //   .append('div')
 
-  const svg = mainDiv.append('svg').attr('overflow', 'visible')
+  const svg = mainDiv.append('svg') //.attr('overflow', 'visible')
 
   let svgTitle, svgSubtitle, svgFooter
   
-  if (!taxa.length) {
-    taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
-  }
-
-  const subChartPad = 20
-  const svgsTaxa = taxa.map(t => makePhen(t))
-  const subChartWidth = Number(svgsTaxa[0].attr("width"))
-  const subChartHeight = Number(svgsTaxa[0].attr("height"))
-
-  svgsTaxa.forEach((svgTaxon, i) => {
-    
-    const col = i%perRow
-    const row = Math.floor(i/perRow)
-
-    //console.log(i, col, row)
-
-    svgTaxon.attr("x", col * (subChartWidth + subChartPad) - subChartPad)
-    svgTaxon.attr("y", row * (subChartHeight + subChartPad) - subChartPad)
-  })
-
-  const cols = svgsTaxa.length%perRow + 1
-  const rows = Math.floor(svgsTaxa.length/perRow) + 1
-
-  svg.attr("width", cols * (subChartWidth + subChartPad) - subChartPad)
-  svg.attr("height", rows * (subChartHeight + subChartPad) - subChartPad)
+  makeChart()
 
   // Title must come after chart and legend because the 
   // width of those is required to do wrapping for title
@@ -121,6 +106,31 @@ export function phen1({
   //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
   //positionElements()
 
+  function makeChart () {
+    if (!taxa.length) {
+      taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
+    }
+
+    const subChartPad = 10
+    const svgsTaxa = taxa.map(t => makePhen(t))
+    const subChartWidth = Number(svgsTaxa[0].attr("width"))
+    const subChartHeight = Number(svgsTaxa[0].attr("height"))
+
+    svgsTaxa.forEach((svgTaxon, i) => {
+      
+      const col = i%perRow
+      const row = Math.floor(i/perRow)
+
+      svgTaxon.attr("x", col * (subChartWidth + subChartPad))
+      svgTaxon.attr("y", row * (subChartHeight + subChartPad))
+    })
+
+    const cols = svgsTaxa.length%perRow + 1
+    const rows = Math.floor(svgsTaxa.length/perRow) + 1
+
+    svg.attr("width", cols * (subChartWidth + subChartPad))
+    svg.attr("height", rows * (subChartHeight + subChartPad))
+  }
 
   function positionElements() {
 
@@ -155,8 +165,6 @@ export function phen1({
     const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
     const lines = wrapText(text, svgText, chartWidth, fontSize)
 
-    console.log(classText, text, lines)
-
     const uText = svgText.selectAll(`.${classText}`)
       .data(lines)
 
@@ -174,7 +182,6 @@ export function phen1({
     uText.exit()
       .remove()
 
-    console.log('lines', svgText.select(`.${classText}`).size())
     const height = svgText.select(`.${classText}`).node().getBBox().height
     const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
 
@@ -196,11 +203,16 @@ export function phen1({
 
   function makePhen (taxon) {
 
+    // Pre-process data.
+    // Filter to named taxon and sort in week order
+    // Add max value to each.
     const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
     let lineData = [] 
     metrics.forEach(m => {
       lineData.push({
         colour: m.colour,
+        max: Math.max(...dataFiltered.map(d => d[m.prop])),
+        //total: dataFiltered.reduce((a, d) => a + d[m.prop], 0),
         points: dataFiltered.map(d => {
           return {
             n: d[m.prop],
@@ -210,27 +222,20 @@ export function phen1({
       })
     })
 
-    let yMax = metrics.reduce((a, m) => {
-      const mMax = Math.max(...dataFiltered.map(d => d[m.prop]))
-      return a > mMax ? a : mMax
-    }, 0)
-    if (yMax < 5) yMax = 5
+    // Set the maximum value for the y axis
+    let yMax
+    if (normalize) {
+      yMax = 1
+    } else {
+      yMax = Math.max(...lineData.map(d => d.max))
+      if (yMax < 5) yMax = 5
+    }
 
-    const svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true)
-    svgPhen1.append("rect")
-      .classed("brc-chart-phen1-back", "true")
-      .attr("width", "100%")
-      .attr("height", "100%")
-      .attr("fill", "white")
-    const gPhen1 = svgPhen1.append('g')
-    
-    // For axis only
-    const xScaleTime = d3.scaleTime()
-      .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
-      .range([0, width])
+    // Value scales
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
     const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
 
+    // Top axis
     let tAxis
     if (axisTop === 'on') {
       tAxis = d3.axisTop()
@@ -239,8 +244,14 @@ export function phen1({
         .tickSizeOuter(0)
     }
 
+    // X (bottom) axis
     let xAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
+      // xScaleTime is only used to create the x axis
+      const xScaleTime = d3.scaleTime()
+        .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
+        .range([0, width])
+      
       xAxis = d3.axisBottom()
         .scale(xScaleTime)
 
@@ -259,10 +270,11 @@ export function phen1({
             }
           })
       } else {
-        xAxis.tickValues([])
+        xAxis.tickValues([]).tickSizeOuter(0)
       }
     }
 
+    // Right axis
     let rAxis
     if (axisRight === 'on') {
       rAxis = d3.axisRight()
@@ -271,75 +283,138 @@ export function phen1({
         .tickSizeOuter(0)
     }
 
+    // Y (left) axis
     let yAxis
     if (axisLeft === 'on' || axisLeft === 'tick') {
       yAxis = d3.axisLeft()
         .scale(yScale)
         .ticks(5)
       if (axisLeft !== 'tick') {
-        yAxis.tickValues([])
-      } else {
+        yAxis.tickValues([]).tickSizeOuter(0)
+      } else if (!normalize) {
         yAxis.tickFormat(d3.format("d"))
       }
     }
     
+    // Line path generator
     const line = d3.line()
-      .curve(d3.curveBasis)
+      .curve(d3.curveMonotoneX)
+      //.curve(d3.curveCardinal)
       .x(d => xScale(d.week))
       .y(d => yScale(d.n))
 
-    const lines = gPhen1.selectAll("lines")
-      .data(lineData)
-      .enter()
-      .append("g")
 
-    lines.append("path")
-      .attr("d", d => line(d.points))
+    // Create or get the relevant chart svg
+    let init, svgPhen1, gPhen1
+    if (svg.select(`#${gen.safeId(taxon)}`).size()) {
+      svgPhen1 = svg.select(`#${gen.safeId(taxon)}`)
+      gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
+      init = false
+    } else {
+      svgPhen1 = svg.append('svg')
+        .classed('brc-chart-phen1', true)
+        .attr('id', gen.safeId(taxon))
+      gPhen1 = svgPhen1.append('g')
+        .classed('brc-chart-phen1-g', true)
+      init = true
+    }
+    
+    // Create/update the line paths with D3
+    const mlines = gPhen1.selectAll("path")
+      .data(lineData)
+
+    const eLines = mlines.enter()
+      .append("g")
+      .append("path")
+
+    mlines.merge(eLines)
+      .transition()
+      .duration(duration)
+      .attr("d", d => {
+        if (normalize) {
+          return line(d.points.map(p => {
+            return {
+              n: d.max ? p.n/d.max : 0,
+              week: p.week
+            }
+          }))
+        } else {
+          return line(d.points)
+        }
+      })
       .attr("stroke", d => d.colour)
       .attr("stroke-width", 2)
 
-    let yAxisTextWidth = 0
-    const axisPadY = axisLeft === 'tick' ? 10 : 0
-    if (yAxis) {
-      const gYaxis = svgPhen1.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-      gYaxis.selectAll("text").each(function(){
-          if(this.getBBox().width > yAxisTextWidth) yAxisTextWidth = this.getBBox().width
-      })
-      gYaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
+    mlines.exit()
+      .remove()
+
+    if (init) {
+      // Constants for positioning
+      const axisPadX = axisLeft === 'tick' ? 35 : 0
+      const axisPadY = axisBottom === 'tick' ? 15 : 0
+      let labelPadY 
+
+      // Taxon title
+      if (showTaxonLabel) {
+        const taxonLabel = svgPhen1
+          .append('text')
+          .text(taxon)
+          .style('font-size', taxonLabelFontSize)
+          .style('font-style', taxonLabelItalics ? 'italic' : '')
+
+        const labelHeight = taxonLabel.node().getBBox().height
+        taxonLabel.attr("transform", `translate(${axisPadX}, ${labelHeight})`)
+        labelPadY = labelHeight * 1.5
+      } else {
+        labelPadY = 0
+      }
+      
+      // Size SVG
+      svgPhen1
+        .attr('width', width + axisPadX + 1)
+        .attr('height', height + axisPadY + labelPadY + 1)
+
+
+      // Position chart
+      gPhen1.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      
+      // Create axes and position within SVG
+      if (yAxis) {
+        const gYaxis = svgPhen1.append("g")
+          .attr("class", "y-axis")
+          // .transition()
+          // .duration(duration)
+          // .call(yAxis)
+        gYaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      }
+      if (xAxis) {
+        const gXaxis = svgPhen1.append("g")
+          .attr("class", "x axis")
+          .call(xAxis)
+
+        gXaxis.selectAll(".tick text")
+          .style("text-anchor", "start")
+          .attr("x", 6)
+          .attr("y", 6)
+
+        gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+      }
+      if (tAxis) {
+        const gTaxis = svgPhen1.append("g")
+          .call(tAxis)
+        gTaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      }
+      if (rAxis) {
+        const gRaxis = svgPhen1.append("g")
+          .call(rAxis)
+        gRaxis.attr("transform", `translate(${axisPadX + width},${labelPadY})`)
+      }
     }
 
-    const axisPadX = axisBottom === 'tick' ? 15 : 0
-    if (xAxis) {
-      const gXaxis = svgPhen1.append("g")
-        .attr("class", "x axis")
-        .call(xAxis)
-
-      gXaxis.selectAll(".tick text")
-        .style("text-anchor", "start")
-        .attr("x", 6)
-        .attr("y", 6)
-
-      gXaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},${height})`)
-    }
-
-    if (tAxis) {
-      const gTaxis = svgPhen1.append("g")
-        .call(tAxis)
-      gTaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
-    }
-
-    if (rAxis) {
-      const gRaxis = svgPhen1.append("g")
-        .call(rAxis)
-      gRaxis.attr("transform", `translate(${yAxisTextWidth + axisPadY + width},0)`)
-    }
-
-    gPhen1.attr("transform", `translate(${yAxisTextWidth + axisPadY},0)`)
-    svgPhen1
-      .attr('width', width + yAxisTextWidth + axisPadY + 1)
-      .attr('height', height + axisPadX + 1)
+    svgPhen1.select(".y-axis")
+      .transition()
+      .duration(duration)
+      .call(yAxis)
 
     return svgPhen1
   }
@@ -371,7 +446,6 @@ export function phen1({
         } else {
           lines[line] = workingText
         }
-
         txt.remove()
       }
     }
@@ -393,6 +467,7 @@ export function phen1({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -428,15 +503,25 @@ export function phen1({
       footerAlign = opts.footerAlign
     }
 
-    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+    //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+    //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+    //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
 
-    if ('data' in opts) {
-      makePhen(opts.data)
+    // if ('data' in opts) {
+    //   makePhen(opts.data)
+    // }
+
+    if ('normalize' in opts) {
+      normalize = opts.normalize
+      makeChart()
     }
 
-    positionElements()
+    if ('taxa' in opts) {
+      taxa = opts.taxa
+      makeChart()
+    }
+
+    //positionElements()
   }
 
 /** @function getChartWidth

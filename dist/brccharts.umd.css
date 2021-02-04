@@ -21,12 +21,8 @@ path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
 .brc-item-image-hide {
   display: none;
 }
-path {
+.brc-chart-phen1 path {
     fill: none;
-}
-
-.brc-chart-phen1-back {
-    xfill: peachpuff;
 }
 
 .brc-chart-phen1 {
