@@ -1,2657 +1,2657 @@
-taxon,week,p1,p2
-Maniola jurtina,1,3.25,0
-Maniola jurtina,2,1,0
-Maniola jurtina,3,1,0
-Maniola jurtina,6,3,0
-Maniola jurtina,8,1,0
-Maniola jurtina,12,1,0
-Maniola jurtina,13,12,0
-Maniola jurtina,14,6.25,2
-Maniola jurtina,15,10.25,1
-Maniola jurtina,16,11.125,0
-Maniola jurtina,17,7.75,8
-Maniola jurtina,18,6.625,1
-Maniola jurtina,19,12.125,7
-Maniola jurtina,20,19.625,17
-Maniola jurtina,21,30.375,152
-Maniola jurtina,22,166.5,1717
-Maniola jurtina,23,772.375,2819
-Maniola jurtina,24,1736.75,5996
-Maniola jurtina,25,4198.5,5621
-Maniola jurtina,26,5710,9428
-Maniola jurtina,27,7693.625,5753
-Maniola jurtina,28,6508.375,9340
-Maniola jurtina,29,8371.875,8174
-Maniola jurtina,30,6611.25,6410
-Maniola jurtina,31,5534.75,7303
-Maniola jurtina,32,4770.75,5433
-Maniola jurtina,33,3472.375,3401
-Maniola jurtina,34,2566.875,3104
-Maniola jurtina,35,1750.625,1708
-Maniola jurtina,36,947.75,1349
-Maniola jurtina,37,603.875,894
-Maniola jurtina,38,324.375,624
-Maniola jurtina,39,195.375,162
-Maniola jurtina,40,32.375,29
-Maniola jurtina,41,5.375,7
-Maniola jurtina,42,3,2
-Maniola jurtina,43,4.25,0
-Maniola jurtina,44,1,0
-Maniola jurtina,45,1,2
-Maniola jurtina,46,1,0
-Maniola jurtina,47,3,0
-Maniola jurtina,48,1,0
-Maniola jurtina,49,2.5,0
-Maniola jurtina,50,3,0
-Maniola jurtina,53,1,2
-Pieris rapae,1,3,0
-Pieris rapae,2,2,0
-Pieris rapae,3,1,0
-Pieris rapae,5,1,0
-Pieris rapae,6,4,1
-Pieris rapae,8,5,0
-Pieris rapae,9,10,2
-Pieris rapae,10,1.125,1
-Pieris rapae,11,2.25,10
-Pieris rapae,12,8,22
-Pieris rapae,13,35.5,91
-Pieris rapae,14,92,198
-Pieris rapae,15,180.375,918
-Pieris rapae,16,467.625,1020
-Pieris rapae,17,324.75,1715
-Pieris rapae,18,681.625,634
-Pieris rapae,19,1033.25,1555
-Pieris rapae,20,1075.375,1090
-Pieris rapae,21,1066.375,1570
-Pieris rapae,22,712.5,1177
-Pieris rapae,23,472.875,326
-Pieris rapae,24,292.5,722
-Pieris rapae,25,387.25,1178
-Pieris rapae,26,737.75,2907
-Pieris rapae,27,1844.75,2437
-Pieris rapae,28,2276,5731
-Pieris rapae,29,3988,5474
-Pieris rapae,30,3301.125,4097
-Pieris rapae,31,2883.875,4676
-Pieris rapae,32,2842.875,4242
-Pieris rapae,33,2746.75,3073
-Pieris rapae,34,2801.875,3511
-Pieris rapae,35,3056.125,2656
-Pieris rapae,36,1726,2475
-Pieris rapae,37,1393.625,2983
-Pieris rapae,38,904.25,2235
-Pieris rapae,39,608.875,778
-Pieris rapae,40,118,255
-Pieris rapae,41,48.875,88
-Pieris rapae,42,21.375,34
-Pieris rapae,43,10.875,17
-Pieris rapae,44,6,1
-Pieris rapae,45,2,5
-Pieris rapae,46,0,1
-Pieris rapae,47,2,3
+taxon,week,2020,2016-19
+Maniola jurtina,1,0,3.25
+Maniola jurtina,2,0,1
+Maniola jurtina,3,0,1
+Maniola jurtina,6,0,3
+Maniola jurtina,8,0,1
+Maniola jurtina,12,0,1
+Maniola jurtina,13,0,12
+Maniola jurtina,14,2,6.25
+Maniola jurtina,15,1,10.25
+Maniola jurtina,16,0,11.125
+Maniola jurtina,17,8,7.75
+Maniola jurtina,18,1,6.625
+Maniola jurtina,19,7,12.125
+Maniola jurtina,20,17,19.625
+Maniola jurtina,21,152,30.375
+Maniola jurtina,22,1717,166.5
+Maniola jurtina,23,2819,772.375
+Maniola jurtina,24,5996,1736.75
+Maniola jurtina,25,5621,4198.5
+Maniola jurtina,26,9428,5710
+Maniola jurtina,27,5753,7693.625
+Maniola jurtina,28,9340,6508.375
+Maniola jurtina,29,8174,8371.875
+Maniola jurtina,30,6410,6611.25
+Maniola jurtina,31,7303,5534.75
+Maniola jurtina,32,5433,4770.75
+Maniola jurtina,33,3401,3472.375
+Maniola jurtina,34,3104,2566.875
+Maniola jurtina,35,1708,1750.625
+Maniola jurtina,36,1349,947.75
+Maniola jurtina,37,894,603.875
+Maniola jurtina,38,624,324.375
+Maniola jurtina,39,162,195.375
+Maniola jurtina,40,29,32.375
+Maniola jurtina,41,7,5.375
+Maniola jurtina,42,2,3
+Maniola jurtina,43,0,4.25
+Maniola jurtina,44,0,1
+Maniola jurtina,45,2,1
+Maniola jurtina,46,0,1
+Maniola jurtina,47,0,3
+Maniola jurtina,48,0,1
+Maniola jurtina,49,0,2.5
+Maniola jurtina,50,0,3
+Maniola jurtina,53,2,1
+Pieris rapae,1,0,3
+Pieris rapae,2,0,2
+Pieris rapae,3,0,1
+Pieris rapae,5,0,1
+Pieris rapae,6,1,4
+Pieris rapae,8,0,5
+Pieris rapae,9,2,10
+Pieris rapae,10,1,1.125
+Pieris rapae,11,10,2.25
+Pieris rapae,12,22,8
+Pieris rapae,13,91,35.5
+Pieris rapae,14,198,92
+Pieris rapae,15,918,180.375
+Pieris rapae,16,1020,467.625
+Pieris rapae,17,1715,324.75
+Pieris rapae,18,634,681.625
+Pieris rapae,19,1555,1033.25
+Pieris rapae,20,1090,1075.375
+Pieris rapae,21,1570,1066.375
+Pieris rapae,22,1177,712.5
+Pieris rapae,23,326,472.875
+Pieris rapae,24,722,292.5
+Pieris rapae,25,1178,387.25
+Pieris rapae,26,2907,737.75
+Pieris rapae,27,2437,1844.75
+Pieris rapae,28,5731,2276
+Pieris rapae,29,5474,3988
+Pieris rapae,30,4097,3301.125
+Pieris rapae,31,4676,2883.875
+Pieris rapae,32,4242,2842.875
+Pieris rapae,33,3073,2746.75
+Pieris rapae,34,3511,2801.875
+Pieris rapae,35,2656,3056.125
+Pieris rapae,36,2475,1726
+Pieris rapae,37,2983,1393.625
+Pieris rapae,38,2235,904.25
+Pieris rapae,39,778,608.875
+Pieris rapae,40,255,118
+Pieris rapae,41,88,48.875
+Pieris rapae,42,34,21.375
+Pieris rapae,43,17,10.875
+Pieris rapae,44,1,6
+Pieris rapae,45,5,2
+Pieris rapae,46,1,0
+Pieris rapae,47,3,2
 Pieris rapae,48,1,1
-Pieris rapae,49,3,2
+Pieris rapae,49,2,3
 Pieris rapae,50,1,1
-Pieris rapae,52,1,0
+Pieris rapae,52,0,1
 Pieris rapae,53,1,1
-Pararge aegeria,1,3.5,0
-Pararge aegeria,2,1.5,0
+Pararge aegeria,1,0,3.5
+Pararge aegeria,2,0,1.5
 Pararge aegeria,3,1,1
-Pararge aegeria,4,2,0
-Pararge aegeria,6,2,0
-Pararge aegeria,8,4,0
-Pararge aegeria,9,2,0
-Pararge aegeria,10,3,0
-Pararge aegeria,11,1.25,3
-Pararge aegeria,12,8.5,5
-Pararge aegeria,13,32.875,27
-Pararge aegeria,14,170.5,100
-Pararge aegeria,15,349,935
-Pararge aegeria,16,796.125,1217
-Pararge aegeria,17,699.375,1869
-Pararge aegeria,18,888,453
-Pararge aegeria,19,1186.5,1190
-Pararge aegeria,20,1245.5,810
-Pararge aegeria,21,1380.75,1461
-Pararge aegeria,22,1568.75,2331
-Pararge aegeria,23,1890.125,1242
-Pararge aegeria,24,1350.25,1640
-Pararge aegeria,25,1615.875,1165
-Pararge aegeria,26,1493.375,1575
-Pararge aegeria,27,1414.5,725
-Pararge aegeria,28,1174.125,1481
-Pararge aegeria,29,1750.25,1800
-Pararge aegeria,30,1701.875,1815
-Pararge aegeria,31,1857.75,2530
-Pararge aegeria,32,2360.125,2423
-Pararge aegeria,33,2684.75,1842
-Pararge aegeria,34,2985.625,2574
-Pararge aegeria,35,3300.75,1858
-Pararge aegeria,36,2342.125,1747
-Pararge aegeria,37,2287.625,2366
-Pararge aegeria,38,1744.75,2361
-Pararge aegeria,39,1364.125,1135
-Pararge aegeria,40,304.75,480
-Pararge aegeria,41,126.75,207
-Pararge aegeria,42,63.25,121
-Pararge aegeria,43,35.875,40
-Pararge aegeria,44,9.75,7
-Pararge aegeria,45,6,22
-Pararge aegeria,46,1.875,4
-Pararge aegeria,47,3,0
-Pararge aegeria,48,1,0
-Pararge aegeria,49,1,0
-Pararge aegeria,52,1,0
-Pararge aegeria,53,1,0
-Pieris brassicae,1,2,0
-Pieris brassicae,3,1.5,0
-Pieris brassicae,6,2,0
-Pieris brassicae,7,1,0
-Pieris brassicae,8,1.5,0
-Pieris brassicae,9,1.5,0
-Pieris brassicae,10,3,1
-Pieris brassicae,11,1.375,2
-Pieris brassicae,12,3.25,2
-Pieris brassicae,13,8.5,17
-Pieris brassicae,14,29.375,40
-Pieris brassicae,15,62.125,311
-Pieris brassicae,16,181.25,462
-Pieris brassicae,17,134.375,895
-Pieris brassicae,18,311.125,287
-Pieris brassicae,19,612.875,933
-Pieris brassicae,20,777.5,674
-Pieris brassicae,21,889.125,1103
-Pieris brassicae,22,593.75,742
-Pieris brassicae,23,411.875,222
-Pieris brassicae,24,232.25,607
-Pieris brassicae,25,371.25,1071
-Pieris brassicae,26,742.5,2612
-Pieris brassicae,27,1885.375,1976
-Pieris brassicae,28,2292.5,5094
-Pieris brassicae,29,3983.75,4887
-Pieris brassicae,30,3160.25,3534
-Pieris brassicae,31,2450.625,3989
-Pieris brassicae,32,2332.125,3225
-Pieris brassicae,33,1936.875,1968
-Pieris brassicae,34,1853.25,2018
-Pieris brassicae,35,1816.25,1292
-Pieris brassicae,36,973.75,1227
-Pieris brassicae,37,871.875,1791
-Pieris brassicae,38,531.375,1406
-Pieris brassicae,39,352.125,453
-Pieris brassicae,40,76.625,142
-Pieris brassicae,41,37.375,46
-Pieris brassicae,42,20,25
-Pieris brassicae,43,6.625,5
-Pieris brassicae,44,2.75,2
-Pieris brassicae,45,1,7
-Pieris brassicae,46,1,2
-Pieris brassicae,47,3,2
-Pieris brassicae,48,1,0
-Pieris brassicae,49,1,0
-Pieris brassicae,50,1,0
-Pieris brassicae,52,0,1
-Pieris brassicae,53,0,2
-Pyronia tithonus,1,3.25,0
-Pyronia tithonus,3,1,0
-Pyronia tithonus,8,1,0
-Pyronia tithonus,9,1,0
-Pyronia tithonus,12,1,0
-Pyronia tithonus,14,3.5,0
-Pyronia tithonus,15,3.5,1
-Pyronia tithonus,16,3.75,1
-Pyronia tithonus,17,1.5,0
-Pyronia tithonus,18,4,0
-Pyronia tithonus,19,2.25,5
-Pyronia tithonus,20,3.5,4
-Pyronia tithonus,21,5.125,13
-Pyronia tithonus,22,3.75,17
-Pyronia tithonus,23,14.25,47
-Pyronia tithonus,24,38.5,92
-Pyronia tithonus,25,70.125,145
-Pyronia tithonus,26,220.375,390
-Pyronia tithonus,27,1154.125,803
-Pyronia tithonus,28,2808.125,4256
-Pyronia tithonus,29,5388.5,6421
-Pyronia tithonus,30,5348.125,6132
-Pyronia tithonus,31,4568.875,7542
-Pyronia tithonus,32,3550,5354
-Pyronia tithonus,33,2142.875,2804
-Pyronia tithonus,34,996.5,1361
-Pyronia tithonus,35,449.875,374
-Pyronia tithonus,36,122.75,122
-Pyronia tithonus,37,54.125,65
-Pyronia tithonus,38,20.625,21
-Pyronia tithonus,39,7.75,2
+Pararge aegeria,4,0,2
+Pararge aegeria,6,0,2
+Pararge aegeria,8,0,4
+Pararge aegeria,9,0,2
+Pararge aegeria,10,0,3
+Pararge aegeria,11,3,1.25
+Pararge aegeria,12,5,8.5
+Pararge aegeria,13,27,32.875
+Pararge aegeria,14,100,170.5
+Pararge aegeria,15,935,349
+Pararge aegeria,16,1217,796.125
+Pararge aegeria,17,1869,699.375
+Pararge aegeria,18,453,888
+Pararge aegeria,19,1190,1186.5
+Pararge aegeria,20,810,1245.5
+Pararge aegeria,21,1461,1380.75
+Pararge aegeria,22,2331,1568.75
+Pararge aegeria,23,1242,1890.125
+Pararge aegeria,24,1640,1350.25
+Pararge aegeria,25,1165,1615.875
+Pararge aegeria,26,1575,1493.375
+Pararge aegeria,27,725,1414.5
+Pararge aegeria,28,1481,1174.125
+Pararge aegeria,29,1800,1750.25
+Pararge aegeria,30,1815,1701.875
+Pararge aegeria,31,2530,1857.75
+Pararge aegeria,32,2423,2360.125
+Pararge aegeria,33,1842,2684.75
+Pararge aegeria,34,2574,2985.625
+Pararge aegeria,35,1858,3300.75
+Pararge aegeria,36,1747,2342.125
+Pararge aegeria,37,2366,2287.625
+Pararge aegeria,38,2361,1744.75
+Pararge aegeria,39,1135,1364.125
+Pararge aegeria,40,480,304.75
+Pararge aegeria,41,207,126.75
+Pararge aegeria,42,121,63.25
+Pararge aegeria,43,40,35.875
+Pararge aegeria,44,7,9.75
+Pararge aegeria,45,22,6
+Pararge aegeria,46,4,1.875
+Pararge aegeria,47,0,3
+Pararge aegeria,48,0,1
+Pararge aegeria,49,0,1
+Pararge aegeria,52,0,1
+Pararge aegeria,53,0,1
+Pieris brassicae,1,0,2
+Pieris brassicae,3,0,1.5
+Pieris brassicae,6,0,2
+Pieris brassicae,7,0,1
+Pieris brassicae,8,0,1.5
+Pieris brassicae,9,0,1.5
+Pieris brassicae,10,1,3
+Pieris brassicae,11,2,1.375
+Pieris brassicae,12,2,3.25
+Pieris brassicae,13,17,8.5
+Pieris brassicae,14,40,29.375
+Pieris brassicae,15,311,62.125
+Pieris brassicae,16,462,181.25
+Pieris brassicae,17,895,134.375
+Pieris brassicae,18,287,311.125
+Pieris brassicae,19,933,612.875
+Pieris brassicae,20,674,777.5
+Pieris brassicae,21,1103,889.125
+Pieris brassicae,22,742,593.75
+Pieris brassicae,23,222,411.875
+Pieris brassicae,24,607,232.25
+Pieris brassicae,25,1071,371.25
+Pieris brassicae,26,2612,742.5
+Pieris brassicae,27,1976,1885.375
+Pieris brassicae,28,5094,2292.5
+Pieris brassicae,29,4887,3983.75
+Pieris brassicae,30,3534,3160.25
+Pieris brassicae,31,3989,2450.625
+Pieris brassicae,32,3225,2332.125
+Pieris brassicae,33,1968,1936.875
+Pieris brassicae,34,2018,1853.25
+Pieris brassicae,35,1292,1816.25
+Pieris brassicae,36,1227,973.75
+Pieris brassicae,37,1791,871.875
+Pieris brassicae,38,1406,531.375
+Pieris brassicae,39,453,352.125
+Pieris brassicae,40,142,76.625
+Pieris brassicae,41,46,37.375
+Pieris brassicae,42,25,20
+Pieris brassicae,43,5,6.625
+Pieris brassicae,44,2,2.75
+Pieris brassicae,45,7,1
+Pieris brassicae,46,2,1
+Pieris brassicae,47,2,3
+Pieris brassicae,48,0,1
+Pieris brassicae,49,0,1
+Pieris brassicae,50,0,1
+Pieris brassicae,52,1,0
+Pieris brassicae,53,2,0
+Pyronia tithonus,1,0,3.25
+Pyronia tithonus,3,0,1
+Pyronia tithonus,8,0,1
+Pyronia tithonus,9,0,1
+Pyronia tithonus,12,0,1
+Pyronia tithonus,14,0,3.5
+Pyronia tithonus,15,1,3.5
+Pyronia tithonus,16,1,3.75
+Pyronia tithonus,17,0,1.5
+Pyronia tithonus,18,0,4
+Pyronia tithonus,19,5,2.25
+Pyronia tithonus,20,4,3.5
+Pyronia tithonus,21,13,5.125
+Pyronia tithonus,22,17,3.75
+Pyronia tithonus,23,47,14.25
+Pyronia tithonus,24,92,38.5
+Pyronia tithonus,25,145,70.125
+Pyronia tithonus,26,390,220.375
+Pyronia tithonus,27,803,1154.125
+Pyronia tithonus,28,4256,2808.125
+Pyronia tithonus,29,6421,5388.5
+Pyronia tithonus,30,6132,5348.125
+Pyronia tithonus,31,7542,4568.875
+Pyronia tithonus,32,5354,3550
+Pyronia tithonus,33,2804,2142.875
+Pyronia tithonus,34,1361,996.5
+Pyronia tithonus,35,374,449.875
+Pyronia tithonus,36,122,122.75
+Pyronia tithonus,37,65,54.125
+Pyronia tithonus,38,21,20.625
+Pyronia tithonus,39,2,7.75
 Pyronia tithonus,40,3,3
-Pyronia tithonus,41,1.5,0
-Pyronia tithonus,42,1,0
-Pyronia tithonus,43,2,0
-Pyronia tithonus,44,0,1
-Pyronia tithonus,45,1,2
-Pyronia tithonus,47,1,0
-Pyronia tithonus,52,1,0
-Pyronia tithonus,53,1,0
-Aphantopus hyperantus,1,3.25,0
-Aphantopus hyperantus,3,1,0
-Aphantopus hyperantus,6,4,1
-Aphantopus hyperantus,12,1,0
-Aphantopus hyperantus,13,12,0
-Aphantopus hyperantus,14,4.5,0
-Aphantopus hyperantus,15,6.5,0
-Aphantopus hyperantus,16,13.5,0
-Aphantopus hyperantus,17,11.5,0
-Aphantopus hyperantus,18,4.25,1
-Aphantopus hyperantus,19,12,0
-Aphantopus hyperantus,20,6.125,1
-Aphantopus hyperantus,21,11.5,9
-Aphantopus hyperantus,22,15.125,15
-Aphantopus hyperantus,23,44.75,82
-Aphantopus hyperantus,24,219.25,531
-Aphantopus hyperantus,25,1289.5,2069
-Aphantopus hyperantus,26,3545.625,4948
-Aphantopus hyperantus,27,6226.125,4746
-Aphantopus hyperantus,28,5249.375,6380
-Aphantopus hyperantus,29,5238.25,4573
-Aphantopus hyperantus,30,2797.5,2892
-Aphantopus hyperantus,31,1197,1808
-Aphantopus hyperantus,32,490,558
-Aphantopus hyperantus,33,158.25,168
-Aphantopus hyperantus,34,64.625,56
-Aphantopus hyperantus,35,46.25,28
-Aphantopus hyperantus,36,15.375,7
-Aphantopus hyperantus,37,9.25,4
-Aphantopus hyperantus,38,5.75,2
-Aphantopus hyperantus,39,5.5,1
-Aphantopus hyperantus,40,1,0
-Aphantopus hyperantus,41,1,0
-Aphantopus hyperantus,42,1,0
-Aphantopus hyperantus,47,3,0
-Aphantopus hyperantus,49,7,1
-Aphantopus hyperantus,50,3,0
-Aphantopus hyperantus,53,1,2
-Pieris napi,1,3.75,0
+Pyronia tithonus,41,0,1.5
+Pyronia tithonus,42,0,1
+Pyronia tithonus,43,0,2
+Pyronia tithonus,44,1,0
+Pyronia tithonus,45,2,1
+Pyronia tithonus,47,0,1
+Pyronia tithonus,52,0,1
+Pyronia tithonus,53,0,1
+Aphantopus hyperantus,1,0,3.25
+Aphantopus hyperantus,3,0,1
+Aphantopus hyperantus,6,1,4
+Aphantopus hyperantus,12,0,1
+Aphantopus hyperantus,13,0,12
+Aphantopus hyperantus,14,0,4.5
+Aphantopus hyperantus,15,0,6.5
+Aphantopus hyperantus,16,0,13.5
+Aphantopus hyperantus,17,0,11.5
+Aphantopus hyperantus,18,1,4.25
+Aphantopus hyperantus,19,0,12
+Aphantopus hyperantus,20,1,6.125
+Aphantopus hyperantus,21,9,11.5
+Aphantopus hyperantus,22,15,15.125
+Aphantopus hyperantus,23,82,44.75
+Aphantopus hyperantus,24,531,219.25
+Aphantopus hyperantus,25,2069,1289.5
+Aphantopus hyperantus,26,4948,3545.625
+Aphantopus hyperantus,27,4746,6226.125
+Aphantopus hyperantus,28,6380,5249.375
+Aphantopus hyperantus,29,4573,5238.25
+Aphantopus hyperantus,30,2892,2797.5
+Aphantopus hyperantus,31,1808,1197
+Aphantopus hyperantus,32,558,490
+Aphantopus hyperantus,33,168,158.25
+Aphantopus hyperantus,34,56,64.625
+Aphantopus hyperantus,35,28,46.25
+Aphantopus hyperantus,36,7,15.375
+Aphantopus hyperantus,37,4,9.25
+Aphantopus hyperantus,38,2,5.75
+Aphantopus hyperantus,39,1,5.5
+Aphantopus hyperantus,40,0,1
+Aphantopus hyperantus,41,0,1
+Aphantopus hyperantus,42,0,1
+Aphantopus hyperantus,47,0,3
+Aphantopus hyperantus,49,1,7
+Aphantopus hyperantus,50,0,3
+Aphantopus hyperantus,53,2,1
+Pieris napi,1,0,3.75
 Pieris napi,2,1,1
-Pieris napi,3,1,0
-Pieris napi,5,1,0
-Pieris napi,6,6,0
-Pieris napi,9,1,0
-Pieris napi,10,1,0
-Pieris napi,11,1.5,1
-Pieris napi,12,1.75,2
-Pieris napi,13,9.25,5
-Pieris napi,14,44.375,33
-Pieris napi,15,115.875,297
-Pieris napi,16,355.25,598
-Pieris napi,17,404,1195
-Pieris napi,18,813.125,573
-Pieris napi,19,1366.875,1361
-Pieris napi,20,1604.25,961
-Pieris napi,21,1494.875,1442
-Pieris napi,22,961.5,1014
-Pieris napi,23,708.125,211
-Pieris napi,24,357.75,322
-Pieris napi,25,375.5,423
-Pieris napi,26,437.375,943
-Pieris napi,27,926.25,1121
-Pieris napi,28,1319.375,2478
-Pieris napi,29,2433.875,2398
-Pieris napi,30,2501.125,2005
-Pieris napi,31,2085.625,2377
-Pieris napi,32,1996.75,2040
-Pieris napi,33,1520.25,1318
-Pieris napi,34,1415.375,1376
-Pieris napi,35,1213.625,790
-Pieris napi,36,671.5,731
-Pieris napi,37,504.75,829
-Pieris napi,38,261.25,465
-Pieris napi,39,132.625,120
-Pieris napi,40,17.125,34
-Pieris napi,41,4.125,11
-Pieris napi,42,3.5,0
-Pieris napi,43,3,2
-Pieris napi,45,1,0
-Pieris napi,47,2,0
-Pieris napi,48,1,0
-Pieris napi,49,4,0
-Pieris napi,50,1,0
+Pieris napi,3,0,1
+Pieris napi,5,0,1
+Pieris napi,6,0,6
+Pieris napi,9,0,1
+Pieris napi,10,0,1
+Pieris napi,11,1,1.5
+Pieris napi,12,2,1.75
+Pieris napi,13,5,9.25
+Pieris napi,14,33,44.375
+Pieris napi,15,297,115.875
+Pieris napi,16,598,355.25
+Pieris napi,17,1195,404
+Pieris napi,18,573,813.125
+Pieris napi,19,1361,1366.875
+Pieris napi,20,961,1604.25
+Pieris napi,21,1442,1494.875
+Pieris napi,22,1014,961.5
+Pieris napi,23,211,708.125
+Pieris napi,24,322,357.75
+Pieris napi,25,423,375.5
+Pieris napi,26,943,437.375
+Pieris napi,27,1121,926.25
+Pieris napi,28,2478,1319.375
+Pieris napi,29,2398,2433.875
+Pieris napi,30,2005,2501.125
+Pieris napi,31,2377,2085.625
+Pieris napi,32,2040,1996.75
+Pieris napi,33,1318,1520.25
+Pieris napi,34,1376,1415.375
+Pieris napi,35,790,1213.625
+Pieris napi,36,731,671.5
+Pieris napi,37,829,504.75
+Pieris napi,38,465,261.25
+Pieris napi,39,120,132.625
+Pieris napi,40,34,17.125
+Pieris napi,41,11,4.125
+Pieris napi,42,0,3.5
+Pieris napi,43,2,3
+Pieris napi,45,0,1
+Pieris napi,47,0,2
+Pieris napi,48,0,1
+Pieris napi,49,0,4
+Pieris napi,50,0,1
 Pieris napi,53,1,1
-Aglais io,1,5,7
-Aglais io,2,2.75,10
-Aglais io,3,2.75,9
-Aglais io,4,2.25,11
-Aglais io,5,2.5,16
-Aglais io,6,2.75,16
-Aglais io,7,13.125,9
-Aglais io,8,26.25,5
-Aglais io,9,31.375,12
-Aglais io,10,11.25,61
-Aglais io,11,49.5,210
-Aglais io,12,94.5,645
-Aglais io,13,384.625,1771
-Aglais io,14,1040.5,2033
-Aglais io,15,1473,4189
-Aglais io,16,1930.875,2404
-Aglais io,17,787.125,2699
-Aglais io,18,1332.125,541
-Aglais io,19,1268.875,1578
-Aglais io,20,922.375,724
-Aglais io,21,632.5,944
-Aglais io,22,352.5,596
-Aglais io,23,222.25,143
-Aglais io,24,115.125,202
-Aglais io,25,107,195
-Aglais io,26,95.25,442
-Aglais io,27,207.25,951
-Aglais io,28,541.75,3899
-Aglais io,29,1008,4027
-Aglais io,30,1492.5,2916
-Aglais io,31,1328.625,2877
-Aglais io,32,1071.5,1584
-Aglais io,33,694.75,761
-Aglais io,34,578.375,598
-Aglais io,35,445.125,395
-Aglais io,36,243.5,397
-Aglais io,37,198.625,498
-Aglais io,38,178.125,383
-Aglais io,39,147.375,135
-Aglais io,40,45.75,56
-Aglais io,41,22.25,38
-Aglais io,42,22.75,39
-Aglais io,43,20.125,24
-Aglais io,44,8.5,14
-Aglais io,45,3.375,74
-Aglais io,46,4.875,25
-Aglais io,47,3.75,10
-Aglais io,48,4.5,12
-Aglais io,49,8,2
-Aglais io,50,4.5,7
-Aglais io,51,2.75,13
-Aglais io,52,7,2
-Polyommatus icarus,1,3,0
-Polyommatus icarus,6,1,0
-Polyommatus icarus,12,1,0
-Polyommatus icarus,13,4.25,0
-Polyommatus icarus,14,6.375,5
-Polyommatus icarus,15,11,49
-Polyommatus icarus,16,23.5,51
-Polyommatus icarus,17,14.875,117
-Polyommatus icarus,18,38.125,56
-Polyommatus icarus,19,125.625,355
-Polyommatus icarus,20,396,912
-Polyommatus icarus,21,1082.25,2045
-Polyommatus icarus,22,1493.625,1913
-Polyommatus icarus,23,1502.375,674
-Polyommatus icarus,24,1024.125,738
-Polyommatus icarus,25,1036.375,440
-Polyommatus icarus,26,727.625,606
-Polyommatus icarus,27,582,290
-Polyommatus icarus,28,588,978
-Polyommatus icarus,29,1066.375,1606
-Polyommatus icarus,30,1399.375,1994
-Polyommatus icarus,31,1749,2969
-Polyommatus icarus,32,1931.625,2497
-Polyommatus icarus,33,2145,1710
-Polyommatus icarus,34,1825.375,1485
-Polyommatus icarus,35,1583.875,690
-Polyommatus icarus,36,713.25,603
-Polyommatus icarus,37,426.875,655
-Polyommatus icarus,38,211.125,771
-Polyommatus icarus,39,141.5,294
-Polyommatus icarus,40,19.625,96
-Polyommatus icarus,41,9.5,20
-Polyommatus icarus,42,4.625,4
-Polyommatus icarus,43,8,1
-Polyommatus icarus,44,1,0
-Polyommatus icarus,47,3,0
-Polyommatus icarus,49,3.5,0
-Polyommatus icarus,50,1,0
-Polyommatus icarus,53,1,0
-Vanessa atalanta,1,9.25,3
-Vanessa atalanta,2,11.75,20
-Vanessa atalanta,3,7.75,20
-Vanessa atalanta,4,8.75,6
-Vanessa atalanta,5,11.25,21
-Vanessa atalanta,6,7,24
-Vanessa atalanta,7,27.125,8
-Vanessa atalanta,8,32.125,3
-Vanessa atalanta,9,32.75,12
-Vanessa atalanta,10,15.75,18
-Vanessa atalanta,11,22.625,19
-Vanessa atalanta,12,18.625,38
-Vanessa atalanta,13,41.875,51
-Vanessa atalanta,14,70.375,77
-Vanessa atalanta,15,79.375,193
-Vanessa atalanta,16,105.625,307
-Vanessa atalanta,17,56.125,628
-Vanessa atalanta,18,112.25,190
-Vanessa atalanta,19,201.5,464
-Vanessa atalanta,20,297.875,469
-Vanessa atalanta,21,305.5,412
-Vanessa atalanta,22,403,524
-Vanessa atalanta,23,472.125,311
-Vanessa atalanta,24,391.25,1021
-Vanessa atalanta,25,543.75,1333
-Vanessa atalanta,26,782.375,2400
-Vanessa atalanta,27,1010.25,2408
-Vanessa atalanta,28,968.375,3690
-Vanessa atalanta,29,1543.5,2879
-Vanessa atalanta,30,1518.125,1828
-Vanessa atalanta,31,1372.375,1799
-Vanessa atalanta,32,1188.625,1052
-Vanessa atalanta,33,910.875,780
-Vanessa atalanta,34,862.125,1073
-Vanessa atalanta,35,944.875,986
-Vanessa atalanta,36,752,995
-Vanessa atalanta,37,1064.875,1296
-Vanessa atalanta,38,868,1074
-Vanessa atalanta,39,1050.125,470
-Vanessa atalanta,40,394.625,278
-Vanessa atalanta,41,272.125,307
-Vanessa atalanta,42,266,206
-Vanessa atalanta,43,224.875,115
-Vanessa atalanta,44,130.125,43
-Vanessa atalanta,45,70.125,140
-Vanessa atalanta,46,52.5,33
-Vanessa atalanta,47,19.5,14
-Vanessa atalanta,48,11.75,28
-Vanessa atalanta,49,9.625,6
-Vanessa atalanta,50,5.25,3
-Vanessa atalanta,51,6.75,4
-Vanessa atalanta,52,6.875,1
-Gonepteryx rhamni,1,3.25,0
-Gonepteryx rhamni,2,1.5,1
-Gonepteryx rhamni,3,1.5,3
-Gonepteryx rhamni,4,1.75,0
-Gonepteryx rhamni,5,2.5,2
-Gonepteryx rhamni,6,2,3
-Gonepteryx rhamni,7,19.5,3
-Gonepteryx rhamni,8,96,3
-Gonepteryx rhamni,9,128.75,4
-Gonepteryx rhamni,10,65,16
-Gonepteryx rhamni,11,93,204
-Gonepteryx rhamni,12,126.5,458
-Gonepteryx rhamni,13,448.125,708
-Gonepteryx rhamni,14,1058,1011
-Gonepteryx rhamni,15,1319.25,2118
-Gonepteryx rhamni,16,1503.5,956
-Gonepteryx rhamni,17,683.5,1534
-Gonepteryx rhamni,18,1350.75,412
-Gonepteryx rhamni,19,1809.125,1262
-Gonepteryx rhamni,20,1484.75,1037
-Gonepteryx rhamni,21,1359.75,1570
-Gonepteryx rhamni,22,980.375,1039
-Gonepteryx rhamni,23,570.375,176
-Gonepteryx rhamni,24,311.125,349
-Gonepteryx rhamni,25,254.625,197
-Gonepteryx rhamni,26,232.625,351
-Gonepteryx rhamni,27,336.625,211
-Gonepteryx rhamni,28,370.625,1100
-Gonepteryx rhamni,29,662,1131
-Gonepteryx rhamni,30,767,867
-Gonepteryx rhamni,31,621.125,1349
-Gonepteryx rhamni,32,482.5,925
-Gonepteryx rhamni,33,394.875,279
-Gonepteryx rhamni,34,343.75,144
-Gonepteryx rhamni,35,252.625,81
-Gonepteryx rhamni,36,110,92
-Gonepteryx rhamni,37,94.75,341
-Gonepteryx rhamni,38,98.5,138
-Gonepteryx rhamni,39,98.875,44
-Gonepteryx rhamni,40,14.875,18
-Gonepteryx rhamni,41,10.625,5
-Gonepteryx rhamni,42,10.875,11
-Gonepteryx rhamni,43,8.375,10
-Gonepteryx rhamni,44,6.5,6
-Gonepteryx rhamni,45,4,27
-Gonepteryx rhamni,46,2.5,12
-Gonepteryx rhamni,47,1.5,5
-Gonepteryx rhamni,48,1.25,3
-Gonepteryx rhamni,49,1.375,1
-Gonepteryx rhamni,50,1,0
-Gonepteryx rhamni,51,1,0
-Gonepteryx rhamni,53,1,0
-Coenonympha pamphilus,1,1.5,0
-Coenonympha pamphilus,6,1,0
-Coenonympha pamphilus,8,1,0
-Coenonympha pamphilus,12,1,0
-Coenonympha pamphilus,13,3.75,0
-Coenonympha pamphilus,14,3.5,0
-Coenonympha pamphilus,15,6.25,2
-Coenonympha pamphilus,16,18.375,3
-Coenonympha pamphilus,17,20.625,62
-Coenonympha pamphilus,18,46.5,76
-Coenonympha pamphilus,19,150.75,397
-Coenonympha pamphilus,20,422.75,841
-Coenonympha pamphilus,21,785.125,1774
-Coenonympha pamphilus,22,964.75,2291
-Coenonympha pamphilus,23,1152.5,1209
-Coenonympha pamphilus,24,959.875,1880
-Coenonympha pamphilus,25,1330.875,1332
-Coenonympha pamphilus,26,1225.375,1912
-Coenonympha pamphilus,27,1217.375,638
-Coenonympha pamphilus,28,818.75,879
-Coenonympha pamphilus,29,892.25,819
-Coenonympha pamphilus,30,674.875,665
-Coenonympha pamphilus,31,615,996
-Coenonympha pamphilus,32,685,1358
-Coenonympha pamphilus,33,789.875,1282
-Coenonympha pamphilus,34,920,1397
-Coenonympha pamphilus,35,1088.875,843
-Coenonympha pamphilus,36,680.125,960
-Coenonympha pamphilus,37,549.75,841
-Coenonympha pamphilus,38,285.375,556
-Coenonympha pamphilus,39,155.5,109
-Coenonympha pamphilus,40,17.375,20
-Coenonympha pamphilus,41,4.5,2
-Coenonympha pamphilus,42,3.5,0
-Coenonympha pamphilus,43,6,0
-Coenonympha pamphilus,45,0,1
-Coenonympha pamphilus,47,3,0
-Coenonympha pamphilus,51,0,1
+Aglais io,1,7,5
+Aglais io,2,10,2.75
+Aglais io,3,9,2.75
+Aglais io,4,11,2.25
+Aglais io,5,16,2.5
+Aglais io,6,16,2.75
+Aglais io,7,9,13.125
+Aglais io,8,5,26.25
+Aglais io,9,12,31.375
+Aglais io,10,61,11.25
+Aglais io,11,210,49.5
+Aglais io,12,645,94.5
+Aglais io,13,1771,384.625
+Aglais io,14,2033,1040.5
+Aglais io,15,4189,1473
+Aglais io,16,2404,1930.875
+Aglais io,17,2699,787.125
+Aglais io,18,541,1332.125
+Aglais io,19,1578,1268.875
+Aglais io,20,724,922.375
+Aglais io,21,944,632.5
+Aglais io,22,596,352.5
+Aglais io,23,143,222.25
+Aglais io,24,202,115.125
+Aglais io,25,195,107
+Aglais io,26,442,95.25
+Aglais io,27,951,207.25
+Aglais io,28,3899,541.75
+Aglais io,29,4027,1008
+Aglais io,30,2916,1492.5
+Aglais io,31,2877,1328.625
+Aglais io,32,1584,1071.5
+Aglais io,33,761,694.75
+Aglais io,34,598,578.375
+Aglais io,35,395,445.125
+Aglais io,36,397,243.5
+Aglais io,37,498,198.625
+Aglais io,38,383,178.125
+Aglais io,39,135,147.375
+Aglais io,40,56,45.75
+Aglais io,41,38,22.25
+Aglais io,42,39,22.75
+Aglais io,43,24,20.125
+Aglais io,44,14,8.5
+Aglais io,45,74,3.375
+Aglais io,46,25,4.875
+Aglais io,47,10,3.75
+Aglais io,48,12,4.5
+Aglais io,49,2,8
+Aglais io,50,7,4.5
+Aglais io,51,13,2.75
+Aglais io,52,2,7
+Polyommatus icarus,1,0,3
+Polyommatus icarus,6,0,1
+Polyommatus icarus,12,0,1
+Polyommatus icarus,13,0,4.25
+Polyommatus icarus,14,5,6.375
+Polyommatus icarus,15,49,11
+Polyommatus icarus,16,51,23.5
+Polyommatus icarus,17,117,14.875
+Polyommatus icarus,18,56,38.125
+Polyommatus icarus,19,355,125.625
+Polyommatus icarus,20,912,396
+Polyommatus icarus,21,2045,1082.25
+Polyommatus icarus,22,1913,1493.625
+Polyommatus icarus,23,674,1502.375
+Polyommatus icarus,24,738,1024.125
+Polyommatus icarus,25,440,1036.375
+Polyommatus icarus,26,606,727.625
+Polyommatus icarus,27,290,582
+Polyommatus icarus,28,978,588
+Polyommatus icarus,29,1606,1066.375
+Polyommatus icarus,30,1994,1399.375
+Polyommatus icarus,31,2969,1749
+Polyommatus icarus,32,2497,1931.625
+Polyommatus icarus,33,1710,2145
+Polyommatus icarus,34,1485,1825.375
+Polyommatus icarus,35,690,1583.875
+Polyommatus icarus,36,603,713.25
+Polyommatus icarus,37,655,426.875
+Polyommatus icarus,38,771,211.125
+Polyommatus icarus,39,294,141.5
+Polyommatus icarus,40,96,19.625
+Polyommatus icarus,41,20,9.5
+Polyommatus icarus,42,4,4.625
+Polyommatus icarus,43,1,8
+Polyommatus icarus,44,0,1
+Polyommatus icarus,47,0,3
+Polyommatus icarus,49,0,3.5
+Polyommatus icarus,50,0,1
+Polyommatus icarus,53,0,1
+Vanessa atalanta,1,3,9.25
+Vanessa atalanta,2,20,11.75
+Vanessa atalanta,3,20,7.75
+Vanessa atalanta,4,6,8.75
+Vanessa atalanta,5,21,11.25
+Vanessa atalanta,6,24,7
+Vanessa atalanta,7,8,27.125
+Vanessa atalanta,8,3,32.125
+Vanessa atalanta,9,12,32.75
+Vanessa atalanta,10,18,15.75
+Vanessa atalanta,11,19,22.625
+Vanessa atalanta,12,38,18.625
+Vanessa atalanta,13,51,41.875
+Vanessa atalanta,14,77,70.375
+Vanessa atalanta,15,193,79.375
+Vanessa atalanta,16,307,105.625
+Vanessa atalanta,17,628,56.125
+Vanessa atalanta,18,190,112.25
+Vanessa atalanta,19,464,201.5
+Vanessa atalanta,20,469,297.875
+Vanessa atalanta,21,412,305.5
+Vanessa atalanta,22,524,403
+Vanessa atalanta,23,311,472.125
+Vanessa atalanta,24,1021,391.25
+Vanessa atalanta,25,1333,543.75
+Vanessa atalanta,26,2400,782.375
+Vanessa atalanta,27,2408,1010.25
+Vanessa atalanta,28,3690,968.375
+Vanessa atalanta,29,2879,1543.5
+Vanessa atalanta,30,1828,1518.125
+Vanessa atalanta,31,1799,1372.375
+Vanessa atalanta,32,1052,1188.625
+Vanessa atalanta,33,780,910.875
+Vanessa atalanta,34,1073,862.125
+Vanessa atalanta,35,986,944.875
+Vanessa atalanta,36,995,752
+Vanessa atalanta,37,1296,1064.875
+Vanessa atalanta,38,1074,868
+Vanessa atalanta,39,470,1050.125
+Vanessa atalanta,40,278,394.625
+Vanessa atalanta,41,307,272.125
+Vanessa atalanta,42,206,266
+Vanessa atalanta,43,115,224.875
+Vanessa atalanta,44,43,130.125
+Vanessa atalanta,45,140,70.125
+Vanessa atalanta,46,33,52.5
+Vanessa atalanta,47,14,19.5
+Vanessa atalanta,48,28,11.75
+Vanessa atalanta,49,6,9.625
+Vanessa atalanta,50,3,5.25
+Vanessa atalanta,51,4,6.75
+Vanessa atalanta,52,1,6.875
+Gonepteryx rhamni,1,0,3.25
+Gonepteryx rhamni,2,1,1.5
+Gonepteryx rhamni,3,3,1.5
+Gonepteryx rhamni,4,0,1.75
+Gonepteryx rhamni,5,2,2.5
+Gonepteryx rhamni,6,3,2
+Gonepteryx rhamni,7,3,19.5
+Gonepteryx rhamni,8,3,96
+Gonepteryx rhamni,9,4,128.75
+Gonepteryx rhamni,10,16,65
+Gonepteryx rhamni,11,204,93
+Gonepteryx rhamni,12,458,126.5
+Gonepteryx rhamni,13,708,448.125
+Gonepteryx rhamni,14,1011,1058
+Gonepteryx rhamni,15,2118,1319.25
+Gonepteryx rhamni,16,956,1503.5
+Gonepteryx rhamni,17,1534,683.5
+Gonepteryx rhamni,18,412,1350.75
+Gonepteryx rhamni,19,1262,1809.125
+Gonepteryx rhamni,20,1037,1484.75
+Gonepteryx rhamni,21,1570,1359.75
+Gonepteryx rhamni,22,1039,980.375
+Gonepteryx rhamni,23,176,570.375
+Gonepteryx rhamni,24,349,311.125
+Gonepteryx rhamni,25,197,254.625
+Gonepteryx rhamni,26,351,232.625
+Gonepteryx rhamni,27,211,336.625
+Gonepteryx rhamni,28,1100,370.625
+Gonepteryx rhamni,29,1131,662
+Gonepteryx rhamni,30,867,767
+Gonepteryx rhamni,31,1349,621.125
+Gonepteryx rhamni,32,925,482.5
+Gonepteryx rhamni,33,279,394.875
+Gonepteryx rhamni,34,144,343.75
+Gonepteryx rhamni,35,81,252.625
+Gonepteryx rhamni,36,92,110
+Gonepteryx rhamni,37,341,94.75
+Gonepteryx rhamni,38,138,98.5
+Gonepteryx rhamni,39,44,98.875
+Gonepteryx rhamni,40,18,14.875
+Gonepteryx rhamni,41,5,10.625
+Gonepteryx rhamni,42,11,10.875
+Gonepteryx rhamni,43,10,8.375
+Gonepteryx rhamni,44,6,6.5
+Gonepteryx rhamni,45,27,4
+Gonepteryx rhamni,46,12,2.5
+Gonepteryx rhamni,47,5,1.5
+Gonepteryx rhamni,48,3,1.25
+Gonepteryx rhamni,49,1,1.375
+Gonepteryx rhamni,50,0,1
+Gonepteryx rhamni,51,0,1
+Gonepteryx rhamni,53,0,1
+Coenonympha pamphilus,1,0,1.5
+Coenonympha pamphilus,6,0,1
+Coenonympha pamphilus,8,0,1
+Coenonympha pamphilus,12,0,1
+Coenonympha pamphilus,13,0,3.75
+Coenonympha pamphilus,14,0,3.5
+Coenonympha pamphilus,15,2,6.25
+Coenonympha pamphilus,16,3,18.375
+Coenonympha pamphilus,17,62,20.625
+Coenonympha pamphilus,18,76,46.5
+Coenonympha pamphilus,19,397,150.75
+Coenonympha pamphilus,20,841,422.75
+Coenonympha pamphilus,21,1774,785.125
+Coenonympha pamphilus,22,2291,964.75
+Coenonympha pamphilus,23,1209,1152.5
+Coenonympha pamphilus,24,1880,959.875
+Coenonympha pamphilus,25,1332,1330.875
+Coenonympha pamphilus,26,1912,1225.375
+Coenonympha pamphilus,27,638,1217.375
+Coenonympha pamphilus,28,879,818.75
+Coenonympha pamphilus,29,819,892.25
+Coenonympha pamphilus,30,665,674.875
+Coenonympha pamphilus,31,996,615
+Coenonympha pamphilus,32,1358,685
+Coenonympha pamphilus,33,1282,789.875
+Coenonympha pamphilus,34,1397,920
+Coenonympha pamphilus,35,843,1088.875
+Coenonympha pamphilus,36,960,680.125
+Coenonympha pamphilus,37,841,549.75
+Coenonympha pamphilus,38,556,285.375
+Coenonympha pamphilus,39,109,155.5
+Coenonympha pamphilus,40,20,17.375
+Coenonympha pamphilus,41,2,4.5
+Coenonympha pamphilus,42,0,3.5
+Coenonympha pamphilus,43,0,6
+Coenonympha pamphilus,45,1,0
+Coenonympha pamphilus,47,0,3
+Coenonympha pamphilus,51,1,0
 Coenonympha pamphilus,53,1,1
-Aglais urticae,1,4,7
-Aglais urticae,2,3.25,8
-Aglais urticae,3,2.5,9
-Aglais urticae,4,2.5,8
-Aglais urticae,5,2.5,3
-Aglais urticae,6,4.625,15
-Aglais urticae,7,9.375,2
-Aglais urticae,8,37.375,5
-Aglais urticae,9,49,7
-Aglais urticae,10,17.125,37
-Aglais urticae,11,63.75,113
-Aglais urticae,12,93,356
-Aglais urticae,13,291.75,981
-Aglais urticae,14,540.75,708
-Aglais urticae,15,597.125,1555
-Aglais urticae,16,771.75,953
-Aglais urticae,17,321.25,965
-Aglais urticae,18,422.625,205
-Aglais urticae,19,428.625,482
-Aglais urticae,20,303.5,209
-Aglais urticae,21,220.875,405
-Aglais urticae,22,140.625,1773
-Aglais urticae,23,189.25,1283
-Aglais urticae,24,271.875,2663
-Aglais urticae,25,577.25,2160
-Aglais urticae,26,854.375,2376
-Aglais urticae,27,1200.125,1338
-Aglais urticae,28,793.375,1835
-Aglais urticae,29,817.625,1276
-Aglais urticae,30,565.125,978
-Aglais urticae,31,417.625,1126
-Aglais urticae,32,444.25,1180
-Aglais urticae,33,450.25,930
-Aglais urticae,34,580.125,1087
-Aglais urticae,35,643.875,713
-Aglais urticae,36,374.75,546
-Aglais urticae,37,265.375,652
-Aglais urticae,38,201.625,563
-Aglais urticae,39,131.875,159
-Aglais urticae,40,39,96
-Aglais urticae,41,23.125,39
-Aglais urticae,42,21.875,30
-Aglais urticae,43,19.125,21
-Aglais urticae,44,9,8
-Aglais urticae,45,3,27
-Aglais urticae,46,3.625,8
-Aglais urticae,47,1.75,10
-Aglais urticae,48,2.25,3
-Aglais urticae,49,4.125,2
-Aglais urticae,50,5,1
+Aglais urticae,1,7,4
+Aglais urticae,2,8,3.25
+Aglais urticae,3,9,2.5
+Aglais urticae,4,8,2.5
+Aglais urticae,5,3,2.5
+Aglais urticae,6,15,4.625
+Aglais urticae,7,2,9.375
+Aglais urticae,8,5,37.375
+Aglais urticae,9,7,49
+Aglais urticae,10,37,17.125
+Aglais urticae,11,113,63.75
+Aglais urticae,12,356,93
+Aglais urticae,13,981,291.75
+Aglais urticae,14,708,540.75
+Aglais urticae,15,1555,597.125
+Aglais urticae,16,953,771.75
+Aglais urticae,17,965,321.25
+Aglais urticae,18,205,422.625
+Aglais urticae,19,482,428.625
+Aglais urticae,20,209,303.5
+Aglais urticae,21,405,220.875
+Aglais urticae,22,1773,140.625
+Aglais urticae,23,1283,189.25
+Aglais urticae,24,2663,271.875
+Aglais urticae,25,2160,577.25
+Aglais urticae,26,2376,854.375
+Aglais urticae,27,1338,1200.125
+Aglais urticae,28,1835,793.375
+Aglais urticae,29,1276,817.625
+Aglais urticae,30,978,565.125
+Aglais urticae,31,1126,417.625
+Aglais urticae,32,1180,444.25
+Aglais urticae,33,930,450.25
+Aglais urticae,34,1087,580.125
+Aglais urticae,35,713,643.875
+Aglais urticae,36,546,374.75
+Aglais urticae,37,652,265.375
+Aglais urticae,38,563,201.625
+Aglais urticae,39,159,131.875
+Aglais urticae,40,96,39
+Aglais urticae,41,39,23.125
+Aglais urticae,42,30,21.875
+Aglais urticae,43,21,19.125
+Aglais urticae,44,8,9
+Aglais urticae,45,27,3
+Aglais urticae,46,8,3.625
+Aglais urticae,47,10,1.75
+Aglais urticae,48,3,2.25
+Aglais urticae,49,2,4.125
+Aglais urticae,50,1,5
 Aglais urticae,51,4,4
-Aglais urticae,52,3.125,1
-Anthocharis cardamines,1,3.25,0
-Anthocharis cardamines,2,1,0
-Anthocharis cardamines,3,1,0
-Anthocharis cardamines,5,1,0
-Anthocharis cardamines,6,0,1
-Anthocharis cardamines,7,1,0
+Aglais urticae,52,1,3.125
+Anthocharis cardamines,1,0,3.25
+Anthocharis cardamines,2,0,1
+Anthocharis cardamines,3,0,1
+Anthocharis cardamines,5,0,1
+Anthocharis cardamines,6,1,0
+Anthocharis cardamines,7,0,1
 Anthocharis cardamines,9,1,1
-Anthocharis cardamines,10,5,0
-Anthocharis cardamines,11,1.5,2
-Anthocharis cardamines,12,5.375,9
-Anthocharis cardamines,13,60.125,44
-Anthocharis cardamines,14,245.25,329
-Anthocharis cardamines,15,517.625,3297
-Anthocharis cardamines,16,1539.5,3095
-Anthocharis cardamines,17,1119.625,4136
-Anthocharis cardamines,18,1890.125,1275
-Anthocharis cardamines,19,2702.5,2830
-Anthocharis cardamines,20,2071.375,1151
-Anthocharis cardamines,21,1551.25,1417
-Anthocharis cardamines,22,749.5,749
-Anthocharis cardamines,23,320,102
-Anthocharis cardamines,24,98.25,59
-Anthocharis cardamines,25,45.625,52
-Anthocharis cardamines,26,20.375,33
-Anthocharis cardamines,27,14.375,8
-Anthocharis cardamines,28,10.25,26
-Anthocharis cardamines,29,15.75,17
-Anthocharis cardamines,30,14.625,14
-Anthocharis cardamines,31,6.75,7
-Anthocharis cardamines,32,8.875,2
-Anthocharis cardamines,33,3.875,1
-Anthocharis cardamines,34,6.25,0
-Anthocharis cardamines,35,5.25,1
-Anthocharis cardamines,36,6.25,1
-Anthocharis cardamines,37,6.5,2
-Anthocharis cardamines,38,6,1
-Anthocharis cardamines,39,4,0
-Anthocharis cardamines,40,1,0
-Anthocharis cardamines,42,1,0
-Anthocharis cardamines,43,9,0
-Anthocharis cardamines,44,1,0
-Anthocharis cardamines,47,3,0
-Anthocharis cardamines,48,1,0
-Anthocharis cardamines,49,11,0
-Anthocharis cardamines,50,5,0
-Anthocharis cardamines,53,1,2
-Polygonia c-album,1,3,1
-Polygonia c-album,2,1.25,0
-Polygonia c-album,3,2,3
-Polygonia c-album,5,2,1
-Polygonia c-album,6,1,2
-Polygonia c-album,7,10,0
-Polygonia c-album,8,75.5,0
-Polygonia c-album,9,80.25,2
-Polygonia c-album,10,14.625,15
-Polygonia c-album,11,50.625,139
-Polygonia c-album,12,56.25,419
-Polygonia c-album,13,231.25,766
-Polygonia c-album,14,477.125,541
-Polygonia c-album,15,402.875,792
-Polygonia c-album,16,413.375,445
-Polygonia c-album,17,148.875,399
-Polygonia c-album,18,198.875,67
-Polygonia c-album,19,155.125,196
-Polygonia c-album,20,123.5,101
-Polygonia c-album,21,89.75,111
-Polygonia c-album,22,57.25,123
-Polygonia c-album,23,55,78
-Polygonia c-album,24,72.25,427
-Polygonia c-album,25,206.5,945
-Polygonia c-album,26,526.375,1483
-Polygonia c-album,27,1044.25,1536
-Polygonia c-album,28,1058.625,2285
-Polygonia c-album,29,1356.5,1804
-Polygonia c-album,30,968.625,1187
-Polygonia c-album,31,763.75,1150
-Polygonia c-album,32,548.75,571
-Polygonia c-album,33,351.875,257
-Polygonia c-album,34,298.375,321
-Polygonia c-album,35,376.375,239
-Polygonia c-album,36,335.125,385
-Polygonia c-album,37,540.25,456
-Polygonia c-album,38,447.375,394
-Polygonia c-album,39,435.75,181
-Polygonia c-album,40,109.5,65
-Polygonia c-album,41,49.875,68
-Polygonia c-album,42,30.875,38
-Polygonia c-album,43,20,18
-Polygonia c-album,44,7,3
-Polygonia c-album,45,4,12
-Polygonia c-album,46,2.5,3
+Anthocharis cardamines,10,0,5
+Anthocharis cardamines,11,2,1.5
+Anthocharis cardamines,12,9,5.375
+Anthocharis cardamines,13,44,60.125
+Anthocharis cardamines,14,329,245.25
+Anthocharis cardamines,15,3297,517.625
+Anthocharis cardamines,16,3095,1539.5
+Anthocharis cardamines,17,4136,1119.625
+Anthocharis cardamines,18,1275,1890.125
+Anthocharis cardamines,19,2830,2702.5
+Anthocharis cardamines,20,1151,2071.375
+Anthocharis cardamines,21,1417,1551.25
+Anthocharis cardamines,22,749,749.5
+Anthocharis cardamines,23,102,320
+Anthocharis cardamines,24,59,98.25
+Anthocharis cardamines,25,52,45.625
+Anthocharis cardamines,26,33,20.375
+Anthocharis cardamines,27,8,14.375
+Anthocharis cardamines,28,26,10.25
+Anthocharis cardamines,29,17,15.75
+Anthocharis cardamines,30,14,14.625
+Anthocharis cardamines,31,7,6.75
+Anthocharis cardamines,32,2,8.875
+Anthocharis cardamines,33,1,3.875
+Anthocharis cardamines,34,0,6.25
+Anthocharis cardamines,35,1,5.25
+Anthocharis cardamines,36,1,6.25
+Anthocharis cardamines,37,2,6.5
+Anthocharis cardamines,38,1,6
+Anthocharis cardamines,39,0,4
+Anthocharis cardamines,40,0,1
+Anthocharis cardamines,42,0,1
+Anthocharis cardamines,43,0,9
+Anthocharis cardamines,44,0,1
+Anthocharis cardamines,47,0,3
+Anthocharis cardamines,48,0,1
+Anthocharis cardamines,49,0,11
+Anthocharis cardamines,50,0,5
+Anthocharis cardamines,53,2,1
+Polygonia c-album,1,1,3
+Polygonia c-album,2,0,1.25
+Polygonia c-album,3,3,2
+Polygonia c-album,5,1,2
+Polygonia c-album,6,2,1
+Polygonia c-album,7,0,10
+Polygonia c-album,8,0,75.5
+Polygonia c-album,9,2,80.25
+Polygonia c-album,10,15,14.625
+Polygonia c-album,11,139,50.625
+Polygonia c-album,12,419,56.25
+Polygonia c-album,13,766,231.25
+Polygonia c-album,14,541,477.125
+Polygonia c-album,15,792,402.875
+Polygonia c-album,16,445,413.375
+Polygonia c-album,17,399,148.875
+Polygonia c-album,18,67,198.875
+Polygonia c-album,19,196,155.125
+Polygonia c-album,20,101,123.5
+Polygonia c-album,21,111,89.75
+Polygonia c-album,22,123,57.25
+Polygonia c-album,23,78,55
+Polygonia c-album,24,427,72.25
+Polygonia c-album,25,945,206.5
+Polygonia c-album,26,1483,526.375
+Polygonia c-album,27,1536,1044.25
+Polygonia c-album,28,2285,1058.625
+Polygonia c-album,29,1804,1356.5
+Polygonia c-album,30,1187,968.625
+Polygonia c-album,31,1150,763.75
+Polygonia c-album,32,571,548.75
+Polygonia c-album,33,257,351.875
+Polygonia c-album,34,321,298.375
+Polygonia c-album,35,239,376.375
+Polygonia c-album,36,385,335.125
+Polygonia c-album,37,456,540.25
+Polygonia c-album,38,394,447.375
+Polygonia c-album,39,181,435.75
+Polygonia c-album,40,65,109.5
+Polygonia c-album,41,68,49.875
+Polygonia c-album,42,38,30.875
+Polygonia c-album,43,18,20
+Polygonia c-album,44,3,7
+Polygonia c-album,45,12,4
+Polygonia c-album,46,3,2.5
 Polygonia c-album,47,2,2
-Polygonia c-album,48,1.5,1
-Polygonia c-album,49,1,0
+Polygonia c-album,48,1,1.5
+Polygonia c-album,49,0,1
 Polygonia c-album,50,1,1
-Polygonia c-album,51,2,0
-Polygonia c-album,52,1,0
-Polygonia c-album,53,1,0
-Melanargia galathea,1,1.5,0
-Melanargia galathea,12,1,0
-Melanargia galathea,16,0,1
-Melanargia galathea,17,0,2
-Melanargia galathea,18,2.5,3
-Melanargia galathea,19,1.5,2
-Melanargia galathea,20,1,0
-Melanargia galathea,21,1.5,1
-Melanargia galathea,22,3.375,45
-Melanargia galathea,23,19.25,274
-Melanargia galathea,24,146.625,1554
-Melanargia galathea,25,896.5,2245
-Melanargia galathea,26,1887.75,3993
-Melanargia galathea,27,2736.5,2140
-Melanargia galathea,28,2271.375,3103
-Melanargia galathea,29,1884.625,1937
-Melanargia galathea,30,865.75,1080
-Melanargia galathea,31,256,561
-Melanargia galathea,32,83.75,121
-Melanargia galathea,33,21.125,52
-Melanargia galathea,34,6.125,5
-Melanargia galathea,35,7.75,8
-Melanargia galathea,36,1.25,3
-Melanargia galathea,37,4,3
-Melanargia galathea,38,4,1
-Melanargia galathea,49,1,0
-Melanargia galathea,53,1,0
-Ochlodes sylvanus,1,1.5,0
-Ochlodes sylvanus,3,1,0
-Ochlodes sylvanus,11,1,0
-Ochlodes sylvanus,12,1,0
-Ochlodes sylvanus,13,6.5,0
-Ochlodes sylvanus,14,5.25,0
-Ochlodes sylvanus,15,5.5,0
-Ochlodes sylvanus,16,6,0
-Ochlodes sylvanus,17,4.5,0
-Ochlodes sylvanus,18,6.5,4
-Ochlodes sylvanus,19,2.75,2
-Ochlodes sylvanus,20,7.5,9
-Ochlodes sylvanus,21,23.625,186
-Ochlodes sylvanus,22,148.125,1005
-Ochlodes sylvanus,23,460.75,962
-Ochlodes sylvanus,24,717.25,1832
-Ochlodes sylvanus,25,1407.875,1798
-Ochlodes sylvanus,26,1818.75,2763
-Ochlodes sylvanus,27,2013.5,1386
-Ochlodes sylvanus,28,1322.75,1705
-Ochlodes sylvanus,29,1075.5,1108
-Ochlodes sylvanus,30,544.25,644
-Ochlodes sylvanus,31,234,464
-Ochlodes sylvanus,32,120,198
-Ochlodes sylvanus,33,53.625,44
-Ochlodes sylvanus,34,19.25,23
-Ochlodes sylvanus,35,10.25,5
-Ochlodes sylvanus,36,4,3
-Ochlodes sylvanus,37,5,4
-Ochlodes sylvanus,38,2.875,3
-Ochlodes sylvanus,39,4,1
-Ochlodes sylvanus,43,6,0
-Ochlodes sylvanus,47,3,0
-Ochlodes sylvanus,53,1,0
-Thymelicus sylvestris,1,3.25,0
-Thymelicus sylvestris,12,1,0
-Thymelicus sylvestris,13,12,0
-Thymelicus sylvestris,14,8,0
-Thymelicus sylvestris,15,5.5,0
-Thymelicus sylvestris,16,5.5,0
-Thymelicus sylvestris,17,3.25,0
-Thymelicus sylvestris,18,6.5,1
-Thymelicus sylvestris,19,4.5,2
-Thymelicus sylvestris,20,6,2
-Thymelicus sylvestris,21,6.25,23
-Thymelicus sylvestris,22,20,54
-Thymelicus sylvestris,23,54.25,138
-Thymelicus sylvestris,24,95.875,447
-Thymelicus sylvestris,25,272.375,794
-Thymelicus sylvestris,26,722.875,1745
-Thymelicus sylvestris,27,1492.125,1361
-Thymelicus sylvestris,28,1497.25,2385
-Thymelicus sylvestris,29,1812.875,1908
-Thymelicus sylvestris,30,1150.25,1266
-Thymelicus sylvestris,31,551,933
-Thymelicus sylvestris,32,309,435
-Thymelicus sylvestris,33,126.5,136
-Thymelicus sylvestris,34,43.5,37
-Thymelicus sylvestris,35,20.25,5
-Thymelicus sylvestris,36,4.5,4
-Thymelicus sylvestris,37,3.375,1
-Thymelicus sylvestris,38,2.75,1
-Thymelicus sylvestris,39,3.5,1
-Thymelicus sylvestris,40,3,0
-Thymelicus sylvestris,41,1,0
-Thymelicus sylvestris,42,1,0
-Thymelicus sylvestris,43,7,0
-Thymelicus sylvestris,47,3,0
-Thymelicus sylvestris,49,1,0
-Thymelicus sylvestris,53,0,1
-Celastrina argiolus,1,2.5,0
-Celastrina argiolus,3,1,0
-Celastrina argiolus,6,1,0
-Celastrina argiolus,7,1,0
-Celastrina argiolus,9,2.5,0
-Celastrina argiolus,10,2,0
+Polygonia c-album,51,0,2
+Polygonia c-album,52,0,1
+Polygonia c-album,53,0,1
+Melanargia galathea,1,0,1.5
+Melanargia galathea,12,0,1
+Melanargia galathea,16,1,0
+Melanargia galathea,17,2,0
+Melanargia galathea,18,3,2.5
+Melanargia galathea,19,2,1.5
+Melanargia galathea,20,0,1
+Melanargia galathea,21,1,1.5
+Melanargia galathea,22,45,3.375
+Melanargia galathea,23,274,19.25
+Melanargia galathea,24,1554,146.625
+Melanargia galathea,25,2245,896.5
+Melanargia galathea,26,3993,1887.75
+Melanargia galathea,27,2140,2736.5
+Melanargia galathea,28,3103,2271.375
+Melanargia galathea,29,1937,1884.625
+Melanargia galathea,30,1080,865.75
+Melanargia galathea,31,561,256
+Melanargia galathea,32,121,83.75
+Melanargia galathea,33,52,21.125
+Melanargia galathea,34,5,6.125
+Melanargia galathea,35,8,7.75
+Melanargia galathea,36,3,1.25
+Melanargia galathea,37,3,4
+Melanargia galathea,38,1,4
+Melanargia galathea,49,0,1
+Melanargia galathea,53,0,1
+Ochlodes sylvanus,1,0,1.5
+Ochlodes sylvanus,3,0,1
+Ochlodes sylvanus,11,0,1
+Ochlodes sylvanus,12,0,1
+Ochlodes sylvanus,13,0,6.5
+Ochlodes sylvanus,14,0,5.25
+Ochlodes sylvanus,15,0,5.5
+Ochlodes sylvanus,16,0,6
+Ochlodes sylvanus,17,0,4.5
+Ochlodes sylvanus,18,4,6.5
+Ochlodes sylvanus,19,2,2.75
+Ochlodes sylvanus,20,9,7.5
+Ochlodes sylvanus,21,186,23.625
+Ochlodes sylvanus,22,1005,148.125
+Ochlodes sylvanus,23,962,460.75
+Ochlodes sylvanus,24,1832,717.25
+Ochlodes sylvanus,25,1798,1407.875
+Ochlodes sylvanus,26,2763,1818.75
+Ochlodes sylvanus,27,1386,2013.5
+Ochlodes sylvanus,28,1705,1322.75
+Ochlodes sylvanus,29,1108,1075.5
+Ochlodes sylvanus,30,644,544.25
+Ochlodes sylvanus,31,464,234
+Ochlodes sylvanus,32,198,120
+Ochlodes sylvanus,33,44,53.625
+Ochlodes sylvanus,34,23,19.25
+Ochlodes sylvanus,35,5,10.25
+Ochlodes sylvanus,36,3,4
+Ochlodes sylvanus,37,4,5
+Ochlodes sylvanus,38,3,2.875
+Ochlodes sylvanus,39,1,4
+Ochlodes sylvanus,43,0,6
+Ochlodes sylvanus,47,0,3
+Ochlodes sylvanus,53,0,1
+Thymelicus sylvestris,1,0,3.25
+Thymelicus sylvestris,12,0,1
+Thymelicus sylvestris,13,0,12
+Thymelicus sylvestris,14,0,8
+Thymelicus sylvestris,15,0,5.5
+Thymelicus sylvestris,16,0,5.5
+Thymelicus sylvestris,17,0,3.25
+Thymelicus sylvestris,18,1,6.5
+Thymelicus sylvestris,19,2,4.5
+Thymelicus sylvestris,20,2,6
+Thymelicus sylvestris,21,23,6.25
+Thymelicus sylvestris,22,54,20
+Thymelicus sylvestris,23,138,54.25
+Thymelicus sylvestris,24,447,95.875
+Thymelicus sylvestris,25,794,272.375
+Thymelicus sylvestris,26,1745,722.875
+Thymelicus sylvestris,27,1361,1492.125
+Thymelicus sylvestris,28,2385,1497.25
+Thymelicus sylvestris,29,1908,1812.875
+Thymelicus sylvestris,30,1266,1150.25
+Thymelicus sylvestris,31,933,551
+Thymelicus sylvestris,32,435,309
+Thymelicus sylvestris,33,136,126.5
+Thymelicus sylvestris,34,37,43.5
+Thymelicus sylvestris,35,5,20.25
+Thymelicus sylvestris,36,4,4.5
+Thymelicus sylvestris,37,1,3.375
+Thymelicus sylvestris,38,1,2.75
+Thymelicus sylvestris,39,1,3.5
+Thymelicus sylvestris,40,0,3
+Thymelicus sylvestris,41,0,1
+Thymelicus sylvestris,42,0,1
+Thymelicus sylvestris,43,0,7
+Thymelicus sylvestris,47,0,3
+Thymelicus sylvestris,49,0,1
+Thymelicus sylvestris,53,1,0
+Celastrina argiolus,1,0,2.5
+Celastrina argiolus,3,0,1
+Celastrina argiolus,6,0,1
+Celastrina argiolus,7,0,1
+Celastrina argiolus,9,0,2.5
+Celastrina argiolus,10,0,2
 Celastrina argiolus,11,1,1
-Celastrina argiolus,12,4.25,4
-Celastrina argiolus,13,28.25,51
-Celastrina argiolus,14,85.75,154
-Celastrina argiolus,15,141.375,1296
-Celastrina argiolus,16,379.125,1027
-Celastrina argiolus,17,296,1558
-Celastrina argiolus,18,412.625,264
-Celastrina argiolus,19,754.875,914
-Celastrina argiolus,20,703.125,526
-Celastrina argiolus,21,609.5,562
-Celastrina argiolus,22,426.125,385
-Celastrina argiolus,23,256.625,81
-Celastrina argiolus,24,142.75,138
-Celastrina argiolus,25,101.75,110
-Celastrina argiolus,26,79.125,182
-Celastrina argiolus,27,119.125,320
-Celastrina argiolus,28,146.375,962
-Celastrina argiolus,29,277.5,1051
-Celastrina argiolus,30,347.625,799
-Celastrina argiolus,31,457.25,1198
-Celastrina argiolus,32,481.25,850
-Celastrina argiolus,33,483.625,427
-Celastrina argiolus,34,324.875,341
-Celastrina argiolus,35,224.375,171
-Celastrina argiolus,36,74.375,103
-Celastrina argiolus,37,40.875,84
-Celastrina argiolus,38,18.625,51
-Celastrina argiolus,39,6.375,11
-Celastrina argiolus,40,1.75,6
-Celastrina argiolus,41,3,4
-Celastrina argiolus,42,1.625,1
-Celastrina argiolus,43,1.5,2
-Celastrina argiolus,44,2,0
-Celastrina argiolus,45,1,0
-Celastrina argiolus,46,3,0
-Celastrina argiolus,47,2,0
-Celastrina argiolus,48,2.5,0
-Celastrina argiolus,49,1,0
-Celastrina argiolus,53,1,0
-Vanessa cardui,1,3.5,0
-Vanessa cardui,3,1,0
-Vanessa cardui,5,2,0
-Vanessa cardui,6,1,0
-Vanessa cardui,8,23,0
-Vanessa cardui,9,19,0
+Celastrina argiolus,12,4,4.25
+Celastrina argiolus,13,51,28.25
+Celastrina argiolus,14,154,85.75
+Celastrina argiolus,15,1296,141.375
+Celastrina argiolus,16,1027,379.125
+Celastrina argiolus,17,1558,296
+Celastrina argiolus,18,264,412.625
+Celastrina argiolus,19,914,754.875
+Celastrina argiolus,20,526,703.125
+Celastrina argiolus,21,562,609.5
+Celastrina argiolus,22,385,426.125
+Celastrina argiolus,23,81,256.625
+Celastrina argiolus,24,138,142.75
+Celastrina argiolus,25,110,101.75
+Celastrina argiolus,26,182,79.125
+Celastrina argiolus,27,320,119.125
+Celastrina argiolus,28,962,146.375
+Celastrina argiolus,29,1051,277.5
+Celastrina argiolus,30,799,347.625
+Celastrina argiolus,31,1198,457.25
+Celastrina argiolus,32,850,481.25
+Celastrina argiolus,33,427,483.625
+Celastrina argiolus,34,341,324.875
+Celastrina argiolus,35,171,224.375
+Celastrina argiolus,36,103,74.375
+Celastrina argiolus,37,84,40.875
+Celastrina argiolus,38,51,18.625
+Celastrina argiolus,39,11,6.375
+Celastrina argiolus,40,6,1.75
+Celastrina argiolus,41,4,3
+Celastrina argiolus,42,1,1.625
+Celastrina argiolus,43,2,1.5
+Celastrina argiolus,44,0,2
+Celastrina argiolus,45,0,1
+Celastrina argiolus,46,0,3
+Celastrina argiolus,47,0,2
+Celastrina argiolus,48,0,2.5
+Celastrina argiolus,49,0,1
+Celastrina argiolus,53,0,1
+Vanessa cardui,1,0,3.5
+Vanessa cardui,3,0,1
+Vanessa cardui,5,0,2
+Vanessa cardui,6,0,1
+Vanessa cardui,8,0,23
+Vanessa cardui,9,0,19
 Vanessa cardui,10,1,1
-Vanessa cardui,11,4.5,1
-Vanessa cardui,12,2.25,1
-Vanessa cardui,13,10.75,10
-Vanessa cardui,14,9.125,6
-Vanessa cardui,15,10.875,22
-Vanessa cardui,16,20.75,17
-Vanessa cardui,17,15,36
-Vanessa cardui,18,14.625,12
-Vanessa cardui,19,24.5,46
-Vanessa cardui,20,29.5,34
-Vanessa cardui,21,53.75,52
-Vanessa cardui,22,118.5,134
-Vanessa cardui,23,322.625,57
-Vanessa cardui,24,275.75,142
-Vanessa cardui,25,332.625,134
-Vanessa cardui,26,703.875,144
-Vanessa cardui,27,531.625,81
-Vanessa cardui,28,279.375,108
-Vanessa cardui,29,253.25,85
-Vanessa cardui,30,272.5,85
-Vanessa cardui,31,821.875,88
-Vanessa cardui,32,761.625,104
-Vanessa cardui,33,718.75,167
-Vanessa cardui,34,735,242
-Vanessa cardui,35,562.375,141
-Vanessa cardui,36,312.125,112
-Vanessa cardui,37,217.375,96
-Vanessa cardui,38,133.25,70
-Vanessa cardui,39,83.875,14
-Vanessa cardui,40,39.375,13
-Vanessa cardui,41,18.875,6
-Vanessa cardui,42,16.625,5
-Vanessa cardui,43,11.625,1
-Vanessa cardui,44,4.75,1
-Vanessa cardui,45,1.875,2
-Vanessa cardui,46,2.25,2
-Vanessa cardui,47,1.5,0
+Vanessa cardui,11,1,4.5
+Vanessa cardui,12,1,2.25
+Vanessa cardui,13,10,10.75
+Vanessa cardui,14,6,9.125
+Vanessa cardui,15,22,10.875
+Vanessa cardui,16,17,20.75
+Vanessa cardui,17,36,15
+Vanessa cardui,18,12,14.625
+Vanessa cardui,19,46,24.5
+Vanessa cardui,20,34,29.5
+Vanessa cardui,21,52,53.75
+Vanessa cardui,22,134,118.5
+Vanessa cardui,23,57,322.625
+Vanessa cardui,24,142,275.75
+Vanessa cardui,25,134,332.625
+Vanessa cardui,26,144,703.875
+Vanessa cardui,27,81,531.625
+Vanessa cardui,28,108,279.375
+Vanessa cardui,29,85,253.25
+Vanessa cardui,30,85,272.5
+Vanessa cardui,31,88,821.875
+Vanessa cardui,32,104,761.625
+Vanessa cardui,33,167,718.75
+Vanessa cardui,34,242,735
+Vanessa cardui,35,141,562.375
+Vanessa cardui,36,112,312.125
+Vanessa cardui,37,96,217.375
+Vanessa cardui,38,70,133.25
+Vanessa cardui,39,14,83.875
+Vanessa cardui,40,13,39.375
+Vanessa cardui,41,6,18.875
+Vanessa cardui,42,5,16.625
+Vanessa cardui,43,1,11.625
+Vanessa cardui,44,1,4.75
+Vanessa cardui,45,2,1.875
+Vanessa cardui,46,2,2.25
+Vanessa cardui,47,0,1.5
 Vanessa cardui,48,1,1
-Vanessa cardui,49,4.5,0
-Vanessa cardui,50,1,0
-Vanessa cardui,52,4,0
-Vanessa cardui,53,1,0
-Lycaena phlaeas,1,2,0
-Lycaena phlaeas,6,2,0
-Lycaena phlaeas,10,1,0
+Vanessa cardui,49,0,4.5
+Vanessa cardui,50,0,1
+Vanessa cardui,52,0,4
+Vanessa cardui,53,0,1
+Lycaena phlaeas,1,0,2
+Lycaena phlaeas,6,0,2
+Lycaena phlaeas,10,0,1
 Lycaena phlaeas,12,2,2
-Lycaena phlaeas,13,4.75,4
-Lycaena phlaeas,14,8.375,2
-Lycaena phlaeas,15,15.25,11
-Lycaena phlaeas,16,57.25,25
-Lycaena phlaeas,17,54.125,126
-Lycaena phlaeas,18,92.25,79
-Lycaena phlaeas,19,204.375,255
-Lycaena phlaeas,20,330.5,304
-Lycaena phlaeas,21,399.375,380
-Lycaena phlaeas,22,308.875,369
-Lycaena phlaeas,23,216.625,88
-Lycaena phlaeas,24,106.125,84
-Lycaena phlaeas,25,103.375,122
-Lycaena phlaeas,26,96.25,248
-Lycaena phlaeas,27,137.5,271
-Lycaena phlaeas,28,229.125,667
-Lycaena phlaeas,29,408.125,729
-Lycaena phlaeas,30,481.625,591
-Lycaena phlaeas,31,515.625,796
-Lycaena phlaeas,32,522.5,642
-Lycaena phlaeas,33,495.875,477
-Lycaena phlaeas,34,419.125,567
-Lycaena phlaeas,35,483.25,460
-Lycaena phlaeas,36,420.375,577
-Lycaena phlaeas,37,494.125,952
-Lycaena phlaeas,38,429.875,1102
-Lycaena phlaeas,39,416.5,488
-Lycaena phlaeas,40,111,176
-Lycaena phlaeas,41,51.25,60
-Lycaena phlaeas,42,33.625,31
-Lycaena phlaeas,43,23,12
-Lycaena phlaeas,44,7.125,2
-Lycaena phlaeas,45,2.5,3
-Lycaena phlaeas,46,1.25,0
-Lycaena phlaeas,47,3,0
-Lycaena phlaeas,48,1,0
-Lycaena phlaeas,49,3,0
-Lycaena phlaeas,50,1,0
-Lycaena phlaeas,53,0,1
-Argynnis paphia,1,1,0
-Argynnis paphia,10,1,0
-Argynnis paphia,13,1,0
-Argynnis paphia,14,1,0
-Argynnis paphia,15,2,0
-Argynnis paphia,16,2,0
-Argynnis paphia,17,1,0
-Argynnis paphia,18,2.5,0
-Argynnis paphia,19,4,1
-Argynnis paphia,20,5,2
-Argynnis paphia,21,1.5,2
-Argynnis paphia,22,2.75,8
-Argynnis paphia,23,5,18
-Argynnis paphia,24,13.75,103
-Argynnis paphia,25,97,327
-Argynnis paphia,26,360.375,1120
-Argynnis paphia,27,752.125,736
-Argynnis paphia,28,763.25,1324
-Argynnis paphia,29,1148.875,1201
-Argynnis paphia,30,892,845
-Argynnis paphia,31,738.875,1008
-Argynnis paphia,32,592.25,569
-Argynnis paphia,33,323.75,240
-Argynnis paphia,34,158.125,121
-Argynnis paphia,35,78.25,43
-Argynnis paphia,36,21.125,7
-Argynnis paphia,37,6.5,4
-Argynnis paphia,38,3.5,3
-Argynnis paphia,39,1.5,0
-Aricia agestis,1,2,0
-Aricia agestis,12,1,0
-Aricia agestis,14,3.5,0
-Aricia agestis,15,1,0
-Aricia agestis,16,2,1
-Aricia agestis,17,7,10
-Aricia agestis,18,12.75,18
-Aricia agestis,19,39.625,121
-Aricia agestis,20,152.625,222
-Aricia agestis,21,265.75,367
-Aricia agestis,22,252.25,287
-Aricia agestis,23,207.625,54
-Aricia agestis,24,118.75,61
-Aricia agestis,25,92.125,34
-Aricia agestis,26,51.625,35
-Aricia agestis,27,51.75,55
-Aricia agestis,28,93.375,233
-Aricia agestis,29,238.125,396
-Aricia agestis,30,353.625,418
-Aricia agestis,31,427.25,679
-Aricia agestis,32,506.625,576
-Aricia agestis,33,589.75,392
-Aricia agestis,34,528.75,451
-Aricia agestis,35,457.875,213
-Aricia agestis,36,187.125,147
-Aricia agestis,37,124.125,198
-Aricia agestis,38,53.75,176
-Aricia agestis,39,28.5,54
-Aricia agestis,40,4,14
-Aricia agestis,41,3,5
-Aricia agestis,42,3,1
-Aricia agestis,43,4.5,1
-Aricia agestis,46,0,1
-Speyeria aglaja,1,2,0
-Speyeria aglaja,3,1,0
-Speyeria aglaja,11,1,0
-Speyeria aglaja,14,5.5,0
-Speyeria aglaja,15,5.5,0
-Speyeria aglaja,16,10,0
-Speyeria aglaja,17,10,0
-Speyeria aglaja,18,10,1
-Speyeria aglaja,19,12,0
-Speyeria aglaja,20,11,2
-Speyeria aglaja,21,19,4
-Speyeria aglaja,22,6.75,91
-Speyeria aglaja,23,8.875,134
-Speyeria aglaja,24,36.5,378
-Speyeria aglaja,25,162.25,390
-Speyeria aglaja,26,259.5,837
-Speyeria aglaja,27,405.5,375
-Speyeria aglaja,28,364,500
-Speyeria aglaja,29,396.125,447
-Speyeria aglaja,30,284.25,349
-Speyeria aglaja,31,162.25,289
-Speyeria aglaja,32,101.25,168
-Speyeria aglaja,33,43.75,69
-Speyeria aglaja,34,23.875,31
-Speyeria aglaja,35,12.75,3
-Speyeria aglaja,36,3.5,3
-Speyeria aglaja,37,4.25,1
-Speyeria aglaja,38,3.75,3
-Speyeria aglaja,39,8.5,1
-Speyeria aglaja,43,7,0
-Speyeria aglaja,47,3,0
-Erynnis tages tages,1,1,0
-Erynnis tages tages,13,12,0
-Erynnis tages tages,14,4,0
-Erynnis tages tages,15,6,0
-Erynnis tages tages,16,18.375,11
-Erynnis tages tages,17,32.5,159
-Erynnis tages tages,18,103.875,134
-Erynnis tages tages,19,303.375,437
-Erynnis tages tages,20,591,569
-Erynnis tages tages,21,620.5,892
-Erynnis tages tages,22,414.5,546
-Erynnis tages tages,23,265.25,99
-Erynnis tages tages,24,98,54
-Erynnis tages tages,25,48,18
-Erynnis tages tages,26,22.25,18
-Erynnis tages tages,27,11.125,3
-Erynnis tages tages,28,8.5,7
-Erynnis tages tages,29,4.875,26
-Erynnis tages tages,30,8,40
-Erynnis tages tages,31,9.25,94
-Erynnis tages tages,32,4.375,72
-Erynnis tages tages,33,5.5,34
-Erynnis tages tages,34,1.625,10
-Erynnis tages tages,35,3.375,6
-Erynnis tages tages,36,1.5,2
-Erynnis tages tages,38,0,1
-Lasiommata megera,1,1,0
-Lasiommata megera,3,1,0
-Lasiommata megera,13,6.5,0
-Lasiommata megera,14,2.875,0
-Lasiommata megera,15,4,3
-Lasiommata megera,16,16.125,19
-Lasiommata megera,17,19.25,65
-Lasiommata megera,18,43.125,68
-Lasiommata megera,19,89.25,183
-Lasiommata megera,20,170.625,209
-Lasiommata megera,21,208.5,264
-Lasiommata megera,22,134.75,194
-Lasiommata megera,23,88.625,26
-Lasiommata megera,24,34.625,17
-Lasiommata megera,25,17.625,13
-Lasiommata megera,26,13.375,8
-Lasiommata megera,27,16.75,14
-Lasiommata megera,28,21.375,53
-Lasiommata megera,29,52.75,150
-Lasiommata megera,30,107.875,199
-Lasiommata megera,31,191.625,394
-Lasiommata megera,32,282.375,445
-Lasiommata megera,33,263.125,362
-Lasiommata megera,34,189.375,244
-Lasiommata megera,35,146.875,52
-Lasiommata megera,36,44.625,42
-Lasiommata megera,37,32.75,100
-Lasiommata megera,38,36.25,182
-Lasiommata megera,39,42.875,94
-Lasiommata megera,40,17.5,52
-Lasiommata megera,41,8.625,43
-Lasiommata megera,42,3,18
-Lasiommata megera,43,3.125,4
-Lasiommata megera,44,2,1
-Lasiommata megera,45,1,0
-Lasiommata megera,47,2,0
-Polyommatus coridon,14,6,0
+Lycaena phlaeas,13,4,4.75
+Lycaena phlaeas,14,2,8.375
+Lycaena phlaeas,15,11,15.25
+Lycaena phlaeas,16,25,57.25
+Lycaena phlaeas,17,126,54.125
+Lycaena phlaeas,18,79,92.25
+Lycaena phlaeas,19,255,204.375
+Lycaena phlaeas,20,304,330.5
+Lycaena phlaeas,21,380,399.375
+Lycaena phlaeas,22,369,308.875
+Lycaena phlaeas,23,88,216.625
+Lycaena phlaeas,24,84,106.125
+Lycaena phlaeas,25,122,103.375
+Lycaena phlaeas,26,248,96.25
+Lycaena phlaeas,27,271,137.5
+Lycaena phlaeas,28,667,229.125
+Lycaena phlaeas,29,729,408.125
+Lycaena phlaeas,30,591,481.625
+Lycaena phlaeas,31,796,515.625
+Lycaena phlaeas,32,642,522.5
+Lycaena phlaeas,33,477,495.875
+Lycaena phlaeas,34,567,419.125
+Lycaena phlaeas,35,460,483.25
+Lycaena phlaeas,36,577,420.375
+Lycaena phlaeas,37,952,494.125
+Lycaena phlaeas,38,1102,429.875
+Lycaena phlaeas,39,488,416.5
+Lycaena phlaeas,40,176,111
+Lycaena phlaeas,41,60,51.25
+Lycaena phlaeas,42,31,33.625
+Lycaena phlaeas,43,12,23
+Lycaena phlaeas,44,2,7.125
+Lycaena phlaeas,45,3,2.5
+Lycaena phlaeas,46,0,1.25
+Lycaena phlaeas,47,0,3
+Lycaena phlaeas,48,0,1
+Lycaena phlaeas,49,0,3
+Lycaena phlaeas,50,0,1
+Lycaena phlaeas,53,1,0
+Argynnis paphia,1,0,1
+Argynnis paphia,10,0,1
+Argynnis paphia,13,0,1
+Argynnis paphia,14,0,1
+Argynnis paphia,15,0,2
+Argynnis paphia,16,0,2
+Argynnis paphia,17,0,1
+Argynnis paphia,18,0,2.5
+Argynnis paphia,19,1,4
+Argynnis paphia,20,2,5
+Argynnis paphia,21,2,1.5
+Argynnis paphia,22,8,2.75
+Argynnis paphia,23,18,5
+Argynnis paphia,24,103,13.75
+Argynnis paphia,25,327,97
+Argynnis paphia,26,1120,360.375
+Argynnis paphia,27,736,752.125
+Argynnis paphia,28,1324,763.25
+Argynnis paphia,29,1201,1148.875
+Argynnis paphia,30,845,892
+Argynnis paphia,31,1008,738.875
+Argynnis paphia,32,569,592.25
+Argynnis paphia,33,240,323.75
+Argynnis paphia,34,121,158.125
+Argynnis paphia,35,43,78.25
+Argynnis paphia,36,7,21.125
+Argynnis paphia,37,4,6.5
+Argynnis paphia,38,3,3.5
+Argynnis paphia,39,0,1.5
+Aricia agestis,1,0,2
+Aricia agestis,12,0,1
+Aricia agestis,14,0,3.5
+Aricia agestis,15,0,1
+Aricia agestis,16,1,2
+Aricia agestis,17,10,7
+Aricia agestis,18,18,12.75
+Aricia agestis,19,121,39.625
+Aricia agestis,20,222,152.625
+Aricia agestis,21,367,265.75
+Aricia agestis,22,287,252.25
+Aricia agestis,23,54,207.625
+Aricia agestis,24,61,118.75
+Aricia agestis,25,34,92.125
+Aricia agestis,26,35,51.625
+Aricia agestis,27,55,51.75
+Aricia agestis,28,233,93.375
+Aricia agestis,29,396,238.125
+Aricia agestis,30,418,353.625
+Aricia agestis,31,679,427.25
+Aricia agestis,32,576,506.625
+Aricia agestis,33,392,589.75
+Aricia agestis,34,451,528.75
+Aricia agestis,35,213,457.875
+Aricia agestis,36,147,187.125
+Aricia agestis,37,198,124.125
+Aricia agestis,38,176,53.75
+Aricia agestis,39,54,28.5
+Aricia agestis,40,14,4
+Aricia agestis,41,5,3
+Aricia agestis,42,1,3
+Aricia agestis,43,1,4.5
+Aricia agestis,46,1,0
+Speyeria aglaja,1,0,2
+Speyeria aglaja,3,0,1
+Speyeria aglaja,11,0,1
+Speyeria aglaja,14,0,5.5
+Speyeria aglaja,15,0,5.5
+Speyeria aglaja,16,0,10
+Speyeria aglaja,17,0,10
+Speyeria aglaja,18,1,10
+Speyeria aglaja,19,0,12
+Speyeria aglaja,20,2,11
+Speyeria aglaja,21,4,19
+Speyeria aglaja,22,91,6.75
+Speyeria aglaja,23,134,8.875
+Speyeria aglaja,24,378,36.5
+Speyeria aglaja,25,390,162.25
+Speyeria aglaja,26,837,259.5
+Speyeria aglaja,27,375,405.5
+Speyeria aglaja,28,500,364
+Speyeria aglaja,29,447,396.125
+Speyeria aglaja,30,349,284.25
+Speyeria aglaja,31,289,162.25
+Speyeria aglaja,32,168,101.25
+Speyeria aglaja,33,69,43.75
+Speyeria aglaja,34,31,23.875
+Speyeria aglaja,35,3,12.75
+Speyeria aglaja,36,3,3.5
+Speyeria aglaja,37,1,4.25
+Speyeria aglaja,38,3,3.75
+Speyeria aglaja,39,1,8.5
+Speyeria aglaja,43,0,7
+Speyeria aglaja,47,0,3
+Erynnis tages tages,1,0,1
+Erynnis tages tages,13,0,12
+Erynnis tages tages,14,0,4
+Erynnis tages tages,15,0,6
+Erynnis tages tages,16,11,18.375
+Erynnis tages tages,17,159,32.5
+Erynnis tages tages,18,134,103.875
+Erynnis tages tages,19,437,303.375
+Erynnis tages tages,20,569,591
+Erynnis tages tages,21,892,620.5
+Erynnis tages tages,22,546,414.5
+Erynnis tages tages,23,99,265.25
+Erynnis tages tages,24,54,98
+Erynnis tages tages,25,18,48
+Erynnis tages tages,26,18,22.25
+Erynnis tages tages,27,3,11.125
+Erynnis tages tages,28,7,8.5
+Erynnis tages tages,29,26,4.875
+Erynnis tages tages,30,40,8
+Erynnis tages tages,31,94,9.25
+Erynnis tages tages,32,72,4.375
+Erynnis tages tages,33,34,5.5
+Erynnis tages tages,34,10,1.625
+Erynnis tages tages,35,6,3.375
+Erynnis tages tages,36,2,1.5
+Erynnis tages tages,38,1,0
+Lasiommata megera,1,0,1
+Lasiommata megera,3,0,1
+Lasiommata megera,13,0,6.5
+Lasiommata megera,14,0,2.875
+Lasiommata megera,15,3,4
+Lasiommata megera,16,19,16.125
+Lasiommata megera,17,65,19.25
+Lasiommata megera,18,68,43.125
+Lasiommata megera,19,183,89.25
+Lasiommata megera,20,209,170.625
+Lasiommata megera,21,264,208.5
+Lasiommata megera,22,194,134.75
+Lasiommata megera,23,26,88.625
+Lasiommata megera,24,17,34.625
+Lasiommata megera,25,13,17.625
+Lasiommata megera,26,8,13.375
+Lasiommata megera,27,14,16.75
+Lasiommata megera,28,53,21.375
+Lasiommata megera,29,150,52.75
+Lasiommata megera,30,199,107.875
+Lasiommata megera,31,394,191.625
+Lasiommata megera,32,445,282.375
+Lasiommata megera,33,362,263.125
+Lasiommata megera,34,244,189.375
+Lasiommata megera,35,52,146.875
+Lasiommata megera,36,42,44.625
+Lasiommata megera,37,100,32.75
+Lasiommata megera,38,182,36.25
+Lasiommata megera,39,94,42.875
+Lasiommata megera,40,52,17.5
+Lasiommata megera,41,43,8.625
+Lasiommata megera,42,18,3
+Lasiommata megera,43,4,3.125
+Lasiommata megera,44,1,2
+Lasiommata megera,45,0,1
+Lasiommata megera,47,0,2
+Polyommatus coridon,14,0,6
 Polyommatus coridon,15,1,1
-Polyommatus coridon,16,1,0
-Polyommatus coridon,17,0,8
-Polyommatus coridon,18,1,2
-Polyommatus coridon,19,1.5,3
-Polyommatus coridon,20,0,2
-Polyommatus coridon,21,2,4
-Polyommatus coridon,22,5,1
-Polyommatus coridon,23,1.5,3
-Polyommatus coridon,24,2,3
+Polyommatus coridon,16,0,1
+Polyommatus coridon,17,8,0
+Polyommatus coridon,18,2,1
+Polyommatus coridon,19,3,1.5
+Polyommatus coridon,20,2,0
+Polyommatus coridon,21,4,2
+Polyommatus coridon,22,1,5
+Polyommatus coridon,23,3,1.5
+Polyommatus coridon,24,3,2
 Polyommatus coridon,25,2,2
-Polyommatus coridon,26,3.625,6
-Polyommatus coridon,27,20.5,19
-Polyommatus coridon,28,100.875,134
-Polyommatus coridon,29,242.25,361
-Polyommatus coridon,30,358.125,532
-Polyommatus coridon,31,387,734
-Polyommatus coridon,32,352.375,684
-Polyommatus coridon,33,316.625,465
-Polyommatus coridon,34,259.875,360
-Polyommatus coridon,35,184.125,182
-Polyommatus coridon,36,65.125,148
-Polyommatus coridon,37,29.5,65
-Polyommatus coridon,38,10,18
-Polyommatus coridon,39,5.125,1
-Polyommatus coridon,40,1.25,2
-Polyommatus coridon,43,1,0
-Callophrys rubi,1,1,0
-Callophrys rubi,12,1,0
-Callophrys rubi,13,3,0
-Callophrys rubi,14,5,4
-Callophrys rubi,15,25,34
-Callophrys rubi,16,59,89
-Callophrys rubi,17,59.75,272
-Callophrys rubi,18,134.625,95
-Callophrys rubi,19,318.125,392
-Callophrys rubi,20,368.125,344
-Callophrys rubi,21,338.125,558
-Callophrys rubi,22,206.25,380
-Callophrys rubi,23,147.375,83
-Callophrys rubi,24,58.5,52
-Callophrys rubi,25,35,24
-Callophrys rubi,26,22.875,21
-Callophrys rubi,27,14.375,3
-Callophrys rubi,28,7.625,11
-Callophrys rubi,29,3,4
-Callophrys rubi,30,1.875,8
-Callophrys rubi,31,3.5,6
-Callophrys rubi,32,1,0
-Callophrys rubi,33,1,0
-Callophrys rubi,34,1.25,0
-Callophrys rubi,35,1,0
-Callophrys rubi,36,1.5,0
-Callophrys rubi,37,2,0
-Callophrys rubi,38,3.5,0
-Callophrys rubi,39,2,0
-Callophrys rubi,43,10,0
-Callophrys rubi,47,3,0
-Thymelicus lineola,1,1,0
-Thymelicus lineola,12,1,0
-Thymelicus lineola,14,6,0
-Thymelicus lineola,20,1,0
-Thymelicus lineola,22,1.25,4
-Thymelicus lineola,23,3.125,6
-Thymelicus lineola,24,9.5,40
-Thymelicus lineola,25,31,107
-Thymelicus lineola,26,94.625,217
-Thymelicus lineola,27,252.375,292
-Thymelicus lineola,28,335.125,606
-Thymelicus lineola,29,405.25,401
-Thymelicus lineola,30,228.625,326
-Thymelicus lineola,31,107,175
-Thymelicus lineola,32,52.375,63
-Thymelicus lineola,33,24.25,21
-Thymelicus lineola,34,5.125,15
-Thymelicus lineola,35,3.625,2
-Thymelicus lineola,36,4,0
-Thymelicus lineola,38,2,0
-Thymelicus lineola,40,1,0
-Plebejus argus,6,0,1
-Plebejus argus,14,6,0
-Plebejus argus,16,1,0
-Plebejus argus,19,0,13
-Plebejus argus,20,0,10
-Plebejus argus,21,2.5,24
-Plebejus argus,22,20,130
-Plebejus argus,23,51.125,187
-Plebejus argus,24,121.75,382
-Plebejus argus,25,237.875,295
-Plebejus argus,26,264.125,376
-Plebejus argus,27,330.5,194
-Plebejus argus,28,262.125,264
-Plebejus argus,29,157.125,167
-Plebejus argus,30,96.5,124
-Plebejus argus,31,46,60
-Plebejus argus,32,24.25,47
-Plebejus argus,33,15,23
-Plebejus argus,34,4.375,9
-Plebejus argus,35,3.5,5
-Plebejus argus,36,1.375,1
-Plebejus argus,37,1.25,0
+Polyommatus coridon,26,6,3.625
+Polyommatus coridon,27,19,20.5
+Polyommatus coridon,28,134,100.875
+Polyommatus coridon,29,361,242.25
+Polyommatus coridon,30,532,358.125
+Polyommatus coridon,31,734,387
+Polyommatus coridon,32,684,352.375
+Polyommatus coridon,33,465,316.625
+Polyommatus coridon,34,360,259.875
+Polyommatus coridon,35,182,184.125
+Polyommatus coridon,36,148,65.125
+Polyommatus coridon,37,65,29.5
+Polyommatus coridon,38,18,10
+Polyommatus coridon,39,1,5.125
+Polyommatus coridon,40,2,1.25
+Polyommatus coridon,43,0,1
+Callophrys rubi,1,0,1
+Callophrys rubi,12,0,1
+Callophrys rubi,13,0,3
+Callophrys rubi,14,4,5
+Callophrys rubi,15,34,25
+Callophrys rubi,16,89,59
+Callophrys rubi,17,272,59.75
+Callophrys rubi,18,95,134.625
+Callophrys rubi,19,392,318.125
+Callophrys rubi,20,344,368.125
+Callophrys rubi,21,558,338.125
+Callophrys rubi,22,380,206.25
+Callophrys rubi,23,83,147.375
+Callophrys rubi,24,52,58.5
+Callophrys rubi,25,24,35
+Callophrys rubi,26,21,22.875
+Callophrys rubi,27,3,14.375
+Callophrys rubi,28,11,7.625
+Callophrys rubi,29,4,3
+Callophrys rubi,30,8,1.875
+Callophrys rubi,31,6,3.5
+Callophrys rubi,32,0,1
+Callophrys rubi,33,0,1
+Callophrys rubi,34,0,1.25
+Callophrys rubi,35,0,1
+Callophrys rubi,36,0,1.5
+Callophrys rubi,37,0,2
+Callophrys rubi,38,0,3.5
+Callophrys rubi,39,0,2
+Callophrys rubi,43,0,10
+Callophrys rubi,47,0,3
+Thymelicus lineola,1,0,1
+Thymelicus lineola,12,0,1
+Thymelicus lineola,14,0,6
+Thymelicus lineola,20,0,1
+Thymelicus lineola,22,4,1.25
+Thymelicus lineola,23,6,3.125
+Thymelicus lineola,24,40,9.5
+Thymelicus lineola,25,107,31
+Thymelicus lineola,26,217,94.625
+Thymelicus lineola,27,292,252.375
+Thymelicus lineola,28,606,335.125
+Thymelicus lineola,29,401,405.25
+Thymelicus lineola,30,326,228.625
+Thymelicus lineola,31,175,107
+Thymelicus lineola,32,63,52.375
+Thymelicus lineola,33,21,24.25
+Thymelicus lineola,34,15,5.125
+Thymelicus lineola,35,2,3.625
+Thymelicus lineola,36,0,4
+Thymelicus lineola,38,0,2
+Thymelicus lineola,40,0,1
+Plebejus argus,6,1,0
+Plebejus argus,14,0,6
+Plebejus argus,16,0,1
+Plebejus argus,19,13,0
+Plebejus argus,20,10,0
+Plebejus argus,21,24,2.5
+Plebejus argus,22,130,20
+Plebejus argus,23,187,51.125
+Plebejus argus,24,382,121.75
+Plebejus argus,25,295,237.875
+Plebejus argus,26,376,264.125
+Plebejus argus,27,194,330.5
+Plebejus argus,28,264,262.125
+Plebejus argus,29,167,157.125
+Plebejus argus,30,124,96.5
+Plebejus argus,31,60,46
+Plebejus argus,32,47,24.25
+Plebejus argus,33,23,15
+Plebejus argus,34,9,4.375
+Plebejus argus,35,5,3.5
+Plebejus argus,36,1,1.375
+Plebejus argus,37,0,1.25
 Plebejus argus,38,1,1
-Plebejus argus,39,1,0
-Plebejus argus,40,1,0
-Plebejus argus,47,1,0
-Polyommatus bellargus,14,6,0
-Polyommatus bellargus,17,1.5,2
-Polyommatus bellargus,18,2.5,7
-Polyommatus bellargus,19,16.75,23
-Polyommatus bellargus,20,44.5,92
-Polyommatus bellargus,21,114.625,282
-Polyommatus bellargus,22,137.875,266
-Polyommatus bellargus,23,118.125,81
-Polyommatus bellargus,24,68.125,58
-Polyommatus bellargus,25,45,17
-Polyommatus bellargus,26,20.625,19
-Polyommatus bellargus,27,5.5,3
-Polyommatus bellargus,28,2.5,8
-Polyommatus bellargus,29,4.5,13
-Polyommatus bellargus,30,8,20
-Polyommatus bellargus,31,19.875,42
-Polyommatus bellargus,32,34.375,105
-Polyommatus bellargus,33,96,202
-Polyommatus bellargus,34,146,212
-Polyommatus bellargus,35,188,159
-Polyommatus bellargus,36,129,145
-Polyommatus bellargus,37,84.875,117
-Polyommatus bellargus,38,44.125,74
-Polyommatus bellargus,39,17.5,18
-Polyommatus bellargus,40,1.75,3
-Polyommatus bellargus,42,1,0
-Favonius quercus,1,1.5,0
-Favonius quercus,5,2,0
-Favonius quercus,7,2,0
-Favonius quercus,9,1,0
-Favonius quercus,10,2,3
-Favonius quercus,11,0,1
-Favonius quercus,12,1,0
-Favonius quercus,14,6,0
-Favonius quercus,16,1,0
-Favonius quercus,19,1.5,0
+Plebejus argus,39,0,1
+Plebejus argus,40,0,1
+Plebejus argus,47,0,1
+Polyommatus bellargus,14,0,6
+Polyommatus bellargus,17,2,1.5
+Polyommatus bellargus,18,7,2.5
+Polyommatus bellargus,19,23,16.75
+Polyommatus bellargus,20,92,44.5
+Polyommatus bellargus,21,282,114.625
+Polyommatus bellargus,22,266,137.875
+Polyommatus bellargus,23,81,118.125
+Polyommatus bellargus,24,58,68.125
+Polyommatus bellargus,25,17,45
+Polyommatus bellargus,26,19,20.625
+Polyommatus bellargus,27,3,5.5
+Polyommatus bellargus,28,8,2.5
+Polyommatus bellargus,29,13,4.5
+Polyommatus bellargus,30,20,8
+Polyommatus bellargus,31,42,19.875
+Polyommatus bellargus,32,105,34.375
+Polyommatus bellargus,33,202,96
+Polyommatus bellargus,34,212,146
+Polyommatus bellargus,35,159,188
+Polyommatus bellargus,36,145,129
+Polyommatus bellargus,37,117,84.875
+Polyommatus bellargus,38,74,44.125
+Polyommatus bellargus,39,18,17.5
+Polyommatus bellargus,40,3,1.75
+Polyommatus bellargus,42,0,1
+Favonius quercus,1,0,1.5
+Favonius quercus,5,0,2
+Favonius quercus,7,0,2
+Favonius quercus,9,0,1
+Favonius quercus,10,3,2
+Favonius quercus,11,1,0
+Favonius quercus,12,0,1
+Favonius quercus,14,0,6
+Favonius quercus,16,0,1
+Favonius quercus,19,0,1.5
 Favonius quercus,20,2,2
-Favonius quercus,21,1,2
-Favonius quercus,22,1.75,2
-Favonius quercus,23,4,8
-Favonius quercus,24,9.5,19
-Favonius quercus,25,35.25,57
-Favonius quercus,26,74.375,182
-Favonius quercus,27,161.75,251
-Favonius quercus,28,194.25,402
-Favonius quercus,29,226.25,354
-Favonius quercus,30,175.375,281
-Favonius quercus,31,110.625,330
-Favonius quercus,32,83.75,174
-Favonius quercus,33,52.375,90
-Favonius quercus,34,24.5,39
-Favonius quercus,35,14.875,9
-Favonius quercus,36,3.5,8
-Favonius quercus,37,3,5
-Favonius quercus,38,1.25,1
-Favonius quercus,39,1,0
-Favonius quercus,40,1,0
-Favonius quercus,41,1,0
-Favonius quercus,42,1,0
-Favonius quercus,43,1,0
-Favonius quercus,44,2,1
-Favonius quercus,46,1,0
-Favonius quercus,47,2,10
-Favonius quercus,48,2,0
-Favonius quercus,49,1,0
+Favonius quercus,21,2,1
+Favonius quercus,22,2,1.75
+Favonius quercus,23,8,4
+Favonius quercus,24,19,9.5
+Favonius quercus,25,57,35.25
+Favonius quercus,26,182,74.375
+Favonius quercus,27,251,161.75
+Favonius quercus,28,402,194.25
+Favonius quercus,29,354,226.25
+Favonius quercus,30,281,175.375
+Favonius quercus,31,330,110.625
+Favonius quercus,32,174,83.75
+Favonius quercus,33,90,52.375
+Favonius quercus,34,39,24.5
+Favonius quercus,35,9,14.875
+Favonius quercus,36,8,3.5
+Favonius quercus,37,5,3
+Favonius quercus,38,1,1.25
+Favonius quercus,39,0,1
+Favonius quercus,40,0,1
+Favonius quercus,41,0,1
+Favonius quercus,42,0,1
+Favonius quercus,43,0,1
+Favonius quercus,44,1,2
+Favonius quercus,46,0,1
+Favonius quercus,47,10,2
+Favonius quercus,48,0,2
+Favonius quercus,49,0,1
 Favonius quercus,50,2,2
 Favonius quercus,51,1,1
-Favonius quercus,52,4,2
-Cupido minimus,1,1,0
-Cupido minimus,13,1.5,0
-Cupido minimus,14,3.5,2
-Cupido minimus,15,2,7
-Cupido minimus,16,3.25,8
-Cupido minimus,17,2.75,19
-Cupido minimus,18,4.125,10
-Cupido minimus,19,21.75,75
-Cupido minimus,20,82.5,135
-Cupido minimus,21,178.875,349
-Cupido minimus,22,241.5,365
-Cupido minimus,23,189.5,149
-Cupido minimus,24,145.375,148
-Cupido minimus,25,126.125,46
-Cupido minimus,26,56,89
-Cupido minimus,27,33.125,36
-Cupido minimus,28,30.75,80
-Cupido minimus,29,45.875,125
-Cupido minimus,30,58,140
-Cupido minimus,31,47.25,150
-Cupido minimus,32,36.125,81
-Cupido minimus,33,27,51
-Cupido minimus,34,14.75,16
-Cupido minimus,35,10,15
-Cupido minimus,36,4.625,5
-Cupido minimus,37,2.375,6
-Cupido minimus,38,3,9
+Favonius quercus,52,2,4
+Cupido minimus,1,0,1
+Cupido minimus,13,0,1.5
+Cupido minimus,14,2,3.5
+Cupido minimus,15,7,2
+Cupido minimus,16,8,3.25
+Cupido minimus,17,19,2.75
+Cupido minimus,18,10,4.125
+Cupido minimus,19,75,21.75
+Cupido minimus,20,135,82.5
+Cupido minimus,21,349,178.875
+Cupido minimus,22,365,241.5
+Cupido minimus,23,149,189.5
+Cupido minimus,24,148,145.375
+Cupido minimus,25,46,126.125
+Cupido minimus,26,89,56
+Cupido minimus,27,36,33.125
+Cupido minimus,28,80,30.75
+Cupido minimus,29,125,45.875
+Cupido minimus,30,140,58
+Cupido minimus,31,150,47.25
+Cupido minimus,32,81,36.125
+Cupido minimus,33,51,27
+Cupido minimus,34,16,14.75
+Cupido minimus,35,15,10
+Cupido minimus,36,5,4.625
+Cupido minimus,37,6,2.375
+Cupido minimus,38,9,3
 Cupido minimus,39,1,1
-Cupido minimus,46,0,1
-Hipparchia semele,17,0,2
-Hipparchia semele,19,1,2
-Hipparchia semele,20,1,0
-Hipparchia semele,21,1,2
+Cupido minimus,46,1,0
+Hipparchia semele,17,2,0
+Hipparchia semele,19,2,1
+Hipparchia semele,20,0,1
+Hipparchia semele,21,2,1
 Hipparchia semele,22,3,3
-Hipparchia semele,23,3.75,2
-Hipparchia semele,24,5,10
-Hipparchia semele,25,15.5,13
-Hipparchia semele,26,21.375,33
-Hipparchia semele,27,54.75,53
-Hipparchia semele,28,92.25,100
-Hipparchia semele,29,175.625,184
-Hipparchia semele,30,172.75,176
-Hipparchia semele,31,182.25,247
-Hipparchia semele,32,188.75,236
-Hipparchia semele,33,155.875,192
-Hipparchia semele,34,134,158
-Hipparchia semele,35,106.125,72
-Hipparchia semele,36,42.125,58
-Hipparchia semele,37,34.875,35
-Hipparchia semele,38,10.75,23
-Hipparchia semele,39,2,0
-Hipparchia semele,40,1,2
-Hipparchia semele,46,1,0
-Limenitis camilla,1,1,0
-Limenitis camilla,9,1,0
-Limenitis camilla,12,1,0
-Limenitis camilla,19,1,0
-Limenitis camilla,20,3,0
+Hipparchia semele,23,2,3.75
+Hipparchia semele,24,10,5
+Hipparchia semele,25,13,15.5
+Hipparchia semele,26,33,21.375
+Hipparchia semele,27,53,54.75
+Hipparchia semele,28,100,92.25
+Hipparchia semele,29,184,175.625
+Hipparchia semele,30,176,172.75
+Hipparchia semele,31,247,182.25
+Hipparchia semele,32,236,188.75
+Hipparchia semele,33,192,155.875
+Hipparchia semele,34,158,134
+Hipparchia semele,35,72,106.125
+Hipparchia semele,36,58,42.125
+Hipparchia semele,37,35,34.875
+Hipparchia semele,38,23,10.75
+Hipparchia semele,39,0,2
+Hipparchia semele,40,2,1
+Hipparchia semele,46,0,1
+Limenitis camilla,1,0,1
+Limenitis camilla,9,0,1
+Limenitis camilla,12,0,1
+Limenitis camilla,19,0,1
+Limenitis camilla,20,0,3
 Limenitis camilla,21,1,1
-Limenitis camilla,22,1,4
-Limenitis camilla,23,4,16
-Limenitis camilla,24,45.75,128
-Limenitis camilla,25,111.875,303
-Limenitis camilla,26,200.375,578
-Limenitis camilla,27,265,240
-Limenitis camilla,28,188.25,295
-Limenitis camilla,29,190.5,134
-Limenitis camilla,30,76.375,78
-Limenitis camilla,31,27.5,39
-Limenitis camilla,32,16.5,13
-Limenitis camilla,33,4.875,2
-Limenitis camilla,34,2,0
-Limenitis camilla,35,1.5,0
-Limenitis camilla,36,1.25,0
-Limenitis camilla,37,1.25,3
-Limenitis camilla,38,3,1
-Limenitis camilla,39,3,0
-Limenitis camilla,44,1,0
-Limenitis camilla,50,1,0
-Pyrgus malvae,14,2.125,0
-Pyrgus malvae,15,10.25,15
+Limenitis camilla,22,4,1
+Limenitis camilla,23,16,4
+Limenitis camilla,24,128,45.75
+Limenitis camilla,25,303,111.875
+Limenitis camilla,26,578,200.375
+Limenitis camilla,27,240,265
+Limenitis camilla,28,295,188.25
+Limenitis camilla,29,134,190.5
+Limenitis camilla,30,78,76.375
+Limenitis camilla,31,39,27.5
+Limenitis camilla,32,13,16.5
+Limenitis camilla,33,2,4.875
+Limenitis camilla,34,0,2
+Limenitis camilla,35,0,1.5
+Limenitis camilla,36,0,1.25
+Limenitis camilla,37,3,1.25
+Limenitis camilla,38,1,3
+Limenitis camilla,39,0,3
+Limenitis camilla,44,0,1
+Limenitis camilla,50,0,1
+Pyrgus malvae,14,0,2.125
+Pyrgus malvae,15,15,10.25
 Pyrgus malvae,16,26,26
-Pyrgus malvae,17,34.5,130
-Pyrgus malvae,18,77.125,53
-Pyrgus malvae,19,192.375,210
-Pyrgus malvae,20,231,309
-Pyrgus malvae,21,227.25,330
-Pyrgus malvae,22,123.625,216
-Pyrgus malvae,23,86.125,32
-Pyrgus malvae,24,38,31
-Pyrgus malvae,25,14.25,2
-Pyrgus malvae,26,7.125,7
-Pyrgus malvae,27,3.5,0
-Pyrgus malvae,28,2.5,4
-Pyrgus malvae,29,1.375,1
-Pyrgus malvae,30,1.75,7
-Pyrgus malvae,31,2.25,3
-Pyrgus malvae,32,2,1
-Pyrgus malvae,33,1.5,1
-Pyrgus malvae,35,2,1
-Pyrgus malvae,36,1.25,0
-Pyrgus malvae,37,2,0
-Pyrgus malvae,39,1,0
-Pyrgus malvae,42,0,1
-Boloria selene,5,1,0
-Boloria selene,12,1,0
-Boloria selene,15,0,2
-Boloria selene,16,2,1
-Boloria selene,17,0,1
-Boloria selene,18,5.5,4
-Boloria selene,19,6,14
-Boloria selene,20,15.5,32
-Boloria selene,21,54.375,145
-Boloria selene,22,109.375,306
-Boloria selene,23,160.75,153
-Boloria selene,24,155.625,102
-Boloria selene,25,187,92
-Boloria selene,26,131.75,109
-Boloria selene,27,70.875,35
-Boloria selene,28,39.875,26
-Boloria selene,29,26.625,13
-Boloria selene,30,15.5,19
-Boloria selene,31,11.625,14
-Boloria selene,32,17.25,25
-Boloria selene,33,12.25,16
-Boloria selene,34,7.25,3
-Boloria selene,35,5.75,3
-Boloria selene,36,2,0
-Boloria selene,37,1,0
-Boloria selene,38,1,0
-Boloria selene,44,2,0
-Boloria selene,47,3,0
-Boloria selene,53,0,1
-Thecla betulae,1,64,22
-Thecla betulae,2,23.75,7
-Thecla betulae,3,94,5
-Thecla betulae,4,78.75,7
-Thecla betulae,5,64.5,4
-Thecla betulae,6,61.875,3
-Thecla betulae,7,29.125,5
-Thecla betulae,8,82.5,0
-Thecla betulae,9,8,2
-Thecla betulae,10,56.75,1
-Thecla betulae,11,40,0
-Thecla betulae,12,18.75,0
-Thecla betulae,13,5.875,0
-Thecla betulae,14,4.75,0
-Thecla betulae,16,1.5,0
-Thecla betulae,17,1,0
-Thecla betulae,20,1,0
-Thecla betulae,22,1,0
-Thecla betulae,23,3,0
-Thecla betulae,24,1,0
-Thecla betulae,25,0,1
-Thecla betulae,27,1.25,1
-Thecla betulae,28,2,6
-Thecla betulae,29,9,13
-Thecla betulae,30,10.375,20
-Thecla betulae,31,14,58
-Thecla betulae,32,24,77
-Thecla betulae,33,25.625,27
-Thecla betulae,34,33.625,44
-Thecla betulae,35,37.375,29
-Thecla betulae,36,16.375,47
-Thecla betulae,37,19.375,45
-Thecla betulae,38,9.125,51
-Thecla betulae,39,8.625,9
-Thecla betulae,40,10.375,4
-Thecla betulae,41,4.75,4
-Thecla betulae,42,2.5,4
-Thecla betulae,43,2.5,1
-Thecla betulae,44,20.75,5
-Thecla betulae,45,16.25,3
-Thecla betulae,46,42.75,4
-Thecla betulae,47,3,25
-Thecla betulae,48,8.5,10
-Thecla betulae,49,16.125,13
-Thecla betulae,50,26.75,9
-Thecla betulae,51,14.375,12
-Thecla betulae,52,10.375,5
-Thecla betulae,53,53.125,9
-Colias croceus,1,1,0
-Colias croceus,7,1,0
-Colias croceus,8,6,0
-Colias croceus,11,2,1
-Colias croceus,12,1.5,1
-Colias croceus,13,1.875,2
-Colias croceus,14,2.5,2
-Colias croceus,15,3.5,8
-Colias croceus,16,4.625,5
-Colias croceus,17,4,9
-Colias croceus,18,2,6
-Colias croceus,19,3.75,10
-Colias croceus,20,4,2
-Colias croceus,21,4.125,20
-Colias croceus,22,5.25,18
-Colias croceus,23,3.75,10
-Colias croceus,24,2.75,3
-Colias croceus,25,4.875,5
-Colias croceus,26,6,9
-Colias croceus,27,12.125,0
-Colias croceus,28,14.75,14
-Colias croceus,29,32.125,66
-Colias croceus,30,31.375,112
-Colias croceus,31,43.125,218
-Colias croceus,32,55.375,194
-Colias croceus,33,52.375,94
-Colias croceus,34,63.625,72
-Colias croceus,35,67.25,46
-Colias croceus,36,44.125,50
-Colias croceus,37,47.75,121
-Colias croceus,38,44.5,252
-Colias croceus,39,44.125,122
-Colias croceus,40,22.375,68
-Colias croceus,41,14.5,52
-Colias croceus,42,8.25,28
-Colias croceus,43,9.875,11
-Colias croceus,44,7.125,2
-Colias croceus,45,2.25,10
-Colias croceus,46,1.625,1
-Colias croceus,47,1.25,0
-Colias croceus,48,1,0
-Colias croceus,49,1,0
-Leptidea sinapis,11,0,1
-Leptidea sinapis,12,1,0
-Leptidea sinapis,14,3.5,1
-Leptidea sinapis,15,1,3
-Leptidea sinapis,16,5,11
-Leptidea sinapis,17,2.5,16
-Leptidea sinapis,18,5.75,15
-Leptidea sinapis,19,19.25,56
-Leptidea sinapis,20,49.875,143
-Leptidea sinapis,21,93.5,359
-Leptidea sinapis,22,85.375,145
-Leptidea sinapis,23,65.875,63
-Leptidea sinapis,24,34.5,111
-Leptidea sinapis,25,54.5,56
-Leptidea sinapis,26,29.25,74
-Leptidea sinapis,27,31.125,13
-Leptidea sinapis,28,20.875,43
-Leptidea sinapis,29,41.375,50
-Leptidea sinapis,30,47.25,108
-Leptidea sinapis,31,46.75,124
-Leptidea sinapis,32,32.75,66
-Leptidea sinapis,33,19.125,36
-Leptidea sinapis,34,6.5,17
-Leptidea sinapis,35,2.375,1
-Leptidea sinapis,36,2.875,1
-Leptidea sinapis,37,1.5,1
-Leptidea sinapis,39,1,0
-Boloria euphrosyne,11,1,0
-Boloria euphrosyne,13,0,1
-Boloria euphrosyne,15,1,2
-Boloria euphrosyne,16,2.5,5
-Boloria euphrosyne,17,5.125,65
-Boloria euphrosyne,18,16.625,23
-Boloria euphrosyne,19,50.625,83
-Boloria euphrosyne,20,123.75,41
-Boloria euphrosyne,21,135.125,136
-Boloria euphrosyne,22,113.75,70
-Boloria euphrosyne,23,63.125,8
-Boloria euphrosyne,24,25.25,10
-Boloria euphrosyne,25,17.125,12
-Boloria euphrosyne,26,9,4
-Boloria euphrosyne,27,2.75,7
-Boloria euphrosyne,28,1.75,7
-Boloria euphrosyne,29,2.5,3
-Boloria euphrosyne,30,1.25,10
-Boloria euphrosyne,31,2.5,4
-Boloria euphrosyne,33,2,0
-Boloria euphrosyne,34,1,0
-Pieris napi sabellicae,2,1,0
-Pieris napi sabellicae,12,4,0
-Pieris napi sabellicae,13,1,0
-Pieris napi sabellicae,14,1,7
-Pieris napi sabellicae,15,5,42
-Pieris napi sabellicae,16,27.75,82
-Pieris napi sabellicae,17,8,146
-Pieris napi sabellicae,18,12.125,57
-Pieris napi sabellicae,19,18.875,111
-Pieris napi sabellicae,20,21,58
-Pieris napi sabellicae,21,17.25,101
-Pieris napi sabellicae,22,9.625,62
-Pieris napi sabellicae,23,9.75,10
-Pieris napi sabellicae,24,8.25,16
-Pieris napi sabellicae,25,5.75,24
-Pieris napi sabellicae,26,14.75,59
-Pieris napi sabellicae,27,21.75,53
-Pieris napi sabellicae,28,17.5,83
-Pieris napi sabellicae,29,19.625,81
-Pieris napi sabellicae,30,16,73
-Pieris napi sabellicae,31,17.625,81
-Pieris napi sabellicae,32,10.125,68
-Pieris napi sabellicae,33,7.875,28
-Pieris napi sabellicae,34,10.125,27
-Pieris napi sabellicae,35,8.375,12
-Pieris napi sabellicae,36,7.75,12
-Pieris napi sabellicae,37,4.375,22
-Pieris napi sabellicae,38,2.5,9
-Pieris napi sabellicae,39,2,7
-Pieris napi sabellicae,40,2,0
-Pieris napi sabellicae,41,0,1
+Pyrgus malvae,17,130,34.5
+Pyrgus malvae,18,53,77.125
+Pyrgus malvae,19,210,192.375
+Pyrgus malvae,20,309,231
+Pyrgus malvae,21,330,227.25
+Pyrgus malvae,22,216,123.625
+Pyrgus malvae,23,32,86.125
+Pyrgus malvae,24,31,38
+Pyrgus malvae,25,2,14.25
+Pyrgus malvae,26,7,7.125
+Pyrgus malvae,27,0,3.5
+Pyrgus malvae,28,4,2.5
+Pyrgus malvae,29,1,1.375
+Pyrgus malvae,30,7,1.75
+Pyrgus malvae,31,3,2.25
+Pyrgus malvae,32,1,2
+Pyrgus malvae,33,1,1.5
+Pyrgus malvae,35,1,2
+Pyrgus malvae,36,0,1.25
+Pyrgus malvae,37,0,2
+Pyrgus malvae,39,0,1
+Pyrgus malvae,42,1,0
+Boloria selene,5,0,1
+Boloria selene,12,0,1
+Boloria selene,15,2,0
+Boloria selene,16,1,2
+Boloria selene,17,1,0
+Boloria selene,18,4,5.5
+Boloria selene,19,14,6
+Boloria selene,20,32,15.5
+Boloria selene,21,145,54.375
+Boloria selene,22,306,109.375
+Boloria selene,23,153,160.75
+Boloria selene,24,102,155.625
+Boloria selene,25,92,187
+Boloria selene,26,109,131.75
+Boloria selene,27,35,70.875
+Boloria selene,28,26,39.875
+Boloria selene,29,13,26.625
+Boloria selene,30,19,15.5
+Boloria selene,31,14,11.625
+Boloria selene,32,25,17.25
+Boloria selene,33,16,12.25
+Boloria selene,34,3,7.25
+Boloria selene,35,3,5.75
+Boloria selene,36,0,2
+Boloria selene,37,0,1
+Boloria selene,38,0,1
+Boloria selene,44,0,2
+Boloria selene,47,0,3
+Boloria selene,53,1,0
+Thecla betulae,1,22,64
+Thecla betulae,2,7,23.75
+Thecla betulae,3,5,94
+Thecla betulae,4,7,78.75
+Thecla betulae,5,4,64.5
+Thecla betulae,6,3,61.875
+Thecla betulae,7,5,29.125
+Thecla betulae,8,0,82.5
+Thecla betulae,9,2,8
+Thecla betulae,10,1,56.75
+Thecla betulae,11,0,40
+Thecla betulae,12,0,18.75
+Thecla betulae,13,0,5.875
+Thecla betulae,14,0,4.75
+Thecla betulae,16,0,1.5
+Thecla betulae,17,0,1
+Thecla betulae,20,0,1
+Thecla betulae,22,0,1
+Thecla betulae,23,0,3
+Thecla betulae,24,0,1
+Thecla betulae,25,1,0
+Thecla betulae,27,1,1.25
+Thecla betulae,28,6,2
+Thecla betulae,29,13,9
+Thecla betulae,30,20,10.375
+Thecla betulae,31,58,14
+Thecla betulae,32,77,24
+Thecla betulae,33,27,25.625
+Thecla betulae,34,44,33.625
+Thecla betulae,35,29,37.375
+Thecla betulae,36,47,16.375
+Thecla betulae,37,45,19.375
+Thecla betulae,38,51,9.125
+Thecla betulae,39,9,8.625
+Thecla betulae,40,4,10.375
+Thecla betulae,41,4,4.75
+Thecla betulae,42,4,2.5
+Thecla betulae,43,1,2.5
+Thecla betulae,44,5,20.75
+Thecla betulae,45,3,16.25
+Thecla betulae,46,4,42.75
+Thecla betulae,47,25,3
+Thecla betulae,48,10,8.5
+Thecla betulae,49,13,16.125
+Thecla betulae,50,9,26.75
+Thecla betulae,51,12,14.375
+Thecla betulae,52,5,10.375
+Thecla betulae,53,9,53.125
+Colias croceus,1,0,1
+Colias croceus,7,0,1
+Colias croceus,8,0,6
+Colias croceus,11,1,2
+Colias croceus,12,1,1.5
+Colias croceus,13,2,1.875
+Colias croceus,14,2,2.5
+Colias croceus,15,8,3.5
+Colias croceus,16,5,4.625
+Colias croceus,17,9,4
+Colias croceus,18,6,2
+Colias croceus,19,10,3.75
+Colias croceus,20,2,4
+Colias croceus,21,20,4.125
+Colias croceus,22,18,5.25
+Colias croceus,23,10,3.75
+Colias croceus,24,3,2.75
+Colias croceus,25,5,4.875
+Colias croceus,26,9,6
+Colias croceus,27,0,12.125
+Colias croceus,28,14,14.75
+Colias croceus,29,66,32.125
+Colias croceus,30,112,31.375
+Colias croceus,31,218,43.125
+Colias croceus,32,194,55.375
+Colias croceus,33,94,52.375
+Colias croceus,34,72,63.625
+Colias croceus,35,46,67.25
+Colias croceus,36,50,44.125
+Colias croceus,37,121,47.75
+Colias croceus,38,252,44.5
+Colias croceus,39,122,44.125
+Colias croceus,40,68,22.375
+Colias croceus,41,52,14.5
+Colias croceus,42,28,8.25
+Colias croceus,43,11,9.875
+Colias croceus,44,2,7.125
+Colias croceus,45,10,2.25
+Colias croceus,46,1,1.625
+Colias croceus,47,0,1.25
+Colias croceus,48,0,1
+Colias croceus,49,0,1
+Leptidea sinapis,11,1,0
+Leptidea sinapis,12,0,1
+Leptidea sinapis,14,1,3.5
+Leptidea sinapis,15,3,1
+Leptidea sinapis,16,11,5
+Leptidea sinapis,17,16,2.5
+Leptidea sinapis,18,15,5.75
+Leptidea sinapis,19,56,19.25
+Leptidea sinapis,20,143,49.875
+Leptidea sinapis,21,359,93.5
+Leptidea sinapis,22,145,85.375
+Leptidea sinapis,23,63,65.875
+Leptidea sinapis,24,111,34.5
+Leptidea sinapis,25,56,54.5
+Leptidea sinapis,26,74,29.25
+Leptidea sinapis,27,13,31.125
+Leptidea sinapis,28,43,20.875
+Leptidea sinapis,29,50,41.375
+Leptidea sinapis,30,108,47.25
+Leptidea sinapis,31,124,46.75
+Leptidea sinapis,32,66,32.75
+Leptidea sinapis,33,36,19.125
+Leptidea sinapis,34,17,6.5
+Leptidea sinapis,35,1,2.375
+Leptidea sinapis,36,1,2.875
+Leptidea sinapis,37,1,1.5
+Leptidea sinapis,39,0,1
+Boloria euphrosyne,11,0,1
+Boloria euphrosyne,13,1,0
+Boloria euphrosyne,15,2,1
+Boloria euphrosyne,16,5,2.5
+Boloria euphrosyne,17,65,5.125
+Boloria euphrosyne,18,23,16.625
+Boloria euphrosyne,19,83,50.625
+Boloria euphrosyne,20,41,123.75
+Boloria euphrosyne,21,136,135.125
+Boloria euphrosyne,22,70,113.75
+Boloria euphrosyne,23,8,63.125
+Boloria euphrosyne,24,10,25.25
+Boloria euphrosyne,25,12,17.125
+Boloria euphrosyne,26,4,9
+Boloria euphrosyne,27,7,2.75
+Boloria euphrosyne,28,7,1.75
+Boloria euphrosyne,29,3,2.5
+Boloria euphrosyne,30,10,1.25
+Boloria euphrosyne,31,4,2.5
+Boloria euphrosyne,33,0,2
+Boloria euphrosyne,34,0,1
+Pieris napi sabellicae,2,0,1
+Pieris napi sabellicae,12,0,4
+Pieris napi sabellicae,13,0,1
+Pieris napi sabellicae,14,7,1
+Pieris napi sabellicae,15,42,5
+Pieris napi sabellicae,16,82,27.75
+Pieris napi sabellicae,17,146,8
+Pieris napi sabellicae,18,57,12.125
+Pieris napi sabellicae,19,111,18.875
+Pieris napi sabellicae,20,58,21
+Pieris napi sabellicae,21,101,17.25
+Pieris napi sabellicae,22,62,9.625
+Pieris napi sabellicae,23,10,9.75
+Pieris napi sabellicae,24,16,8.25
+Pieris napi sabellicae,25,24,5.75
+Pieris napi sabellicae,26,59,14.75
+Pieris napi sabellicae,27,53,21.75
+Pieris napi sabellicae,28,83,17.5
+Pieris napi sabellicae,29,81,19.625
+Pieris napi sabellicae,30,73,16
+Pieris napi sabellicae,31,81,17.625
+Pieris napi sabellicae,32,68,10.125
+Pieris napi sabellicae,33,28,7.875
+Pieris napi sabellicae,34,27,10.125
+Pieris napi sabellicae,35,12,8.375
+Pieris napi sabellicae,36,12,7.75
+Pieris napi sabellicae,37,22,4.375
+Pieris napi sabellicae,38,9,2.5
+Pieris napi sabellicae,39,7,2
+Pieris napi sabellicae,40,0,2
+Pieris napi sabellicae,41,1,0
 Pieris napi sabellicae,42,1,1
-Pieris napi sabellicae,49,1,0
-Pieris napi sabellicae,53,0,1
-Gonepteryx rhamni rhamni,1,1,0
-Gonepteryx rhamni rhamni,2,0,1
-Gonepteryx rhamni rhamni,6,2,0
-Gonepteryx rhamni rhamni,7,22,0
-Gonepteryx rhamni rhamni,8,32.5,0
-Gonepteryx rhamni rhamni,9,67,1
-Gonepteryx rhamni rhamni,10,3.5,5
-Gonepteryx rhamni rhamni,11,7.25,49
-Gonepteryx rhamni rhamni,12,50,87
-Gonepteryx rhamni rhamni,13,41,104
-Gonepteryx rhamni rhamni,14,23,95
-Gonepteryx rhamni rhamni,15,23.75,175
-Gonepteryx rhamni rhamni,16,36.75,92
-Gonepteryx rhamni rhamni,17,26,108
-Gonepteryx rhamni rhamni,18,8.625,18
-Gonepteryx rhamni rhamni,19,27,71
-Gonepteryx rhamni rhamni,20,32.5,40
-Gonepteryx rhamni rhamni,21,31.5,68
-Gonepteryx rhamni rhamni,22,7.5,44
-Gonepteryx rhamni rhamni,23,10.5,6
-Gonepteryx rhamni rhamni,24,4,16
-Gonepteryx rhamni rhamni,25,7.5,12
-Gonepteryx rhamni rhamni,26,6.75,19
-Gonepteryx rhamni rhamni,27,8.5,8
-Gonepteryx rhamni rhamni,28,9.25,23
-Gonepteryx rhamni rhamni,29,13.25,25
-Gonepteryx rhamni rhamni,30,7.25,25
-Gonepteryx rhamni rhamni,31,15.5,28
-Gonepteryx rhamni rhamni,32,6.25,28
-Gonepteryx rhamni rhamni,33,3.75,5
-Gonepteryx rhamni rhamni,34,7.5,6
-Gonepteryx rhamni rhamni,35,2.125,7
-Gonepteryx rhamni rhamni,36,2.25,5
-Gonepteryx rhamni rhamni,37,3.25,8
-Gonepteryx rhamni rhamni,38,2.25,5
+Pieris napi sabellicae,49,0,1
+Pieris napi sabellicae,53,1,0
+Gonepteryx rhamni rhamni,1,0,1
+Gonepteryx rhamni rhamni,2,1,0
+Gonepteryx rhamni rhamni,6,0,2
+Gonepteryx rhamni rhamni,7,0,22
+Gonepteryx rhamni rhamni,8,0,32.5
+Gonepteryx rhamni rhamni,9,1,67
+Gonepteryx rhamni rhamni,10,5,3.5
+Gonepteryx rhamni rhamni,11,49,7.25
+Gonepteryx rhamni rhamni,12,87,50
+Gonepteryx rhamni rhamni,13,104,41
+Gonepteryx rhamni rhamni,14,95,23
+Gonepteryx rhamni rhamni,15,175,23.75
+Gonepteryx rhamni rhamni,16,92,36.75
+Gonepteryx rhamni rhamni,17,108,26
+Gonepteryx rhamni rhamni,18,18,8.625
+Gonepteryx rhamni rhamni,19,71,27
+Gonepteryx rhamni rhamni,20,40,32.5
+Gonepteryx rhamni rhamni,21,68,31.5
+Gonepteryx rhamni rhamni,22,44,7.5
+Gonepteryx rhamni rhamni,23,6,10.5
+Gonepteryx rhamni rhamni,24,16,4
+Gonepteryx rhamni rhamni,25,12,7.5
+Gonepteryx rhamni rhamni,26,19,6.75
+Gonepteryx rhamni rhamni,27,8,8.5
+Gonepteryx rhamni rhamni,28,23,9.25
+Gonepteryx rhamni rhamni,29,25,13.25
+Gonepteryx rhamni rhamni,30,25,7.25
+Gonepteryx rhamni rhamni,31,28,15.5
+Gonepteryx rhamni rhamni,32,28,6.25
+Gonepteryx rhamni rhamni,33,5,3.75
+Gonepteryx rhamni rhamni,34,6,7.5
+Gonepteryx rhamni rhamni,35,7,2.125
+Gonepteryx rhamni rhamni,36,5,2.25
+Gonepteryx rhamni rhamni,37,8,3.25
+Gonepteryx rhamni rhamni,38,5,2.25
 Gonepteryx rhamni rhamni,39,2,2
 Gonepteryx rhamni rhamni,40,1,1
-Gonepteryx rhamni rhamni,41,2,1
-Gonepteryx rhamni rhamni,42,1.25,1
-Gonepteryx rhamni rhamni,43,1.5,1
-Gonepteryx rhamni rhamni,44,1,0
-Gonepteryx rhamni rhamni,45,0,9
-Gonepteryx rhamni rhamni,46,1,0
-Gonepteryx rhamni rhamni,48,0,3
-Gonepteryx rhamni rhamni,49,1,0
+Gonepteryx rhamni rhamni,41,1,2
+Gonepteryx rhamni rhamni,42,1,1.25
+Gonepteryx rhamni rhamni,43,1,1.5
+Gonepteryx rhamni rhamni,44,0,1
+Gonepteryx rhamni rhamni,45,9,0
+Gonepteryx rhamni rhamni,46,0,1
+Gonepteryx rhamni rhamni,48,3,0
+Gonepteryx rhamni rhamni,49,0,1
 Gonepteryx rhamni rhamni,51,1,1
-Celastrina argiolus britanna,2,1,0
-Celastrina argiolus britanna,7,1,0
-Celastrina argiolus britanna,9,1,0
+Celastrina argiolus britanna,2,0,1
+Celastrina argiolus britanna,7,0,1
+Celastrina argiolus britanna,9,0,1
 Celastrina argiolus britanna,11,1,1
-Celastrina argiolus britanna,12,1.5,2
+Celastrina argiolus britanna,12,2,1.5
 Celastrina argiolus britanna,13,16,16
-Celastrina argiolus britanna,14,10.5,32
-Celastrina argiolus britanna,15,12.75,216
-Celastrina argiolus britanna,16,46.5,180
-Celastrina argiolus britanna,17,20.5,211
-Celastrina argiolus britanna,18,9.625,41
-Celastrina argiolus britanna,19,35.25,125
-Celastrina argiolus britanna,20,22.125,47
-Celastrina argiolus britanna,21,17.875,65
-Celastrina argiolus britanna,22,9.75,48
-Celastrina argiolus britanna,23,4.5,7
-Celastrina argiolus britanna,24,3.125,9
-Celastrina argiolus britanna,25,7,12
-Celastrina argiolus britanna,26,6.5,23
-Celastrina argiolus britanna,27,12,22
-Celastrina argiolus britanna,28,19.5,61
-Celastrina argiolus britanna,29,11.5,77
-Celastrina argiolus britanna,30,10.375,34
-Celastrina argiolus britanna,31,14.875,56
-Celastrina argiolus britanna,32,9.75,57
-Celastrina argiolus britanna,33,8.25,27
-Celastrina argiolus britanna,34,12.75,27
-Celastrina argiolus britanna,35,4.375,6
-Celastrina argiolus britanna,36,3.5,5
-Celastrina argiolus britanna,37,1.75,2
-Celastrina argiolus britanna,38,1.75,6
-Celastrina argiolus britanna,39,2,0
-Celastrina argiolus britanna,41,2,0
-Celastrina argiolus britanna,42,1,2
-Satyrium w-album,1,1,0
-Satyrium w-album,3,0,1
-Satyrium w-album,4,1,0
-Satyrium w-album,6,2,0
-Satyrium w-album,7,1,0
-Satyrium w-album,11,2,1
-Satyrium w-album,12,2,0
-Satyrium w-album,14,6,0
+Celastrina argiolus britanna,14,32,10.5
+Celastrina argiolus britanna,15,216,12.75
+Celastrina argiolus britanna,16,180,46.5
+Celastrina argiolus britanna,17,211,20.5
+Celastrina argiolus britanna,18,41,9.625
+Celastrina argiolus britanna,19,125,35.25
+Celastrina argiolus britanna,20,47,22.125
+Celastrina argiolus britanna,21,65,17.875
+Celastrina argiolus britanna,22,48,9.75
+Celastrina argiolus britanna,23,7,4.5
+Celastrina argiolus britanna,24,9,3.125
+Celastrina argiolus britanna,25,12,7
+Celastrina argiolus britanna,26,23,6.5
+Celastrina argiolus britanna,27,22,12
+Celastrina argiolus britanna,28,61,19.5
+Celastrina argiolus britanna,29,77,11.5
+Celastrina argiolus britanna,30,34,10.375
+Celastrina argiolus britanna,31,56,14.875
+Celastrina argiolus britanna,32,57,9.75
+Celastrina argiolus britanna,33,27,8.25
+Celastrina argiolus britanna,34,27,12.75
+Celastrina argiolus britanna,35,6,4.375
+Celastrina argiolus britanna,36,5,3.5
+Celastrina argiolus britanna,37,2,1.75
+Celastrina argiolus britanna,38,6,1.75
+Celastrina argiolus britanna,39,0,2
+Celastrina argiolus britanna,41,0,2
+Celastrina argiolus britanna,42,2,1
+Satyrium w-album,1,0,1
+Satyrium w-album,3,1,0
+Satyrium w-album,4,0,1
+Satyrium w-album,6,0,2
+Satyrium w-album,7,0,1
+Satyrium w-album,11,1,2
+Satyrium w-album,12,0,2
+Satyrium w-album,14,0,6
 Satyrium w-album,16,1,1
-Satyrium w-album,18,1,3
-Satyrium w-album,19,1,2
-Satyrium w-album,21,1.5,0
+Satyrium w-album,18,3,1
+Satyrium w-album,19,2,1
+Satyrium w-album,21,0,1.5
 Satyrium w-album,22,1,1
-Satyrium w-album,23,4.25,6
-Satyrium w-album,24,10.75,17
-Satyrium w-album,25,30.625,67
-Satyrium w-album,26,57,99
-Satyrium w-album,27,73.125,66
-Satyrium w-album,28,52.125,95
-Satyrium w-album,29,69.625,84
-Satyrium w-album,30,39.625,47
-Satyrium w-album,31,17.75,43
-Satyrium w-album,32,9.625,15
-Satyrium w-album,33,3,5
-Satyrium w-album,34,3,1
-Satyrium w-album,35,1.25,0
-Satyrium w-album,36,2,0
-Satyrium w-album,37,0,2
-Satyrium w-album,38,2,0
-Satyrium w-album,39,2,0
-Satyrium w-album,43,0,1
-Satyrium w-album,44,1,0
-Satyrium w-album,47,1,0
-Satyrium w-album,48,1,0
-Satyrium w-album,51,1,0
-Satyrium w-album,52,0,4
-Satyrium w-album,53,0,1
-Hesperia comma,1,1,0
-Hesperia comma,13,0,1
-Hesperia comma,14,6,0
-Hesperia comma,16,0,1
-Hesperia comma,23,3,1
-Hesperia comma,24,2,0
-Hesperia comma,25,0,2
-Hesperia comma,26,2.5,1
-Hesperia comma,27,1.25,0
-Hesperia comma,28,7.5,2
-Hesperia comma,29,8.875,4
-Hesperia comma,30,27.25,22
-Hesperia comma,31,54.875,95
-Hesperia comma,32,78.375,172
-Hesperia comma,33,81.25,98
-Hesperia comma,34,63.875,92
-Hesperia comma,35,41.25,27
-Hesperia comma,36,17.375,17
-Hesperia comma,37,5,12
-Hesperia comma,38,3.5,3
-Hesperia comma,44,1,0
-Hesperia comma,46,1,0
-Euphydryas aurinia,7,1,0
-Euphydryas aurinia,8,1.5,0
-Euphydryas aurinia,10,1,0
-Euphydryas aurinia,11,0,1
-Euphydryas aurinia,12,0,3
-Euphydryas aurinia,13,1,0
-Euphydryas aurinia,14,2.5,1
-Euphydryas aurinia,15,3,0
-Euphydryas aurinia,16,3.5,2
-Euphydryas aurinia,17,2,6
-Euphydryas aurinia,18,1.5,7
-Euphydryas aurinia,19,13.25,61
-Euphydryas aurinia,20,23.125,92
-Euphydryas aurinia,21,69.5,185
-Euphydryas aurinia,22,81,106
-Euphydryas aurinia,23,71.25,23
-Euphydryas aurinia,24,29.25,17
-Euphydryas aurinia,25,14,4
-Euphydryas aurinia,26,7,3
-Euphydryas aurinia,27,1.625,0
+Satyrium w-album,23,6,4.25
+Satyrium w-album,24,17,10.75
+Satyrium w-album,25,67,30.625
+Satyrium w-album,26,99,57
+Satyrium w-album,27,66,73.125
+Satyrium w-album,28,95,52.125
+Satyrium w-album,29,84,69.625
+Satyrium w-album,30,47,39.625
+Satyrium w-album,31,43,17.75
+Satyrium w-album,32,15,9.625
+Satyrium w-album,33,5,3
+Satyrium w-album,34,1,3
+Satyrium w-album,35,0,1.25
+Satyrium w-album,36,0,2
+Satyrium w-album,37,2,0
+Satyrium w-album,38,0,2
+Satyrium w-album,39,0,2
+Satyrium w-album,43,1,0
+Satyrium w-album,44,0,1
+Satyrium w-album,47,0,1
+Satyrium w-album,48,0,1
+Satyrium w-album,51,0,1
+Satyrium w-album,52,4,0
+Satyrium w-album,53,1,0
+Hesperia comma,1,0,1
+Hesperia comma,13,1,0
+Hesperia comma,14,0,6
+Hesperia comma,16,1,0
+Hesperia comma,23,1,3
+Hesperia comma,24,0,2
+Hesperia comma,25,2,0
+Hesperia comma,26,1,2.5
+Hesperia comma,27,0,1.25
+Hesperia comma,28,2,7.5
+Hesperia comma,29,4,8.875
+Hesperia comma,30,22,27.25
+Hesperia comma,31,95,54.875
+Hesperia comma,32,172,78.375
+Hesperia comma,33,98,81.25
+Hesperia comma,34,92,63.875
+Hesperia comma,35,27,41.25
+Hesperia comma,36,17,17.375
+Hesperia comma,37,12,5
+Hesperia comma,38,3,3.5
+Hesperia comma,44,0,1
+Hesperia comma,46,0,1
+Euphydryas aurinia,7,0,1
+Euphydryas aurinia,8,0,1.5
+Euphydryas aurinia,10,0,1
+Euphydryas aurinia,11,1,0
+Euphydryas aurinia,12,3,0
+Euphydryas aurinia,13,0,1
+Euphydryas aurinia,14,1,2.5
+Euphydryas aurinia,15,0,3
+Euphydryas aurinia,16,2,3.5
+Euphydryas aurinia,17,6,2
+Euphydryas aurinia,18,7,1.5
+Euphydryas aurinia,19,61,13.25
+Euphydryas aurinia,20,92,23.125
+Euphydryas aurinia,21,185,69.5
+Euphydryas aurinia,22,106,81
+Euphydryas aurinia,23,23,71.25
+Euphydryas aurinia,24,17,29.25
+Euphydryas aurinia,25,4,14
+Euphydryas aurinia,26,3,7
+Euphydryas aurinia,27,0,1.625
 Euphydryas aurinia,28,1,1
-Euphydryas aurinia,29,2.5,0
-Euphydryas aurinia,30,3,8
-Euphydryas aurinia,31,7,1
-Euphydryas aurinia,32,3,0
-Euphydryas aurinia,33,5.25,0
-Euphydryas aurinia,34,2,3
-Euphydryas aurinia,35,4.75,9
-Euphydryas aurinia,36,2.5,4
+Euphydryas aurinia,29,0,2.5
+Euphydryas aurinia,30,8,3
+Euphydryas aurinia,31,1,7
+Euphydryas aurinia,32,0,3
+Euphydryas aurinia,33,0,5.25
+Euphydryas aurinia,34,3,2
+Euphydryas aurinia,35,9,4.75
+Euphydryas aurinia,36,4,2.5
 Euphydryas aurinia,37,5,5
-Euphydryas aurinia,38,6.75,2
+Euphydryas aurinia,38,2,6.75
 Euphydryas aurinia,39,1,1
-Euphydryas aurinia,41,0,1
-Euphydryas aurinia,47,1,0
-Erebia aethiops,19,0,1
-Erebia aethiops,23,3,0
+Euphydryas aurinia,41,1,0
+Euphydryas aurinia,47,0,1
+Erebia aethiops,19,1,0
+Erebia aethiops,23,0,3
 Erebia aethiops,24,1,1
-Erebia aethiops,25,0,1
-Erebia aethiops,26,1.5,1
-Erebia aethiops,27,1.25,0
-Erebia aethiops,28,3,2
-Erebia aethiops,29,9.625,3
-Erebia aethiops,30,28.625,28
-Erebia aethiops,31,72,76
-Erebia aethiops,32,81.25,155
-Erebia aethiops,33,51.25,105
-Erebia aethiops,34,52.25,76
-Erebia aethiops,35,23.25,18
-Erebia aethiops,36,12.125,19
-Erebia aethiops,37,5,0
-Erebia aethiops,38,1.5,1
-Erebia aethiops,39,1,0
-Erebia aethiops,49,2,0
-Erebia aethiops,50,1,0
-Coenonympha pamphilus pamphilus,1,1,0
-Coenonympha pamphilus pamphilus,15,1,0
-Coenonympha pamphilus pamphilus,17,3,4
-Coenonympha pamphilus pamphilus,18,9,7
-Coenonympha pamphilus pamphilus,19,9,48
-Coenonympha pamphilus pamphilus,20,20.25,77
-Coenonympha pamphilus pamphilus,21,15.25,100
-Coenonympha pamphilus pamphilus,22,21.5,162
-Coenonympha pamphilus pamphilus,23,38.5,63
-Coenonympha pamphilus pamphilus,24,17,77
-Coenonympha pamphilus pamphilus,25,29,57
-Coenonympha pamphilus pamphilus,26,28.5,64
-Coenonympha pamphilus pamphilus,27,18.5,26
-Coenonympha pamphilus pamphilus,28,13,35
-Coenonympha pamphilus pamphilus,29,12.25,25
-Coenonympha pamphilus pamphilus,30,7.5,29
-Coenonympha pamphilus pamphilus,31,17.5,30
-Coenonympha pamphilus pamphilus,32,9,23
-Coenonympha pamphilus pamphilus,33,7.5,33
-Coenonympha pamphilus pamphilus,34,9.75,33
-Coenonympha pamphilus pamphilus,35,7.5,17
-Coenonympha pamphilus pamphilus,36,7.75,15
-Coenonympha pamphilus pamphilus,37,5,13
-Coenonympha pamphilus pamphilus,38,6,7
-Coenonympha pamphilus pamphilus,39,8,3
-Coenonympha pamphilus pamphilus,40,4,0
-Coenonympha pamphilus pamphilus,41,2,0
+Erebia aethiops,25,1,0
+Erebia aethiops,26,1,1.5
+Erebia aethiops,27,0,1.25
+Erebia aethiops,28,2,3
+Erebia aethiops,29,3,9.625
+Erebia aethiops,30,28,28.625
+Erebia aethiops,31,76,72
+Erebia aethiops,32,155,81.25
+Erebia aethiops,33,105,51.25
+Erebia aethiops,34,76,52.25
+Erebia aethiops,35,18,23.25
+Erebia aethiops,36,19,12.125
+Erebia aethiops,37,0,5
+Erebia aethiops,38,1,1.5
+Erebia aethiops,39,0,1
+Erebia aethiops,49,0,2
+Erebia aethiops,50,0,1
+Coenonympha pamphilus pamphilus,1,0,1
+Coenonympha pamphilus pamphilus,15,0,1
+Coenonympha pamphilus pamphilus,17,4,3
+Coenonympha pamphilus pamphilus,18,7,9
+Coenonympha pamphilus pamphilus,19,48,9
+Coenonympha pamphilus pamphilus,20,77,20.25
+Coenonympha pamphilus pamphilus,21,100,15.25
+Coenonympha pamphilus pamphilus,22,162,21.5
+Coenonympha pamphilus pamphilus,23,63,38.5
+Coenonympha pamphilus pamphilus,24,77,17
+Coenonympha pamphilus pamphilus,25,57,29
+Coenonympha pamphilus pamphilus,26,64,28.5
+Coenonympha pamphilus pamphilus,27,26,18.5
+Coenonympha pamphilus pamphilus,28,35,13
+Coenonympha pamphilus pamphilus,29,25,12.25
+Coenonympha pamphilus pamphilus,30,29,7.5
+Coenonympha pamphilus pamphilus,31,30,17.5
+Coenonympha pamphilus pamphilus,32,23,9
+Coenonympha pamphilus pamphilus,33,33,7.5
+Coenonympha pamphilus pamphilus,34,33,9.75
+Coenonympha pamphilus pamphilus,35,17,7.5
+Coenonympha pamphilus pamphilus,36,15,7.75
+Coenonympha pamphilus pamphilus,37,13,5
+Coenonympha pamphilus pamphilus,38,7,6
+Coenonympha pamphilus pamphilus,39,3,8
+Coenonympha pamphilus pamphilus,40,0,4
+Coenonympha pamphilus pamphilus,41,0,2
 Coenonympha pamphilus pamphilus,42,1,1
-Coenonympha pamphilus pamphilus,43,1,0
-Coenonympha pamphilus pamphilus,53,0,1
-Lycaena phlaeas phlaeas,11,1,0
-Lycaena phlaeas phlaeas,12,1,0
-Lycaena phlaeas phlaeas,13,3,0
-Lycaena phlaeas phlaeas,14,2,0
-Lycaena phlaeas phlaeas,15,2,1
-Lycaena phlaeas phlaeas,16,3.5,2
-Lycaena phlaeas phlaeas,17,8.5,18
-Lycaena phlaeas phlaeas,18,7,6
-Lycaena phlaeas phlaeas,19,13.5,31
-Lycaena phlaeas phlaeas,20,27.25,33
-Lycaena phlaeas phlaeas,21,17.625,36
-Lycaena phlaeas phlaeas,22,14.5,23
-Lycaena phlaeas phlaeas,23,12.75,8
+Coenonympha pamphilus pamphilus,43,0,1
+Coenonympha pamphilus pamphilus,53,1,0
+Lycaena phlaeas phlaeas,11,0,1
+Lycaena phlaeas phlaeas,12,0,1
+Lycaena phlaeas phlaeas,13,0,3
+Lycaena phlaeas phlaeas,14,0,2
+Lycaena phlaeas phlaeas,15,1,2
+Lycaena phlaeas phlaeas,16,2,3.5
+Lycaena phlaeas phlaeas,17,18,8.5
+Lycaena phlaeas phlaeas,18,6,7
+Lycaena phlaeas phlaeas,19,31,13.5
+Lycaena phlaeas phlaeas,20,33,27.25
+Lycaena phlaeas phlaeas,21,36,17.625
+Lycaena phlaeas phlaeas,22,23,14.5
+Lycaena phlaeas phlaeas,23,8,12.75
 Lycaena phlaeas phlaeas,24,5,5
-Lycaena phlaeas phlaeas,25,5.75,20
-Lycaena phlaeas phlaeas,26,12,22
-Lycaena phlaeas phlaeas,27,4.75,18
-Lycaena phlaeas phlaeas,28,12.5,52
-Lycaena phlaeas phlaeas,29,8.875,36
-Lycaena phlaeas phlaeas,30,11.5,34
-Lycaena phlaeas phlaeas,31,10.875,52
-Lycaena phlaeas phlaeas,32,21.25,34
-Lycaena phlaeas phlaeas,33,7.125,30
-Lycaena phlaeas phlaeas,34,17.25,43
-Lycaena phlaeas phlaeas,35,10.125,16
-Lycaena phlaeas phlaeas,36,8,20
-Lycaena phlaeas phlaeas,37,7.625,42
-Lycaena phlaeas phlaeas,38,8.5,55
-Lycaena phlaeas phlaeas,39,8.875,17
-Lycaena phlaeas phlaeas,40,8,7
-Lycaena phlaeas phlaeas,41,3.375,5
-Lycaena phlaeas phlaeas,42,3.75,1
-Lycaena phlaeas phlaeas,43,5,1
-Lycaena phlaeas phlaeas,44,3.5,0
-Lycaena phlaeas phlaeas,45,2,1
-Lycaena phlaeas phlaeas,53,0,1
-Aricia artaxerxes,1,2,0
-Aricia artaxerxes,14,6,0
-Aricia artaxerxes,19,0,1
-Aricia artaxerxes,20,2,0
-Aricia artaxerxes,21,4.5,9
-Aricia artaxerxes,22,5.75,43
-Aricia artaxerxes,23,30.25,22
-Aricia artaxerxes,24,28.25,39
-Aricia artaxerxes,25,45.75,48
-Aricia artaxerxes,26,43.625,72
-Aricia artaxerxes,27,42.75,23
-Aricia artaxerxes,28,35.75,22
-Aricia artaxerxes,29,32.25,18
-Aricia artaxerxes,30,19.5,21
-Aricia artaxerxes,31,7.75,8
-Aricia artaxerxes,32,4.625,8
-Aricia artaxerxes,33,1.625,10
-Aricia artaxerxes,34,1,4
-Aricia artaxerxes,35,1,0
-Aricia artaxerxes,43,1,0
-Maniola jurtina jurtina,15,1,0
-Maniola jurtina jurtina,19,0,1
-Maniola jurtina jurtina,21,0,1
-Maniola jurtina jurtina,22,1,27
-Maniola jurtina jurtina,23,6.25,42
-Maniola jurtina jurtina,24,17,65
-Maniola jurtina jurtina,25,42.5,63
-Maniola jurtina jurtina,26,18.625,80
-Maniola jurtina jurtina,27,27.375,48
-Maniola jurtina jurtina,28,14.125,58
-Maniola jurtina jurtina,29,17.375,56
-Maniola jurtina jurtina,30,16.625,32
-Maniola jurtina jurtina,31,12.625,29
-Maniola jurtina jurtina,32,14,27
-Maniola jurtina jurtina,33,6.5,8
-Maniola jurtina jurtina,34,4,11
-Maniola jurtina jurtina,35,3.375,4
-Maniola jurtina jurtina,36,2.5,0
-Maniola jurtina jurtina,37,1.75,6
-Maniola jurtina jurtina,38,2,1
+Lycaena phlaeas phlaeas,25,20,5.75
+Lycaena phlaeas phlaeas,26,22,12
+Lycaena phlaeas phlaeas,27,18,4.75
+Lycaena phlaeas phlaeas,28,52,12.5
+Lycaena phlaeas phlaeas,29,36,8.875
+Lycaena phlaeas phlaeas,30,34,11.5
+Lycaena phlaeas phlaeas,31,52,10.875
+Lycaena phlaeas phlaeas,32,34,21.25
+Lycaena phlaeas phlaeas,33,30,7.125
+Lycaena phlaeas phlaeas,34,43,17.25
+Lycaena phlaeas phlaeas,35,16,10.125
+Lycaena phlaeas phlaeas,36,20,8
+Lycaena phlaeas phlaeas,37,42,7.625
+Lycaena phlaeas phlaeas,38,55,8.5
+Lycaena phlaeas phlaeas,39,17,8.875
+Lycaena phlaeas phlaeas,40,7,8
+Lycaena phlaeas phlaeas,41,5,3.375
+Lycaena phlaeas phlaeas,42,1,3.75
+Lycaena phlaeas phlaeas,43,1,5
+Lycaena phlaeas phlaeas,44,0,3.5
+Lycaena phlaeas phlaeas,45,1,2
+Lycaena phlaeas phlaeas,53,1,0
+Aricia artaxerxes,1,0,2
+Aricia artaxerxes,14,0,6
+Aricia artaxerxes,19,1,0
+Aricia artaxerxes,20,0,2
+Aricia artaxerxes,21,9,4.5
+Aricia artaxerxes,22,43,5.75
+Aricia artaxerxes,23,22,30.25
+Aricia artaxerxes,24,39,28.25
+Aricia artaxerxes,25,48,45.75
+Aricia artaxerxes,26,72,43.625
+Aricia artaxerxes,27,23,42.75
+Aricia artaxerxes,28,22,35.75
+Aricia artaxerxes,29,18,32.25
+Aricia artaxerxes,30,21,19.5
+Aricia artaxerxes,31,8,7.75
+Aricia artaxerxes,32,8,4.625
+Aricia artaxerxes,33,10,1.625
+Aricia artaxerxes,34,4,1
+Aricia artaxerxes,35,0,1
+Aricia artaxerxes,43,0,1
+Maniola jurtina jurtina,15,0,1
+Maniola jurtina jurtina,19,1,0
+Maniola jurtina jurtina,21,1,0
+Maniola jurtina jurtina,22,27,1
+Maniola jurtina jurtina,23,42,6.25
+Maniola jurtina jurtina,24,65,17
+Maniola jurtina jurtina,25,63,42.5
+Maniola jurtina jurtina,26,80,18.625
+Maniola jurtina jurtina,27,48,27.375
+Maniola jurtina jurtina,28,58,14.125
+Maniola jurtina jurtina,29,56,17.375
+Maniola jurtina jurtina,30,32,16.625
+Maniola jurtina jurtina,31,29,12.625
+Maniola jurtina jurtina,32,27,14
+Maniola jurtina jurtina,33,8,6.5
+Maniola jurtina jurtina,34,11,4
+Maniola jurtina jurtina,35,4,3.375
+Maniola jurtina jurtina,36,0,2.5
+Maniola jurtina jurtina,37,6,1.75
+Maniola jurtina jurtina,38,1,2
 Maniola jurtina jurtina,39,1,1
-Maniola jurtina jurtina,40,0,1
-Maniola jurtina jurtina,42,1,0
-Erynnis tages,1,2,0
-Erynnis tages,15,0,1
-Erynnis tages,16,3.5,0
-Erynnis tages,17,5.5,35
-Erynnis tages,18,7.25,20
-Erynnis tages,19,28.75,67
-Erynnis tages,20,52.75,187
-Erynnis tages,21,55,170
-Erynnis tages,22,24.875,44
-Erynnis tages,23,23,6
-Erynnis tages,24,7.375,2
-Erynnis tages,25,3.625,2
-Erynnis tages,26,6,0
-Erynnis tages,27,2,0
-Erynnis tages,28,1,2
+Maniola jurtina jurtina,40,1,0
+Maniola jurtina jurtina,42,0,1
+Erynnis tages,1,0,2
+Erynnis tages,15,1,0
+Erynnis tages,16,0,3.5
+Erynnis tages,17,35,5.5
+Erynnis tages,18,20,7.25
+Erynnis tages,19,67,28.75
+Erynnis tages,20,187,52.75
+Erynnis tages,21,170,55
+Erynnis tages,22,44,24.875
+Erynnis tages,23,6,23
+Erynnis tages,24,2,7.375
+Erynnis tages,25,2,3.625
+Erynnis tages,26,0,6
+Erynnis tages,27,0,2
+Erynnis tages,28,2,1
 Erynnis tages,29,1,1
-Erynnis tages,30,0,2
-Erynnis tages,31,1,5
-Erynnis tages,32,1.5,10
-Erynnis tages,33,3,4
-Erynnis tages,34,1,3
-Erynnis tages,35,1,0
-Erynnis tages,36,1,0
-Erynnis tages,39,2,0
-Erynnis tages,43,7,0
-Erynnis tages,53,1,0
-Pararge aegeria tircis,2,1,0
-Pararge aegeria tircis,12,3,0
-Pararge aegeria tircis,13,5,0
-Pararge aegeria tircis,14,3,11
-Pararge aegeria tircis,15,7,27
-Pararge aegeria tircis,16,23,45
-Pararge aegeria tircis,17,13,50
-Pararge aegeria tircis,18,9.5,9
-Pararge aegeria tircis,19,4.125,16
-Pararge aegeria tircis,20,3.5,11
-Pararge aegeria tircis,21,11,17
-Pararge aegeria tircis,22,2.625,31
-Pararge aegeria tircis,23,9.5,13
-Pararge aegeria tircis,24,3.875,21
-Pararge aegeria tircis,25,5.875,15
-Pararge aegeria tircis,26,4.375,11
-Pararge aegeria tircis,27,9,6
-Pararge aegeria tircis,28,8,13
-Pararge aegeria tircis,29,5.25,18
-Pararge aegeria tircis,30,8,22
-Pararge aegeria tircis,31,6.75,47
-Pararge aegeria tircis,32,6.5,63
-Pararge aegeria tircis,33,5,42
-Pararge aegeria tircis,34,3,58
-Pararge aegeria tircis,35,6,39
-Pararge aegeria tircis,36,12,29
-Pararge aegeria tircis,37,1.75,56
-Pararge aegeria tircis,38,2.5,77
-Pararge aegeria tircis,39,2.375,35
-Pararge aegeria tircis,40,2.5,12
-Pararge aegeria tircis,41,1,26
-Pararge aegeria tircis,42,2,9
+Erynnis tages,30,2,0
+Erynnis tages,31,5,1
+Erynnis tages,32,10,1.5
+Erynnis tages,33,4,3
+Erynnis tages,34,3,1
+Erynnis tages,35,0,1
+Erynnis tages,36,0,1
+Erynnis tages,39,0,2
+Erynnis tages,43,0,7
+Erynnis tages,53,0,1
+Pararge aegeria tircis,2,0,1
+Pararge aegeria tircis,12,0,3
+Pararge aegeria tircis,13,0,5
+Pararge aegeria tircis,14,11,3
+Pararge aegeria tircis,15,27,7
+Pararge aegeria tircis,16,45,23
+Pararge aegeria tircis,17,50,13
+Pararge aegeria tircis,18,9,9.5
+Pararge aegeria tircis,19,16,4.125
+Pararge aegeria tircis,20,11,3.5
+Pararge aegeria tircis,21,17,11
+Pararge aegeria tircis,22,31,2.625
+Pararge aegeria tircis,23,13,9.5
+Pararge aegeria tircis,24,21,3.875
+Pararge aegeria tircis,25,15,5.875
+Pararge aegeria tircis,26,11,4.375
+Pararge aegeria tircis,27,6,9
+Pararge aegeria tircis,28,13,8
+Pararge aegeria tircis,29,18,5.25
+Pararge aegeria tircis,30,22,8
+Pararge aegeria tircis,31,47,6.75
+Pararge aegeria tircis,32,63,6.5
+Pararge aegeria tircis,33,42,5
+Pararge aegeria tircis,34,58,3
+Pararge aegeria tircis,35,39,6
+Pararge aegeria tircis,36,29,12
+Pararge aegeria tircis,37,56,1.75
+Pararge aegeria tircis,38,77,2.5
+Pararge aegeria tircis,39,35,2.375
+Pararge aegeria tircis,40,12,2.5
+Pararge aegeria tircis,41,26,1
+Pararge aegeria tircis,42,9,2
 Pararge aegeria tircis,43,1,1
-Pararge aegeria tircis,44,1,0
-Pararge aegeria tircis,45,1,0
-Pararge aegeria tircis,46,1,2
-Pararge aegeria tircis,48,1,0
-Hamearis lucina,13,1,0
-Hamearis lucina,14,1,0
-Hamearis lucina,15,2,0
-Hamearis lucina,16,7.25,4
-Hamearis lucina,17,5.75,29
-Hamearis lucina,18,12.125,14
-Hamearis lucina,19,46.75,81
-Hamearis lucina,20,61.5,71
-Hamearis lucina,21,52.375,113
-Hamearis lucina,22,20.875,25
-Hamearis lucina,23,7,3
-Hamearis lucina,24,2.25,1
-Hamearis lucina,26,1,0
+Pararge aegeria tircis,44,0,1
+Pararge aegeria tircis,45,0,1
+Pararge aegeria tircis,46,2,1
+Pararge aegeria tircis,48,0,1
+Hamearis lucina,13,0,1
+Hamearis lucina,14,0,1
+Hamearis lucina,15,0,2
+Hamearis lucina,16,4,7.25
+Hamearis lucina,17,29,5.75
+Hamearis lucina,18,14,12.125
+Hamearis lucina,19,81,46.75
+Hamearis lucina,20,71,61.5
+Hamearis lucina,21,113,52.375
+Hamearis lucina,22,25,20.875
+Hamearis lucina,23,3,7
+Hamearis lucina,24,1,2.25
+Hamearis lucina,26,0,1
 Hamearis lucina,27,1,1
-Hamearis lucina,29,1.5,1
-Hamearis lucina,30,2,7
-Hamearis lucina,31,2.5,0
-Hamearis lucina,32,2,1
-Hamearis lucina,38,0,1
-Pyronia tithonus britanniae,12,1,0
-Pyronia tithonus britanniae,20,0,1
-Pyronia tithonus britanniae,21,0,1
-Pyronia tithonus britanniae,22,0,2
-Pyronia tithonus britanniae,23,1,4
+Hamearis lucina,29,1,1.5
+Hamearis lucina,30,7,2
+Hamearis lucina,31,0,2.5
+Hamearis lucina,32,1,2
+Hamearis lucina,38,1,0
+Pyronia tithonus britanniae,12,0,1
+Pyronia tithonus britanniae,20,1,0
+Pyronia tithonus britanniae,21,1,0
+Pyronia tithonus britanniae,22,2,0
+Pyronia tithonus britanniae,23,4,1
 Pyronia tithonus britanniae,24,1,1
-Pyronia tithonus britanniae,25,1,6
-Pyronia tithonus britanniae,26,5.75,2
-Pyronia tithonus britanniae,27,16.25,18
-Pyronia tithonus britanniae,28,16.75,60
-Pyronia tithonus britanniae,29,20.125,113
-Pyronia tithonus britanniae,30,18.875,76
-Pyronia tithonus britanniae,31,28.25,161
-Pyronia tithonus britanniae,32,11.25,162
-Pyronia tithonus britanniae,33,13,70
-Pyronia tithonus britanniae,34,3.5,27
-Pyronia tithonus britanniae,35,1.75,8
-Pyronia tithonus britanniae,36,1,2
-Pyronia tithonus britanniae,37,0,2
-Pyronia tithonus britanniae,47,1,0
-Melitaea athalia,12,1,0
-Melitaea athalia,14,1,0
-Melitaea athalia,17,1,0
+Pyronia tithonus britanniae,25,6,1
+Pyronia tithonus britanniae,26,2,5.75
+Pyronia tithonus britanniae,27,18,16.25
+Pyronia tithonus britanniae,28,60,16.75
+Pyronia tithonus britanniae,29,113,20.125
+Pyronia tithonus britanniae,30,76,18.875
+Pyronia tithonus britanniae,31,161,28.25
+Pyronia tithonus britanniae,32,162,11.25
+Pyronia tithonus britanniae,33,70,13
+Pyronia tithonus britanniae,34,27,3.5
+Pyronia tithonus britanniae,35,8,1.75
+Pyronia tithonus britanniae,36,2,1
+Pyronia tithonus britanniae,37,2,0
+Pyronia tithonus britanniae,47,0,1
+Melitaea athalia,12,0,1
+Melitaea athalia,14,0,1
+Melitaea athalia,17,0,1
 Melitaea athalia,18,2,2
-Melitaea athalia,19,1,0
-Melitaea athalia,20,2,8
-Melitaea athalia,21,2.25,29
-Melitaea athalia,22,16.5,55
-Melitaea athalia,23,26.625,51
-Melitaea athalia,24,33.5,59
-Melitaea athalia,25,44.5,66
-Melitaea athalia,26,28.75,47
-Melitaea athalia,27,18.25,16
-Melitaea athalia,28,8.25,7
-Melitaea athalia,29,4.25,1
-Melitaea athalia,30,2.25,8
-Melitaea athalia,31,3.5,1
+Melitaea athalia,19,0,1
+Melitaea athalia,20,8,2
+Melitaea athalia,21,29,2.25
+Melitaea athalia,22,55,16.5
+Melitaea athalia,23,51,26.625
+Melitaea athalia,24,59,33.5
+Melitaea athalia,25,66,44.5
+Melitaea athalia,26,47,28.75
+Melitaea athalia,27,16,18.25
+Melitaea athalia,28,7,8.25
+Melitaea athalia,29,1,4.25
+Melitaea athalia,30,8,2.25
+Melitaea athalia,31,1,3.5
 Melitaea athalia,33,1,1
-Melitaea athalia,34,16,2
-Melitaea athalia,35,2.5,1
-Melitaea athalia,36,2,3
-Melitaea athalia,37,1,3
-Melitaea athalia,38,1,2
-Melitaea athalia,50,0,1
-Papilio machaon,1,1,0
-Papilio machaon,3,1,0
-Papilio machaon,14,6,0
-Papilio machaon,16,1,0
-Papilio machaon,19,4.125,0
-Papilio machaon,20,6,3
-Papilio machaon,21,8.5,13
-Papilio machaon,22,14.5,26
-Papilio machaon,23,26.375,22
-Papilio machaon,24,19.875,37
-Papilio machaon,25,23.125,37
-Papilio machaon,26,19,35
-Papilio machaon,27,14.5,18
-Papilio machaon,28,5.625,30
-Papilio machaon,29,9.625,17
-Papilio machaon,30,4.875,18
-Papilio machaon,31,5.375,9
-Papilio machaon,32,8,10
-Papilio machaon,33,4.5,3
-Papilio machaon,34,6.75,1
-Papilio machaon,35,3.25,1
-Papilio machaon,36,1,0
-Papilio machaon,37,0,3
+Melitaea athalia,34,2,16
+Melitaea athalia,35,1,2.5
+Melitaea athalia,36,3,2
+Melitaea athalia,37,3,1
+Melitaea athalia,38,2,1
+Melitaea athalia,50,1,0
+Papilio machaon,1,0,1
+Papilio machaon,3,0,1
+Papilio machaon,14,0,6
+Papilio machaon,16,0,1
+Papilio machaon,19,0,4.125
+Papilio machaon,20,3,6
+Papilio machaon,21,13,8.5
+Papilio machaon,22,26,14.5
+Papilio machaon,23,22,26.375
+Papilio machaon,24,37,19.875
+Papilio machaon,25,37,23.125
+Papilio machaon,26,35,19
+Papilio machaon,27,18,14.5
+Papilio machaon,28,30,5.625
+Papilio machaon,29,17,9.625
+Papilio machaon,30,18,4.875
+Papilio machaon,31,9,5.375
+Papilio machaon,32,10,8
+Papilio machaon,33,3,4.5
+Papilio machaon,34,1,6.75
+Papilio machaon,35,1,3.25
+Papilio machaon,36,0,1
+Papilio machaon,37,3,0
 Papilio machaon,38,1,1
-Papilio machaon,45,1,0
-Apatura iris,15,1,0
-Apatura iris,22,2,0
-Apatura iris,23,4,2
-Apatura iris,24,1.5,3
-Apatura iris,25,12.75,25
-Apatura iris,26,42.5,89
-Apatura iris,27,30.375,47
-Apatura iris,28,39.375,47
-Apatura iris,29,33.25,23
-Apatura iris,30,10.625,27
-Apatura iris,31,4.875,5
-Apatura iris,32,4.5,2
-Apatura iris,33,2,0
-Apatura iris,34,1,0
-Apatura iris,35,1,0
-Apatura iris,36,2,0
-Apatura iris,50,1,0
-Polyommatus icarus icarus,1,1,0
-Polyommatus icarus icarus,5,0,1
-Polyommatus icarus icarus,10,0,1
-Polyommatus icarus icarus,13,0,1
-Polyommatus icarus icarus,15,0,1
-Polyommatus icarus icarus,18,0,1
-Polyommatus icarus icarus,19,1,17
-Polyommatus icarus icarus,20,2.25,38
-Polyommatus icarus icarus,21,3.125,124
-Polyommatus icarus icarus,22,4.25,96
-Polyommatus icarus icarus,23,3.25,24
-Polyommatus icarus icarus,24,6,13
-Polyommatus icarus icarus,25,6.25,9
-Polyommatus icarus icarus,26,7,11
-Polyommatus icarus icarus,27,3.75,8
-Polyommatus icarus icarus,28,2,13
-Polyommatus icarus icarus,29,4.25,42
-Polyommatus icarus icarus,30,5,23
-Polyommatus icarus icarus,31,7,126
-Polyommatus icarus icarus,32,3.25,67
-Polyommatus icarus icarus,33,3.5,72
-Polyommatus icarus icarus,34,4.5,47
-Polyommatus icarus icarus,35,2.375,18
-Polyommatus icarus icarus,36,1.5,16
-Polyommatus icarus icarus,37,1.5,27
-Polyommatus icarus icarus,38,1,24
-Polyommatus icarus icarus,39,1,17
-Polyommatus icarus icarus,40,1,4
-Polyommatus icarus icarus,41,0,3
-Polyommatus icarus icarus,42,0,1
-Polyommatus icarus icarus,46,0,1
-Polyommatus icarus icarus,47,1,0
-Polyommatus icarus icarus,53,0,1
-Anthocharis cardamines britannica,12,1,0
-Anthocharis cardamines britannica,13,4.5,6
-Anthocharis cardamines britannica,14,7,17
-Anthocharis cardamines britannica,15,7.75,163
-Anthocharis cardamines britannica,16,19.25,129
-Anthocharis cardamines britannica,17,11,167
-Anthocharis cardamines britannica,18,16.5,44
-Anthocharis cardamines britannica,19,10,62
-Anthocharis cardamines britannica,20,18.75,18
-Anthocharis cardamines britannica,21,8,25
-Anthocharis cardamines britannica,22,4.75,25
-Anthocharis cardamines britannica,23,2.25,4
-Anthocharis cardamines britannica,24,1.25,4
-Anthocharis cardamines britannica,28,1,0
-Anthocharis cardamines britannica,29,0,1
-Anthocharis cardamines britannica,31,0,1
-Anthocharis cardamines britannica,44,1,0
-Thymelicus acteon,13,0,1
-Thymelicus acteon,14,6,0
+Papilio machaon,45,0,1
+Apatura iris,15,0,1
+Apatura iris,22,0,2
+Apatura iris,23,2,4
+Apatura iris,24,3,1.5
+Apatura iris,25,25,12.75
+Apatura iris,26,89,42.5
+Apatura iris,27,47,30.375
+Apatura iris,28,47,39.375
+Apatura iris,29,23,33.25
+Apatura iris,30,27,10.625
+Apatura iris,31,5,4.875
+Apatura iris,32,2,4.5
+Apatura iris,33,0,2
+Apatura iris,34,0,1
+Apatura iris,35,0,1
+Apatura iris,36,0,2
+Apatura iris,50,0,1
+Polyommatus icarus icarus,1,0,1
+Polyommatus icarus icarus,5,1,0
+Polyommatus icarus icarus,10,1,0
+Polyommatus icarus icarus,13,1,0
+Polyommatus icarus icarus,15,1,0
+Polyommatus icarus icarus,18,1,0
+Polyommatus icarus icarus,19,17,1
+Polyommatus icarus icarus,20,38,2.25
+Polyommatus icarus icarus,21,124,3.125
+Polyommatus icarus icarus,22,96,4.25
+Polyommatus icarus icarus,23,24,3.25
+Polyommatus icarus icarus,24,13,6
+Polyommatus icarus icarus,25,9,6.25
+Polyommatus icarus icarus,26,11,7
+Polyommatus icarus icarus,27,8,3.75
+Polyommatus icarus icarus,28,13,2
+Polyommatus icarus icarus,29,42,4.25
+Polyommatus icarus icarus,30,23,5
+Polyommatus icarus icarus,31,126,7
+Polyommatus icarus icarus,32,67,3.25
+Polyommatus icarus icarus,33,72,3.5
+Polyommatus icarus icarus,34,47,4.5
+Polyommatus icarus icarus,35,18,2.375
+Polyommatus icarus icarus,36,16,1.5
+Polyommatus icarus icarus,37,27,1.5
+Polyommatus icarus icarus,38,24,1
+Polyommatus icarus icarus,39,17,1
+Polyommatus icarus icarus,40,4,1
+Polyommatus icarus icarus,41,3,0
+Polyommatus icarus icarus,42,1,0
+Polyommatus icarus icarus,46,1,0
+Polyommatus icarus icarus,47,0,1
+Polyommatus icarus icarus,53,1,0
+Anthocharis cardamines britannica,12,0,1
+Anthocharis cardamines britannica,13,6,4.5
+Anthocharis cardamines britannica,14,17,7
+Anthocharis cardamines britannica,15,163,7.75
+Anthocharis cardamines britannica,16,129,19.25
+Anthocharis cardamines britannica,17,167,11
+Anthocharis cardamines britannica,18,44,16.5
+Anthocharis cardamines britannica,19,62,10
+Anthocharis cardamines britannica,20,18,18.75
+Anthocharis cardamines britannica,21,25,8
+Anthocharis cardamines britannica,22,25,4.75
+Anthocharis cardamines britannica,23,4,2.25
+Anthocharis cardamines britannica,24,4,1.25
+Anthocharis cardamines britannica,28,0,1
+Anthocharis cardamines britannica,29,1,0
+Anthocharis cardamines britannica,31,1,0
+Anthocharis cardamines britannica,44,0,1
+Thymelicus acteon,13,1,0
+Thymelicus acteon,14,0,6
 Thymelicus acteon,19,1,1
-Thymelicus acteon,20,0,2
-Thymelicus acteon,21,2,4
-Thymelicus acteon,22,3.875,9
-Thymelicus acteon,23,4.125,11
-Thymelicus acteon,24,3.125,16
-Thymelicus acteon,25,8.125,16
-Thymelicus acteon,26,11.625,39
-Thymelicus acteon,27,13.125,23
-Thymelicus acteon,28,21.5,55
-Thymelicus acteon,29,26.375,39
-Thymelicus acteon,30,27.75,29
-Thymelicus acteon,31,12,35
-Thymelicus acteon,32,10,19
-Thymelicus acteon,33,8.25,8
-Thymelicus acteon,34,1.75,4
-Thymelicus acteon,35,2,0
-Thymelicus acteon,36,2.5,0
-Thymelicus acteon,38,0,1
-Thymelicus acteon,42,1,0
-Coenonympha tullia,20,0,1
-Coenonympha tullia,21,1,0
+Thymelicus acteon,20,2,0
+Thymelicus acteon,21,4,2
+Thymelicus acteon,22,9,3.875
+Thymelicus acteon,23,11,4.125
+Thymelicus acteon,24,16,3.125
+Thymelicus acteon,25,16,8.125
+Thymelicus acteon,26,39,11.625
+Thymelicus acteon,27,23,13.125
+Thymelicus acteon,28,55,21.5
+Thymelicus acteon,29,39,26.375
+Thymelicus acteon,30,29,27.75
+Thymelicus acteon,31,35,12
+Thymelicus acteon,32,19,10
+Thymelicus acteon,33,8,8.25
+Thymelicus acteon,34,4,1.75
+Thymelicus acteon,35,0,2
+Thymelicus acteon,36,0,2.5
+Thymelicus acteon,38,1,0
+Thymelicus acteon,42,0,1
+Coenonympha tullia,20,1,0
+Coenonympha tullia,21,0,1
 Coenonympha tullia,22,6,6
-Coenonympha tullia,23,15.875,4
-Coenonympha tullia,24,13.875,22
-Coenonympha tullia,25,30.625,20
-Coenonympha tullia,26,23.125,28
-Coenonympha tullia,27,21.5,9
-Coenonympha tullia,28,10.25,8
-Coenonympha tullia,29,10.75,6
-Coenonympha tullia,30,5.25,12
-Coenonympha tullia,31,4.5,6
-Coenonympha tullia,32,2.5,5
-Coenonympha tullia,33,1.5,4
-Coenonympha tullia,34,2.25,2
-Coenonympha tullia,35,1,0
-Coenonympha tullia,39,2,0
-Carterocephalus palaemon,13,0,1
-Carterocephalus palaemon,14,6.5,0
-Carterocephalus palaemon,15,1,0
-Carterocephalus palaemon,16,0,2
-Carterocephalus palaemon,17,6,1
-Carterocephalus palaemon,18,1.5,0
-Carterocephalus palaemon,19,2.75,9
-Carterocephalus palaemon,20,7.5,0
-Carterocephalus palaemon,21,27.5,12
-Carterocephalus palaemon,22,44.25,25
-Carterocephalus palaemon,23,35.25,10
-Carterocephalus palaemon,24,14.25,8
-Carterocephalus palaemon,25,4.25,2
-Carterocephalus palaemon,26,1.75,1
-Carterocephalus palaemon,27,1.75,0
-Carterocephalus palaemon,28,2,1
-Carterocephalus palaemon,29,3.25,0
-Carterocephalus palaemon,30,2,6
-Carterocephalus palaemon,31,1.75,2
-Carterocephalus palaemon,32,1,2
-Carterocephalus palaemon,33,2,1
-Carterocephalus palaemon,34,3,0
-Carterocephalus palaemon,35,1,0
-Carterocephalus palaemon,36,2,0
-Carterocephalus palaemon,37,1,0
-Carterocephalus palaemon,39,1,0
-Carterocephalus palaemon,40,1,0
-Melanargia galathea serena,12,1,0
-Melanargia galathea serena,18,1,0
-Melanargia galathea serena,23,1,10
-Melanargia galathea serena,24,2,20
-Melanargia galathea serena,25,13.5,43
-Melanargia galathea serena,26,15.125,64
-Melanargia galathea serena,27,22.625,42
-Melanargia galathea serena,28,11.25,29
-Melanargia galathea serena,29,8,23
-Melanargia galathea serena,30,5,7
-Melanargia galathea serena,31,1.75,7
+Coenonympha tullia,23,4,15.875
+Coenonympha tullia,24,22,13.875
+Coenonympha tullia,25,20,30.625
+Coenonympha tullia,26,28,23.125
+Coenonympha tullia,27,9,21.5
+Coenonympha tullia,28,8,10.25
+Coenonympha tullia,29,6,10.75
+Coenonympha tullia,30,12,5.25
+Coenonympha tullia,31,6,4.5
+Coenonympha tullia,32,5,2.5
+Coenonympha tullia,33,4,1.5
+Coenonympha tullia,34,2,2.25
+Coenonympha tullia,35,0,1
+Coenonympha tullia,39,0,2
+Carterocephalus palaemon,13,1,0
+Carterocephalus palaemon,14,0,6.5
+Carterocephalus palaemon,15,0,1
+Carterocephalus palaemon,16,2,0
+Carterocephalus palaemon,17,1,6
+Carterocephalus palaemon,18,0,1.5
+Carterocephalus palaemon,19,9,2.75
+Carterocephalus palaemon,20,0,7.5
+Carterocephalus palaemon,21,12,27.5
+Carterocephalus palaemon,22,25,44.25
+Carterocephalus palaemon,23,10,35.25
+Carterocephalus palaemon,24,8,14.25
+Carterocephalus palaemon,25,2,4.25
+Carterocephalus palaemon,26,1,1.75
+Carterocephalus palaemon,27,0,1.75
+Carterocephalus palaemon,28,1,2
+Carterocephalus palaemon,29,0,3.25
+Carterocephalus palaemon,30,6,2
+Carterocephalus palaemon,31,2,1.75
+Carterocephalus palaemon,32,2,1
+Carterocephalus palaemon,33,1,2
+Carterocephalus palaemon,34,0,3
+Carterocephalus palaemon,35,0,1
+Carterocephalus palaemon,36,0,2
+Carterocephalus palaemon,37,0,1
+Carterocephalus palaemon,39,0,1
+Carterocephalus palaemon,40,0,1
+Melanargia galathea serena,12,0,1
+Melanargia galathea serena,18,0,1
+Melanargia galathea serena,23,10,1
+Melanargia galathea serena,24,20,2
+Melanargia galathea serena,25,43,13.5
+Melanargia galathea serena,26,64,15.125
+Melanargia galathea serena,27,42,22.625
+Melanargia galathea serena,28,29,11.25
+Melanargia galathea serena,29,23,8
+Melanargia galathea serena,30,7,5
+Melanargia galathea serena,31,7,1.75
 Melanargia galathea serena,32,3,3
-Melanargia galathea serena,33,1.5,0
-Melanargia galathea serena,35,1,0
-Melanargia galathea serena,38,2,1
-Melanargia galathea serena,41,2,0
-Satyrium pruni,8,0,1
-Satyrium pruni,14,6,0
-Satyrium pruni,17,0,1
-Satyrium pruni,20,4,0
-Satyrium pruni,22,2,39
-Satyrium pruni,23,12.75,37
-Satyrium pruni,24,31.25,22
-Satyrium pruni,25,14.625,10
-Satyrium pruni,26,7,9
-Satyrium pruni,27,2.5,1
-Satyrium pruni,28,2,0
-Satyrium pruni,29,2,1
-Satyrium pruni,30,3,7
-Satyrium pruni,31,2.5,0
-Satyrium pruni,32,1,0
-Satyrium pruni,36,2,0
-Satyrium pruni,46,1,0
-Satyrium pruni,50,0,1
-Satyrium pruni,51,0,2
-Melitaea cinxia,10,0,1
-Melitaea cinxia,11,14,0
-Melitaea cinxia,12,1,0
-Melitaea cinxia,15,0,1
-Melitaea cinxia,16,1,0
-Melitaea cinxia,17,4,0
-Melitaea cinxia,18,2,4
-Melitaea cinxia,19,2.375,15
-Melitaea cinxia,20,10,17
-Melitaea cinxia,21,10.625,31
-Melitaea cinxia,22,8,30
-Melitaea cinxia,23,7.75,6
-Melitaea cinxia,24,5.875,3
-Melitaea cinxia,25,3,2
-Melitaea cinxia,26,3,0
-Melitaea cinxia,27,1,2
-Melitaea cinxia,29,3,1
-Melitaea cinxia,30,5,6
-Melitaea cinxia,31,1.75,0
-Melitaea cinxia,32,2,0
+Melanargia galathea serena,33,0,1.5
+Melanargia galathea serena,35,0,1
+Melanargia galathea serena,38,1,2
+Melanargia galathea serena,41,0,2
+Satyrium pruni,8,1,0
+Satyrium pruni,14,0,6
+Satyrium pruni,17,1,0
+Satyrium pruni,20,0,4
+Satyrium pruni,22,39,2
+Satyrium pruni,23,37,12.75
+Satyrium pruni,24,22,31.25
+Satyrium pruni,25,10,14.625
+Satyrium pruni,26,9,7
+Satyrium pruni,27,1,2.5
+Satyrium pruni,28,0,2
+Satyrium pruni,29,1,2
+Satyrium pruni,30,7,3
+Satyrium pruni,31,0,2.5
+Satyrium pruni,32,0,1
+Satyrium pruni,36,0,2
+Satyrium pruni,46,0,1
+Satyrium pruni,50,1,0
+Satyrium pruni,51,2,0
+Melitaea cinxia,10,1,0
+Melitaea cinxia,11,0,14
+Melitaea cinxia,12,0,1
+Melitaea cinxia,15,1,0
+Melitaea cinxia,16,0,1
+Melitaea cinxia,17,0,4
+Melitaea cinxia,18,4,2
+Melitaea cinxia,19,15,2.375
+Melitaea cinxia,20,17,10
+Melitaea cinxia,21,31,10.625
+Melitaea cinxia,22,30,8
+Melitaea cinxia,23,6,7.75
+Melitaea cinxia,24,3,5.875
+Melitaea cinxia,25,2,3
+Melitaea cinxia,26,0,3
+Melitaea cinxia,27,2,1
+Melitaea cinxia,29,1,3
+Melitaea cinxia,30,6,5
+Melitaea cinxia,31,0,1.75
+Melitaea cinxia,32,0,2
 Melitaea cinxia,33,1,1
 Melitaea cinxia,34,1,1
-Melitaea cinxia,35,1,0
-Melitaea cinxia,37,1,0
-Argynnis adippe,18,1,0
-Argynnis adippe,22,1,15
-Argynnis adippe,23,2,3
-Argynnis adippe,24,2,4
-Argynnis adippe,25,3.75,13
-Argynnis adippe,26,7.5,18
-Argynnis adippe,27,8.375,11
-Argynnis adippe,28,5.625,12
-Argynnis adippe,29,2.875,5
-Argynnis adippe,30,3.25,8
-Argynnis adippe,31,3.75,6
-Argynnis adippe,32,2.5,1
-Argynnis adippe,33,2,1
+Melitaea cinxia,35,0,1
+Melitaea cinxia,37,0,1
+Argynnis adippe,18,0,1
+Argynnis adippe,22,15,1
+Argynnis adippe,23,3,2
+Argynnis adippe,24,4,2
+Argynnis adippe,25,13,3.75
+Argynnis adippe,26,18,7.5
+Argynnis adippe,27,11,8.375
+Argynnis adippe,28,12,5.625
+Argynnis adippe,29,5,2.875
+Argynnis adippe,30,8,3.25
+Argynnis adippe,31,6,3.75
+Argynnis adippe,32,1,2.5
+Argynnis adippe,33,1,2
 Argynnis adippe,34,1,1
-Argynnis adippe,35,0,1
-Argynnis adippe,37,1,0
-Argynnis adippe,43,1,0
-Erebia epiphron,21,1,0
-Erebia epiphron,22,1,4
-Erebia epiphron,23,5.75,0
-Erebia epiphron,24,4.5,0
-Erebia epiphron,25,12.75,0
-Erebia epiphron,26,8.625,7
-Erebia epiphron,27,10,2
-Erebia epiphron,28,5.375,2
-Erebia epiphron,29,8,6
-Erebia epiphron,30,4.5,6
-Erebia epiphron,31,1.75,0
+Argynnis adippe,35,1,0
+Argynnis adippe,37,0,1
+Argynnis adippe,43,0,1
+Erebia epiphron,21,0,1
+Erebia epiphron,22,4,1
+Erebia epiphron,23,0,5.75
+Erebia epiphron,24,0,4.5
+Erebia epiphron,25,0,12.75
+Erebia epiphron,26,7,8.625
+Erebia epiphron,27,2,10
+Erebia epiphron,28,2,5.375
+Erebia epiphron,29,6,8
+Erebia epiphron,30,6,4.5
+Erebia epiphron,31,0,1.75
 Erebia epiphron,32,1,1
 Erebia epiphron,33,1,1
 Erebia epiphron,34,1,1
-Hipparchia semele semele,24,0,2
-Hipparchia semele semele,25,1.25,1
+Hipparchia semele semele,24,2,0
+Hipparchia semele semele,25,1,1.25
 Hipparchia semele semele,26,4,4
-Hipparchia semele semele,27,8,7
-Hipparchia semele semele,28,8.5,6
-Hipparchia semele semele,29,6.875,11
-Hipparchia semele semele,30,9.25,8
-Hipparchia semele semele,31,3.625,7
-Hipparchia semele semele,32,2.5,9
-Hipparchia semele semele,33,2,9
+Hipparchia semele semele,27,7,8
+Hipparchia semele semele,28,6,8.5
+Hipparchia semele semele,29,11,6.875
+Hipparchia semele semele,30,8,9.25
+Hipparchia semele semele,31,7,3.625
+Hipparchia semele semele,32,9,2.5
+Hipparchia semele semele,33,9,2
 Hipparchia semele semele,34,2,2
-Hipparchia semele semele,35,1.75,2
-Hipparchia semele semele,37,0,1
-Nymphalis polychloros,4,1,0
-Nymphalis polychloros,9,3,0
-Nymphalis polychloros,11,0,2
-Nymphalis polychloros,12,1,5
-Nymphalis polychloros,13,2,3
-Nymphalis polychloros,14,2,4
-Nymphalis polychloros,15,0,10
-Nymphalis polychloros,16,3,4
-Nymphalis polychloros,17,1,10
+Hipparchia semele semele,35,2,1.75
+Hipparchia semele semele,37,1,0
+Nymphalis polychloros,4,0,1
+Nymphalis polychloros,9,0,3
+Nymphalis polychloros,11,2,0
+Nymphalis polychloros,12,5,1
+Nymphalis polychloros,13,3,2
+Nymphalis polychloros,14,4,2
+Nymphalis polychloros,15,10,0
+Nymphalis polychloros,16,4,3
+Nymphalis polychloros,17,10,1
 Nymphalis polychloros,18,2,2
-Nymphalis polychloros,19,3,1
-Nymphalis polychloros,20,1,2
-Nymphalis polychloros,21,4,0
-Nymphalis polychloros,22,0,1
-Nymphalis polychloros,23,1.625,1
-Nymphalis polychloros,24,1,4
-Nymphalis polychloros,25,1,4
-Nymphalis polychloros,26,3,10
-Nymphalis polychloros,27,1.25,5
-Nymphalis polychloros,28,1.625,15
-Nymphalis polychloros,29,4,12
-Nymphalis polychloros,30,2.5,10
-Nymphalis polychloros,31,2.625,1
-Nymphalis polychloros,32,1,5
-Nymphalis polychloros,33,1.5,3
-Nymphalis polychloros,34,2,1
-Nymphalis polychloros,35,1.25,0
+Nymphalis polychloros,19,1,3
+Nymphalis polychloros,20,2,1
+Nymphalis polychloros,21,0,4
+Nymphalis polychloros,22,1,0
+Nymphalis polychloros,23,1,1.625
+Nymphalis polychloros,24,4,1
+Nymphalis polychloros,25,4,1
+Nymphalis polychloros,26,10,3
+Nymphalis polychloros,27,5,1.25
+Nymphalis polychloros,28,15,1.625
+Nymphalis polychloros,29,12,4
+Nymphalis polychloros,30,10,2.5
+Nymphalis polychloros,31,1,2.625
+Nymphalis polychloros,32,5,1
+Nymphalis polychloros,33,3,1.5
+Nymphalis polychloros,34,1,2
+Nymphalis polychloros,35,0,1.25
 Nymphalis polychloros,36,1,1
-Nymphalis polychloros,37,1.25,1
-Nymphalis polychloros,38,7.5,3
-Nymphalis polychloros,39,1,0
-Nymphalis polychloros,40,0,1
-Nymphalis polychloros,41,0,1
-Nymphalis polychloros,43,0,1
-Maculinea arion,15,2,0
-Maculinea arion,16,0,1
-Maculinea arion,21,0,1
-Maculinea arion,22,1.5,7
-Maculinea arion,23,5.625,3
-Maculinea arion,24,5.625,7
-Maculinea arion,25,9.25,2
-Maculinea arion,26,10,4
-Maculinea arion,27,3.375,0
-Maculinea arion,28,1.5,0
-Maculinea arion,29,2.5,0
-Maculinea arion,30,1.75,6
-Maculinea arion,31,4,0
-Maculinea arion,32,1,0
+Nymphalis polychloros,37,1,1.25
+Nymphalis polychloros,38,3,7.5
+Nymphalis polychloros,39,0,1
+Nymphalis polychloros,40,1,0
+Nymphalis polychloros,41,1,0
+Nymphalis polychloros,43,1,0
+Maculinea arion,15,0,2
+Maculinea arion,16,1,0
+Maculinea arion,21,1,0
+Maculinea arion,22,7,1.5
+Maculinea arion,23,3,5.625
+Maculinea arion,24,7,5.625
+Maculinea arion,25,2,9.25
+Maculinea arion,26,4,10
+Maculinea arion,27,0,3.375
+Maculinea arion,28,0,1.5
+Maculinea arion,29,0,2.5
+Maculinea arion,30,6,1.75
+Maculinea arion,31,0,4
+Maculinea arion,32,0,1
 Maculinea arion,33,1,1
-Maculinea arion,34,0,1
-Maculinea arion,35,2,0
-Maculinea arion,37,1,0
-Plebejus argus argus,22,0,6
+Maculinea arion,34,1,0
+Maculinea arion,35,0,2
+Maculinea arion,37,0,1
+Plebejus argus argus,22,6,0
 Plebejus argus argus,23,4,4
-Plebejus argus argus,24,4,10
-Plebejus argus argus,25,5.25,13
-Plebejus argus argus,26,13,12
-Plebejus argus argus,27,2.5,1
-Plebejus argus argus,28,2.25,10
-Plebejus argus argus,29,4,5
-Plebejus argus argus,30,8,1
-Plebejus argus argus,31,0,1
-Plebejus argus argus,32,1,0
-Plebejus argus argus,33,0,3
-Speyeria aglaja aglaja,1,1,0
-Speyeria aglaja aglaja,22,0,3
-Speyeria aglaja aglaja,23,0,5
-Speyeria aglaja aglaja,24,1,6
-Speyeria aglaja aglaja,25,1,7
-Speyeria aglaja aglaja,26,2,19
-Speyeria aglaja aglaja,27,2.5,9
-Speyeria aglaja aglaja,28,2.75,15
-Speyeria aglaja aglaja,29,2,10
-Speyeria aglaja aglaja,30,1,9
-Speyeria aglaja aglaja,31,1,12
-Speyeria aglaja aglaja,32,1,6
-Speyeria aglaja aglaja,33,0,3
-Speyeria aglaja aglaja,34,1,0
-Speyeria aglaja aglaja,35,0,1
-Speyeria aglaja aglaja,53,0,1
-Pieris,12,1,0
-Pieris,13,1,0
-Pieris,14,3,0
-Pieris,15,0,1
-Pieris,16,1,3
+Plebejus argus argus,24,10,4
+Plebejus argus argus,25,13,5.25
+Plebejus argus argus,26,12,13
+Plebejus argus argus,27,1,2.5
+Plebejus argus argus,28,10,2.25
+Plebejus argus argus,29,5,4
+Plebejus argus argus,30,1,8
+Plebejus argus argus,31,1,0
+Plebejus argus argus,32,0,1
+Plebejus argus argus,33,3,0
+Speyeria aglaja aglaja,1,0,1
+Speyeria aglaja aglaja,22,3,0
+Speyeria aglaja aglaja,23,5,0
+Speyeria aglaja aglaja,24,6,1
+Speyeria aglaja aglaja,25,7,1
+Speyeria aglaja aglaja,26,19,2
+Speyeria aglaja aglaja,27,9,2.5
+Speyeria aglaja aglaja,28,15,2.75
+Speyeria aglaja aglaja,29,10,2
+Speyeria aglaja aglaja,30,9,1
+Speyeria aglaja aglaja,31,12,1
+Speyeria aglaja aglaja,32,6,1
+Speyeria aglaja aglaja,33,3,0
+Speyeria aglaja aglaja,34,0,1
+Speyeria aglaja aglaja,35,1,0
+Speyeria aglaja aglaja,53,1,0
+Pieris,12,0,1
+Pieris,13,0,1
+Pieris,14,0,3
+Pieris,15,1,0
+Pieris,16,3,1
 Pieris,19,1,1
-Pieris,21,5,2
-Pieris,22,1,0
-Pieris,23,1,0
-Pieris,24,2.5,0
+Pieris,21,2,5
+Pieris,22,0,1
+Pieris,23,0,1
+Pieris,24,0,2.5
 Pieris,25,1,1
-Pieris,26,4.5,2
-Pieris,27,4,2
-Pieris,28,1.25,4
-Pieris,29,7.5,1
-Pieris,30,5,2
-Pieris,31,3,1
-Pieris,32,1.5,0
+Pieris,26,2,4.5
+Pieris,27,2,4
+Pieris,28,4,1.25
+Pieris,29,1,7.5
+Pieris,30,2,5
+Pieris,31,1,3
+Pieris,32,0,1.5
 Pieris,33,1,1
-Pieris,34,3,1
-Pieris,35,2,0
-Pieris,36,3.5,0
-Pieris,37,1,0
-Pieris,38,2,1
-Pieris,39,1,0
-Rhopalocera,8,1,0
-Rhopalocera,9,0,1
-Rhopalocera,11,0,1
+Pieris,34,1,3
+Pieris,35,0,2
+Pieris,36,0,3.5
+Pieris,37,0,1
+Pieris,38,1,2
+Pieris,39,0,1
+Rhopalocera,8,0,1
+Rhopalocera,9,1,0
+Rhopalocera,11,1,0
 Rhopalocera,12,1,1
-Rhopalocera,13,2,0
-Rhopalocera,15,2,0
-Rhopalocera,16,2,0
-Rhopalocera,17,0,2
+Rhopalocera,13,0,2
+Rhopalocera,15,0,2
+Rhopalocera,16,0,2
+Rhopalocera,17,2,0
 Rhopalocera,18,1,1
-Rhopalocera,19,0,4
-Rhopalocera,20,0,1
-Rhopalocera,21,1,0
-Rhopalocera,22,0,2
-Rhopalocera,23,2,1
-Rhopalocera,24,0,1
+Rhopalocera,19,4,0
+Rhopalocera,20,1,0
+Rhopalocera,21,0,1
+Rhopalocera,22,2,0
+Rhopalocera,23,1,2
+Rhopalocera,24,1,0
 Rhopalocera,25,4,4
-Rhopalocera,26,1,2
-Rhopalocera,27,1,6
-Rhopalocera,28,7,1
-Rhopalocera,29,1,6
+Rhopalocera,26,2,1
+Rhopalocera,27,6,1
+Rhopalocera,28,1,7
+Rhopalocera,29,6,1
 Rhopalocera,30,3,3
-Rhopalocera,31,2,1
-Rhopalocera,32,1,2
-Rhopalocera,33,2.5,1
-Rhopalocera,34,5,0
-Rhopalocera,35,1.5,0
-Rhopalocera,37,3,0
-Rhopalocera,38,0,1
-Rhopalocera,39,1,0
-Rhopalocera,40,1,0
-Rhopalocera,41,1,0
-Rhopalocera,43,1,0
-Rhopalocera,53,1,0
-Thymelicus lineola/sylvestris,12,1,0
-Thymelicus lineola/sylvestris,24,1,0
-Thymelicus lineola/sylvestris,25,1,0
+Rhopalocera,31,1,2
+Rhopalocera,32,2,1
+Rhopalocera,33,1,2.5
+Rhopalocera,34,0,5
+Rhopalocera,35,0,1.5
+Rhopalocera,37,0,3
+Rhopalocera,38,1,0
+Rhopalocera,39,0,1
+Rhopalocera,40,0,1
+Rhopalocera,41,0,1
+Rhopalocera,43,0,1
+Rhopalocera,53,0,1
+Thymelicus lineola/sylvestris,12,0,1
+Thymelicus lineola/sylvestris,24,0,1
+Thymelicus lineola/sylvestris,25,0,1
 Thymelicus lineola/sylvestris,26,2,2
-Thymelicus lineola/sylvestris,27,5,0
-Thymelicus lineola/sylvestris,28,3.25,3
-Thymelicus lineola/sylvestris,29,2.75,1
-Thymelicus lineola/sylvestris,30,1.75,0
-Thymelicus lineola/sylvestris,31,3,1
-Thymelicus lineola/sylvestris,32,1,0
-Lampides boeticus,10,1,0
-Lampides boeticus,28,2,0
-Lampides boeticus,29,1,0
-Lampides boeticus,30,1.5,0
-Lampides boeticus,31,0,2
-Lampides boeticus,32,1,8
-Lampides boeticus,33,1,0
-Lampides boeticus,34,7,1
-Lampides boeticus,35,14,0
-Lampides boeticus,36,1,0
-Lampides boeticus,37,1,11
+Thymelicus lineola/sylvestris,27,0,5
+Thymelicus lineola/sylvestris,28,3,3.25
+Thymelicus lineola/sylvestris,29,1,2.75
+Thymelicus lineola/sylvestris,30,0,1.75
+Thymelicus lineola/sylvestris,31,1,3
+Thymelicus lineola/sylvestris,32,0,1
+Lampides boeticus,10,0,1
+Lampides boeticus,28,0,2
+Lampides boeticus,29,0,1
+Lampides boeticus,30,0,1.5
+Lampides boeticus,31,2,0
+Lampides boeticus,32,8,1
+Lampides boeticus,33,0,1
+Lampides boeticus,34,1,7
+Lampides boeticus,35,0,14
+Lampides boeticus,36,0,1
+Lampides boeticus,37,11,1
 Lampides boeticus,38,1,1
-Lampides boeticus,39,1,0
-Lampides boeticus,40,3,1
-Lampides boeticus,41,0,1
+Lampides boeticus,39,0,1
+Lampides boeticus,40,1,3
+Lampides boeticus,41,1,0
 Lampides boeticus,42,1,1
-Lampides boeticus,50,1,0
-Erebia aethiops aethiops,28,1,0
-Erebia aethiops aethiops,29,1,0
-Erebia aethiops aethiops,30,4,2
-Erebia aethiops aethiops,31,3.5,6
-Erebia aethiops aethiops,32,2,10
-Erebia aethiops aethiops,33,1,14
-Erebia aethiops aethiops,34,0,4
+Lampides boeticus,50,0,1
+Erebia aethiops aethiops,28,0,1
+Erebia aethiops aethiops,29,0,1
+Erebia aethiops aethiops,30,2,4
+Erebia aethiops aethiops,31,6,3.5
+Erebia aethiops aethiops,32,10,2
+Erebia aethiops aethiops,33,14,1
+Erebia aethiops aethiops,34,4,0
 Erebia aethiops aethiops,35,1,1
-Erebia aethiops aethiops,36,0,1
-Erebia aethiops aethiops,49,1,0
-Thymelicus,12,1,0
-Thymelicus,18,0,1
-Thymelicus,25,1,2
-Thymelicus,26,1,3
-Thymelicus,27,6,1
-Thymelicus,28,12.5,2
-Thymelicus,29,3,1
-Thymelicus,30,5,0
-Thymelicus,31,3,0
-Thymelicus,32,1,0
-Thymelicus,33,1,0
-Pyronia tithonus tithonus,25,1,0
-Pyronia tithonus tithonus,27,1.5,3
-Pyronia tithonus tithonus,28,2.25,7
-Pyronia tithonus tithonus,29,6,4
-Pyronia tithonus tithonus,30,1.25,4
-Pyronia tithonus tithonus,31,0,6
-Pyronia tithonus tithonus,32,1,3
-Pyronia tithonus tithonus,33,2,7
-Nymphalis antiopa,1,1,0
-Nymphalis antiopa,13,0,3
-Nymphalis antiopa,15,0,1
-Nymphalis antiopa,16,1.25,0
-Nymphalis antiopa,17,1,0
-Nymphalis antiopa,22,0,1
-Nymphalis antiopa,23,3,0
-Nymphalis antiopa,25,1,0
-Nymphalis antiopa,27,5,0
-Nymphalis antiopa,28,1,0
-Nymphalis antiopa,29,1.5,0
-Nymphalis antiopa,30,2.5,6
-Nymphalis antiopa,31,4,0
-Nymphalis antiopa,33,0,2
+Erebia aethiops aethiops,36,1,0
+Erebia aethiops aethiops,49,0,1
+Thymelicus,12,0,1
+Thymelicus,18,1,0
+Thymelicus,25,2,1
+Thymelicus,26,3,1
+Thymelicus,27,1,6
+Thymelicus,28,2,12.5
+Thymelicus,29,1,3
+Thymelicus,30,0,5
+Thymelicus,31,0,3
+Thymelicus,32,0,1
+Thymelicus,33,0,1
+Pyronia tithonus tithonus,25,0,1
+Pyronia tithonus tithonus,27,3,1.5
+Pyronia tithonus tithonus,28,7,2.25
+Pyronia tithonus tithonus,29,4,6
+Pyronia tithonus tithonus,30,4,1.25
+Pyronia tithonus tithonus,31,6,0
+Pyronia tithonus tithonus,32,3,1
+Pyronia tithonus tithonus,33,7,2
+Nymphalis antiopa,1,0,1
+Nymphalis antiopa,13,3,0
+Nymphalis antiopa,15,1,0
+Nymphalis antiopa,16,0,1.25
+Nymphalis antiopa,17,0,1
+Nymphalis antiopa,22,1,0
+Nymphalis antiopa,23,0,3
+Nymphalis antiopa,25,0,1
+Nymphalis antiopa,27,0,5
+Nymphalis antiopa,28,0,1
+Nymphalis antiopa,29,0,1.5
+Nymphalis antiopa,30,6,2.5
+Nymphalis antiopa,31,0,4
+Nymphalis antiopa,33,2,0
 Nymphalis antiopa,34,1,1
-Nymphalis antiopa,35,1,0
-Nymphalis antiopa,36,1,0
-Nymphalis antiopa,37,3,1
-Nymphalis antiopa,39,0,2
-Nymphalis antiopa,42,1,0
-Lycaena dispar,14,6,0
-Lycaena dispar,21,2,0
-Lycaena dispar,22,1,0
-Lycaena dispar,23,2,0
-Lycaena dispar,24,1,0
-Lycaena dispar,28,6,0
-Lycaena dispar,29,3,0
-Lycaena dispar,30,3,6
-Lycaena dispar,31,2,0
-Lycaena dispar,32,1,0
-Lycaena dispar,35,1,0
-Lycaena dispar,36,1.5,0
-Lycaena dispar,38,1,0
-Plebejus argus cretaceus,23,1,0
-Plebejus argus cretaceus,24,5,1
-Plebejus argus cretaceus,25,1.75,5
-Plebejus argus cretaceus,26,1.5,2
-Plebejus argus cretaceus,27,2,0
-Plebejus argus cretaceus,28,3,0
-Plebejus argus cretaceus,29,1.25,0
-Plebejus argus cretaceus,31,1,0
-Plebejus argus cretaceus,33,1,0
-Plebejus argus cretaceus,47,1,0
-Aricia artaxerxes artaxerxes,19,1,0
-Aricia artaxerxes artaxerxes,21,0,1
-Aricia artaxerxes artaxerxes,23,1,2
-Aricia artaxerxes artaxerxes,24,3,2
-Aricia artaxerxes artaxerxes,25,0,2
-Aricia artaxerxes artaxerxes,26,1.75,2
-Aricia artaxerxes artaxerxes,27,2,1
-Aricia artaxerxes artaxerxes,28,1,3
-Aricia artaxerxes artaxerxes,29,1.5,0
-Aricia artaxerxes artaxerxes,30,1.5,0
+Nymphalis antiopa,35,0,1
+Nymphalis antiopa,36,0,1
+Nymphalis antiopa,37,1,3
+Nymphalis antiopa,39,2,0
+Nymphalis antiopa,42,0,1
+Lycaena dispar,14,0,6
+Lycaena dispar,21,0,2
+Lycaena dispar,22,0,1
+Lycaena dispar,23,0,2
+Lycaena dispar,24,0,1
+Lycaena dispar,28,0,6
+Lycaena dispar,29,0,3
+Lycaena dispar,30,6,3
+Lycaena dispar,31,0,2
+Lycaena dispar,32,0,1
+Lycaena dispar,35,0,1
+Lycaena dispar,36,0,1.5
+Lycaena dispar,38,0,1
+Plebejus argus cretaceus,23,0,1
+Plebejus argus cretaceus,24,1,5
+Plebejus argus cretaceus,25,5,1.75
+Plebejus argus cretaceus,26,2,1.5
+Plebejus argus cretaceus,27,0,2
+Plebejus argus cretaceus,28,0,3
+Plebejus argus cretaceus,29,0,1.25
+Plebejus argus cretaceus,31,0,1
+Plebejus argus cretaceus,33,0,1
+Plebejus argus cretaceus,47,0,1
+Aricia artaxerxes artaxerxes,19,0,1
+Aricia artaxerxes artaxerxes,21,1,0
+Aricia artaxerxes artaxerxes,23,2,1
+Aricia artaxerxes artaxerxes,24,2,3
+Aricia artaxerxes artaxerxes,25,2,0
+Aricia artaxerxes artaxerxes,26,2,1.75
+Aricia artaxerxes artaxerxes,27,1,2
+Aricia artaxerxes artaxerxes,28,3,1
+Aricia artaxerxes artaxerxes,29,0,1.5
+Aricia artaxerxes artaxerxes,30,0,1.5
 Aricia artaxerxes artaxerxes,31,1,1
 Aricia artaxerxes artaxerxes,32,1,1
-Aricia artaxerxes artaxerxes,37,0,1
-Danaus plexippus,16,1,0
-Danaus plexippus,17,0,2
-Danaus plexippus,22,1,0
-Danaus plexippus,23,0,1
-Danaus plexippus,25,1,0
-Danaus plexippus,26,1,0
-Danaus plexippus,27,1,0
-Danaus plexippus,29,1,0
-Danaus plexippus,30,1.5,6
-Danaus plexippus,31,4,1
-Danaus plexippus,32,0,1
-Danaus plexippus,33,1.5,0
-Danaus plexippus,35,1,0
-Danaus plexippus,36,0,1
-Danaus plexippus,37,2,0
-Danaus plexippus,38,1,0
-Danaus plexippus,40,1,0
-Danaus plexippus,41,0,1
-Hesperiidae,24,0,2
-Hesperiidae,25,1.5,0
+Aricia artaxerxes artaxerxes,37,1,0
+Danaus plexippus,16,0,1
+Danaus plexippus,17,2,0
+Danaus plexippus,22,0,1
+Danaus plexippus,23,1,0
+Danaus plexippus,25,0,1
+Danaus plexippus,26,0,1
+Danaus plexippus,27,0,1
+Danaus plexippus,29,0,1
+Danaus plexippus,30,6,1.5
+Danaus plexippus,31,1,4
+Danaus plexippus,32,1,0
+Danaus plexippus,33,0,1.5
+Danaus plexippus,35,0,1
+Danaus plexippus,36,1,0
+Danaus plexippus,37,0,2
+Danaus plexippus,38,0,1
+Danaus plexippus,40,0,1
+Danaus plexippus,41,1,0
+Hesperiidae,24,2,0
+Hesperiidae,25,0,1.5
 Hesperiidae,26,1,1
-Hesperiidae,27,4,1
-Hesperiidae,28,3,5
-Hesperiidae,29,2,1
-Hesperiidae,30,1,0
-Hesperiidae,31,0,2
-Coenonympha tullia davus,22,0,1
-Coenonympha tullia davus,23,1.5,0
-Coenonympha tullia davus,25,1.75,2
+Hesperiidae,27,1,4
+Hesperiidae,28,5,3
+Hesperiidae,29,1,2
+Hesperiidae,30,0,1
+Hesperiidae,31,2,0
+Coenonympha tullia davus,22,1,0
+Coenonympha tullia davus,23,0,1.5
+Coenonympha tullia davus,25,2,1.75
 Coenonympha tullia davus,26,3,3
-Coenonympha tullia davus,27,1,2
-Coenonympha tullia davus,28,2.5,1
-Coenonympha tullia davus,30,1,0
-Coenonympha tullia davus,31,1,0
-Coenonympha tullia davus,32,1,0
-Colias hyale,14,6,0
-Colias hyale,20,1,0
-Colias hyale,23,3,0
-Colias hyale,24,1,0
-Colias hyale,29,2,0
-Colias hyale,30,2.5,6
-Colias hyale,31,2.5,1
-Colias hyale,36,1,0
-Colias alfacariensis,14,6,0
-Colias alfacariensis,22,0,1
-Colias alfacariensis,23,3,0
-Colias alfacariensis,27,1,0
-Colias alfacariensis,29,3,0
-Colias alfacariensis,30,3,7
-Colias alfacariensis,31,4,0
-Colias alfacariensis,36,1,0
-Colias alfacariensis,38,1,0
-Papilio machaon britannicus,21,0,2
-Papilio machaon britannicus,22,1.5,0
-Papilio machaon britannicus,23,2.25,0
-Papilio machaon britannicus,24,2,1
+Coenonympha tullia davus,27,2,1
+Coenonympha tullia davus,28,1,2.5
+Coenonympha tullia davus,30,0,1
+Coenonympha tullia davus,31,0,1
+Coenonympha tullia davus,32,0,1
+Colias hyale,14,0,6
+Colias hyale,20,0,1
+Colias hyale,23,0,3
+Colias hyale,24,0,1
+Colias hyale,29,0,2
+Colias hyale,30,6,2.5
+Colias hyale,31,1,2.5
+Colias hyale,36,0,1
+Colias alfacariensis,14,0,6
+Colias alfacariensis,22,1,0
+Colias alfacariensis,23,0,3
+Colias alfacariensis,27,0,1
+Colias alfacariensis,29,0,3
+Colias alfacariensis,30,7,3
+Colias alfacariensis,31,0,4
+Colias alfacariensis,36,0,1
+Colias alfacariensis,38,0,1
+Papilio machaon britannicus,21,2,0
+Papilio machaon britannicus,22,0,1.5
+Papilio machaon britannicus,23,0,2.25
+Papilio machaon britannicus,24,1,2
 Papilio machaon britannicus,25,1,1
-Papilio machaon britannicus,26,1,0
-Papilio machaon britannicus,27,1,0
-Papilio machaon britannicus,28,1,0
-Papilio machaon britannicus,30,1,0
-Papilio machaon britannicus,31,0,2
-Papilio machaon britannicus,33,1,0
-Papilio machaon britannicus,37,0,1
+Papilio machaon britannicus,26,0,1
+Papilio machaon britannicus,27,0,1
+Papilio machaon britannicus,28,0,1
+Papilio machaon britannicus,30,0,1
+Papilio machaon britannicus,31,2,0
+Papilio machaon britannicus,33,0,1
+Papilio machaon britannicus,37,1,0
 Leptidea juvernica,16,1,1
-Leptidea juvernica,17,0,3
-Leptidea juvernica,19,0,1
-Leptidea juvernica,20,1,0
+Leptidea juvernica,17,3,0
+Leptidea juvernica,19,1,0
+Leptidea juvernica,20,0,1
 Leptidea juvernica,21,3,3
-Leptidea juvernica,22,0,1
-Leptidea juvernica,23,0,1
-Leptidea juvernica,27,1,0
-Leptidea juvernica,28,0,1
+Leptidea juvernica,22,1,0
+Leptidea juvernica,23,1,0
+Leptidea juvernica,27,0,1
+Leptidea juvernica,28,1,0
 Leptidea juvernica,29,1,1
-Leptidea juvernica,30,2,0
-Leptidea juvernica,35,0,1
-Leptidea juvernica,37,0,2
-Leptidea juvernica,38,1,0
-Pieris brassicae/rapae,15,2,0
-Pieris brassicae/rapae,18,0,1
-Pieris brassicae/rapae,19,1,0
-Pieris brassicae/rapae,20,2,0
-Pieris brassicae/rapae,22,0,1
-Pieris brassicae/rapae,23,1,0
+Leptidea juvernica,30,0,2
+Leptidea juvernica,35,1,0
+Leptidea juvernica,37,2,0
+Leptidea juvernica,38,0,1
+Pieris brassicae/rapae,15,0,2
+Pieris brassicae/rapae,18,1,0
+Pieris brassicae/rapae,19,0,1
+Pieris brassicae/rapae,20,0,2
+Pieris brassicae/rapae,22,1,0
+Pieris brassicae/rapae,23,0,1
 Pieris brassicae/rapae,29,1,1
-Pieris brassicae/rapae,30,2,0
-Pieris brassicae/rapae,31,1,0
-Pieris brassicae/rapae,33,2,0
-Pieris brassicae/rapae,35,1,0
-Pieris brassicae/rapae,38,3,0
-Pieris brassicae/rapae,40,3,0
-Pararge aegeria oblita,16,1,0
-Pararge aegeria oblita,18,1,0
-Pararge aegeria oblita,19,0,1
-Pararge aegeria oblita,21,1,0
-Pararge aegeria oblita,25,1,0
+Pieris brassicae/rapae,30,0,2
+Pieris brassicae/rapae,31,0,1
+Pieris brassicae/rapae,33,0,2
+Pieris brassicae/rapae,35,0,1
+Pieris brassicae/rapae,38,0,3
+Pieris brassicae/rapae,40,0,3
+Pararge aegeria oblita,16,0,1
+Pararge aegeria oblita,18,0,1
+Pararge aegeria oblita,19,1,0
+Pararge aegeria oblita,21,0,1
+Pararge aegeria oblita,25,0,1
 Pararge aegeria oblita,27,1,1
-Pararge aegeria oblita,28,1,0
-Pararge aegeria oblita,29,1,0
-Pararge aegeria oblita,30,1,0
-Pararge aegeria oblita,31,1,0
-Pararge aegeria oblita,33,1,0
-Pararge aegeria oblita,34,1,0
-Pararge aegeria oblita,36,1,0
-Pararge aegeria oblita,37,1,0
-Pararge aegeria oblita,38,1,0
-Pararge aegeria oblita,43,1,0
-Colias palaeno,1,0,3
-Colias palaeno,2,0,1
-Colias palaeno,3,0,2
-Colias palaeno,5,0,4
-Colias palaeno,6,0,2
-Colias palaeno,22,0,3
-Colias palaeno,23,0,2
-Colias palaeno,24,0,1
-Colias palaeno,25,0,1
-Issoria lathonia,19,0,1
+Pararge aegeria oblita,28,0,1
+Pararge aegeria oblita,29,0,1
+Pararge aegeria oblita,30,0,1
+Pararge aegeria oblita,31,0,1
+Pararge aegeria oblita,33,0,1
+Pararge aegeria oblita,34,0,1
+Pararge aegeria oblita,36,0,1
+Pararge aegeria oblita,37,0,1
+Pararge aegeria oblita,38,0,1
+Pararge aegeria oblita,43,0,1
+Colias palaeno,1,3,0
+Colias palaeno,2,1,0
+Colias palaeno,3,2,0
+Colias palaeno,5,4,0
+Colias palaeno,6,2,0
+Colias palaeno,22,3,0
+Colias palaeno,23,2,0
+Colias palaeno,24,1,0
+Colias palaeno,25,1,0
+Issoria lathonia,19,1,0
 Issoria lathonia,28,2,2
-Issoria lathonia,29,0,1
-Issoria lathonia,30,1,0
-Issoria lathonia,31,2,3
-Issoria lathonia,32,2,0
-Issoria lathonia,35,3,0
-Issoria lathonia,36,1,0
-Coenonympha tullia polydama,24,0,4
-Coenonympha tullia polydama,25,1,5
-Coenonympha tullia polydama,26,1,3
-Coenonympha tullia polydama,27,0,1
-Nymphalis xanthomelas,11,0,1
-Nymphalis xanthomelas,13,1,0
-Nymphalis xanthomelas,14,1,0
-Nymphalis xanthomelas,15,1,0
-Nymphalis xanthomelas,19,0,1
-Nymphalis xanthomelas,20,0,1
-Nymphalis xanthomelas,24,1,0
-Nymphalis xanthomelas,26,0,1
-Nymphalis xanthomelas,27,2,0
-Nymphalis xanthomelas,28,2,0
-Nymphalis xanthomelas,29,0,1
-Nymphalis xanthomelas,30,0,1
-Nymphalis xanthomelas,31,0,1
-Nymphalis xanthomelas,32,1,0
-Maculinea arion arion,23,2,0
-Maculinea arion arion,24,0,2
+Issoria lathonia,29,1,0
+Issoria lathonia,30,0,1
+Issoria lathonia,31,3,2
+Issoria lathonia,32,0,2
+Issoria lathonia,35,0,3
+Issoria lathonia,36,0,1
+Coenonympha tullia polydama,24,4,0
+Coenonympha tullia polydama,25,5,1
+Coenonympha tullia polydama,26,3,1
+Coenonympha tullia polydama,27,1,0
+Nymphalis xanthomelas,11,1,0
+Nymphalis xanthomelas,13,0,1
+Nymphalis xanthomelas,14,0,1
+Nymphalis xanthomelas,15,0,1
+Nymphalis xanthomelas,19,1,0
+Nymphalis xanthomelas,20,1,0
+Nymphalis xanthomelas,24,0,1
+Nymphalis xanthomelas,26,1,0
+Nymphalis xanthomelas,27,0,2
+Nymphalis xanthomelas,28,0,2
+Nymphalis xanthomelas,29,1,0
+Nymphalis xanthomelas,30,1,0
+Nymphalis xanthomelas,31,1,0
+Nymphalis xanthomelas,32,0,1
+Maculinea arion arion,23,0,2
+Maculinea arion arion,24,2,0
 Maculinea arion arion,25,2,2
 Maculinea arion arion,26,1,1
-Maculinea arion arion,27,1,0
+Maculinea arion arion,27,0,1

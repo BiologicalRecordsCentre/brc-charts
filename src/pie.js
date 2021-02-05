@@ -274,7 +274,7 @@ export function pie({
 
     let dataDeleted, dataInserted, dataRetained
     const init = !dataPrev
-    const dataNew = cloneData(data)
+    const dataNew = gen.cloneData(data)
     
     if (init) {
       dataInserted = []
@@ -286,13 +286,13 @@ export function pie({
       const newNames = dataNew.map(d => d.name)
 
       dataDeleted = dataPrev.filter(d => !newNames.includes(d.name))
-      dataDeleted = cloneData(dataDeleted)
+      dataDeleted = gen.cloneData(dataDeleted)
 
       dataInserted = dataNew.filter(d => !prevNames.includes(d.name))
-      dataInserted = cloneData(dataInserted)
+      dataInserted = gen.cloneData(dataInserted)
 
       dataRetained = dataNew.filter(d => prevNames.includes(d.name))
-      dataRetained = cloneData(dataRetained)
+      dataRetained = gen.cloneData(dataRetained)
     }
 
     let fnSort
@@ -309,7 +309,7 @@ export function pie({
       nd.number = 0
       return nd
     })
-    const dataComb = cloneData([...dataNew, ...dataDeleted2])
+    const dataComb = gen.cloneData([...dataNew, ...dataDeleted2])
 
     console.log('dataDeleted', dataDeleted)
     console.log('dataDeleted2', dataDeleted2)
@@ -691,10 +691,6 @@ export function pie({
     imgSelected.attr('height', d.imageHeight)
     imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2)
     imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
-  }
-
-  function cloneData(data) {
-    return data.map(d => { return {...d}})
   }
 
   function colourData(data) {

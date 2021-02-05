@@ -89,6 +89,11 @@
   function safeId(text) {
     return text ? text.replace(/\W/g, '_') : null;
   }
+  function cloneData(data) {
+    return data.map(function (d) {
+      return _objectSpread2({}, d);
+    });
+  }
 
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
@@ -725,12 +730,6 @@
       imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
     }
 
-    function cloneData(data) {
-      return data.map(function (d) {
-        return _objectSpread2({}, d);
-      });
-    }
-
     function colourData(data) {
       data.forEach(function (d, i) {
         if (!d.colour) {
@@ -873,11 +872,13 @@
    * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
    * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
    * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+   * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
    * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
@@ -914,15 +915,27 @@
         _ref$normalize = _ref.normalize,
         normalize = _ref$normalize === void 0 ? false : _ref$normalize,
         _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
         _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
         _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
         _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
         _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 14 : _ref$footerFontSize,
+        _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
         _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
         _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
         _ref$showTaxonLabel = _ref.showTaxonLabel,
         showTaxonLabel = _ref$showTaxonLabel === void 0 ? true : _ref$showTaxonLabel,
         _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
@@ -939,22 +952,33 @@
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$taxa = _ref.taxa,
         taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
         _ref$metrics = _ref.metrics,
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
-    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline'); // const chartDiv = mainDiv
-    //   .append('div')
 
-    var svg = mainDiv.append('svg'); //.attr('overflow', 'visible')
-    makeChart(); // Title must come after chart and legend because the 
-    // width of those is required to do wrapping for title
-    //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
-    //positionElements()
+    var metricsPlus;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline');
+    var svg = mainDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem(null, false);
+      }
+    });
+    var svgChart = svg.append('svg');
+    var svgTitle, svgSubtitle, svgFooter;
+    preProcessMetrics();
+    makeChart(); // Title must come after chart and legend because 
+    // the chartis required to do wrapping for title
+
+    svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
+    svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
+    svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+    positionElements();
 
     function makeChart() {
       if (!taxa.length) {
@@ -971,16 +995,95 @@
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      var legendHeight = makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
         svgTaxon.attr("x", col * (subChartWidth + subChartPad));
-        svgTaxon.attr("y", row * (subChartHeight + subChartPad));
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad) + legendHeight);
       });
-      var cols = svgsTaxa.length % perRow + 1;
-      var rows = Math.floor(svgsTaxa.length / perRow) + 1;
-      svg.attr("width", cols * (subChartWidth + subChartPad));
-      svg.attr("height", rows * (subChartHeight + subChartPad));
+      svgChart.attr("width", perRow * (subChartWidth + subChartPad));
+      svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+    }
+
+    function preProcessMetrics() {
+      // Look for 'fading' colour in taxa and colour appropriately 
+      // in fading shades of grey.
+      var iFading = 0;
+      metricsPlus = metrics.map(function (m) {
+        var iFade, strokeWidth;
+
+        if (m.colour === 'fading') {
+          iFade = ++iFading;
+          strokeWidth = 1;
+        } else {
+          strokeWidth = 2;
+        }
+
+        return {
+          prop: m.prop,
+          label: m.label,
+          colour: m.colour,
+          fading: iFade,
+          strokeWidth: strokeWidth
+        };
+      });
+      var grey = d3.scaleLinear().range(['#E0E0E0', '#808080']).domain([1, iFading]);
+      metricsPlus.forEach(function (m) {
+        if (m.fading) {
+          m.colour = grey(m.fading);
+        }
+      });
+      console.log(metricsPlus);
+    }
+
+    function positionElements() {
+      var space = 10;
+      var width = Number(svgChart.attr("width"));
+      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
+      svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space);
+      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space + Number(svgChart.attr("height")));
+      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + Number(svgChart.attr("height")) + Number(svgFooter.attr("height")) + 2 * space;
+
+      if (expand) {
+        svg.attr("viewBox", "0 0 " + width + " " + height);
+      } else {
+        svg.attr("width", width);
+        svg.attr("height", height);
+      }
+    }
+
+    function makeText(text, svgText, classText, fontSize, textAlign) {
+      if (!svgText) {
+        svgText = svg.append('svg');
+      }
+
+      var chartWidth = Number(svgChart.attr("width"));
+      var lines = wrapText(text, svgText, chartWidth, fontSize);
+      var uText = svgText.selectAll(".".concat(classText)).data(lines);
+      var eText = uText.enter().append('text');
+      uText.merge(eText).text(function (d) {
+        return d;
+      }).attr("class", classText).style('font-size', fontSize);
+      uText.exit().remove();
+      var height = svgText.select(".".concat(classText)).node().getBBox().height;
+      var widths = svgText.selectAll(".".concat(classText)).nodes().map(function (n) {
+        return n.getBBox().width;
+      });
+      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
+        return (i + 1) * height;
+      }).attr('x', function (d, i) {
+        if (textAlign === 'centre') {
+          return (chartWidth - widths[i]) / 2;
+        } else if (textAlign === 'right') {
+          return chartWidth - widths[i];
+        } else {
+          return 0;
+        }
+      });
+      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
+
+      return svgText;
     }
 
     function makePhen(taxon) {
@@ -993,9 +1096,11 @@
         return a.week > b.week ? 1 : -1;
       });
       var lineData = [];
-      metrics.forEach(function (m) {
+      metricsPlus.forEach(function (m) {
         lineData.push({
+          id: safeId(m.label),
           colour: m.colour,
+          strokeWidth: m.strokeWidth,
           max: Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
             return d[m.prop];
           }))),
@@ -1078,8 +1183,7 @@
       } // Line path generator
 
 
-      var line = d3.line().curve(d3.curveMonotoneX) //.curve(d3.curveCardinal)
-      .x(function (d) {
+      var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
         return xScale(d.week);
       }).y(function (d) {
         return yScale(d.n);
@@ -1087,19 +1191,35 @@
 
       var init, svgPhen1, gPhen1;
 
-      if (svg.select("#".concat(safeId(taxon))).size()) {
-        svgPhen1 = svg.select("#".concat(safeId(taxon)));
+      if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen1').size() === 1) {
+        svgPhen1 = svgChart.select('.brc-chart-phen1');
+        gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
+        init = false;
+      } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+        svgPhen1 = svgChart.select("#".concat(safeId(taxon)));
         gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
         init = false;
       } else {
-        svgPhen1 = svg.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon));
+        svgPhen1 = svgChart.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon));
         gPhen1 = svgPhen1.append('g').classed('brc-chart-phen1-g', true);
         init = true;
       } // Create/update the line paths with D3
 
 
-      var mlines = gPhen1.selectAll("path").data(lineData);
-      var eLines = mlines.enter().append("g").append("path");
+      var mlines = gPhen1.selectAll("path").data(lineData, function (d) {
+        return d.id;
+      });
+      var eLines = mlines.enter().append("path").attr("class", function (d) {
+        return "phen-path-".concat(d.id, " phen-path");
+      }).attr("d", function (d) {
+        return line(d.points.map(function (p) {
+          return {
+            n: 0,
+            week: p.week
+          };
+        }));
+      });
+      addEventHandlers(eLines, 'id');
       mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
         if (normalize) {
           return line(d.points.map(function (p) {
@@ -1113,8 +1233,17 @@
         }
       }).attr("stroke", function (d) {
         return d.colour;
-      }).attr("stroke-width", 2);
-      mlines.exit().remove();
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      });
+      mlines.exit().transition().duration(duration).attr("d", function (d) {
+        return line(d.points.map(function (p) {
+          return {
+            n: 0,
+            week: p.week
+          };
+        }));
+      }).remove();
 
       if (init) {
         // Constants for positioning
@@ -1123,7 +1252,7 @@
         var labelPadY; // Taxon title
 
         if (showTaxonLabel) {
-          var taxonLabel = svgPhen1.append('text').text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var taxonLabel = svgPhen1.append('text').classed('brc-chart-phen1-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
           var labelHeight = taxonLabel.node().getBBox().height;
           taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
           labelPadY = labelHeight * 1.5;
@@ -1137,10 +1266,7 @@
         gPhen1.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
 
         if (yAxis) {
-          var gYaxis = svgPhen1.append("g").attr("class", "y-axis"); // .transition()
-          // .duration(duration)
-          // .call(yAxis)
-
+          var gYaxis = svgPhen1.append("g").attr("class", "y-axis");
           gYaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
         }
 
@@ -1159,10 +1285,131 @@
           var gRaxis = svgPhen1.append("g").call(rAxis);
           gRaxis.attr("transform", "translate(".concat(axisPadX + width, ",").concat(labelPadY, ")"));
         }
+      } else if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgPhen1.select('.brc-chart-phen1-label').text(taxon);
+        }
       }
 
       svgPhen1.select(".y-axis").transition().duration(duration).call(yAxis);
       return svgPhen1;
+    }
+
+    function makeLegend(legendWidth) {
+      var swatchSize = 20;
+      var swatchFact = 1.3; // Loop through all the legend elements and work out their
+      // positions based on swatch size, item lable text size and
+      // legend width.
+
+      var metricsReversed = cloneData(metricsPlus).reverse();
+      var rows = 0;
+      var lineWidth = -swatchSize;
+      metricsReversed.forEach(function (m) {
+        var tmpText = svgChart.append('text') //.style('display', 'none')
+        .text(m.label).style('font-size', legendFontSize);
+        var widthText = tmpText.node().getBBox().width;
+        tmpText.remove();
+
+        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+          ++rows;
+          lineWidth = -swatchSize;
+        }
+
+        m.x = lineWidth + swatchSize;
+        m.y = rows * swatchSize * swatchFact;
+        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+      });
+      var uLegendItems = svgChart.selectAll('.brc-legend-item').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      });
+      var eLegendItems = uLegendItems.enter();
+      var items = eLegendItems.append('g').classed('brc-legend-item', true).attr('id', function (m) {
+        return "brc-legend-item-".concat(m.label);
+      });
+      var ls = items.append('rect').attr('width', swatchSize).attr('height', 2).attr('fill', function (m) {
+        return m.colour;
+      }).attr('x', function (m) {
+        return m.x;
+      }).attr('y', function (m) {
+        return m.y + swatchSize / 2;
+      });
+      var lt = items.append('text').text(function (m) {
+        return m.label;
+      }).style('font-size', legendFontSize).attr('x', function (m) {
+        return m.x + swatchSize * swatchFact;
+      }).attr('y', function (m) {
+        return m.y + taxonLabelFontSize;
+      });
+      uLegendItems.exit().remove();
+      addEventHandlers(ls, 'label');
+      addEventHandlers(lt, 'label');
+      return swatchSize * swatchFact * (rows + 1);
+    }
+
+    function highlightItem(id, highlight) {
+      svgChart.selectAll('.phen-path').classed('lowlight', highlight);
+      svgChart.selectAll(".phen-path-".concat(id)).classed('lowlight', false);
+      svgChart.selectAll(".phen-path").classed('highlight', false);
+
+      if (id) {
+        svgChart.selectAll(".phen-path-".concat(id)).classed('highlight', highlight);
+      }
+
+      svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
+      svgChart.selectAll("#brc-legend-item-".concat(id)).classed('lowlight', false);
+
+      if (id) {
+        svgChart.select("#brc-legend-item-".concat(id)).classed('highlight', highlight);
+      } else {
+        svgChart.selectAll(".brc-legend-item").classed('highlight', false);
+      }
+    }
+
+    function addEventHandlers(sel, prop) {
+      sel.on("mouseover", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], true);
+        }
+      }).on("mouseout", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], false);
+        }
+      }).on("click", function (d) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(d[prop], true);
+          d3.event.stopPropagation();
+        }
+      });
+    }
+
+    function wrapText(text, svgTitle, maxWidth, fontSize) {
+      var textSplit = text.split(" ");
+      var lines = [''];
+      var line = 0;
+
+      for (var i = 0; i < textSplit.length; i++) {
+        if (textSplit[i] === '\n') {
+          line++;
+          lines[line] = '';
+        } else {
+          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+          workingText = workingText.trim();
+          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
+          var _width = txt.node().getBBox().width;
+
+          if (_width > maxWidth) {
+            line++;
+            lines[line] = textSplit[i];
+          } else {
+            lines[line] = workingText;
+          }
+
+          txt.remove();
+        }
+      }
+
+      return lines;
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -1185,49 +1432,57 @@
 
     function setChartOpts(opts) {
       if ('title' in opts) {
-        opts.title;
+        title = opts.title;
       }
 
       if ('subtitle' in opts) {
-        opts.subtitle;
+        subtitle = opts.subtitle;
       }
 
       if ('footer' in opts) {
-        opts.footer;
+        footer = opts.footer;
       }
 
       if ('titleFontSize' in opts) {
-        opts.titleFontSize;
+        titleFontSize = opts.titleFontSize;
       }
 
       if ('subtitleFontSize' in opts) {
-        opts.subtitleFontSize;
+        subtitleFontSize = opts.subtitleFontSize;
       }
 
       if ('footerFontSize' in opts) {
-        opts.footerFontSize;
+        footerFontSize = opts.footerFontSize;
       }
 
       if ('titleAlign' in opts) {
-        opts.titleAlign;
+        titleAlign = opts.titleAlign;
       }
 
       if ('subtitleAlign' in opts) {
-        opts.subtitleAlign;
+        subtitleAlign = opts.subtitleAlign;
       }
 
       if ('footerAlign' in opts) {
-        opts.footerAlign;
+        footerAlign = opts.footerAlign;
       } //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
       //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
       //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
-      // if ('data' in opts) {
-      //   makePhen(opts.data)
-      // }
 
+
+      if ('data' in opts) {
+        data = opts.data;
+        makeChart();
+      }
 
       if ('normalize' in opts) {
         normalize = opts.normalize;
+        makeChart();
+      }
+
+      if ('metrics' in opts) {
+        metrics = opts.metrics;
+        preProcessMetrics();
         makeChart();
       }
 
@@ -1236,6 +1491,21 @@
         makeChart();
       } //positionElements()
 
+    }
+    /** @function setTaxon
+      * @param {string} opts.taxon - The taxon to display.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * For single species charts, this allows you to change the taxon displayed.
+      */
+
+
+    function setTaxon(taxon) {
+      if (taxa.length !== 1) {
+        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+      } else {
+        taxa = [taxon];
+        makeChart();
+      }
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
@@ -1260,13 +1530,15 @@
      * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-       */
+     * @property {module:pie~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     */
 
 
     return {
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
-      setChartOpts: setChartOpts
+      setChartOpts: setChartOpts,
+      setTaxon: setTaxon
     };
   }
 
