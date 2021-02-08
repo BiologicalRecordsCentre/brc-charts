@@ -5,3 +5,4 @@ For API details - [JSDoc API documentation](https://biologicalrecordscentre.gith
 
 ## Working examples
 - [Pie/donut charts](example-1.html)
+- [Phenology charts](example-2.html)
