@@ -10,7 +10,7 @@ import * as gen from './general'
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
  * @param {number} opts.perRow - The number of sub-charts per row.
- * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
+ * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
@@ -59,14 +59,14 @@ export function phen1({
   width = 300,
   height = 200,
   perRow = 2,
-  normalize = false,
+  ytype = 'count',
   expand = false,
   title = '',
   subtitle = '',
   footer = '',
   titleFontSize = 24,
   subtitleFontSize = 16,
-  footerFontSize = 14,
+  footerFontSize = 10,
   legendFontSize = 16,
   titleAlign = 'left',
   subtitleAlign = 'left',
@@ -163,9 +163,10 @@ export function phen1({
         fading: iFade,
         strokeWidth: strokeWidth
       }
-    })
+    }).reverse()
+
     const grey = d3.scaleLinear()
-      .range(['#E0E0E0', '#808080'])
+      .range(['#808080', '#E0E0E0'])
       .domain([1, iFading])
 
     metricsPlus.forEach(m => {
@@ -253,12 +254,18 @@ export function phen1({
     const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
     let lineData = [] 
     metricsPlus.forEach(m => {
+
+      const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
+      const max = Math.max(...dataFiltered.map(d => d[m.prop]))
+      const maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
+
       lineData.push({
         id: gen.safeId(m.label),
         colour: m.colour,
         strokeWidth: m.strokeWidth,
-        max: Math.max(...dataFiltered.map(d => d[m.prop])),
-        //total: dataFiltered.reduce((a, d) => a + d[m.prop], 0),
+        max: max,
+        maxProportion: maxProportion,
+        total: total,
         points: dataFiltered.map(d => {
           return {
             n: d[m.prop],
@@ -268,10 +275,13 @@ export function phen1({
       })
     })
 
+    console.log('lineData', lineData)
     // Set the maximum value for the y axis
     let yMax
-    if (normalize) {
+    if (ytype === 'normalized') {
       yMax = 1
+    } else if (ytype === 'proportion') {
+      yMax = Math.max(...lineData.map(d => d.maxProportion))
     } else {
       yMax = Math.max(...lineData.map(d => d.max))
       if (yMax < 5) yMax = 5
@@ -337,7 +347,7 @@ export function phen1({
         .ticks(5)
       if (axisLeft !== 'tick') {
         yAxis.tickValues([]).tickSizeOuter(0)
-      } else if (!normalize) {
+      } else if (ytype === 'count') {
         yAxis.tickFormat(d3.format("d"))
       }
     }
@@ -389,10 +399,17 @@ export function phen1({
       .transition()
       .duration(duration)
       .attr("d", d => {
-        if (normalize) {
+        if (ytype === 'normalized') {
           return line(d.points.map(p => {
             return {
               n: d.max ? p.n/d.max : 0,
+              week: p.week
+            }
+          }))
+        } else if (ytype === 'proportion') {
+          return line(d.points.map(p => {
+            return {
+              n: p.n/d.total,
               week: p.week
             }
           }))
@@ -519,30 +536,31 @@ export function phen1({
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
-    const uLegendItems = svgChart.selectAll('.brc-legend-item')
+    
+    const ls = svgChart.selectAll('.brc-legend-item-rect')
       .data(metricsReversed, m => gen.safeId(m.label))
-
-    const eLegendItems = uLegendItems.enter()
-
-    const items = eLegendItems.append('g')
-      .classed('brc-legend-item', true)
-      .attr('id', m => `brc-legend-item-${m.label}`)
-
-    const ls = items.append('rect')
-      .attr('width', swatchSize)
-      .attr('height', 2)
-      .attr('fill', m => m.colour)
+      .join(enter => {
+          const rect = enter.append("rect")
+            .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
+            .attr('width', swatchSize)
+            .attr('height', 2)
+          return rect
+      })
       .attr('x', m => m.x)
       .attr('y', m => m.y + swatchSize/2)
+      .attr('fill', m => m.colour)
 
-    const lt = items.append('text')
-      .text(m => m.label)
-      .style('font-size', legendFontSize)
+    const lt = svgChart.selectAll('.brc-legend-item-text')
+      .data(metricsReversed, m => gen.safeId(m.label))
+      .join(enter => {
+          const text = enter.append("text")
+            .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(m.label)}`)
+            .text(m => m.label)
+            .style('font-size', legendFontSize)
+          return text
+      })
       .attr('x', m => m.x + swatchSize * swatchFact)
-      .attr('y', m => m.y + taxonLabelFontSize)
-
-    uLegendItems.exit()
-      .remove()
+      .attr('y', m => m.y + legendFontSize * 1)
 
     addEventHandlers(ls, 'label')
     addEventHandlers(lt, 'label')
@@ -555,25 +573,27 @@ export function phen1({
     svgChart.selectAll('.phen-path')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.phen-path-${id}`)
+    svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
       .classed('lowlight', false)
   
     svgChart.selectAll(`.phen-path`)
       .classed('highlight', false)
 
-    if (id) {
-      svgChart.selectAll(`.phen-path-${id}`)
+    if (gen.safeId(id)) {
+      svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
         .classed('highlight', highlight)
     }
     
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`#brc-legend-item-${id}`)
-      .classed('lowlight', false)
+    if (id) {
+      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+        .classed('lowlight', false)
+    }
 
     if (id) {
-      svgChart.select(`#brc-legend-item-${id}`)
+      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
         .classed('highlight', highlight)
     } else {
       svgChart.selectAll(`.brc-legend-item`)
@@ -600,7 +620,6 @@ export function phen1({
         }
       })
   }
-
 
   function wrapText(text, svgTitle, maxWidth, fontSize) {
 
@@ -635,10 +654,6 @@ export function phen1({
     return lines
   }
 
-  function cloneData(data) {
-    return data.map(d => { return {...d}})
-  }
-
 /** @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
@@ -650,7 +665,7 @@ export function phen1({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
+  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -686,32 +701,30 @@ export function phen1({
       footerAlign = opts.footerAlign
     }
 
-    //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
+    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
+    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+
+    let remakeChart = false
 
     if ('data' in opts) {
       data = opts.data
-      makeChart()
+      remakeChart = true
     }
 
-    if ('normalize' in opts) {
-      normalize = opts.normalize
-      makeChart()
+    if ('ytype' in opts) {
+      ytype = opts.ytype
+      remakeChart = true
     }
 
     if ('metrics' in opts) {
       metrics = opts.metrics
       preProcessMetrics()
-      makeChart()
+      remakeChart = true
     }
 
-    if ('taxa' in opts) {
-      taxa = opts.taxa
-      makeChart()
-    }
-
-    //positionElements()
+    if (remakeChart) makeChart()
+    positionElements()
   }
 
 /** @function setTaxon

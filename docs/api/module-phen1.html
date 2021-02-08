@@ -208,7 +208,76 @@
 
             
 
-            <td class="description last">The width of the chart in pixels.</td>
+            <td class="description last">The width of each sub-chart area in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The height of the each sub-chart area in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>perRow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The number of sub-charts per row.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ytype</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
         </tr>
 
     
@@ -232,52 +301,6 @@
             
 
             <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelP1</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Label for time period 1.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelP2</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Label for time period 2.</td>
         </tr>
 
     
@@ -491,6 +514,190 @@
 
         <tr>
             
+                <td class="name"><code>showTaxonLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to show taxon label above each sub-graph.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of taxon sub-chart label.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelItalics</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to italicise taxon label.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of legend item text.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisLeft</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisBottom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisRight</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisTop-</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>duration</code></td>
             
 
@@ -508,6 +715,29 @@
             
 
             <td class="description last">The duration of each transition phase in milliseconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>interactivity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
         </tr>
 
     
@@ -576,7 +806,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 52 indicating the week of the year.<li> <b>p1</b> - a count for the first time period. <li> <b>p2</b> - a count for the second time period. </ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.<li> <b>p1</b> - a count for the first time period. <li> <b>p2</b> - a count for the second time period. </ul></td>
         </tr>
 
     
@@ -624,7 +854,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line44">line 44</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -734,7 +964,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line313">line 313</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line753">line 753</a>
     </li></ul></dd>
     
 
@@ -822,7 +1052,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line305">line 305</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line745">line 745</a>
     </li></ul></dd>
     
 
@@ -1151,6 +1381,29 @@
 
         <tr>
             
+                <td class="name"><code>ytype</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>data</code></td>
             
 
@@ -1215,7 +1468,144 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line248">line 248</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line657">line 657</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setTaxon"><span class="type-signature">(inner) </span>setTaxon<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <b>This function is exposed as a method on the API returned from the pie function</b>.For single species charts, this allows you to change the taxon displayed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts.taxon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The taxon to display.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line730">line 730</a>
     </li></ul></dd>
     
 
@@ -1366,6 +1756,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>setTaxon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-pie.html#~setChartOpts">module:pie~setChartOpts</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Changes the displayed taxon for single taxon charts.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1401,7 +1814,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line321">line 321</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line761">line 761</a>
     </li></ul></dd>
     
 
@@ -1437,7 +1850,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Wed Feb 03 2021 10:34:07 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Feb 08 2021 19:15:59 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

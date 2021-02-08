@@ -43,6 +43,6 @@ path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
     opacity:0.3;
 }
 
-.brc-legend-item.highlight rect{
+.brc-legend-item-rect.highlight {
     fill:black;
 }

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library example 2</title>
+  <style>
+    .divfl {
+      float: left;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Using the BRC Charts Library</h1>
+    <h2>Phenology comparison charts</h2>
+    <p>
+      Include the required Javascript libraries and CSS in the page. We need the BRC Charts JS libary, the associated
+      CSS and the D3 library which is an external
+      external dependency of the BRC Charts library. In this example they are all included from CDNs.
+    </p>
+<pre>
+<code class="html">&lt;script src=&quot;https://d3js.org/d3.v5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
+</pre>
+    <p>
+      First we create a div element which will contain the chart.
+    </p>
+<pre>
+<code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
+</pre>
+
+    <p>
+      In the page's Javascript we call the <em>brccharts.phen1</em> method, passing in the configuration options
+      which include the data we want to display.
+    </p>
+
+<pre>
+<code class="javascript">brccharts.phen1({...})</code>
+</pre>
+
+    <div id="chart1" style="margin-top: 1em"></div>
+
+    <p>
+      You can move the mouse over the legend items (or in the charts themselves) to highlight the particular phenology line in the 
+      charts. The phen1 chart is capable of generating more than one phenology chart with a single call (as shown here). You 
+      can alter this behaviour - either turning it off or changing it so that it only occurs on a mouse click by setting
+      the value of the <em>interactivity</em> option to an empty string or 'mouseclick' respectively.</p>
+    <p>
+     Where more
+      than one chart is being created, the number that appear on one line is conrolled by the <em>perRow</em> configuration 
+      option. (There is a better example of this below.) But it is important to know that only one SVG object is being created
+      for each call to the <em>phen1</em> method regardless of how many charts are drawn. Although this SVG can be sized responsively
+      to fit the extents of the parent DOM object (by setting the <em>expand</em> configuration option to <em>true</em>), if you 
+      want to change the layout of the individual charts, e.g. stack them one over the other on mobile displays, you will need to
+      use your usual layout tools, e.g. a responsive grid, and use a separate call to the <em>phen1</em> method for each chart.
+    </p>
+    <p>
+      The data passed into the <em>phen1</em> method (along with various options) must be an array of simple
+      data objects, each of which have the following simple format:
+    </p>
+
+<pre><code class="javascript">{
+  'taxon': 'Vanessa cardui',
+  'week': 23,
+  '2016': 10,
+  '2017': 30,
+  ...
+}</code></pre>
+
+    <p>
+      These objects <em>must</em> have the properties 'taxon' and 'week' to identify the taxon 
+      for which the counts refer and the numeric week of the year (1 to 53). The other properties
+      can have any names you like and their values store the counts (record counts or quantities or
+      whatever) that you want to express. You can include as many of these count properties as you like. 
+      In this example the properties are named after single years
+      but you could have a property which shows an average over a year range for example:
+    </p>
+
+<pre><code class="javascript">{
+  'taxon': 'Vanessa cardui',
+  'week': 24,
+  '2020': 10,
+  '1990-2019': 49
+}</code></pre>
+
+    <p>
+      The charts above were produced with a call to the <em>phen1</em> method passing in a number
+      of configuration options, along with the data object array which here is contained in variable 
+      called 'data'.
+    </p>
+
+<pre><code class="javascript">var phen = {
+  selector: '#chart1',
+  data: data,
+  taxa: ['Vanessa cardui', 'Aglais urticae'],
+  metrics: [
+    { prop: '2020', label: '2020', colour: 'red' },
+    { prop: '2019', label: '2019', colour: '#4188A3' },
+    { prop: '2018', label: '2018', colour: 'fading' },
+    { prop: '2017', label: '2017', colour: 'fading' },
+    { prop: '2016', label: '2016', colour: 'fading' },
+  ],
+  taxonLabelItalics: true,
+  width: 400,
+  height: 250,
+  perRow: 2,
+  expand: true
+}
+brccharts.phen1(phen)</code></pre>
+
+    <p>
+      Most of the options are optional but there are four mandatory:
+    </p>
+    <ul>
+      <li><b>selector</b>: indicates the CSS selector of the DOM element in which to insert the chart.</li>
+      <li><b>data</b>: an array of data objects (as previously described).</li>
+      <li><b>taxa</b>: this is an array of strings identifying which taxa from those contained 
+        in the data array are to be used to construct separate phenology charts.
+        all of the names in this list must be present in the data array, but you do not
+        have to create a chart for every taxon in the data array.</li>
+      <li><b>metrics</b>: this is an array of objects which describes the separate phenology
+        lines that will be drawn on each chart. The properties of each of these objects is 
+        described below:
+        <ul>
+          <li><b>prop</b>: indicates which property of the data object is to be used to draw the phenology line.</li>
+          <li><b>label</b>: indicates a label to use for the line in the chart legend.</li>
+          <li><b>colour</b>: indicates the colour to use for the line. The special value
+            'fading' instructs the library to automatically assign a shade of grey to
+            the line, automatically making each successing line paler.</li>
+        </ul>
+        The order of the metrics items in the array is important. They will be drawn from
+        last to first which means that the first one in the array will be drawn on top of 
+        the others and the one at the end of the array will be drawnn underneath all the others.
+      </li>
+    </ul>
+
+    <p>
+      In the examples given here there is too much data to store within the page's Javascript
+      as an array of objects. Instead the data are stored in CSV files and read in using D3's
+      <em>csv</em> method, like this:
+    </p>
+
+<pre><code class="javascript">d3.csv('./data/butterflies-16-20.csv', function(d){
+  for (p in d) {
+    if (p !== 'taxon') {
+      d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+    }
+  }
+  return d
+}).then(function(data){
+  console.log(data)
+  var phen = {
+    selector: '#chart1',
+    data: data,
+    taxa: ['Vanessa cardui', 'Aglais urticae'],
+    metrics: [
+      { prop: '2020', label: '2020', colour: 'red' },
+      { prop: '2019', label: '2019', colour: '#4188A3' },
+      { prop: '2018', label: '2018', colour: 'fading' },
+      { prop: '2017', label: '2017', colour: 'fading' },
+      { prop: '2016', label: '2016', colour: 'fading' },
+    ],
+    taxonLabelItalics: true,
+    width: 400,
+    height: 250,
+    perRow: 2,
+    expand: true
+  }
+  brccharts.phen1(phen)
+})</code></pre>
+
+  <p>
+    The next chart serves a few purposes. Firstly it shows that
+    it is possible to dynamically change the taxon associated with a chart and watch the phenology
+    transition between the taxa. In the example it just switches between two taxa, but you could
+    link this to a drop-down list of taxa. This is only available on 'single' charts.
+  <p>
+  <p>
+    Secondly it demonstrates that the range of years displayed (as well as the colours used to
+    display them), can be dynamically changed.
+  </p>
+  <p>
+    Finally it demonstrates switching between the display of counts, weekly proportions or a 
+    normalized display (each weekly count expressed as a proportion of the weekly maximum).
+  </p>
+
+    <button onclick="button1Click()">Aglais urticae</button>
+    <button onclick="button2Click()">Vanessa cardui</button>
+    <br/><br/>
+    <button onclick="button6Click()">2020 only</button>
+    <button onclick="button6aClick()">2020 and 2019</button>
+    <button onclick="button7Click()">2010 to 2020</button>
+    <button onclick="button8Click()">1990 to 2020</button>
+    <br/><br/>
+    <button onclick="button3Click()">Counts</button>
+    <button onclick="button4Click()">Proportions</button>
+    <button onclick="button5Click()">Normalized</button>
+    
+    <div id="chart2" style="margin-top: 1em"></div>
+
+    <p>
+      The chart below is an example of generating multiple charts within a single
+      SVG (and single call to the <em>phen1</em> method). Just to underline that
+      these multiple charts are also dynamic, there is a button below to switch
+      between record counts and weekly proportions.
+    </p>
+    <p>
+      The chart compares the weekly number of records in 2020 against the average 
+      count for 2016-2019.
+    </p>
+    <button onclick="button9Click()">Counts</button>
+    <button onclick="button10Click()">Proportions</button>
+
+    <div id="chart3" style="margin-top: 1em"></div>
+
+    <p>
+      Finally here is a similar chart but with some different configuration options
+      set to alter the appearance and behaviour of the chart. (The options are
+      illustrated after the charts.) 
+    </p>
+
+    <div id="chart4" style="margin-top: 1em"></div>
+
+    <p>
+      The options used to generate the chart above are shown below. One of the interesting features if this is the empty
+      array specified for the <em>taxa</em> option. When you do this, the <em>phen1</em> method will create a chart
+      for every taxon it finds in the data array. For an explanation of all configuration options available
+      for the <em>phen1</em> method, see the full documentation: 
+      <a href='https://biologicalrecordscentre.github.io/brc-charts/docs/api/module-pie.html'>https://biologicalrecordscentre.github.io/brc-charts/docs/api/module-pie.html</a>.
+    </p>
+
+<pre><code class="javascript">{
+  selector: '#chart4',
+  data: data,
+  taxa: [],
+  metrics: [   
+    { prop: '2020', label: '2020', colour: '#4188A3' },
+    { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+  ],
+  taxonLabelItalics: true,
+  taxonLabelFontSize: 9,
+  legendFontSize: 14,
+  width: 150,
+  height: 100,
+  perRow: 5,
+  expand: true,
+  axisLeft: 'on',
+  axisBottom: 'tick',
+  axisRight: 'on',
+  axisTop: 'on',
+  ytype: 'proportion',
+  interactivity: '',
+  title: 'Phenology of butterflies recorded in the UK between 2016 and 2020',
+  subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',
+  footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
+  footerAlign: 'right'
+}
+brccharts.phen1(phen2)</code></pre>
+
+    <!--JS and CSS required for highlighting inline example code-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--Page CSS-->
+    <link rel="stylesheet" href="example.css" />
+
+    <!--D3 JS required exernal dependency of BRC Atlas library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS-->
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
+
+    <script>
+
+      d3.csv('./data/butterflies-16-20.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+        }
+        return d
+      }).then(function(data){
+        console.log(data)
+        var phen = {
+          selector: '#chart1',
+          data: data,
+          taxa: ['Vanessa cardui', 'Aglais urticae'],
+          metrics: [
+            { prop: '2020', label: '2020', colour: 'red' },
+            { prop: '2019', label: '2019', colour: '#4188A3' },
+            { prop: '2018', label: '2018', colour: 'fading' },
+            { prop: '2017', label: '2017', colour: 'fading' },
+            { prop: '2016', label: '2016', colour: 'fading' },
+          ],
+          taxonLabelItalics: true,
+          width: 400,
+          height: 250,
+          perRow: 2,
+          expand: true
+        }
+        brccharts.phen1(phen)
+      })
+
+      var metrics1 = [
+        { prop: '2020', label: '2020', colour: 'magenta' },
+      ]
+
+      var metrics1a = [
+        { prop: '2020', label: '2020', colour: 'red' },
+        { prop: '2019', label: '2019', colour: 'blue' },
+      ]
+
+      var metrics2=[]
+      var colours=d3.scaleOrdinal(d3.schemeCategory10)
+      for (i=2020; i>=2010; i--){
+        metrics2.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010)})
+      }
+
+      var metrics3=[]
+      for (i=2018; i>=1990; i--){
+        metrics3.push({prop: `${i}`, label: `${i}`, colour: 'fading'})
+      }
+      metrics3 = [
+        { prop: '2020', label: '2020', colour: 'red' },
+        { prop: '2019', label: '2019', colour: '#4188A3' },
+      ].concat(metrics3)
+
+      var chart2
+      d3.csv('./data/st-pl-1990-onwards.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])
+          }
+        }
+        return d
+      }).then(function(data){
+        var phen = {
+            selector: '#chart2',
+            data: data,
+            taxa: ['Vanessa cardui'],
+            metrics: metrics1,
+            taxonLabelItalics: true,
+            legendFontSize: 12,
+            width: 900,
+            height: 500,
+            expand: true,
+            perRow: 1,
+            axisLeft: 'tick',
+            axisBottom: 'tick',
+        }
+        chart2 = brccharts.phen1(phen)
+      })
+
+      function button1Click() {
+        chart2.setTaxon('Aglais urticae')
+      }
+      function button2Click() {
+        chart2.setTaxon('Vanessa cardui')
+      }
+      function button3Click() {
+        chart2.setChartOpts({ytype: 'count'})
+      }
+      function button4Click() {
+        chart2.setChartOpts({ytype: 'proportion'})
+      }
+      function button5Click() {
+        chart2.setChartOpts({ytype: 'normalized'})
+      }
+      function button6Click() {
+        chart2.setChartOpts({metrics:metrics1})
+      }
+      function button6aClick() {
+        chart2.setChartOpts({metrics:metrics1a})
+      }
+      function button7Click() {
+        chart2.setChartOpts({metrics: metrics2})
+      }
+      function button8Click() {
+        chart2.setChartOpts({metrics: metrics3})
+      }
+
+      var chart3, chart4
+      d3.csv('./data/butterflies-16-19-vs-20.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+        }
+        return d
+      }).then(function(data){
+
+        //Weed out any identified to genus only or with less than 100 records.
+        data = data.filter(d => d.taxon.split(" ").length > 1)
+        var taxaCounts = {}
+        data.forEach(d => {
+          if (!taxaCounts[d.taxon]) {
+            taxaCounts[d.taxon] = 0
+          }
+          taxaCounts[d.taxon] = taxaCounts[d.taxon] + d['2020'] + d['2016-19']
+        })
+        //Weed out any taxa with less than 100 records
+        data = data.filter(d => taxaCounts[d.taxon] > 100)
+
+        var phen1 = {
+          selector: '#chart3',
+          data: data,
+          taxa: [],
+          metrics: [   
+            { prop: '2020', label: '2020', colour: '#4188A3' },
+            { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+          ],
+          taxonLabelItalics: true,
+          taxonLabelFontSize: 12,
+          legendFontSize: 14,
+          width: 150,
+          height: 100,
+          perRow: 4,
+          expand: true
+        }
+        chart3 = brccharts.phen1(phen1)
+
+        var phen2 = {
+          selector: '#chart4',
+          data: data,
+          taxa: [],
+          metrics: [   
+            { prop: '2020', label: '2020', colour: '#4188A3' },
+            { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+          ],
+          taxonLabelItalics: true,
+          taxonLabelFontSize: 9,
+          legendFontSize: 14,
+          width: 150,
+          height: 100,
+          perRow: 5,
+          expand: true,
+          axisLeft: 'on',
+          axisBottom: 'tick',
+          axisRight: 'on',
+          axisTop: 'on',
+          ytype: 'proportion',
+          interactivity: '',
+          title: 'Phenology of butterflies recorded in the UK between 2016 and 2020',
+          subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',
+          footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
+          footerAlign: 'right'
+        }
+        brccharts.phen1(phen2)
+      })
+
+      function button9Click() {
+        chart3.setChartOpts({ytype: 'count'})
+      }
+      function button10Click() {
+        chart3.setChartOpts({ytype: 'proportion'})
+      }
+    </script>
+  </div>
+</body>
+</html>

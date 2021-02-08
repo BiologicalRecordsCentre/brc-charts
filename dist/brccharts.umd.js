@@ -858,7 +858,7 @@
    * @param {number} opts.width - The width of each sub-chart area in pixels.
    * @param {number} opts.height - The height of the each sub-chart area in pixels.
    * @param {number} opts.perRow - The number of sub-charts per row.
-   * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
+   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
@@ -912,8 +912,8 @@
         height = _ref$height === void 0 ? 200 : _ref$height,
         _ref$perRow = _ref.perRow,
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
-        _ref$normalize = _ref.normalize,
-        normalize = _ref$normalize === void 0 ? false : _ref$normalize,
+        _ref$ytype = _ref.ytype,
+        ytype = _ref$ytype === void 0 ? 'count' : _ref$ytype,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$title = _ref.title,
@@ -927,7 +927,7 @@
         _ref$subtitleFontSize = _ref.subtitleFontSize,
         subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
         _ref$footerFontSize = _ref.footerFontSize,
-        footerFontSize = _ref$footerFontSize === void 0 ? 14 : _ref$footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
         _ref$legendFontSize = _ref.legendFontSize,
         legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
         _ref$titleAlign = _ref.titleAlign,
@@ -1027,8 +1027,8 @@
           fading: iFade,
           strokeWidth: strokeWidth
         };
-      });
-      var grey = d3.scaleLinear().range(['#E0E0E0', '#808080']).domain([1, iFading]);
+      }).reverse();
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
       metricsPlus.forEach(function (m) {
         if (m.fading) {
           m.colour = grey(m.fading);
@@ -1097,14 +1097,22 @@
       });
       var lineData = [];
       metricsPlus.forEach(function (m) {
+        var total = dataFiltered.reduce(function (a, d) {
+          return a + d[m.prop];
+        }, 0);
+        var max = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+          return d[m.prop];
+        })));
+        var maxProportion = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+          return d[m.prop] / total;
+        })));
         lineData.push({
           id: safeId(m.label),
           colour: m.colour,
           strokeWidth: m.strokeWidth,
-          max: Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-            return d[m.prop];
-          }))),
-          //total: dataFiltered.reduce((a, d) => a + d[m.prop], 0),
+          max: max,
+          maxProportion: maxProportion,
+          total: total,
           points: dataFiltered.map(function (d) {
             return {
               n: d[m.prop],
@@ -1112,12 +1120,17 @@
             };
           })
         });
-      }); // Set the maximum value for the y axis
+      });
+      console.log('lineData', lineData); // Set the maximum value for the y axis
 
       var yMax;
 
-      if (normalize) {
+      if (ytype === 'normalized') {
         yMax = 1;
+      } else if (ytype === 'proportion') {
+        yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
+          return d.maxProportion;
+        })));
       } else {
         yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
           return d.max;
@@ -1177,7 +1190,7 @@
 
         if (axisLeft !== 'tick') {
           yAxis.tickValues([]).tickSizeOuter(0);
-        } else if (!normalize) {
+        } else if (ytype === 'count') {
           yAxis.tickFormat(d3.format("d"));
         }
       } // Line path generator
@@ -1221,10 +1234,17 @@
       });
       addEventHandlers(eLines, 'id');
       mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
-        if (normalize) {
+        if (ytype === 'normalized') {
           return line(d.points.map(function (p) {
             return {
               n: d.max ? p.n / d.max : 0,
+              week: p.week
+            };
+          }));
+        } else if (ytype === 'proportion') {
+          return line(d.points.map(function (p) {
+            return {
+              n: p.n / d.total,
               week: p.week
             };
           }));
@@ -1320,28 +1340,34 @@
         m.y = rows * swatchSize * swatchFact;
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
       });
-      var uLegendItems = svgChart.selectAll('.brc-legend-item').data(metricsReversed, function (m) {
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
         return safeId(m.label);
-      });
-      var eLegendItems = uLegendItems.enter();
-      var items = eLegendItems.append('g').classed('brc-legend-item', true).attr('id', function (m) {
-        return "brc-legend-item-".concat(m.label);
-      });
-      var ls = items.append('rect').attr('width', swatchSize).attr('height', 2).attr('fill', function (m) {
-        return m.colour;
+      }).join(function (enter) {
+        var rect = enter.append("rect").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
+        }).attr('width', swatchSize).attr('height', 2);
+        return rect;
       }).attr('x', function (m) {
         return m.x;
       }).attr('y', function (m) {
         return m.y + swatchSize / 2;
+      }).attr('fill', function (m) {
+        return m.colour;
       });
-      var lt = items.append('text').text(function (m) {
-        return m.label;
-      }).style('font-size', legendFontSize).attr('x', function (m) {
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var text = enter.append("text").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(safeId(m.label));
+        }).text(function (m) {
+          return m.label;
+        }).style('font-size', legendFontSize);
+        return text;
+      }).attr('x', function (m) {
         return m.x + swatchSize * swatchFact;
       }).attr('y', function (m) {
-        return m.y + taxonLabelFontSize;
+        return m.y + legendFontSize * 1;
       });
-      uLegendItems.exit().remove();
       addEventHandlers(ls, 'label');
       addEventHandlers(lt, 'label');
       return swatchSize * swatchFact * (rows + 1);
@@ -1349,18 +1375,21 @@
 
     function highlightItem(id, highlight) {
       svgChart.selectAll('.phen-path').classed('lowlight', highlight);
-      svgChart.selectAll(".phen-path-".concat(id)).classed('lowlight', false);
+      svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('lowlight', false);
       svgChart.selectAll(".phen-path").classed('highlight', false);
 
-      if (id) {
-        svgChart.selectAll(".phen-path-".concat(id)).classed('highlight', highlight);
+      if (safeId(id)) {
+        svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('highlight', highlight);
       }
 
       svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
-      svgChart.selectAll("#brc-legend-item-".concat(id)).classed('lowlight', false);
 
       if (id) {
-        svgChart.select("#brc-legend-item-".concat(id)).classed('highlight', highlight);
+        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
+      }
+
+      if (id) {
+        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
       } else {
         svgChart.selectAll(".brc-legend-item").classed('highlight', false);
       }
@@ -1422,7 +1451,7 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-      * @param {boolean} opts.normalize - Whether or not to use normalized or actual numbers.
+      * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -1465,32 +1494,31 @@
 
       if ('footerAlign' in opts) {
         footerAlign = opts.footerAlign;
-      } //svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-      //svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-      //svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+      }
 
+      svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
+      svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
+      svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+      var remakeChart = false;
 
       if ('data' in opts) {
         data = opts.data;
-        makeChart();
+        remakeChart = true;
       }
 
-      if ('normalize' in opts) {
-        normalize = opts.normalize;
-        makeChart();
+      if ('ytype' in opts) {
+        ytype = opts.ytype;
+        remakeChart = true;
       }
 
       if ('metrics' in opts) {
         metrics = opts.metrics;
         preProcessMetrics();
-        makeChart();
+        remakeChart = true;
       }
 
-      if ('taxa' in opts) {
-        taxa = opts.taxa;
-        makeChart();
-      } //positionElements()
-
+      if (remakeChart) makeChart();
+      positionElements();
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
@@ -1543,7 +1571,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.0.3";
+  var version = "0.1.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
