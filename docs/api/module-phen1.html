@@ -783,7 +783,7 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the nuemric property in the data.<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. </ul></td>
+            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading</ul></td>
         </tr>
 
     
@@ -806,7 +806,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.<li> <b>p1</b> - a count for the first time period. <li> <b>p2</b> - a count for the second time period. </ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.<li> <b>c1</b> - a count for a given time period (can have any name). <li> <b>c2</b> - a count for a given time period (can have any name).... - there can be any number of these count columns.</ul></td>
         </tr>
 
     
@@ -854,7 +854,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line55">line 55</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -964,7 +964,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line753">line 753</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line755">line 755</a>
     </li></ul></dd>
     
 
@@ -1052,7 +1052,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line745">line 745</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line747">line 747</a>
     </li></ul></dd>
     
 
@@ -1404,6 +1404,29 @@
 
         <tr>
             
+                <td class="name"><code>metrics</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of objects, each describing a numeric property in the input data (see main interface for details).</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>data</code></td>
             
 
@@ -1420,7 +1443,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.</td>
+            <td class="description last">Specifies an array of data objects (see main interface for details).</td>
         </tr>
 
     
@@ -1468,7 +1491,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line657">line 657</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line658">line 658</a>
     </li></ul></dd>
     
 
@@ -1605,7 +1628,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line730">line 730</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line732">line 732</a>
     </li></ul></dd>
     
 
@@ -1814,7 +1837,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line761">line 761</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line763">line 763</a>
     </li></ul></dd>
     
 
@@ -1850,7 +1873,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Feb 08 2021 19:15:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Feb 09 2021 09:51:46 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

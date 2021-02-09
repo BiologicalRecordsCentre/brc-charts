@@ -37,17 +37,18 @@ import * as gen from './general'
  * data for which a line should be generated on the chart.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
- * <li> <b>prop</b> - the name of the nuemric property in the data.
+ * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
  * <li> <b>label</b> - a label for this metric.
- * <li> <b>colour</b> - optional colour to give the line for this metric. 
+ * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
- * <li> <b>p1</b> - a count for the first time period. 
- * <li> <b>p2</b> - a count for the second time period. 
+ * <li> <b>c1</b> - a count for a given time period (can have any name). 
+ * <li> <b>c2</b> - a count for a given time period (can have any name).
+ * ... - there can be any number of these count columns.
  * </ul>
  * @returns {module:phen1~api} api - Returns an API for the chart.
  */
@@ -666,7 +667,8 @@ export function phen1({
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
-  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
+  * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
