@@ -100,12 +100,12 @@ export function pie({
   let svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter
   makeLegend(data)
   makePie(data) 
-  // Title must come after chart and legend because the 
-  // width of those is required to do wrapping for title
-  //makeTitle()
-  svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-  svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-  svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+  // Texts must come after chart and legend because the 
+  // width of those is required to do wrap text
+  const textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
+  svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  svgSubtitle =  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  svgFooter =  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
   positionElements()
 
@@ -133,54 +133,6 @@ export function pie({
       svg.attr("width", width)
       svg.attr("height", height)
     }
-  }
-
-  function makeText (text, svgText, classText, fontSize, textAlign) {
-
-    if (!svgText) {
-      svgText = svg.append('svg')
-    }
-
-    const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-    const lines = wrapText(text, svgText, chartWidth, fontSize)
-
-    console.log(classText, text, lines)
-
-    const uText = svgText.selectAll(`.${classText}`)
-      .data(lines)
-
-    const eText = uText.enter()
-      .append('text')
-
-    uText
-      .merge(eText)
-      .text(d => {
-        return d
-      })
-      .attr("class", classText)
-      .style('font-size', fontSize)
-
-    uText.exit()
-      .remove()
-
-    console.log('lines', svgText.select(`.${classText}`).size())
-    const height = svgText.select(`.${classText}`).node().getBBox().height
-    const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
-
-    svgText.selectAll(`.${classText}`)
-      .attr('y', (d, i) => (i + 1) * height)
-      .attr('x', (d, i) => {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2
-        } else if(textAlign === 'right') {
-          return chartWidth - widths[i]
-        } else {
-          return 0
-        }
-      })
-    svgText.attr("height", height * lines.length + height * 0.2) // The 0.2 allows for tails of letters like g, y etc.
-
-    return svgText
   }
 
   function makeLegend (data) {
@@ -587,40 +539,6 @@ export function pie({
     return img
   }
 
-  function wrapText(text, svgTitle, maxWidth, fontSize) {
-
-    const textSplit = text.split(" ")
-    const lines = ['']
-    let line = 0
-
-    for (let i=0; i < textSplit.length; i++) {
-
-      if (textSplit[i] === '\n') {
-        line++
-        lines[line] = ''
-      } else {
-        let workingText = `${lines[line]} ${textSplit[i]}`
-        workingText = workingText.trim()
-
-        const txt = svgTitle.append('text')
-          .text(workingText)
-          .style('font-size', fontSize)
-
-        const width = txt.node().getBBox().width
-
-        if (width > maxWidth) {
-          line++
-          lines[line] = textSplit[i]
-        } else {
-          lines[line] = workingText
-        }
-
-        txt.remove()
-      }
-    }
-    return lines
-  }
-
   function addEventHandlers(sel, isArc) {
     sel
       .on("mouseover", function(d) {
@@ -761,9 +679,10 @@ export function pie({
         footerAlign = opts.footerAlign
       }
 
-      svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-      svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-      svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+      const textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
+      svgTitle =  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+      svgSubtitle =  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+      svgFooter =  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
       if ('data' in opts) {
         colourData(opts.data)

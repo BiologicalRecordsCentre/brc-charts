@@ -103,18 +103,18 @@ export function phen1({
     }
   })
 
-  const svgChart = svg.append('svg')
+  const svgChart = svg.append('svg').attr('class', 'mainChart')
 
   let svgTitle, svgSubtitle, svgFooter
   
   preProcessMetrics()
   makeChart()
-
-  // Title must come after chart and legend because 
-  // the chartis required to do wrapping for title
-  svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-  svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-  svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+  // Texts must come after chartbecause 
+  // the chart width is required
+  const textWidth = Number(svg.select('.mainChart').attr("width"))
+  svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  svgSubtitle = gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  svgFooter = gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
   
   positionElements()
 
@@ -175,8 +175,6 @@ export function phen1({
         m.colour = grey(m.fading)
       }
     })
-
-    console.log(metricsPlus)
   }
 
   function positionElements() {
@@ -200,51 +198,6 @@ export function phen1({
       svg.attr("width", width)
       svg.attr("height", height)
     }
-  }
-
-  function makeText (text, svgText, classText, fontSize, textAlign) {
-
-    if (!svgText) {
-      svgText = svg.append('svg')
-    }
-
-    const chartWidth = Number(svgChart.attr("width"))
-    const lines = wrapText(text, svgText, chartWidth, fontSize)
-
-    const uText = svgText.selectAll(`.${classText}`)
-      .data(lines)
-
-    const eText = uText.enter()
-      .append('text')
-
-    uText
-      .merge(eText)
-      .text(d => {
-        return d
-      })
-      .attr("class", classText)
-      .style('font-size', fontSize)
-
-    uText.exit()
-      .remove()
-
-    const height = svgText.select(`.${classText}`).node().getBBox().height
-    const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
-
-    svgText.selectAll(`.${classText}`)
-      .attr('y', (d, i) => (i + 1) * height)
-      .attr('x', (d, i) => {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2
-        } else if(textAlign === 'right') {
-          return chartWidth - widths[i]
-        } else {
-          return 0
-        }
-      })
-    svgText.attr("height", height * lines.length + height * 0.2) // The 0.2 allows for tails of letters like g, y etc.
-
-    return svgText
   }
 
   function makePhen (taxon) {
@@ -276,7 +229,6 @@ export function phen1({
       })
     })
 
-    console.log('lineData', lineData)
     // Set the maximum value for the y axis
     let yMax
     if (ytype === 'normalized') {
@@ -622,39 +574,6 @@ export function phen1({
       })
   }
 
-  function wrapText(text, svgTitle, maxWidth, fontSize) {
-
-    const textSplit = text.split(" ")
-    const lines = ['']
-    let line = 0
-
-    for (let i=0; i < textSplit.length; i++) {
-
-      if (textSplit[i] === '\n') {
-        line++
-        lines[line] = ''
-      } else {
-        let workingText = `${lines[line]} ${textSplit[i]}`
-        workingText = workingText.trim()
-
-        const txt = svgTitle.append('text')
-          .text(workingText)
-          .style('font-size', fontSize)
-
-        const width = txt.node().getBBox().width
-
-        if (width > maxWidth) {
-          line++
-          lines[line] = textSplit[i]
-        } else {
-          lines[line] = workingText
-        }
-        txt.remove()
-      }
-    }
-    return lines
-  }
-
 /** @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
@@ -703,9 +622,10 @@ export function phen1({
       footerAlign = opts.footerAlign
     }
 
-    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+    const textWidth = Number(svg.select('.mainChart').attr("width"))
+    svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    svgSubtitle = gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    svgFooter = gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
 

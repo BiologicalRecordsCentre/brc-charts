@@ -94,6 +94,67 @@
       return _objectSpread2({}, d);
     });
   }
+  function wrapText(text, svg, maxWidth, fontSize) {
+    var textSplit = text.split(" ");
+    var lines = [''];
+    var line = 0;
+
+    for (var i = 0; i < textSplit.length; i++) {
+      if (textSplit[i] === '\n') {
+        line++;
+        lines[line] = '';
+      } else {
+        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+        workingText = workingText.trim();
+        var txt = svg.append('text').text(workingText).style('font-size', fontSize);
+        var width = txt.node().getBBox().width;
+
+        if (width > maxWidth) {
+          line++;
+          lines[line] = textSplit[i];
+        } else {
+          lines[line] = workingText;
+        }
+
+        txt.remove();
+      }
+    }
+
+    return lines;
+  }
+  function makeText(text, classText, fontSize, textAlign, textWidth, svg) {
+    var svgText = svg.select(".".concat(classText));
+
+    if (!svgText.size()) {
+      svgText = svg.append('svg').attr("class", classText);
+    }
+
+    var lines = wrapText(text, svgText, textWidth, fontSize);
+    var uText = svgText.selectAll(".".concat(classText, "-line")).data(lines);
+    var eText = uText.enter().append('text').attr("class", "".concat(classText, "-line"));
+    uText.merge(eText).text(function (d) {
+      return d;
+    }).style('font-size', fontSize);
+    uText.exit().remove();
+    var height = svgText.select(".".concat(classText, "-line")).node().getBBox().height;
+    var widths = svgText.selectAll(".".concat(classText, "-line")).nodes().map(function (n) {
+      return n.getBBox().width;
+    });
+    svgText.selectAll(".".concat(classText, "-line")).attr('y', function (d, i) {
+      return (i + 1) * height;
+    }).attr('x', function (d, i) {
+      if (textAlign === 'centre') {
+        return (textWidth - widths[i]) / 2;
+      } else if (textAlign === 'right') {
+        return textWidth - widths[i];
+      } else {
+        return 0;
+      }
+    });
+    svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
+
+    return svgText;
+  }
 
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
@@ -202,13 +263,13 @@
     });
     var svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter;
     makeLegend(data);
-    makePie(data); // Title must come after chart and legend because the 
-    // width of those is required to do wrapping for title
-    //makeTitle()
+    makePie(data); // Texts must come after chart and legend because the 
+    // width of those is required to do wrap text
 
-    svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
-    svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
-    svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+    var textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+    svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
     positionElements();
     var imgSelected = makeImage();
 
@@ -227,41 +288,6 @@
         svg.attr("width", width);
         svg.attr("height", height);
       }
-    }
-
-    function makeText(text, svgText, classText, fontSize, textAlign) {
-      if (!svgText) {
-        svgText = svg.append('svg');
-      }
-
-      var chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      var lines = wrapText(text, svgText, chartWidth, fontSize);
-      console.log(classText, text, lines);
-      var uText = svgText.selectAll(".".concat(classText)).data(lines);
-      var eText = uText.enter().append('text');
-      uText.merge(eText).text(function (d) {
-        return d;
-      }).attr("class", classText).style('font-size', fontSize);
-      uText.exit().remove();
-      console.log('lines', svgText.select(".".concat(classText)).size());
-      var height = svgText.select(".".concat(classText)).node().getBBox().height;
-      var widths = svgText.selectAll(".".concat(classText)).nodes().map(function (n) {
-        return n.getBBox().width;
-      });
-      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
-        return (i + 1) * height;
-      }).attr('x', function (d, i) {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2;
-        } else if (textAlign === 'right') {
-          return chartWidth - widths[i];
-        } else {
-          return 0;
-        }
-      });
-      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
-
-      return svgText;
     }
 
     function makeLegend(data) {
@@ -626,35 +652,6 @@
       return img;
     }
 
-    function wrapText(text, svgTitle, maxWidth, fontSize) {
-      var textSplit = text.split(" ");
-      var lines = [''];
-      var line = 0;
-
-      for (var i = 0; i < textSplit.length; i++) {
-        if (textSplit[i] === '\n') {
-          line++;
-          lines[line] = '';
-        } else {
-          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
-          workingText = workingText.trim();
-          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
-          var width = txt.node().getBBox().width;
-
-          if (width > maxWidth) {
-            line++;
-            lines[line] = textSplit[i];
-          } else {
-            lines[line] = workingText;
-          }
-
-          txt.remove();
-        }
-      }
-
-      return lines;
-    }
-
     function addEventHandlers(sel, isArc) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
@@ -803,9 +800,11 @@
           footerAlign = opts.footerAlign;
         }
 
-        svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
-        svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
-        svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+        var _textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+
+        svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, _textWidth, svg);
+        svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, _textWidth, svg);
+        svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, _textWidth, svg);
 
         if ('data' in opts) {
           colourData(opts.data);
@@ -885,17 +884,18 @@
    * data for which a line should be generated on the chart.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
-   * <li> <b>prop</b> - the name of the nuemric property in the data.
+   * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
    * <li> <b>label</b> - a label for this metric.
-   * <li> <b>colour</b> - optional colour to give the line for this metric. 
+   * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
-   * <li> <b>p1</b> - a count for the first time period. 
-   * <li> <b>p2</b> - a count for the second time period. 
+   * <li> <b>c1</b> - a count for a given time period (can have any name). 
+   * <li> <b>c2</b> - a count for a given time period (can have any name).
+   * ... - there can be any number of these count columns.
    * </ul>
    * @returns {module:phen1~api} api - Returns an API for the chart.
    */
@@ -969,15 +969,16 @@
         highlightItem(null, false);
       }
     });
-    var svgChart = svg.append('svg');
+    var svgChart = svg.append('svg').attr('class', 'mainChart');
     var svgTitle, svgSubtitle, svgFooter;
     preProcessMetrics();
-    makeChart(); // Title must come after chart and legend because 
-    // the chartis required to do wrapping for title
+    makeChart(); // Texts must come after chartbecause 
+    // the chart width is required
 
-    svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
-    svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
-    svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+    var textWidth = Number(svg.select('.mainChart').attr("width"));
+    svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
     positionElements();
 
     function makeChart() {
@@ -1034,7 +1035,6 @@
           m.colour = grey(m.fading);
         }
       });
-      console.log(metricsPlus);
     }
 
     function positionElements() {
@@ -1051,39 +1051,6 @@
         svg.attr("width", width);
         svg.attr("height", height);
       }
-    }
-
-    function makeText(text, svgText, classText, fontSize, textAlign) {
-      if (!svgText) {
-        svgText = svg.append('svg');
-      }
-
-      var chartWidth = Number(svgChart.attr("width"));
-      var lines = wrapText(text, svgText, chartWidth, fontSize);
-      var uText = svgText.selectAll(".".concat(classText)).data(lines);
-      var eText = uText.enter().append('text');
-      uText.merge(eText).text(function (d) {
-        return d;
-      }).attr("class", classText).style('font-size', fontSize);
-      uText.exit().remove();
-      var height = svgText.select(".".concat(classText)).node().getBBox().height;
-      var widths = svgText.selectAll(".".concat(classText)).nodes().map(function (n) {
-        return n.getBBox().width;
-      });
-      svgText.selectAll(".".concat(classText)).attr('y', function (d, i) {
-        return (i + 1) * height;
-      }).attr('x', function (d, i) {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2;
-        } else if (textAlign === 'right') {
-          return chartWidth - widths[i];
-        } else {
-          return 0;
-        }
-      });
-      svgText.attr("height", height * lines.length + height * 0.2); // The 0.2 allows for tails of letters like g, y etc.
-
-      return svgText;
     }
 
     function makePhen(taxon) {
@@ -1120,8 +1087,7 @@
             };
           })
         });
-      });
-      console.log('lineData', lineData); // Set the maximum value for the y axis
+      }); // Set the maximum value for the y axis
 
       var yMax;
 
@@ -1411,35 +1377,6 @@
         }
       });
     }
-
-    function wrapText(text, svgTitle, maxWidth, fontSize) {
-      var textSplit = text.split(" ");
-      var lines = [''];
-      var line = 0;
-
-      for (var i = 0; i < textSplit.length; i++) {
-        if (textSplit[i] === '\n') {
-          line++;
-          lines[line] = '';
-        } else {
-          var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
-          workingText = workingText.trim();
-          var txt = svgTitle.append('text').text(workingText).style('font-size', fontSize);
-          var _width = txt.node().getBBox().width;
-
-          if (_width > maxWidth) {
-            line++;
-            lines[line] = textSplit[i];
-          } else {
-            lines[line] = workingText;
-          }
-
-          txt.remove();
-        }
-      }
-
-      return lines;
-    }
     /** @function setChartOpts
       * @param {Object} opts - text options.
       * @param {string} opts.title - Title for the chart.
@@ -1452,7 +1389,8 @@
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
       * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
-      * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+      * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -1496,9 +1434,10 @@
         footerAlign = opts.footerAlign;
       }
 
-      svgTitle = makeText(title, svgTitle, 'titleText', titleFontSize, titleAlign);
-      svgSubtitle = makeText(subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign);
-      svgFooter = makeText(footer, svgFooter, 'footerText', footerFontSize, footerAlign);
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       var remakeChart = false;
 
       if ('data' in opts) {
