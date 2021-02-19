@@ -966,7 +966,7 @@
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
     var metricsPlus;
-    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-phen').style('position', 'relative').style('display', 'inline');
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
@@ -1378,7 +1378,7 @@
       * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
       */
@@ -1448,7 +1448,7 @@
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
-      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * For single species charts, this allows you to change the taxon displayed.
       */
 
@@ -1462,7 +1462,7 @@
       }
     }
     /** @function getChartWidth
-      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Return the full width of the chart svg.
       */
 
@@ -1471,7 +1471,7 @@
       return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
     }
     /** @function getChartHeight
-      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Return the full height of the chart svg.
       */
 
@@ -1481,10 +1481,577 @@
     }
     /**
      * @typedef {Object} api
-     * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:pie~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     */
+
+
+    return {
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartOpts: setChartOpts,
+      setTaxon: setTaxon
+    };
+  }
+
+  /** 
+   * @param {Object} opts - Initialisation options.
+   * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
+   * @param {string} opts.elid - The id for the dom object created.
+   * @param {number} opts.width - The width of each sub-chart area in pixels.
+   * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {number} opts.perRow - The number of sub-charts per row.
+   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+   * @param {string} opts.title - Title for the chart.
+   * @param {string} opts.subtitle - Subtitle for the chart.
+   * @param {string} opts.footer - Footer for the chart.
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
+   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
+   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+   * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * If empty, graphs for all taxa are created.
+   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+   * data for which a line should be generated on the chart.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+   * <li> <b>label</b> - a label for this metric.
+   * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
+   * </ul>
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
+   * <li> <b>c1</b> - a count for a given time period (can have any name). 
+   * <li> <b>c2</b> - a count for a given time period (can have any name).
+   * ... - there can be any number of these count columns.
+   * </ul>
+   * @returns {module:acum~api} api - Returns an API for the chart.
+   */
+
+  function acum() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'phen1-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$perRow = _ref.perRow,
+        _ref$ytype = _ref.ytype,
+        ytype = _ref$ytype === void 0 ? 'count' : _ref$ytype,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
+        _ref$legendFontSize = _ref.legendFontSize,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$showTaxonLabel = _ref.showTaxonLabel,
+        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
+        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? 'tick' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$taxa = _ref.taxa,
+        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
+        _ref$metrics = _ref.metrics,
+        metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
+
+    var metricsPlus;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-acum').style('position', 'relative').style('display', 'inline');
+    var svg = mainDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem(null, false);
+      }
+    });
+    var svgChart = svg.append('svg').attr('class', 'mainChart');
+    preProcessMetrics();
+    makeChart(); // Texts must come after chartbecause 
+    // the chart width is required
+
+    var textWidth = Number(svg.select('.mainChart').attr("width"));
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand);
+
+    function preProcessMetrics() {
+      // Look for 'fading' colour in taxa and colour appropriately 
+      // in fading shades of grey.
+      var iFading = 0;
+      metricsPlus = metrics.map(function (m) {
+        var iFade, strokeWidth;
+
+        if (m.colour === 'fading') {
+          iFade = ++iFading;
+          strokeWidth = 1;
+        } else {
+          strokeWidth = 2;
+        }
+
+        return {
+          prop: m.prop,
+          label: m.label,
+          colour: m.colour,
+          fading: iFade,
+          strokeWidth: strokeWidth
+        };
+      }).reverse();
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+      metricsPlus.forEach(function (m) {
+        if (m.fading) {
+          m.colour = grey(m.fading);
+        }
+      });
+    }
+
+    function makeChart() {
+      console.log(metricsPlus);
+      var lineData = [];
+      metricsPlus.forEach(function (m) {
+        var pointsTaxa = [];
+        var pointsCount = [];
+        var acumTaxa = [];
+        var acumCount = 0;
+
+        var _loop = function _loop(week) {
+          // Taxa for this week and property (normally a year)
+          // Must have at least one non-zero) count to contribute to taxa count
+          var weekStats = data.filter(function (d) {
+            return d.week === week;
+          }).reduce(function (a, d) {
+            a.total = a.total + d[m.prop];
+
+            if (!a.taxa.includes(d.taxon) && d[m.prop]) {
+              a.taxa.push(d.taxon);
+            }
+
+            return a;
+          }, {
+            total: 0,
+            taxa: []
+          });
+          acumTaxa = _toConsumableArray(new Set([].concat(_toConsumableArray(acumTaxa), _toConsumableArray(weekStats.taxa))));
+          acumCount = acumCount + weekStats.total;
+          pointsTaxa.push({
+            num: weekStats.taxa.length,
+            acum: acumTaxa.length,
+            week: week
+          });
+          pointsCount.push({
+            num: weekStats.total,
+            acum: acumCount,
+            week: week
+          });
+        };
+
+        for (var week = 1; week <= 53; week++) {
+          _loop(week);
+        }
+
+        lineData.push({
+          id: "".concat(safeId(m.label), "-taxa"),
+          type: 'taxa',
+          colour: m.colour,
+          strokeWidth: m.strokeWidth,
+          max: Math.max.apply(Math, _toConsumableArray(pointsTaxa.map(function (p) {
+            return p.acum;
+          }))),
+          points: pointsTaxa
+        });
+        lineData.push({
+          id: "".concat(safeId(m.label), "-count"),
+          type: 'count',
+          colour: m.colour,
+          strokeWidth: m.strokeWidth,
+          max: Math.max.apply(Math, _toConsumableArray(pointsCount.map(function (p) {
+            return p.acum;
+          }))),
+          points: pointsCount
+        });
+      });
+      console.log(lineData); // Value scales
+
+      var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
+      var yScaleCount = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
+        return l.type === 'count';
+      }).map(function (l) {
+        return l.max;
+      })))]).range([height, 0]);
+      var yScaleTaxa = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
+        return l.type === 'taxa';
+      }).map(function (l) {
+        return l.max;
+      })))]).range([height, 0]); // Top axis
+
+      var tAxis;
+
+      if (axisTop === 'on') {
+        tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
+      } // X (bottom) axis
+
+
+      var xAxis;
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        // xScaleTime is only used to create the x axis
+        var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
+        xAxis = d3.axisBottom().scale(xScaleTime);
+
+        if (axisBottom === 'tick') {
+          xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
+            if (width >= 750) {
+              return d3.timeFormat('%B')(date);
+            } else if (width >= 330) {
+              return d3.timeFormat('%b')(date);
+            } else if (width >= 200) {
+              return date.toLocaleString('default', {
+                month: 'short'
+              }).substr(0, 1);
+            } else {
+              return '';
+            }
+          });
+        } else {
+          xAxis.tickValues([]).tickSizeOuter(0);
+        }
+      } // Y count (right) axis
+
+
+      var yAxisCount;
+
+      if (axisRight === 'on' || axisRight === 'tick') {
+        yAxisCount = d3.axisRight().scale(yScaleCount).ticks(5);
+
+        if (axisRight !== 'tick') {
+          yAxisCount.tickValues([]).tickSizeOuter(0);
+        } else if (ytype === 'count') {
+          yAxisCount.tickFormat(d3.format("d"));
+        }
+      } // Y taxa (left) axis
+
+
+      var yAxisTaxa;
+
+      if (axisLeft === 'on' || axisLeft === 'tick') {
+        yAxisTaxa = d3.axisLeft().scale(yScaleTaxa).ticks(5);
+
+        if (axisLeft !== 'tick') {
+          yAxisTaxa.tickValues([]).tickSizeOuter(0);
+        } else if (ytype === 'count') {
+          yAxisTaxa.tickFormat(d3.format("d"));
+        }
+      } // Line path generators
+
+
+      var lineTaxa = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScale(d.week);
+      }).y(function (d) {
+        return yScaleTaxa(d.acum);
+      });
+      var lineCount = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScale(d.week);
+      }).y(function (d) {
+        return yScaleCount(d.acum);
+      }); // Create or get the relevant chart svg
+
+      var init, svgAcum, gAcum;
+
+      if (svgChart.select('.brc-chart-acum').size()) {
+        svgAcum = svgChart.select('.brc-chart-acum');
+        gAcum = svgAcum.select('.brc-chart-acum-g');
+        init = false;
+      } else {
+        svgAcum = svgChart.append('svg').classed('brc-chart-acum', true);
+        gAcum = svgAcum.append('g').classed('brc-chart-acum-g', true);
+        init = true;
+      } // Create/update the line paths with D3
+
+
+      var mlines = gAcum.selectAll("path").data(lineData, function (d) {
+        return d.id;
+      }).attr("class", function (d) {
+        return "phen-path-".concat(d.id, " acum-path");
+      });
+      var eLines = mlines.enter().append("path").attr("d", function (d) {
+        var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
+        return lineGen(d.points.map(function (p) {
+          return {
+            acum: 0,
+            week: p.week
+          };
+        }));
+      });
+      addEventHandlers(eLines, 'id');
+      mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
+        var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
+        return lineGen(d.points);
+      }).attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      });
+      mlines.exit().transition().duration(duration).attr("d", function (d) {
+        var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
+        return lineGen(d.points.map(function (p) {
+          return {
+            acum: 0,
+            week: p.week
+          };
+        }));
+      }).remove();
+
+      if (init) {
+        // Constants for positioning
+        var axisLeftPadX = axisLeft === 'tick' ? 35 : 0;
+        var axisRightPadX = axisRight === 'tick' ? 45 : 0;
+        var axisPadY = axisBottom === 'tick' ? 15 : 0;
+        var labelPadY = 5; // Size SVG
+
+        svgAcum.attr('width', width + axisLeftPadX + axisRightPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+
+        gAcum.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+
+        if (yAxisTaxa) {
+          var gYaxisTaxa = svgAcum.append("g").attr("class", "y-axis-taxa");
+          gYaxisTaxa.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")"));
+        }
+
+        if (yAxisCount) {
+          var gYaxisCount = svgAcum.append("g").attr("class", "y-axis-count");
+          gYaxisCount.attr("transform", "translate(".concat(axisLeftPadX + width, ",").concat(labelPadY, ")"));
+        }
+
+        if (xAxis) {
+          var gXaxis = svgAcum.append("g").attr("class", "x axis").call(xAxis);
+          gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
+          gXaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(height + labelPadY, ")"));
+        }
+
+        if (tAxis) {
+          var gTaxis = svgAcum.append("g").call(tAxis);
+          gTaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")"));
+        }
+      }
+
+      if (yAxisTaxa) {
+        svgAcum.select(".y-axis-taxa").transition().duration(duration).call(yAxisTaxa);
+      }
+
+      if (yAxisCount) {
+        svgAcum.select(".y-axis-count").transition().duration(duration).call(yAxisCount);
+      }
+
+      svgChart.attr("width", svgAcum.attr('width'));
+      svgChart.attr("height", svgAcum.attr('height'));
+      return svgAcum;
+    }
+
+    function highlightItem(id, highlight) {
+      svgChart.selectAll('.phen-path').classed('lowlight', highlight);
+      svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('lowlight', false);
+      svgChart.selectAll(".phen-path").classed('highlight', false);
+
+      if (safeId(id)) {
+        svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('highlight', highlight);
+      }
+
+      svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
+
+      if (id) {
+        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
+      }
+
+      if (id) {
+        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
+      } else {
+        svgChart.selectAll(".brc-legend-item").classed('highlight', false);
+      }
+    }
+
+    function addEventHandlers(sel, prop) {
+      sel.on("mouseover", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], true);
+        }
+      }).on("mouseout", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], false);
+        }
+      }).on("click", function (d) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(d[prop], true);
+          d3.event.stopPropagation();
+        }
+      });
+    }
+    /** @function setChartOpts
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+      * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
+      */
+
+
+    function setChartOpts(opts) {
+      if ('title' in opts) {
+        title = opts.title;
+      }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      var remakeChart = false;
+
+      if ('data' in opts) {
+        data = opts.data;
+        remakeChart = true;
+      }
+
+      if ('ytype' in opts) {
+        ytype = opts.ytype;
+        remakeChart = true;
+      }
+
+      if ('metrics' in opts) {
+        metrics = opts.metrics;
+        preProcessMetrics();
+        remakeChart = true;
+      }
+
+      if (remakeChart) makeChart();
+      positionMainElements(svg, expand);
+    }
+    /** @function setTaxon
+      * @param {string} opts.taxon - The taxon to display.
+      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * For single species charts, this allows you to change the taxon displayed.
+      */
+
+
+    function setTaxon(taxon) {
+      if (taxa.length !== 1) {
+        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+      } else {
+        taxa = [taxon];
+        makeChart();
+      }
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
+    /** @function getChartHeight
+      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * Return the full height of the chart svg.
+      */
+
+
+    function getChartHeight() {
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /**
+     * @typedef {Object} api
+     * @property {module:acum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:acum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:acum~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:acum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
      */
 
 
@@ -1555,6 +2122,7 @@
 
   console.log("Running ".concat(pkg.name, " version ").concat(pkg.version));
 
+  exports.acum = acum;
   exports.phen1 = phen1;
   exports.pie = pie;
 

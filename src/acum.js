@@ -1,4 +1,4 @@
-/** @module phen1 */
+/** @module acum */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -50,10 +50,10 @@ import * as gen from './general'
  * <li> <b>c2</b> - a count for a given time period (can have any name).
  * ... - there can be any number of these count columns.
  * </ul>
- * @returns {module:phen1~api} api - Returns an API for the chart.
+ * @returns {module:acum~api} api - Returns an API for the chart.
  */
 
-export function phen1({
+export function acum({
   // Default options in here
   selector = 'body',
   elid = 'phen1-chart',
@@ -77,7 +77,7 @@ export function phen1({
   taxonLabelItalics = false,
   axisLeft = 'tick',
   axisBottom = 'tick',
-  axisRight = '',
+  axisRight = 'tick',
   axisTop = '',
   duration = 1000,
   interactivity = 'mousemove',
@@ -91,6 +91,7 @@ export function phen1({
   const mainDiv = d3.select(`${selector}`)
     .append('div')
     .attr('id', elid)
+    .attr('class', 'brc-chart-acum')
     .style('position', 'relative')
     .style('display', 'inline')
 
@@ -105,6 +106,7 @@ export function phen1({
   
   preProcessMetrics()
   makeChart()
+
   // Texts must come after chartbecause 
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width"))
@@ -112,32 +114,6 @@ export function phen1({
   gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
   gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
   gen.positionMainElements(svg, expand)
-
-  function makeChart () {
-    if (!taxa.length) {
-      taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
-    }
-
-    const subChartPad = 10
-    const svgsTaxa = taxa.map(t => makePhen(t))
-
-    const subChartWidth = Number(svgsTaxa[0].attr("width"))
-    const subChartHeight = Number(svgsTaxa[0].attr("height"))
-
-    const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad
-
-    svgsTaxa.forEach((svgTaxon, i) => {
-      
-      const col = i%perRow
-      const row = Math.floor(i/perRow)
-
-      svgTaxon.attr("x", col * (subChartWidth + subChartPad))
-      svgTaxon.attr("y", row * (subChartHeight + subChartPad) + legendHeight)
-    })
-
-    svgChart.attr("width", perRow * (subChartWidth + subChartPad))
-    svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
-  }
 
   function preProcessMetrics () {
     // Look for 'fading' colour in taxa and colour appropriately 
@@ -172,49 +148,68 @@ export function phen1({
     })
   }
 
-  function makePhen (taxon) {
+  function makeChart () {
 
-    // Pre-process data.
-    // Filter to named taxon and sort in week order
-    // Add max value to each.
-    const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
+    console.log(metricsPlus)
+
     let lineData = [] 
     metricsPlus.forEach(m => {
 
-      const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
-      const max = Math.max(...dataFiltered.map(d => d[m.prop]))
-      const maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
+      const pointsTaxa = []
+      const pointsCount = []
+      let acumTaxa = []
+      let acumCount = 0
+
+      for (let week = 1; week <= 53; week++) {
+        // Taxa for this week and property (normally a year)
+        // Must have at least one non-zero) count to contribute to taxa count
+        const weekStats = data.filter(d => d.week === week).reduce((a, d) => {
+          a.total = a.total + d[m.prop]
+          if (!a.taxa.includes(d.taxon) && d[m.prop]) {
+            a.taxa.push(d.taxon)
+          }
+          return(a)
+        }, {total: 0, taxa: []})
+
+        acumTaxa = [...new Set([...acumTaxa, ...weekStats.taxa])]
+        acumCount = acumCount + weekStats.total
+        pointsTaxa.push({
+          num: weekStats.taxa.length,
+          acum: acumTaxa.length,
+          week: week
+        })
+        pointsCount.push({
+          num: weekStats.total,
+          acum: acumCount,
+          week: week
+        })
+      }
 
       lineData.push({
-        id: gen.safeId(m.label),
+        id: `${gen.safeId(m.label)}-taxa`,
+        type: 'taxa',
         colour: m.colour,
         strokeWidth: m.strokeWidth,
-        max: max,
-        maxProportion: maxProportion,
-        total: total,
-        points: dataFiltered.map(d => {
-          return {
-            n: d[m.prop],
-            week: d.week
-          }
-        })
+        max: Math.max(...pointsTaxa.map(p => p.acum)),
+        points: pointsTaxa
+      })
+
+      lineData.push({
+        id: `${gen.safeId(m.label)}-count`,
+        type: 'count',
+        colour: m.colour,
+        strokeWidth: m.strokeWidth,
+        max: Math.max(...pointsCount.map(p => p.acum)),
+        points: pointsCount
       })
     })
 
-    // Set the maximum value for the y axis
-    let yMax
-    if (ytype === 'normalized') {
-      yMax = 1
-    } else if (ytype === 'proportion') {
-      yMax = Math.max(...lineData.map(d => d.maxProportion))
-    } else {
-      yMax = Math.max(...lineData.map(d => d.max))
-      if (yMax < 5) yMax = 5
-    }
-
+    console.log(lineData)
+     
     // Value scales
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
-    const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
+    const yScaleCount = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='count').map(l => l.max))]).range([height, 0])
+    const yScaleTaxa = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='taxa').map(l => l.max))]).range([height, 0])
 
     // Top axis
     let tAxis
@@ -255,64 +250,69 @@ export function phen1({
       }
     }
 
-    // Right axis
-    let rAxis
-    if (axisRight === 'on') {
-      rAxis = d3.axisRight()
-        .scale(yScale)
-        .tickValues([])
-        .tickSizeOuter(0)
+    // Y count (right) axis
+    let yAxisCount
+    if (axisRight === 'on' || axisRight === 'tick') {
+      yAxisCount = d3.axisRight()
+        .scale(yScaleCount)
+        .ticks(5)
+      if (axisRight !== 'tick') {
+        yAxisCount.tickValues([]).tickSizeOuter(0)
+      } else if (ytype === 'count') {
+        yAxisCount.tickFormat(d3.format("d"))
+      }
     }
 
-    // Y (left) axis
-    let yAxis
+    // Y taxa (left) axis
+    let yAxisTaxa
     if (axisLeft === 'on' || axisLeft === 'tick') {
-      yAxis = d3.axisLeft()
-        .scale(yScale)
+      yAxisTaxa = d3.axisLeft()
+        .scale(yScaleTaxa)
         .ticks(5)
       if (axisLeft !== 'tick') {
-        yAxis.tickValues([]).tickSizeOuter(0)
+        yAxisTaxa.tickValues([]).tickSizeOuter(0)
       } else if (ytype === 'count') {
-        yAxis.tickFormat(d3.format("d"))
+        yAxisTaxa.tickFormat(d3.format("d"))
       }
     }
     
-    // Line path generator
-    const line = d3.line()
+    // Line path generators
+    const lineTaxa = d3.line()
       .curve(d3.curveMonotoneX)
       .x(d => xScale(d.week))
-      .y(d => yScale(d.n))
+      .y(d => yScaleTaxa(d.acum))
+
+    const lineCount = d3.line()
+      .curve(d3.curveMonotoneX)
+      .x(d => xScale(d.week))
+      .y(d => yScaleCount(d.acum))
 
     // Create or get the relevant chart svg
-    let init, svgPhen1, gPhen1
-    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen1').size() === 1) {
-      svgPhen1 = svgChart.select('.brc-chart-phen1')
-      gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
-      init = false
-    } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-      svgPhen1 = svgChart.select(`#${gen.safeId(taxon)}`)
-      gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
+    let init, svgAcum, gAcum
+    if (svgChart.select('.brc-chart-acum').size()) {
+      svgAcum = svgChart.select('.brc-chart-acum')
+      gAcum = svgAcum.select('.brc-chart-acum-g')
       init = false
     } else {
-      svgPhen1 = svgChart.append('svg')
-        .classed('brc-chart-phen1', true)
-        .attr('id', gen.safeId(taxon))
-      gPhen1 = svgPhen1.append('g')
-        .classed('brc-chart-phen1-g', true)
+      svgAcum = svgChart.append('svg')
+        .classed('brc-chart-acum', true)
+      gAcum = svgAcum.append('g')
+        .classed('brc-chart-acum-g', true)
       init = true
     }
     
     // Create/update the line paths with D3
-    const mlines = gPhen1.selectAll("path")
+    const mlines = gAcum.selectAll("path")
       .data(lineData,  d => d.id)
+      .attr("class", d => `phen-path-${d.id} acum-path`)
 
     const eLines = mlines.enter()
       .append("path")
-      .attr("class", d => `phen-path-${d.id} phen-path`)
       .attr("d", d => {
-        return line(d.points.map(p => {
+        const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
+        return lineGen(d.points.map(p => {
           return {
-            n: 0,
+            acum: 0,
             week: p.week
           }
         }))
@@ -324,23 +324,8 @@ export function phen1({
       .transition()
       .duration(duration)
       .attr("d", d => {
-        if (ytype === 'normalized') {
-          return line(d.points.map(p => {
-            return {
-              n: d.max ? p.n/d.max : 0,
-              week: p.week
-            }
-          }))
-        } else if (ytype === 'proportion') {
-          return line(d.points.map(p => {
-            return {
-              n: p.n/d.total,
-              week: p.week
-            }
-          }))
-        } else {
-          return line(d.points)
-        }
+        const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
+        return lineGen(d.points)
       })
       .attr("stroke", d => d.colour)
       .attr("stroke-width", d => d.strokeWidth)
@@ -349,9 +334,10 @@ export function phen1({
       .transition()
       .duration(duration)
       .attr("d", d => {
-        return line(d.points.map(p => {
+        const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
+        return lineGen(d.points.map(p => {
           return {
-            n: 0,
+            acum: 0,
             week: p.week
           }
         }))
@@ -360,43 +346,35 @@ export function phen1({
 
     if (init) {
       // Constants for positioning
-      const axisPadX = axisLeft === 'tick' ? 35 : 0
+      const axisLeftPadX = axisLeft === 'tick' ? 35 : 0
+      const axisRightPadX = axisRight === 'tick' ? 45 : 0
       const axisPadY = axisBottom === 'tick' ? 15 : 0
-      let labelPadY 
+      let labelPadY = 5
 
-      // Taxon title
-      if (showTaxonLabel) {
-        const taxonLabel = svgPhen1
-          .append('text')
-          .classed('brc-chart-phen1-label', true)
-          .text(taxon)
-          .style('font-size', taxonLabelFontSize)
-          .style('font-style', taxonLabelItalics ? 'italic' : '')
-
-        const labelHeight = taxonLabel.node().getBBox().height
-        taxonLabel.attr("transform", `translate(${axisPadX}, ${labelHeight})`)
-        labelPadY = labelHeight * 1.5
-      } else {
-        labelPadY = 0
-      }
-      
       // Size SVG
-      svgPhen1
-        .attr('width', width + axisPadX + 1)
+      svgAcum
+        .attr('width', width + axisLeftPadX + axisRightPadX + 1)
         .attr('height', height + axisPadY + labelPadY + 1)
 
 
       // Position chart
-      gPhen1.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      gAcum.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
       
       // Create axes and position within SVG
-      if (yAxis) {
-        const gYaxis = svgPhen1.append("g")
-          .attr("class", "y-axis")
-        gYaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      if (yAxisTaxa) {
+        const gYaxisTaxa = svgAcum.append("g")
+          .attr("class", "y-axis-taxa")
+        gYaxisTaxa.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
       }
+
+      if (yAxisCount) {
+        const gYaxisCount = svgAcum.append("g")
+          .attr("class", "y-axis-count")
+        gYaxisCount.attr("transform", `translate(${axisLeftPadX + width},${labelPadY})`)
+      }
+
       if (xAxis) {
-        const gXaxis = svgPhen1.append("g")
+        const gXaxis = svgAcum.append("g")
           .attr("class", "x axis")
           .call(xAxis)
 
@@ -405,31 +383,33 @@ export function phen1({
           .attr("x", 6)
           .attr("y", 6)
 
-        gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+        gXaxis.attr("transform", `translate(${axisLeftPadX},${height + labelPadY})`)
       }
       if (tAxis) {
-        const gTaxis = svgPhen1.append("g")
+        const gTaxis = svgAcum.append("g")
           .call(tAxis)
-        gTaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
-      }
-      if (rAxis) {
-        const gRaxis = svgPhen1.append("g")
-          .call(rAxis)
-        gRaxis.attr("transform", `translate(${axisPadX + width},${labelPadY})`)
-      }
-    } else if (taxa.length === 1) {
-      // Update taxon label
-      if (showTaxonLabel) {
-        svgPhen1.select('.brc-chart-phen1-label').text(taxon)
+        gTaxis.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
       }
     }
 
-    svgPhen1.select(".y-axis")
-      .transition()
-      .duration(duration)
-      .call(yAxis)
+    if (yAxisTaxa) {
+      svgAcum.select(".y-axis-taxa")
+        .transition()
+        .duration(duration)
+        .call(yAxisTaxa)
+    }
 
-    return svgPhen1
+    if (yAxisCount) {
+      svgAcum.select(".y-axis-count")
+        .transition()
+        .duration(duration)
+        .call(yAxisCount)
+    }
+
+    svgChart.attr("width", svgAcum.attr('width'))
+    svgChart.attr("height", svgAcum.attr('height'))
+
+    return svgAcum
   }
 
   function makeLegend (legendWidth) {
@@ -560,7 +540,7 @@ export function phen1({
   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -623,7 +603,7 @@ export function phen1({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -637,7 +617,7 @@ export function phen1({
 
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -645,7 +625,7 @@ export function phen1({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -654,10 +634,10 @@ export function phen1({
 
   /**
    * @typedef {Object} api
-   * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:acum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:acum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:acum~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:acum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,

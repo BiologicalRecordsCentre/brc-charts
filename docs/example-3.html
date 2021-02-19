@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library example 3</title>
+  <style>
+    .divfl {
+      float: left;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Using the BRC Charts Library</h1>
+    <h2>Acumulation charts for species richness and number of records</h2>
+    <p>
+      Include the required Javascript libraries and CSS in the page. We need the BRC Charts JS libary, the associated
+      CSS and the D3 library which is an external
+      external dependency of the BRC Charts library. In this example they are all included from CDNs.
+    </p>
+<pre>
+<code class="html">&lt;script src=&quot;https://d3js.org/d3.v5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
+</pre>
+    <p>
+      First we create a div element which will contain the chart.
+    </p>
+<pre>
+<code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
+</pre>
+
+    <p>
+      In the page's Javascript we call the <em>brccharts.acum</em> method, passing in the configuration options
+      which include the data we want to display.
+    </p>
+
+<pre>
+<code class="javascript">brccharts.acum({...})</code>
+</pre>
+
+    <div id="chart1" style="margin-top: 1em"></div>
+
+    <!--JS and CSS required for highlighting inline example code-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--Page CSS-->
+    <link rel="stylesheet" href="example.css" />
+
+    <!--D3 JS required exernal dependency of BRC Atlas library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS-->
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
+
+    <script>
+      d3.csv('./data/butterflies-16-20.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+        }
+        return d
+      }).then(function(data){
+        var phen = {
+          selector: '#chart1',
+          data: data,
+          metrics: [
+            { prop: '2020', label: '2020', colour: 'red' },
+            { prop: '2019', label: '2019', colour: '#4188A3' },
+            // { prop: '2018', label: '2018', colour: 'fading' },
+            // { prop: '2017', label: '2017', colour: 'fading' },
+            // { prop: '2016', label: '2016', colour: 'fading' },
+          ],
+          width: 400,
+          height: 250,
+          perRow: 2,
+          expand: false
+        }
+        brccharts.acum(phen)
+      })
+    </script>
+  </div>
+</body>
+</html>

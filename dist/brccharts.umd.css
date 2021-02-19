@@ -21,6 +21,31 @@ path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
 .brc-item-image-hide {
   display: none;
 }
+.brc-chart-acum path {
+    fill: none;
+}
+
+.brc-chart-acum path.highlight {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-acum path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-acum {
+    overflow: visible;
+}
+
+.brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-legend-item-rect.highlight {
+    fill:black;
+}
 .brc-chart-phen1 path {
     fill: none;
 }
