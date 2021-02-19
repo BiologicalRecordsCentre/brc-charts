@@ -84,3 +84,30 @@ export function makeText (text, classText, fontSize, textAlign, textWidth, svg) 
 
   return svgText
 }
+
+export function positionMainElements(svg, expand) {
+
+    const space = 10
+    const svgTitle = svg.select('.titleText')
+    const svgSubtitle = svg.select('.subtitleText')
+    const svgChart = svg.select('.mainChart')
+    const svgFooter = svg.select('.footerText')
+
+    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
+    svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space)
+    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space +  Number(svgChart.attr("height")))
+  
+    const height = Number(svgTitle.attr("height")) +
+      Number(svgSubtitle.attr("height")) + 
+      Number(svgChart.attr("height")) + 
+      Number(svgFooter.attr("height")) +
+      2 * space
+
+    if (expand) {
+      svg.attr("viewBox", "0 0 " + Number(svgChart.attr("width")) + " " +  height)
+    } else {
+      svg.attr("width", Number(svgChart.attr("width")))
+      svg.attr("height", height)
+    }
+
+}

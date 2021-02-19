@@ -155,6 +155,24 @@
 
     return svgText;
   }
+  function positionMainElements(svg, expand) {
+    var space = 10;
+    var svgTitle = svg.select('.titleText');
+    var svgSubtitle = svg.select('.subtitleText');
+    var svgChart = svg.select('.mainChart');
+    var svgFooter = svg.select('.footerText');
+    svgSubtitle.attr("y", Number(svgTitle.attr("height")));
+    svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space);
+    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space + Number(svgChart.attr("height")));
+    var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + Number(svgChart.attr("height")) + Number(svgFooter.attr("height")) + 2 * space;
+
+    if (expand) {
+      svg.attr("viewBox", "0 0 " + Number(svgChart.attr("width")) + " " + height);
+    } else {
+      svg.attr("width", Number(svgChart.attr("width")));
+      svg.attr("height", height);
+    }
+  }
 
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
@@ -256,43 +274,38 @@
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
     var svg = chartDiv.append('svg').attr('overflow', 'visible');
+    var svgChart = svg.append('svg').attr('class', 'mainChart');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
         highlightItem(null, false);
       }
     });
-    var svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter;
-    makeLegend(data);
-    makePie(data); // Texts must come after chart and legend because the 
+    makeChart(data);
+    var textWidth = Number(svgChart.attr("width")); // Texts must come after chart and legend because the 
     // width of those is required to do wrap text
 
-    var textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-    svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
-    svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
-    svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionElements();
-    var imgSelected = makeImage();
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand);
 
-    function positionElements() {
-      var width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
-      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
-      svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
+    function makeChart(data) {
+      makePie(data);
+      makeLegend(data);
+      var svgPie = svgChart.select('.brc-chart-pie');
+      var svgLegend = svgChart.select('.brc-chart-legend');
       svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
-      svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap);
-      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
-      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + Number(svgFooter.attr("height"));
-
-      if (expand) {
-        svg.attr("viewBox", "0 0 " + width + " " + height);
-      } else {
-        svg.attr("width", width);
-        svg.attr("height", height);
-      }
+      svgChart.attr("width", Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width")));
+      svgChart.attr("height", Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
     }
 
     function makeLegend(data) {
-      if (!svgLegend) {
-        svgLegend = svg.append('svg').attr('overflow', 'auto');
+      var svgLegend;
+
+      if (svg.select('.brc-chart-legend').size()) {
+        svgLegend = svgChart.select('.brc-chart-legend');
+      } else {
+        svgLegend = svgChart.append('svg').classed('brc-chart-legend', true).attr('overflow', 'auto');
       }
 
       var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data, function (d) {
@@ -394,10 +407,6 @@
         return nd;
       });
       var dataComb = cloneData([].concat(_toConsumableArray(dataNew), _toConsumableArray(dataDeleted2)));
-      console.log('dataDeleted', dataDeleted);
-      console.log('dataDeleted2', dataDeleted2);
-      console.log('dataInserted', dataInserted);
-      console.log('dataComb', dataComb);
       var arcsPrev = d3.pie().value(function (d) {
         return d.number;
       }).sortValues(fnSort)(dataPrev);
@@ -427,7 +436,6 @@
       }); // Now data processing complete, reset dataPrev variable
 
       dataPrev = data;
-      console.log('arcsComb', arcsComb);
       var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius);
       var arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
       // and here https://bl.ocks.org/mbostock/1346410
@@ -558,17 +566,17 @@
         return function (t) {
           return "translate(".concat(arcGeneratorLables.centroid(i(t)), ")");
         };
-      } //let svgPie, gPie
+      }
 
-
-      var gPie;
+      var svgPie, gPie;
 
       if (svg.select('.brc-chart-pie').size()) {
-        svgPie = svg.select('.brc-chart-pie');
+        svgPie = svgChart.select('.brc-chart-pie');
         gPie = svgPie.select('g');
       } else {
-        svgPie = svg.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
+        svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
         gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
+        gPie.append('image').classed('brc-item-image', true).classed('brc-item-image-hide', true).attr('width', imageWidth);
       } // map to data
 
 
@@ -646,12 +654,6 @@
       }
     }
 
-    function makeImage() {
-      var img = svg.append('image').classed('brc-item-image-hide', true) //.attr('xlink:href', 'images/Bumblebees.png')
-      .attr('width', imageWidth);
-      return img;
-    }
-
     function addEventHandlers(sel, isArc) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
@@ -671,6 +673,7 @@
 
     function highlightItem(name, show) {
       var i = safeId(name);
+      var imgSelected = svg.select('.brc-item-image');
 
       if (show) {
         svg.selectAll('path').classed('brc-lowlight', true);
@@ -720,11 +723,12 @@
     }
 
     function loadImage(d) {
+      var imgSelected = svg.select('.brc-item-image');
       imgSelected.attr('xlink:href', d.image);
       imgSelected.attr('width', d.imageWidth);
       imgSelected.attr('height', d.imageHeight);
-      imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2);
-      imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2);
+      imgSelected.attr("x", -d.imageWidth / 2);
+      imgSelected.attr("y", -d.imageHeight / 2);
     }
 
     function colourData(data) {
@@ -800,19 +804,19 @@
           footerAlign = opts.footerAlign;
         }
 
-        var _textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"));
+        var _textWidth = Number(svgChart.attr("width"));
 
-        svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, _textWidth, svg);
-        svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, _textWidth, svg);
-        svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, _textWidth, svg);
+        makeText(title, 'titleText', titleFontSize, titleAlign, _textWidth, svg);
+        makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, _textWidth, svg);
+        makeText(footer, 'footerText', footerFontSize, footerAlign, _textWidth, svg);
 
         if ('data' in opts) {
           colourData(opts.data);
-          makePie(opts.data);
-          makeLegend(opts.data);
-        }
+          makeChart(opts.data);
+        } //positionElements()
 
-        positionElements();
+
+        positionMainElements(svg, expand);
       } else {
         console.log('Transition in progress');
       }
@@ -970,16 +974,15 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
-    var svgTitle, svgSubtitle, svgFooter;
     preProcessMetrics();
     makeChart(); // Texts must come after chartbecause 
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width"));
-    svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
-    svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
-    svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionElements();
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand);
 
     function makeChart() {
       if (!taxa.length) {
@@ -1035,22 +1038,6 @@
           m.colour = grey(m.fading);
         }
       });
-    }
-
-    function positionElements() {
-      var space = 10;
-      var width = Number(svgChart.attr("width"));
-      svgSubtitle.attr("y", Number(svgTitle.attr("height")));
-      svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space);
-      svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space + Number(svgChart.attr("height")));
-      var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + Number(svgChart.attr("height")) + Number(svgFooter.attr("height")) + 2 * space;
-
-      if (expand) {
-        svg.attr("viewBox", "0 0 " + width + " " + height);
-      } else {
-        svg.attr("width", width);
-        svg.attr("height", height);
-      }
     }
 
     function makePhen(taxon) {
@@ -1435,9 +1422,9 @@
       }
 
       var textWidth = Number(svg.select('.mainChart').attr("width"));
-      svgTitle = makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
-      svgSubtitle = makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
-      svgFooter = makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       var remakeChart = false;
 
       if ('data' in opts) {
@@ -1457,7 +1444,7 @@
       }
 
       if (remakeChart) makeChart();
-      positionElements();
+      positionMainElements(svg, expand);
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.

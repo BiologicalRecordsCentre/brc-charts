@@ -90,6 +90,7 @@ export function pie({
     .append('div')
 
   const svg = chartDiv.append('svg').attr('overflow', 'visible')
+  const svgChart = svg.append('svg').attr('class', 'mainChart')
 
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
@@ -97,50 +98,35 @@ export function pie({
     }
   })
 
-  let svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter
-  makeLegend(data)
-  makePie(data) 
+  makeChart(data)
+  const textWidth = Number(svgChart.attr("width"))
   // Texts must come after chart and legend because the 
   // width of those is required to do wrap text
-  const textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-  svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-  svgSubtitle =  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-  svgFooter =  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  gen.positionMainElements(svg, expand)
 
-  positionElements()
-
-  const imgSelected = makeImage()
-
-  function positionElements() {
-
-    const width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-
-    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
-    svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
+  function makeChart(data) {
+    makePie (data)
+    makeLegend (data)
+    const svgPie = svgChart.select('.brc-chart-pie')
+    const svgLegend = svgChart.select('.brc-chart-legend')
     svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
-    svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
-    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))))
-    
-    const height = Number(svgTitle.attr("height")) + 
-      Number(svgSubtitle.attr("height")) + 
-      legendSwatchGap + 
-      Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + 
-      Number(svgFooter.attr("height"))
-
-    if (expand) {
-      svg.attr("viewBox", "0 0 " + width + " " +  height)
-    } else {
-      svg.attr("width", width)
-      svg.attr("height", height)
-    }
+    svgChart.attr("width", Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width")))
+    svgChart.attr("height", Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))))
   }
 
   function makeLegend (data) {
 
-    if (!svgLegend) {
-      svgLegend = svg.append('svg').attr('overflow', 'auto')
+    let svgLegend
+    if (svg.select('.brc-chart-legend').size()) {
+      svgLegend = svgChart.select('.brc-chart-legend')
+    } else {
+      svgLegend = svgChart.append('svg').classed('brc-chart-legend', true)
+        .attr('overflow', 'auto')
     }
-  
+
     const uLegendSwatch = svgLegend.selectAll('.legendSwatch')
       .data(data, d => d.name)
 
@@ -263,11 +249,6 @@ export function pie({
     })
     const dataComb = gen.cloneData([...dataNew, ...dataDeleted2])
 
-    console.log('dataDeleted', dataDeleted)
-    console.log('dataDeleted2', dataDeleted2)
-    console.log('dataInserted', dataInserted)
-    console.log('dataComb', dataComb)
-
     const arcsPrev = d3.pie().value(d => d.number).sortValues(fnSort)(dataPrev)
     const arcsComb = d3.pie().value(d => d.number).sortValues(fnSort)(dataComb) 
     
@@ -286,8 +267,6 @@ export function pie({
 
     // Now data processing complete, reset dataPrev variable
     dataPrev = data
-
-    console.log('arcsComb', arcsComb)
 
     const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius)
     const arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius)
@@ -419,17 +398,21 @@ export function pie({
       }
     }
 
-    //let svgPie, gPie
-    let gPie
+    let svgPie, gPie
     if (svg.select('.brc-chart-pie').size()) {
-      svgPie = svg.select('.brc-chart-pie')
+      svgPie = svgChart.select('.brc-chart-pie')
       gPie = svgPie.select('g')
     } else {
-      svgPie = svg.append('svg').classed('brc-chart-pie', true)
+      svgPie = svgChart.append('svg').classed('brc-chart-pie', true)
         .attr('width', 2 * radius)
         .attr('height', 2 * radius)
       gPie = svgPie.append('g')
         .attr('transform', `translate(${radius} ${radius})`)
+
+      gPie.append('image')
+        .classed('brc-item-image', true)
+        .classed('brc-item-image-hide', true)
+        .attr('width', imageWidth)
     }
 
     // map to data
@@ -531,14 +514,6 @@ export function pie({
     }
   }
 
-  function makeImage() {
-    const img = svg.append('image')
-      .classed('brc-item-image-hide', true)
-      //.attr('xlink:href', 'images/Bumblebees.png')
-      .attr('width', imageWidth)
-    return img
-  }
-
   function addEventHandlers(sel, isArc) {
     sel
       .on("mouseover", function(d) {
@@ -561,6 +536,9 @@ export function pie({
 
   function highlightItem (name, show) {
     const i = gen.safeId(name)
+
+    const imgSelected = svg.select('.brc-item-image')
+
     if (show) {
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
@@ -604,11 +582,12 @@ export function pie({
   }
 
   function loadImage(d) {
+    const imgSelected = svg.select('.brc-item-image')
     imgSelected.attr('xlink:href', d.image)
     imgSelected.attr('width', d.imageWidth)
     imgSelected.attr('height', d.imageHeight)
-    imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2)
-    imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
+    imgSelected.attr("x", -d.imageWidth / 2)
+    imgSelected.attr("y", -d.imageHeight / 2)
   }
 
   function colourData(data) {
@@ -679,18 +658,18 @@ export function pie({
         footerAlign = opts.footerAlign
       }
 
-      const textWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-      svgTitle =  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-      svgSubtitle =  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-      svgFooter =  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+      const textWidth = Number(svgChart.attr("width"))
+      gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+      gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+      gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
       if ('data' in opts) {
         colourData(opts.data)
-        makePie(opts.data)
-        makeLegend(opts.data)
+        makeChart(opts.data)
       }
 
-      positionElements()
+      //positionElements()
+      gen.positionMainElements(svg, expand)
     } else {
       console.log('Transition in progress')
     }

@@ -95,7 +95,6 @@ export function phen1({
     .style('position', 'relative')
     .style('display', 'inline')
 
-
   const svg = mainDiv.append('svg')
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
@@ -104,19 +103,16 @@ export function phen1({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart')
-
-  let svgTitle, svgSubtitle, svgFooter
   
   preProcessMetrics()
   makeChart()
   // Texts must come after chartbecause 
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width"))
-  svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-  svgSubtitle = gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-  svgFooter = gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  
-  positionElements()
+  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  gen.positionMainElements(svg, expand)
 
   function makeChart () {
     if (!taxa.length) {
@@ -175,29 +171,6 @@ export function phen1({
         m.colour = grey(m.fading)
       }
     })
-  }
-
-  function positionElements() {
-
-    const space = 10
-    const width = Number(svgChart.attr("width"))
-
-    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
-    svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space)
-    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space +  Number(svgChart.attr("height")))
-  
-    const height = Number(svgTitle.attr("height")) +
-      Number(svgSubtitle.attr("height")) + 
-      Number(svgChart.attr("height")) + 
-      Number(svgFooter.attr("height")) +
-      2 * space
-
-    if (expand) {
-      svg.attr("viewBox", "0 0 " + width + " " +  height)
-    } else {
-      svg.attr("width", width)
-      svg.attr("height", height)
-    }
   }
 
   function makePhen (taxon) {
@@ -623,9 +596,9 @@ export function phen1({
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
-    svgTitle = gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-    svgSubtitle = gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-    svgFooter = gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
 
@@ -646,7 +619,7 @@ export function phen1({
     }
 
     if (remakeChart) makeChart()
-    positionElements()
+    gen.positionMainElements(svg, expand)
   }
 
 /** @function setTaxon
