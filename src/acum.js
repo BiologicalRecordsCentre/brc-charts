@@ -304,10 +304,11 @@ export function acum({
     // Create/update the line paths with D3
     const mlines = gAcum.selectAll("path")
       .data(lineData,  d => d.id)
-      .attr("class", d => `phen-path-${d.id} acum-path`)
-
+      
     const eLines = mlines.enter()
       .append("path")
+      .attr("class", d => `phen-path-${d.id} acum-path`)
+      .attr("stroke-dasharray", d => d.type === 'taxa' ? '5,5' : '')
       .attr("d", d => {
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {

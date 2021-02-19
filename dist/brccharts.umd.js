@@ -1816,10 +1816,12 @@
 
       var mlines = gAcum.selectAll("path").data(lineData, function (d) {
         return d.id;
-      }).attr("class", function (d) {
-        return "phen-path-".concat(d.id, " acum-path");
       });
-      var eLines = mlines.enter().append("path").attr("d", function (d) {
+      var eLines = mlines.enter().append("path").attr("class", function (d) {
+        return "phen-path-".concat(d.id, " acum-path");
+      }).attr("stroke-dasharray", function (d) {
+        return d.type === 'taxa' ? '5,5' : '';
+      }).attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
           return {
