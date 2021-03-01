@@ -1,10 +1,39 @@
- 
+import * as d3 from 'd3'
+
 export function safeId(text) {
   return text ? text.replace(/\W/g,'_') : null
 }
 
 export function cloneData(data) {
   return data.map(d => { return {...d}})
+}
+
+export function xAxisMonth(width, ticks) {
+  const xScaleTime = d3.scaleTime()
+    .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
+    .range([0, width])
+  
+  const xAxis = d3.axisBottom()
+    .scale(xScaleTime)
+
+  if (ticks) {
+    xAxis.ticks(d3.timeMonth)
+      .tickSize(width >= 200 ? 13 : 5, 0)
+      .tickFormat(date => {
+        if (width >= 750) {
+          return d3.timeFormat('%B')(date)
+        } else if (width >= 330) {
+          return d3.timeFormat('%b')(date)
+        } else if (width >= 200) {
+          return date.toLocaleString('default', { month: 'short' }).substr(0,1)
+        } else {
+          return ''
+        }
+      })
+  } else {
+    xAxis.tickValues([]).tickSizeOuter(0)
+  }
+  return xAxis
 }
 
 export function wrapText(text, svg, maxWidth, fontSize) {

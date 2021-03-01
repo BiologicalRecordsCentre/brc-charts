@@ -1,4 +1,4 @@
-/** @module acum */
+/** @module accum */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -7,10 +7,13 @@ import * as gen from './general'
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
- * @param {number} opts.width - The width of each sub-chart area in pixels.
- * @param {number} opts.height - The height of the each sub-chart area in pixels.
- * @param {number} opts.perRow - The number of sub-charts per row.
- * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+ * @param {number} opts.width - The width of the main chart area in pixels (excludes margins).
+ * @param {number} opts.height - The height of the main chart area in pixels (excludes margins).
+ * @param {Object} opts.margin - An object indicating the margins to add around the main chart area. 
+ * @param {number} opts.margin.left - Left margin in pixels. 
+ * @param {number} opts.margin.right - Right margin in pixels. 
+ * @param {number} opts.margin.top - Top margin in pixels. 
+ * @param {number} opts.margin.bottom - Bottom margin in pixels. 
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
@@ -21,17 +24,18 @@ import * as gen from './general'
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
- * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
- * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
- * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
- * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+ * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
+ * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
+ * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
+ * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels.
+ * @param {string} opts.show - Indicates whether to show accumulation curves for taxa, counts or both. Permitted values: 'taxa', 'counts' or 'both'.
+ * @param {boolean} opts.swapYaxes - The default display is number of taxa on left axis and counts on right. Set this to true to swap that.
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
  * data for which a line should be generated on the chart.
@@ -50,16 +54,16 @@ import * as gen from './general'
  * <li> <b>c2</b> - a count for a given time period (can have any name).
  * ... - there can be any number of these count columns.
  * </ul>
- * @returns {module:acum~api} api - Returns an API for the chart.
+ * @returns {module:accum~api} api - Returns an API for the chart.
  */
 
-export function acum({
+export function accum({
   // Default options in here
   selector = 'body',
   elid = 'phen1-chart',
   width = 300,
   height = 200,
-  perRow = 2,
+  margin = {left: 0, right: 0, top: 0, bottom: 0},
   ytype = 'count',
   expand = false,
   title = '',
@@ -72,13 +76,15 @@ export function acum({
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
-  showTaxonLabel = true,
-  taxonLabelFontSize = 16,
-  taxonLabelItalics = false,
   axisLeft = 'tick',
   axisBottom = 'tick',
   axisRight = 'tick',
   axisTop = '',
+  axisTaxaLabel = '',
+  axisCountLabel = '',
+  axisLabelFontSize = 10,
+  show = 'both',
+  swapYaxes = false,
   duration = 1000,
   interactivity = 'mousemove',
   data = [],
@@ -87,11 +93,11 @@ export function acum({
 } = {}) {
 
   let metricsPlus
-
+  
   const mainDiv = d3.select(`${selector}`)
     .append('div')
     .attr('id', elid)
-    .attr('class', 'brc-chart-acum')
+    .attr('class', 'brc-chart-accum')
     .style('position', 'relative')
     .style('display', 'inline')
 
@@ -103,11 +109,11 @@ export function acum({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart')
-  
+
   preProcessMetrics()
   makeChart()
 
-  // Texts must come after chartbecause 
+  // Texts must come after chart because 
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width"))
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -130,8 +136,12 @@ export function acum({
       }
       return {
         prop: m.prop,
-        label: m.label,
-        colour: m.colour,
+        labelTaxa: m.labelTaxa,
+        labelCounts: m.labelCounts,
+        colourTaxa: m.colourTaxa,
+        colourCounts: m.colourCounts,
+        styleTaxa: m.styleTaxa,
+        styleCounts: m.styleCounts,
         fading: iFade,
         strokeWidth: strokeWidth
       }
@@ -150,15 +160,16 @@ export function acum({
 
   function makeChart () {
 
-    console.log(metricsPlus)
-
+    const showTaxa = (show === 'taxa' || show === 'both')
+    const showCounts = (show === 'counts' || show === 'both') 
     let lineData = [] 
+
     metricsPlus.forEach(m => {
 
       const pointsTaxa = []
       const pointsCount = []
-      let acumTaxa = []
-      let acumCount = 0
+      let accumTaxa = []
+      let accumCount = 0
 
       for (let week = 1; week <= 53; week++) {
         // Taxa for this week and property (normally a year)
@@ -171,45 +182,59 @@ export function acum({
           return(a)
         }, {total: 0, taxa: []})
 
-        acumTaxa = [...new Set([...acumTaxa, ...weekStats.taxa])]
-        acumCount = acumCount + weekStats.total
+        accumTaxa = [...new Set([...accumTaxa, ...weekStats.taxa])]
+        accumCount = accumCount + weekStats.total
         pointsTaxa.push({
           num: weekStats.taxa.length,
-          acum: acumTaxa.length,
+          accum: accumTaxa.length,
           week: week
         })
         pointsCount.push({
           num: weekStats.total,
-          acum: acumCount,
+          accum: accumCount,
           week: week
         })
       }
 
-      lineData.push({
-        id: `${gen.safeId(m.label)}-taxa`,
-        type: 'taxa',
-        colour: m.colour,
-        strokeWidth: m.strokeWidth,
-        max: Math.max(...pointsTaxa.map(p => p.acum)),
-        points: pointsTaxa
-      })
+      if (showTaxa) {
+        lineData.push({
+          id: `${gen.safeId(m.labelTaxa)}`,
+          type: 'taxa',
+          label: m.labelTaxa,
+          colour: m.colourTaxa,
+          style: m.styleTaxa,
+          strokeWidth: m.strokeWidth,
+          max: Math.max(...pointsTaxa.map(p => p.accum)),
+          points: pointsTaxa
+        })
+      }
 
-      lineData.push({
-        id: `${gen.safeId(m.label)}-count`,
-        type: 'count',
-        colour: m.colour,
-        strokeWidth: m.strokeWidth,
-        max: Math.max(...pointsCount.map(p => p.acum)),
-        points: pointsCount
-      })
+      if (showCounts){
+        lineData.push({
+          id: `${gen.safeId(m.labelCounts)}`,
+          type: 'count',
+          label: m.labelCounts,
+          colour: m.colourCounts,
+          style: m.styleCounts,
+          strokeWidth: m.strokeWidth,
+          max: Math.max(...pointsCount.map(p => p.accum)),
+          points: pointsCount
+        })
+      }
     })
 
-    console.log(lineData)
-     
+    // Do the legend
+    const legendHeight = makeLegend(lineData)
+
     // Value scales
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
-    const yScaleCount = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='count').map(l => l.max))]).range([height, 0])
-    const yScaleTaxa = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='taxa').map(l => l.max))]).range([height, 0])
+    let yScaleCount, yScaleTaxa
+    if (showCounts) {
+      yScaleCount = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='count').map(l => l.max))]).range([height, 0])
+    }
+    if (showTaxa) {
+      yScaleTaxa = d3.scaleLinear().domain([0, Math.max(...lineData.filter(l => l.type ==='taxa').map(l => l.max))]).range([height, 0])
+    }
 
     // Top axis
     let tAxis
@@ -220,100 +245,97 @@ export function acum({
         .tickSizeOuter(0)
     }
 
-    // X (bottom) axis
+    // Bottom axis
     let xAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      // xScaleTime is only used to create the x axis
-      const xScaleTime = d3.scaleTime()
-        .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
-        .range([0, width])
-      
-      xAxis = d3.axisBottom()
-        .scale(xScaleTime)
-
-      if (axisBottom === 'tick') {
-        xAxis.ticks(d3.timeMonth)
-          .tickSize(width >= 200 ? 13 : 5, 0)
-          .tickFormat(date => {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date)
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date)
-            } else if (width >= 200) {
-              return date.toLocaleString('default', { month: 'short' }).substr(0,1)
-            } else {
-              return ''
-            }
-          })
-      } else {
-        xAxis.tickValues([]).tickSizeOuter(0)
-      }
+      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
     }
 
-    // Y count (right) axis
-    let yAxisCount
-    if (axisRight === 'on' || axisRight === 'tick') {
-      yAxisCount = d3.axisRight()
-        .scale(yScaleCount)
-        .ticks(5)
-      if (axisRight !== 'tick') {
-        yAxisCount.tickValues([]).tickSizeOuter(0)
-      } else if (ytype === 'count') {
-        yAxisCount.tickFormat(d3.format("d"))
-      }
-    }
-
-    // Y taxa (left) axis
-    let yAxisTaxa
+    const yScaleRight = swapYaxes ? yScaleTaxa : yScaleCount
+    const yScaleLeft = swapYaxes ?  yScaleCount : yScaleTaxa
+    
+    // Left axis
+    let yAxisLeft
     if (axisLeft === 'on' || axisLeft === 'tick') {
-      yAxisTaxa = d3.axisLeft()
-        .scale(yScaleTaxa)
-        .ticks(5)
-      if (axisLeft !== 'tick') {
-        yAxisTaxa.tickValues([]).tickSizeOuter(0)
-      } else if (ytype === 'count') {
-        yAxisTaxa.tickFormat(d3.format("d"))
+      if (yScaleLeft) {
+        yAxisLeft = d3.axisLeft()
+          .scale(yScaleLeft)
+          .ticks(5)
+        if (axisLeft !== 'tick') {
+          yAxisLeft.tickValues([]).tickSizeOuter(0)
+        } else if (ytype === 'count') {
+          yAxisLeft.tickFormat(d3.format("d"))
+        }
+      } else {
+        yAxisLeft = d3.axisLeft()
+          .scale(d3.scaleLinear().range([height, 0]))
+          .tickValues([])
+          .tickSizeOuter(0)
+      }
+    }
+    // Right axis
+    let yAxisRight
+    if (axisRight === 'on' || axisRight === 'tick') {
+      if (yScaleRight) {
+        yAxisRight = d3.axisRight()
+          .scale(yScaleRight)
+          .ticks(5)
+        if (axisRight !== 'tick') {
+          yAxisRight.tickValues([]).tickSizeOuter(0)
+        } else if (ytype === 'count') {
+          yAxisRight.tickFormat(d3.format("d"))
+        }
+      } else {
+        yAxisRight = d3.axisRight()
+          .scale(d3.scaleLinear().range([height, 0]))
+          .tickValues([])
+          .tickSizeOuter(0)
       }
     }
     
     // Line path generators
-    const lineTaxa = d3.line()
-      .curve(d3.curveMonotoneX)
-      .x(d => xScale(d.week))
-      .y(d => yScaleTaxa(d.acum))
+    let lineTaxa
+    if (showTaxa) {
+      lineTaxa = d3.line()
+        .curve(d3.curveMonotoneX)
+        .x(d => xScale(d.week))
+        .y(d => yScaleTaxa(d.accum))
+    }
 
-    const lineCount = d3.line()
-      .curve(d3.curveMonotoneX)
-      .x(d => xScale(d.week))
-      .y(d => yScaleCount(d.acum))
+    let lineCount
+    if (showCounts) {
+      lineCount = d3.line()
+        .curve(d3.curveMonotoneX)
+        .x(d => xScale(d.week))
+        .y(d => yScaleCount(d.accum))
+    }
 
     // Create or get the relevant chart svg
-    let init, svgAcum, gAcum
-    if (svgChart.select('.brc-chart-acum').size()) {
-      svgAcum = svgChart.select('.brc-chart-acum')
-      gAcum = svgAcum.select('.brc-chart-acum-g')
+    let init, svgAccum, gAccum
+    if (svgChart.select('.brc-chart-accum').size()) {
+      svgAccum = svgChart.select('.brc-chart-accum')
+      gAccum = svgAccum.select('.brc-chart-accum-g')
       init = false
     } else {
-      svgAcum = svgChart.append('svg')
-        .classed('brc-chart-acum', true)
-      gAcum = svgAcum.append('g')
-        .classed('brc-chart-acum-g', true)
+      svgAccum = svgChart.append('svg')
+        .classed('brc-chart-accum', true)
+      gAccum = svgAccum.append('g')
+        .classed('brc-chart-accum-g', true)
       init = true
     }
     
     // Create/update the line paths with D3
-    const mlines = gAcum.selectAll("path")
+    const mlines = gAccum.selectAll("path")
       .data(lineData,  d => d.id)
       
     const eLines = mlines.enter()
       .append("path")
-      .attr("class", d => `phen-path-${d.id} acum-path`)
-      .attr("stroke-dasharray", d => d.type === 'taxa' ? '5,5' : '')
+      .attr("class", d => `phen-path-${d.id}-accum-path`)
       .attr("d", d => {
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {
           return {
-            acum: 0,
+            accum: 0,
             week: p.week
           }
         }))
@@ -329,6 +351,7 @@ export function acum({
         return lineGen(d.points)
       })
       .attr("stroke", d => d.colour)
+      .attr("stroke-dasharray", d => d.style === 'dashed' ? '5,5' : '')
       .attr("stroke-width", d => d.strokeWidth)
 
     mlines.exit()
@@ -338,7 +361,7 @@ export function acum({
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {
           return {
-            acum: 0,
+            accum: 0,
             week: p.week
           }
         }))
@@ -346,36 +369,57 @@ export function acum({
       .remove()
 
     if (init) {
-      // Constants for positioning
-      const axisLeftPadX = axisLeft === 'tick' ? 35 : 0
-      const axisRightPadX = axisRight === 'tick' ? 45 : 0
-      const axisPadY = axisBottom === 'tick' ? 15 : 0
-      let labelPadY = 5
+      const axisLeftPadX = margin.left ? margin.left : 0
+      const axisRightPadX = margin.right ? margin.right : 0
+      const axisBottomPadY = margin.bottom ? margin.bottom : 0
+      const axisTopPadY = margin.top ? margin.top : 0
 
       // Size SVG
-      svgAcum
-        .attr('width', width + axisLeftPadX + axisRightPadX + 1)
-        .attr('height', height + axisPadY + labelPadY + 1)
-
+      svgAccum
+        .attr('width', width + axisLeftPadX + axisRightPadX)
+        .attr('height', height + axisBottomPadY + axisTopPadY + legendHeight)
 
       // Position chart
-      gAcum.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
+      gAccum.attr("transform", `translate(${axisLeftPadX},${legendHeight + axisTopPadY})`)
       
       // Create axes and position within SVG
-      if (yAxisTaxa) {
-        const gYaxisTaxa = svgAcum.append("g")
-          .attr("class", "y-axis-taxa")
-        gYaxisTaxa.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
+      const leftYaxisTrans = `translate(${axisLeftPadX},${legendHeight + axisTopPadY})`
+      const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${legendHeight + axisTopPadY + height/2}) rotate(270)`
+      const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${legendHeight + axisTopPadY})`
+      const rightYaxisLabelTrans = `translate(${axisLeftPadX + width + axisRightPadX - axisLabelFontSize}, ${legendHeight + axisTopPadY + height/2}) rotate(90)`
+
+      if (yAxisLeft) {
+        const gYaxisLeft = svgAccum.append("g")
+          .attr("class", "y-axis-left")
+        gYaxisLeft.attr("transform", leftYaxisTrans)
+
+        if ((!swapYaxes && showTaxa) || (swapYaxes && showCounts )) {
+          const axisLeftLabel = swapYaxes ? axisCountLabel : axisTaxaLabel
+          const tYaxisLeftLabel = svgAccum.append("text")
+            .style("text-anchor", "middle")
+            .style('font-size', axisLabelFontSize)
+            .text(axisLeftLabel) 
+          tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans)
+        }
       }
 
-      if (yAxisCount) {
-        const gYaxisCount = svgAcum.append("g")
-          .attr("class", "y-axis-count")
-        gYaxisCount.attr("transform", `translate(${axisLeftPadX + width},${labelPadY})`)
+      if (yAxisRight) {
+        const gYaxisCount = svgAccum.append("g")
+          .attr("class", "y-axis-right")
+        gYaxisCount.attr("transform", rightYaxisTrans)
+
+        if ((!swapYaxes && showCounts) || (swapYaxes && showTaxa )) {
+          const axisRightLabel = swapYaxes ? axisTaxaLabel : axisCountLabel
+          const tYaxisCountLabel = svgAccum.append("text")
+            .style("text-anchor", "middle")
+            .style('font-size', axisLabelFontSize)
+            .text(axisRightLabel) 
+          tYaxisCountLabel.attr("transform", rightYaxisLabelTrans)
+        }
       }
 
       if (xAxis) {
-        const gXaxis = svgAcum.append("g")
+        const gXaxis = svgAccum.append("g")
           .attr("class", "x axis")
           .call(xAxis)
 
@@ -384,49 +428,51 @@ export function acum({
           .attr("x", 6)
           .attr("y", 6)
 
-        gXaxis.attr("transform", `translate(${axisLeftPadX},${height + labelPadY})`)
+        gXaxis.attr("transform", `translate(${axisLeftPadX},${legendHeight + axisTopPadY + height})`)
       }
       if (tAxis) {
-        const gTaxis = svgAcum.append("g")
+        const gTaxis = svgAccum.append("g")
           .call(tAxis)
-        gTaxis.attr("transform", `translate(${axisLeftPadX},${labelPadY})`)
+        gTaxis.attr("transform", `translate(${axisLeftPadX},${legendHeight + axisTopPadY})`)
       }
     }
 
-    if (yAxisTaxa) {
-      svgAcum.select(".y-axis-taxa")
+    if (yAxisLeft) {
+      svgAccum.select(".y-axis-left")
         .transition()
         .duration(duration)
-        .call(yAxisTaxa)
+        .call(yAxisLeft)
     }
 
-    if (yAxisCount) {
-      svgAcum.select(".y-axis-count")
+    if (yAxisRight) {
+      svgAccum.select(".y-axis-right")
         .transition()
         .duration(duration)
-        .call(yAxisCount)
+        .call(yAxisRight)
     }
 
-    svgChart.attr("width", svgAcum.attr('width'))
-    svgChart.attr("height", svgAcum.attr('height'))
+    svgChart.attr("width", svgAccum.attr('width'))
+    svgChart.attr("height", svgAccum.attr('height'))
 
-    return svgAcum
+    return svgAccum
   }
 
-  function makeLegend (legendWidth) {
-    
+  function makeLegend (lineData) {
+
+    console.log(lineData)
+
+    const legendWidth = width + margin.left + margin.right
     const swatchSize = 20
     const swatchFact = 1.3
 
-    // Loop through all the legend elements and work out their
-    // positions based on swatch size, item lable text size and
-    // legend width.
-    const metricsReversed = gen.cloneData(metricsPlus).reverse()
+    // Loop through all the legend elements and work out their positions
+    // based on swatch size, item label text size and legend width.
+    const metricsReversed = gen.cloneData(lineData).reverse()
 
     let rows = 0
     let lineWidth = -swatchSize
     metricsReversed.forEach(m => {
-      const tmpText = svgChart.append('text') //.style('display', 'none')
+      const tmpText = svgChart.append('text')
         .text(m.label)
         .style('font-size', legendFontSize)
 
@@ -446,15 +492,15 @@ export function acum({
     const ls = svgChart.selectAll('.brc-legend-item-rect')
       .data(metricsReversed, m => gen.safeId(m.label))
       .join(enter => {
-          const rect = enter.append("rect")
-            .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
-            .attr('width', swatchSize)
-            .attr('height', 2)
-          return rect
+          const path = enter.append("path")
+            .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
+            .attr('d', m => `M ${m.x} ${m.y + swatchSize/2} L ${m.x + swatchSize} ${m.y + swatchSize/2}`)
+          return path
       })
-      .attr('x', m => m.x)
-      .attr('y', m => m.y + swatchSize/2)
       .attr('fill', m => m.colour)
+      .attr("stroke", m => m.colour)
+      .attr("stroke-dasharray", m => m.style === 'dashed' ? '5,5' : '')
+      .attr("stroke-width", m => m.strokeWidth)
 
     const lt = svgChart.selectAll('.brc-legend-item-text')
       .data(metricsReversed, m => gen.safeId(m.label))
@@ -479,14 +525,15 @@ export function acum({
     svgChart.selectAll('.phen-path')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+    console.log('highlightItem', `.phen-path-${gen.safeId(id)}-accum-path`)
+    svgChart.selectAll(`.phen-path-${gen.safeId(id)}-accum-path`)
       .classed('lowlight', false)
   
     svgChart.selectAll(`.phen-path`)
       .classed('highlight', false)
 
     if (gen.safeId(id)) {
-      svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+      svgChart.selectAll(`.phen-path-${gen.safeId(id)}-accum-path`)
         .classed('highlight', highlight)
     }
     
@@ -541,7 +588,7 @@ export function acum({
   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -604,7 +651,7 @@ export function acum({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -618,7 +665,7 @@ export function acum({
 
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -626,7 +673,7 @@ export function acum({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -635,10 +682,10 @@ export function acum({
 
   /**
    * @typedef {Object} api
-   * @property {module:acum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:acum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:acum~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:acum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,

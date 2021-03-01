@@ -69,22 +69,47 @@
         }
         return d
       }).then(function(data){
-        var phen = {
+        var accum = {
           selector: '#chart1',
           data: data,
+          show: 'both',
+          swapYaxes: false,
           metrics: [
-            { prop: '2020', label: '2020', colour: 'red' },
-            { prop: '2019', label: '2019', colour: 'blue' },
-            // { prop: '2018', label: '2018', colour: 'fading' },
-            // { prop: '2017', label: '2017', colour: 'fading' },
-            // { prop: '2016', label: '2016', colour: 'fading' },
+            {
+              prop: '2020', 
+              labelTaxa: '2020 species', 
+              labelCounts: '2020 records', 
+              colourTaxa: 'red', 
+              colourCounts: 'red', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+            {
+              prop: '2019', 
+              labelTaxa: '2019 species', 
+              labelCounts: '2019 records', 
+              colourTaxa: 'blue', 
+              colourCounts: 'blue', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
           ],
           width: 400,
-          height: 250,
-          perRow: 2,
-          expand: false
+          height: 300,
+          margin: {left: 45, right: 68, bottom: 30, top: 10},
+          //axisTop: 'on',
+          //axisleft: 'tick',
+          expand: false,
+          title: 'Seasonal accumulation of butterfly species and record numbers in 2019 and 2020',
+          subtitle: 'Demonstration blah blah blah. ',
+          footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
+          footerAlign: 'right',
+          axisCountLabel: 'Number of records',
+          axisTaxaLabel: 'Number of species',
+          axisLabelFontSize: 12,
+          legendFontSize: 14,
         }
-        brccharts.acum(phen)
+        brccharts.accum(accum)
       })
     </script>
   </div>

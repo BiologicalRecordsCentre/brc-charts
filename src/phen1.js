@@ -228,31 +228,7 @@ export function phen1({
     // X (bottom) axis
     let xAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      // xScaleTime is only used to create the x axis
-      const xScaleTime = d3.scaleTime()
-        .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
-        .range([0, width])
-      
-      xAxis = d3.axisBottom()
-        .scale(xScaleTime)
-
-      if (axisBottom === 'tick') {
-        xAxis.ticks(d3.timeMonth)
-          .tickSize(width >= 200 ? 13 : 5, 0)
-          .tickFormat(date => {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date)
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date)
-            } else if (width >= 200) {
-              return date.toLocaleString('default', { month: 'short' }).substr(0,1)
-            } else {
-              return ''
-            }
-          })
-      } else {
-        xAxis.tickValues([]).tickSizeOuter(0)
-      }
+      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
     }
 
     // Right axis

@@ -1,4 +1,4 @@
 import '../css/general.css'
 import '../css/pie.css'
 import '../css/phen1.css'
-import '../css/acum.css'
+import '../css/accum.css'

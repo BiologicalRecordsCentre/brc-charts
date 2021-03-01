@@ -1,6 +1,6 @@
 import { pie } from './src/pie'
 import { phen1 } from './src/phen1'
-import { acum } from './src/acum'
+import { accum } from './src/accum'
 import pkg from './package.json'
 
 // Output version from package json to console
@@ -10,5 +10,5 @@ console.log(`Running ${pkg.name} version ${pkg.version}`)
 export {
   pie,
   phen1,
-  acum
+  accum
 } 

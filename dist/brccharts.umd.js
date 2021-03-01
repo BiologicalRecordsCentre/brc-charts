@@ -94,6 +94,30 @@
       return _objectSpread2({}, d);
     });
   }
+  function xAxisMonth(width, ticks) {
+    var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
+    var xAxis = d3.axisBottom().scale(xScaleTime);
+
+    if (ticks) {
+      xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
+        if (width >= 750) {
+          return d3.timeFormat('%B')(date);
+        } else if (width >= 330) {
+          return d3.timeFormat('%b')(date);
+        } else if (width >= 200) {
+          return date.toLocaleString('default', {
+            month: 'short'
+          }).substr(0, 1);
+        } else {
+          return '';
+        }
+      });
+    } else {
+      xAxis.tickValues([]).tickSizeOuter(0);
+    }
+
+    return xAxis;
+  }
   function wrapText(text, svg, maxWidth, fontSize) {
     var textSplit = text.split(" ");
     var lines = [''];
@@ -1105,27 +1129,7 @@
       var xAxis;
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        // xScaleTime is only used to create the x axis
-        var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
-        xAxis = d3.axisBottom().scale(xScaleTime);
-
-        if (axisBottom === 'tick') {
-          xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date);
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date);
-            } else if (width >= 200) {
-              return date.toLocaleString('default', {
-                month: 'short'
-              }).substr(0, 1);
-            } else {
-              return '';
-            }
-          });
-        } else {
-          xAxis.tickValues([]).tickSizeOuter(0);
-        }
+        xAxis = xAxisMonth(width, axisBottom === 'tick');
       } // Right axis
 
 
@@ -1500,10 +1504,13 @@
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
-   * @param {number} opts.width - The width of each sub-chart area in pixels.
-   * @param {number} opts.height - The height of the each sub-chart area in pixels.
-   * @param {number} opts.perRow - The number of sub-charts per row.
-   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+   * @param {number} opts.width - The width of the main chart area in pixels (excludes margins).
+   * @param {number} opts.height - The height of the main chart area in pixels (excludes margins).
+   * @param {Object} opts.margin - An object indicating the margins to add around the main chart area. 
+   * @param {number} opts.margin.left - Left margin in pixels. 
+   * @param {number} opts.margin.right - Right margin in pixels. 
+   * @param {number} opts.margin.top - Top margin in pixels. 
+   * @param {number} opts.margin.bottom - Bottom margin in pixels. 
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
@@ -1514,17 +1521,18 @@
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
-   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
-   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
    * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
-   * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
+   * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
+   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels.
+   * @param {string} opts.show - Indicates whether to show accumulation curves for taxa, counts or both. Permitted values: 'taxa', 'counts' or 'both'.
+   * @param {boolean} opts.swapYaxes - The default display is number of taxa on left axis and counts on right. Set this to true to swap that.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
    * data for which a line should be generated on the chart.
@@ -1543,10 +1551,10 @@
    * <li> <b>c2</b> - a count for a given time period (can have any name).
    * ... - there can be any number of these count columns.
    * </ul>
-   * @returns {module:acum~api} api - Returns an API for the chart.
+   * @returns {module:accum~api} api - Returns an API for the chart.
    */
 
-  function acum() {
+  function accum() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         _ref$selector = _ref.selector,
         selector = _ref$selector === void 0 ? 'body' : _ref$selector,
@@ -1556,7 +1564,13 @@
         width = _ref$width === void 0 ? 300 : _ref$width,
         _ref$height = _ref.height,
         height = _ref$height === void 0 ? 200 : _ref$height,
-        _ref$perRow = _ref.perRow,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    } : _ref$margin,
         _ref$ytype = _ref.ytype,
         ytype = _ref$ytype === void 0 ? 'count' : _ref$ytype,
         _ref$expand = _ref.expand,
@@ -1574,15 +1588,13 @@
         _ref$footerFontSize = _ref.footerFontSize,
         footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
         _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
         subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
         _ref$footerAlign = _ref.footerAlign,
         footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
-        _ref$showTaxonLabel = _ref.showTaxonLabel,
-        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
-        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
         _ref$axisLeft = _ref.axisLeft,
         axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
         _ref$axisBottom = _ref.axisBottom,
@@ -1591,6 +1603,16 @@
         axisRight = _ref$axisRight === void 0 ? 'tick' : _ref$axisRight,
         _ref$axisTop = _ref.axisTop,
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$axisTaxaLabel = _ref.axisTaxaLabel,
+        axisTaxaLabel = _ref$axisTaxaLabel === void 0 ? '' : _ref$axisTaxaLabel,
+        _ref$axisCountLabel = _ref.axisCountLabel,
+        axisCountLabel = _ref$axisCountLabel === void 0 ? '' : _ref$axisCountLabel,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$show = _ref.show,
+        show = _ref$show === void 0 ? 'both' : _ref$show,
+        _ref$swapYaxes = _ref.swapYaxes,
+        swapYaxes = _ref$swapYaxes === void 0 ? false : _ref$swapYaxes,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$interactivity = _ref.interactivity,
@@ -1603,7 +1625,7 @@
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
     var metricsPlus;
-    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-acum').style('position', 'relative').style('display', 'inline');
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-accum').style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
@@ -1612,7 +1634,7 @@
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
     preProcessMetrics();
-    makeChart(); // Texts must come after chartbecause 
+    makeChart(); // Texts must come after chart because 
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width"));
@@ -1637,8 +1659,12 @@
 
         return {
           prop: m.prop,
-          label: m.label,
-          colour: m.colour,
+          labelTaxa: m.labelTaxa,
+          labelCounts: m.labelCounts,
+          colourTaxa: m.colourTaxa,
+          colourCounts: m.colourCounts,
+          styleTaxa: m.styleTaxa,
+          styleCounts: m.styleCounts,
           fading: iFade,
           strokeWidth: strokeWidth
         };
@@ -1652,13 +1678,14 @@
     }
 
     function makeChart() {
-      console.log(metricsPlus);
+      var showTaxa = show === 'taxa' || show === 'both';
+      var showCounts = show === 'counts' || show === 'both';
       var lineData = [];
       metricsPlus.forEach(function (m) {
         var pointsTaxa = [];
         var pointsCount = [];
-        var acumTaxa = [];
-        var acumCount = 0;
+        var accumTaxa = [];
+        var accumCount = 0;
 
         var _loop = function _loop(week) {
           // Taxa for this week and property (normally a year)
@@ -1677,16 +1704,16 @@
             total: 0,
             taxa: []
           });
-          acumTaxa = _toConsumableArray(new Set([].concat(_toConsumableArray(acumTaxa), _toConsumableArray(weekStats.taxa))));
-          acumCount = acumCount + weekStats.total;
+          accumTaxa = _toConsumableArray(new Set([].concat(_toConsumableArray(accumTaxa), _toConsumableArray(weekStats.taxa))));
+          accumCount = accumCount + weekStats.total;
           pointsTaxa.push({
             num: weekStats.taxa.length,
-            acum: acumTaxa.length,
+            accum: accumTaxa.length,
             week: week
           });
           pointsCount.push({
             num: weekStats.total,
-            acum: acumCount,
+            accum: accumCount,
             week: week
           });
         };
@@ -1695,137 +1722,153 @@
           _loop(week);
         }
 
-        lineData.push({
-          id: "".concat(safeId(m.label), "-taxa"),
-          type: 'taxa',
-          colour: m.colour,
-          strokeWidth: m.strokeWidth,
-          max: Math.max.apply(Math, _toConsumableArray(pointsTaxa.map(function (p) {
-            return p.acum;
-          }))),
-          points: pointsTaxa
-        });
-        lineData.push({
-          id: "".concat(safeId(m.label), "-count"),
-          type: 'count',
-          colour: m.colour,
-          strokeWidth: m.strokeWidth,
-          max: Math.max.apply(Math, _toConsumableArray(pointsCount.map(function (p) {
-            return p.acum;
-          }))),
-          points: pointsCount
-        });
-      });
-      console.log(lineData); // Value scales
+        if (showTaxa) {
+          lineData.push({
+            id: "".concat(safeId(m.labelTaxa)),
+            type: 'taxa',
+            label: m.labelTaxa,
+            colour: m.colourTaxa,
+            style: m.styleTaxa,
+            strokeWidth: m.strokeWidth,
+            max: Math.max.apply(Math, _toConsumableArray(pointsTaxa.map(function (p) {
+              return p.accum;
+            }))),
+            points: pointsTaxa
+          });
+        }
+
+        if (showCounts) {
+          lineData.push({
+            id: "".concat(safeId(m.labelCounts)),
+            type: 'count',
+            label: m.labelCounts,
+            colour: m.colourCounts,
+            style: m.styleCounts,
+            strokeWidth: m.strokeWidth,
+            max: Math.max.apply(Math, _toConsumableArray(pointsCount.map(function (p) {
+              return p.accum;
+            }))),
+            points: pointsCount
+          });
+        }
+      }); // Do the legend
+
+      var legendHeight = makeLegend(lineData); // Value scales
 
       var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
-      var yScaleCount = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
-        return l.type === 'count';
-      }).map(function (l) {
-        return l.max;
-      })))]).range([height, 0]);
-      var yScaleTaxa = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
-        return l.type === 'taxa';
-      }).map(function (l) {
-        return l.max;
-      })))]).range([height, 0]); // Top axis
+      var yScaleCount, yScaleTaxa;
+
+      if (showCounts) {
+        yScaleCount = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
+          return l.type === 'count';
+        }).map(function (l) {
+          return l.max;
+        })))]).range([height, 0]);
+      }
+
+      if (showTaxa) {
+        yScaleTaxa = d3.scaleLinear().domain([0, Math.max.apply(Math, _toConsumableArray(lineData.filter(function (l) {
+          return l.type === 'taxa';
+        }).map(function (l) {
+          return l.max;
+        })))]).range([height, 0]);
+      } // Top axis
+
 
       var tAxis;
 
       if (axisTop === 'on') {
         tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
-      } // X (bottom) axis
+      } // Bottom axis
 
 
       var xAxis;
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        // xScaleTime is only used to create the x axis
-        var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
-        xAxis = d3.axisBottom().scale(xScaleTime);
+        xAxis = xAxisMonth(width, axisBottom === 'tick');
+      }
 
-        if (axisBottom === 'tick') {
-          xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date);
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date);
-            } else if (width >= 200) {
-              return date.toLocaleString('default', {
-                month: 'short'
-              }).substr(0, 1);
-            } else {
-              return '';
-            }
-          });
-        } else {
-          xAxis.tickValues([]).tickSizeOuter(0);
-        }
-      } // Y count (right) axis
+      var yScaleRight = swapYaxes ? yScaleTaxa : yScaleCount;
+      var yScaleLeft = swapYaxes ? yScaleCount : yScaleTaxa; // Left axis
 
-
-      var yAxisCount;
-
-      if (axisRight === 'on' || axisRight === 'tick') {
-        yAxisCount = d3.axisRight().scale(yScaleCount).ticks(5);
-
-        if (axisRight !== 'tick') {
-          yAxisCount.tickValues([]).tickSizeOuter(0);
-        } else if (ytype === 'count') {
-          yAxisCount.tickFormat(d3.format("d"));
-        }
-      } // Y taxa (left) axis
-
-
-      var yAxisTaxa;
+      var yAxisLeft;
 
       if (axisLeft === 'on' || axisLeft === 'tick') {
-        yAxisTaxa = d3.axisLeft().scale(yScaleTaxa).ticks(5);
+        if (yScaleLeft) {
+          yAxisLeft = d3.axisLeft().scale(yScaleLeft).ticks(5);
 
-        if (axisLeft !== 'tick') {
-          yAxisTaxa.tickValues([]).tickSizeOuter(0);
-        } else if (ytype === 'count') {
-          yAxisTaxa.tickFormat(d3.format("d"));
+          if (axisLeft !== 'tick') {
+            yAxisLeft.tickValues([]).tickSizeOuter(0);
+          } else if (ytype === 'count') {
+            yAxisLeft.tickFormat(d3.format("d"));
+          }
+        } else {
+          yAxisLeft = d3.axisLeft().scale(d3.scaleLinear().range([height, 0])).tickValues([]).tickSizeOuter(0);
+        }
+      } // Right axis
+
+
+      var yAxisRight;
+
+      if (axisRight === 'on' || axisRight === 'tick') {
+        if (yScaleRight) {
+          yAxisRight = d3.axisRight().scale(yScaleRight).ticks(5);
+
+          if (axisRight !== 'tick') {
+            yAxisRight.tickValues([]).tickSizeOuter(0);
+          } else if (ytype === 'count') {
+            yAxisRight.tickFormat(d3.format("d"));
+          }
+        } else {
+          yAxisRight = d3.axisRight().scale(d3.scaleLinear().range([height, 0])).tickValues([]).tickSizeOuter(0);
         }
       } // Line path generators
 
 
-      var lineTaxa = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-        return xScale(d.week);
-      }).y(function (d) {
-        return yScaleTaxa(d.acum);
-      });
-      var lineCount = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-        return xScale(d.week);
-      }).y(function (d) {
-        return yScaleCount(d.acum);
-      }); // Create or get the relevant chart svg
+      var lineTaxa;
 
-      var init, svgAcum, gAcum;
+      if (showTaxa) {
+        lineTaxa = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+          return xScale(d.week);
+        }).y(function (d) {
+          return yScaleTaxa(d.accum);
+        });
+      }
 
-      if (svgChart.select('.brc-chart-acum').size()) {
-        svgAcum = svgChart.select('.brc-chart-acum');
-        gAcum = svgAcum.select('.brc-chart-acum-g');
+      var lineCount;
+
+      if (showCounts) {
+        lineCount = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+          return xScale(d.week);
+        }).y(function (d) {
+          return yScaleCount(d.accum);
+        });
+      } // Create or get the relevant chart svg
+
+
+      var init, svgAccum, gAccum;
+
+      if (svgChart.select('.brc-chart-accum').size()) {
+        svgAccum = svgChart.select('.brc-chart-accum');
+        gAccum = svgAccum.select('.brc-chart-accum-g');
         init = false;
       } else {
-        svgAcum = svgChart.append('svg').classed('brc-chart-acum', true);
-        gAcum = svgAcum.append('g').classed('brc-chart-acum-g', true);
+        svgAccum = svgChart.append('svg').classed('brc-chart-accum', true);
+        gAccum = svgAccum.append('g').classed('brc-chart-accum-g', true);
         init = true;
       } // Create/update the line paths with D3
 
 
-      var mlines = gAcum.selectAll("path").data(lineData, function (d) {
+      var mlines = gAccum.selectAll("path").data(lineData, function (d) {
         return d.id;
       });
       var eLines = mlines.enter().append("path").attr("class", function (d) {
-        return "phen-path-".concat(d.id, " acum-path");
-      }).attr("stroke-dasharray", function (d) {
-        return d.type === 'taxa' ? '5,5' : '';
+        return "phen-path-".concat(d.id, "-accum-path");
       }).attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
           return {
-            acum: 0,
+            accum: 0,
             week: p.week
           };
         }));
@@ -1836,6 +1879,8 @@
         return lineGen(d.points);
       }).attr("stroke", function (d) {
         return d.colour;
+      }).attr("stroke-dasharray", function (d) {
+        return d.style === 'dashed' ? '5,5' : '';
       }).attr("stroke-width", function (d) {
         return d.strokeWidth;
       });
@@ -1843,65 +1888,143 @@
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
           return {
-            acum: 0,
+            accum: 0,
             week: p.week
           };
         }));
       }).remove();
 
       if (init) {
-        // Constants for positioning
-        var axisLeftPadX = axisLeft === 'tick' ? 35 : 0;
-        var axisRightPadX = axisRight === 'tick' ? 45 : 0;
-        var axisPadY = axisBottom === 'tick' ? 15 : 0;
-        var labelPadY = 5; // Size SVG
+        var axisLeftPadX = margin.left ? margin.left : 0;
+        var axisRightPadX = margin.right ? margin.right : 0;
+        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+        var axisTopPadY = margin.top ? margin.top : 0; // Size SVG
 
-        svgAcum.attr('width', width + axisLeftPadX + axisRightPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+        svgAccum.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY + legendHeight); // Position chart
 
-        gAcum.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+        gAccum.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(legendHeight + axisTopPadY, ")")); // Create axes and position within SVG
 
-        if (yAxisTaxa) {
-          var gYaxisTaxa = svgAcum.append("g").attr("class", "y-axis-taxa");
-          gYaxisTaxa.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")"));
+        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(legendHeight + axisTopPadY, ")");
+        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(legendHeight + axisTopPadY + height / 2, ") rotate(270)");
+        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(legendHeight + axisTopPadY, ")");
+        var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(legendHeight + axisTopPadY + height / 2, ") rotate(90)");
+
+        if (yAxisLeft) {
+          var gYaxisLeft = svgAccum.append("g").attr("class", "y-axis-left");
+          gYaxisLeft.attr("transform", leftYaxisTrans);
+
+          if (!swapYaxes && showTaxa || swapYaxes && showCounts) {
+            var axisLeftLabel = swapYaxes ? axisCountLabel : axisTaxaLabel;
+            var tYaxisLeftLabel = svgAccum.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+            tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+          }
         }
 
-        if (yAxisCount) {
-          var gYaxisCount = svgAcum.append("g").attr("class", "y-axis-count");
-          gYaxisCount.attr("transform", "translate(".concat(axisLeftPadX + width, ",").concat(labelPadY, ")"));
+        if (yAxisRight) {
+          var gYaxisCount = svgAccum.append("g").attr("class", "y-axis-right");
+          gYaxisCount.attr("transform", rightYaxisTrans);
+
+          if (!swapYaxes && showCounts || swapYaxes && showTaxa) {
+            var axisRightLabel = swapYaxes ? axisTaxaLabel : axisCountLabel;
+            var tYaxisCountLabel = svgAccum.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+            tYaxisCountLabel.attr("transform", rightYaxisLabelTrans);
+          }
         }
 
         if (xAxis) {
-          var gXaxis = svgAcum.append("g").attr("class", "x axis").call(xAxis);
+          var gXaxis = svgAccum.append("g").attr("class", "x axis").call(xAxis);
           gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-          gXaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(height + labelPadY, ")"));
+          gXaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(legendHeight + axisTopPadY + height, ")"));
         }
 
         if (tAxis) {
-          var gTaxis = svgAcum.append("g").call(tAxis);
-          gTaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(labelPadY, ")"));
+          var gTaxis = svgAccum.append("g").call(tAxis);
+          gTaxis.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(legendHeight + axisTopPadY, ")"));
         }
       }
 
-      if (yAxisTaxa) {
-        svgAcum.select(".y-axis-taxa").transition().duration(duration).call(yAxisTaxa);
+      if (yAxisLeft) {
+        svgAccum.select(".y-axis-left").transition().duration(duration).call(yAxisLeft);
       }
 
-      if (yAxisCount) {
-        svgAcum.select(".y-axis-count").transition().duration(duration).call(yAxisCount);
+      if (yAxisRight) {
+        svgAccum.select(".y-axis-right").transition().duration(duration).call(yAxisRight);
       }
 
-      svgChart.attr("width", svgAcum.attr('width'));
-      svgChart.attr("height", svgAcum.attr('height'));
-      return svgAcum;
+      svgChart.attr("width", svgAccum.attr('width'));
+      svgChart.attr("height", svgAccum.attr('height'));
+      return svgAccum;
+    }
+
+    function makeLegend(lineData) {
+      console.log(lineData);
+      var legendWidth = width + margin.left + margin.right;
+      var swatchSize = 20;
+      var swatchFact = 1.3; // Loop through all the legend elements and work out their positions
+      // based on swatch size, item label text size and legend width.
+
+      var metricsReversed = cloneData(lineData).reverse();
+      var rows = 0;
+      var lineWidth = -swatchSize;
+      metricsReversed.forEach(function (m) {
+        var tmpText = svgChart.append('text').text(m.label).style('font-size', legendFontSize);
+        var widthText = tmpText.node().getBBox().width;
+        tmpText.remove();
+
+        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+          ++rows;
+          lineWidth = -swatchSize;
+        }
+
+        m.x = lineWidth + swatchSize;
+        m.y = rows * swatchSize * swatchFact;
+        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+      });
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var path = enter.append("path").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
+        }).attr('d', function (m) {
+          return "M ".concat(m.x, " ").concat(m.y + swatchSize / 2, " L ").concat(m.x + swatchSize, " ").concat(m.y + swatchSize / 2);
+        });
+        return path;
+      }).attr('fill', function (m) {
+        return m.colour;
+      }).attr("stroke", function (m) {
+        return m.colour;
+      }).attr("stroke-dasharray", function (m) {
+        return m.style === 'dashed' ? '5,5' : '';
+      }).attr("stroke-width", function (m) {
+        return m.strokeWidth;
+      });
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var text = enter.append("text").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(safeId(m.label));
+        }).text(function (m) {
+          return m.label;
+        }).style('font-size', legendFontSize);
+        return text;
+      }).attr('x', function (m) {
+        return m.x + swatchSize * swatchFact;
+      }).attr('y', function (m) {
+        return m.y + legendFontSize * 1;
+      });
+      addEventHandlers(ls, 'label');
+      addEventHandlers(lt, 'label');
+      return swatchSize * swatchFact * (rows + 1);
     }
 
     function highlightItem(id, highlight) {
       svgChart.selectAll('.phen-path').classed('lowlight', highlight);
-      svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('lowlight', false);
+      console.log('highlightItem', ".phen-path-".concat(safeId(id), "-accum-path"));
+      svgChart.selectAll(".phen-path-".concat(safeId(id), "-accum-path")).classed('lowlight', false);
       svgChart.selectAll(".phen-path").classed('highlight', false);
 
       if (safeId(id)) {
-        svgChart.selectAll(".phen-path-".concat(safeId(id))).classed('highlight', highlight);
+        svgChart.selectAll(".phen-path-".concat(safeId(id), "-accum-path")).classed('highlight', highlight);
       }
 
       svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
@@ -1947,7 +2070,7 @@
       * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
       */
@@ -2017,7 +2140,7 @@
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
-      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
       * For single species charts, this allows you to change the taxon displayed.
       */
 
@@ -2031,7 +2154,7 @@
       }
     }
     /** @function getChartWidth
-      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
       * Return the full width of the chart svg.
       */
 
@@ -2040,7 +2163,7 @@
       return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
     }
     /** @function getChartHeight
-      * @description <b>This function is exposed as a method on the API returned from the acum function</b>.
+      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
       * Return the full height of the chart svg.
       */
 
@@ -2050,10 +2173,10 @@
     }
     /**
      * @typedef {Object} api
-     * @property {module:acum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:acum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:acum~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:acum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
      */
 
 
@@ -2124,7 +2247,7 @@
 
   console.log("Running ".concat(pkg.name, " version ").concat(pkg.version));
 
-  exports.acum = acum;
+  exports.accum = accum;
   exports.phen1 = phen1;
   exports.pie = pie;
 

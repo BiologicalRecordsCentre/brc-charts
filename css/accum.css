@@ -1,18 +1,18 @@
-.brc-chart-acum path {
+.brc-chart-accum path {
     fill: none;
 }
 
-.brc-chart-acum path.highlight {
+.brc-chart-accum path.highlight {
     stroke: black;
     stroke-width: 3;
     opacity: 1;
 }
 
-.brc-chart-acum path.lowlight {
+.brc-chart-accum path.lowlight {
     opacity:0.3;
 }
 
-.brc-chart-acum {
+.brc-chart-accum {
     overflow: visible;
 }
 
