@@ -104,7 +104,7 @@ export function accum({
   const svg = mainDiv.append('svg')
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
-      highlightItem(null, false)
+      highlightItem(null, null, false)
     }
   })
 
@@ -330,7 +330,7 @@ export function accum({
       
     const eLines = mlines.enter()
       .append("path")
-      .attr("class", d => `phen-path-${d.id}-accum-path`)
+      .attr("class", d => `accum-path accum-path-${d.id}`)
       .attr("d", d => {
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {
@@ -389,13 +389,16 @@ export function accum({
       const rightYaxisLabelTrans = `translate(${axisLeftPadX + width + axisRightPadX - axisLabelFontSize}, ${legendHeight + axisTopPadY + height/2}) rotate(90)`
 
       if (yAxisLeft) {
+        const axisLabelClass = swapYaxes ? 'brc-accum-axis-count' : 'brc-accum-axis-taxa'
         const gYaxisLeft = svgAccum.append("g")
-          .attr("class", "y-axis-left")
+          .attr("class", "y-axis y-axis-left")
+          .classed(axisLabelClass, true)
         gYaxisLeft.attr("transform", leftYaxisTrans)
 
         if ((!swapYaxes && showTaxa) || (swapYaxes && showCounts )) {
           const axisLeftLabel = swapYaxes ? axisCountLabel : axisTaxaLabel
           const tYaxisLeftLabel = svgAccum.append("text")
+            .classed(axisLabelClass, true)
             .style("text-anchor", "middle")
             .style('font-size', axisLabelFontSize)
             .text(axisLeftLabel) 
@@ -404,13 +407,16 @@ export function accum({
       }
 
       if (yAxisRight) {
+        const axisLabelClass = swapYaxes ? 'brc-accum-axis-taxa' : 'brc-accum-axis-count'
         const gYaxisCount = svgAccum.append("g")
-          .attr("class", "y-axis-right")
+          .attr("class", "y-axis y-axis-right")
+          .classed(axisLabelClass, true)
         gYaxisCount.attr("transform", rightYaxisTrans)
 
         if ((!swapYaxes && showCounts) || (swapYaxes && showTaxa )) {
           const axisRightLabel = swapYaxes ? axisTaxaLabel : axisCountLabel
           const tYaxisCountLabel = svgAccum.append("text")
+            .classed(axisLabelClass, true)
             .style("text-anchor", "middle")
             .style('font-size', axisLabelFontSize)
             .text(axisRightLabel) 
@@ -458,8 +464,6 @@ export function accum({
   }
 
   function makeLegend (lineData) {
-
-    console.log(lineData)
 
     const legendWidth = width + margin.left + margin.right
     const swatchSize = 20
@@ -520,23 +524,26 @@ export function accum({
     return swatchSize * swatchFact * (rows + 1)
   }
 
-  function highlightItem(id, highlight) {
+  function highlightItem(id, type, highlight) {
 
-    svgChart.selectAll('.phen-path')
+    console.log(type)
+
+    // Graph lines
+    svgChart.selectAll('.accum-path')
       .classed('lowlight', highlight)
 
-    console.log('highlightItem', `.phen-path-${gen.safeId(id)}-accum-path`)
-    svgChart.selectAll(`.phen-path-${gen.safeId(id)}-accum-path`)
+    svgChart.selectAll(`.accum-path-${gen.safeId(id)}`)
       .classed('lowlight', false)
   
-    svgChart.selectAll(`.phen-path`)
+    svgChart.selectAll(`.accum-path`)
       .classed('highlight', false)
 
     if (gen.safeId(id)) {
-      svgChart.selectAll(`.phen-path-${gen.safeId(id)}-accum-path`)
+      svgChart.selectAll(`.accum-path-${gen.safeId(id)}`)
         .classed('highlight', highlight)
     }
     
+    // Legend items
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
 
@@ -552,23 +559,41 @@ export function accum({
       svgChart.selectAll(`.brc-legend-item`)
         .classed('highlight', false)
     }
+
+    // Axes and axis labels
+    svgChart.selectAll('.brc-accum-axis-taxa, .brc-accum-axis-count')
+      .classed('lowlight', highlight)
+
+    if (id) {
+      svgChart.selectAll(`.brc-accum-axis-${type}`)
+        .classed('lowlight', false)
+    }
+
+    if (id) {
+      svgChart.selectAll(`.brc-accum-axis-${type}`)
+        .classed('highlight', highlight)
+    } else {
+      svgChart.selectAll(`.brc-accum-axis-taxa, .brc-accum-axis-count`)
+        .classed('highlight', false)
+    }
   }
 
   function addEventHandlers(sel, prop) {
+
     sel
       .on("mouseover", function(d) {
       if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true)
+          highlightItem(d[prop], d.type, true)
         }
       })
       .on("mouseout", function(d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false)
+          highlightItem(d[prop],  d.type, false)
         }
       })
       .on("click", function(d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true)
+          highlightItem(d[prop], d.type, true)
           d3.event.stopPropagation()
         }
       })

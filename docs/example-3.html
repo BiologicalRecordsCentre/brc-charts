@@ -32,12 +32,12 @@
 </pre>
 
     <p>
-      In the page's Javascript we call the <em>brccharts.acum</em> method, passing in the configuration options
+      In the page's Javascript we call the <em>brccharts.accum</em> method, passing in the configuration options
       which include the data we want to display.
     </p>
 
 <pre>
-<code class="javascript">brccharts.acum({...})</code>
+<code class="javascript">brccharts.accum({...})</code>
 </pre>
 
     <div id="chart1" style="margin-top: 1em"></div>
@@ -101,13 +101,14 @@
           //axisleft: 'tick',
           expand: false,
           title: 'Seasonal accumulation of butterfly species and record numbers in 2019 and 2020',
-          subtitle: 'Demonstration blah blah blah. ',
+          subtitle: 'Sub-header demonstration blah blah blah. ',
           footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
           footerAlign: 'right',
           axisCountLabel: 'Number of records',
           axisTaxaLabel: 'Number of species',
           axisLabelFontSize: 12,
           legendFontSize: 14,
+          interactivity: 'mouseclick'
         }
         brccharts.accum(accum)
       })

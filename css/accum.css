@@ -23,3 +23,19 @@
 .brc-legend-item-rect.highlight {
     fill:black;
 }
+
+.brc-chart-accum text.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-accum text.highlight {
+    font-weight:bold;
+}
+
+.y-axis.lowlight {
+    opacity:0.3;
+}
+
+.y-axis.highlight {
+    font-weight:bold;
+}

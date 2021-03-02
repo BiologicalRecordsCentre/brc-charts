@@ -119,10 +119,8 @@ export function phen1({
   const mainDiv = d3.select(`${selector}`)
     .append('div')
     .attr('id', elid)
-    .attr('class', 'brc-chart-phen')
     .style('position', 'relative')
     .style('display', 'inline')
-
 
   const svg = mainDiv.append('svg')
   svg.on("click", function() {
@@ -131,20 +129,17 @@ export function phen1({
     }
   })
 
-  const svgChart = svg.append('svg')
-
-  let svgTitle, svgSubtitle, svgFooter
+  const svgChart = svg.append('svg').attr('class', 'mainChart')
   
   preProcessMetrics()
   makeChart()
-
-  // Title must come after chart and legend because 
-  // the chartis required to do wrapping for title
-  svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-  svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-  svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
-  
-  positionElements()
+  // Texts must come after chartbecause 
+  // the chart width is required
+  const textWidth = Number(svg.select('.mainChart').attr("width"))
+  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  gen.positionMainElements(svg, expand)
 
   function makeChart () {
     if (!taxa.length) {
@@ -203,76 +198,6 @@ export function phen1({
         m.colour = grey(m.fading)
       }
     })
-
-    console.log(metricsPlus)
-  }
-
-  function positionElements() {
-
-    const space = 10
-    const width = Number(svgChart.attr("width"))
-
-    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
-    svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space)
-    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space +  Number(svgChart.attr("height")))
-  
-    const height = Number(svgTitle.attr("height")) +
-      Number(svgSubtitle.attr("height")) + 
-      Number(svgChart.attr("height")) + 
-      Number(svgFooter.attr("height")) +
-      2 * space
-
-    if (expand) {
-      svg.attr("viewBox", "0 0 " + width + " " +  height)
-    } else {
-      svg.attr("width", width)
-      svg.attr("height", height)
-    }
-  }
-
-  function makeText (text, svgText, classText, fontSize, textAlign) {
-
-    if (!svgText) {
-      svgText = svg.append('svg')
-    }
-
-    const chartWidth = Number(svgChart.attr("width"))
-    const lines = wrapText(text, svgText, chartWidth, fontSize)
-
-    const uText = svgText.selectAll(`.${classText}`)
-      .data(lines)
-
-    const eText = uText.enter()
-      .append('text')
-
-    uText
-      .merge(eText)
-      .text(d => {
-        return d
-      })
-      .attr("class", classText)
-      .style('font-size', fontSize)
-
-    uText.exit()
-      .remove()
-
-    const height = svgText.select(`.${classText}`).node().getBBox().height
-    const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
-
-    svgText.selectAll(`.${classText}`)
-      .attr('y', (d, i) => (i + 1) * height)
-      .attr('x', (d, i) => {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2
-        } else if(textAlign === 'right') {
-          return chartWidth - widths[i]
-        } else {
-          return 0
-        }
-      })
-    svgText.attr("height", height * lines.length + height * 0.2) // The 0.2 allows for tails of letters like g, y etc.
-
-    return svgText
   }
 
   function makePhen (taxon) {
@@ -304,7 +229,6 @@ export function phen1({
       })
     })
 
-    console.log('lineData', lineData)
     // Set the maximum value for the y axis
     let yMax
     if (ytype === 'normalized') {
@@ -332,31 +256,7 @@ export function phen1({
     // X (bottom) axis
     let xAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      // xScaleTime is only used to create the x axis
-      const xScaleTime = d3.scaleTime()
-        .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
-        .range([0, width])
-      
-      xAxis = d3.axisBottom()
-        .scale(xScaleTime)
-
-      if (axisBottom === 'tick') {
-        xAxis.ticks(d3.timeMonth)
-          .tickSize(width >= 200 ? 13 : 5, 0)
-          .tickFormat(date => {
-            if (width >= 750) {
-              return d3.timeFormat('%B')(date)
-            } else if (width >= 330) {
-              return d3.timeFormat('%b')(date)
-            } else if (width >= 200) {
-              return date.toLocaleString('default', { month: 'short' }).substr(0,1)
-            } else {
-              return ''
-            }
-          })
-      } else {
-        xAxis.tickValues([]).tickSizeOuter(0)
-      }
+      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
     }
 
     // Right axis
@@ -650,39 +550,6 @@ export function phen1({
       })
   }
 
-  function wrapText(text, svgTitle, maxWidth, fontSize) {
-
-    const textSplit = text.split(" ")
-    const lines = ['']
-    let line = 0
-
-    for (let i=0; i &lt; textSplit.length; i++) {
-
-      if (textSplit[i] === '\n') {
-        line++
-        lines[line] = ''
-      } else {
-        let workingText = `${lines[line]} ${textSplit[i]}`
-        workingText = workingText.trim()
-
-        const txt = svgTitle.append('text')
-          .text(workingText)
-          .style('font-size', fontSize)
-
-        const width = txt.node().getBBox().width
-
-        if (width > maxWidth) {
-          line++
-          lines[line] = textSplit[i]
-        } else {
-          lines[line] = workingText
-        }
-        txt.remove()
-      }
-    }
-    return lines
-  }
-
 /** @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
@@ -697,7 +564,7 @@ export function phen1({
   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
   * @param {Array.&lt;Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -731,9 +598,10 @@ export function phen1({
       footerAlign = opts.footerAlign
     }
 
-    svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-    svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-    svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+    const textWidth = Number(svg.select('.mainChart').attr("width"))
+    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
 
@@ -754,12 +622,12 @@ export function phen1({
     }
 
     if (remakeChart) makeChart()
-    positionElements()
+    gen.positionMainElements(svg, expand)
   }
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -773,7 +641,7 @@ export function phen1({
 
 
 /** @function getChartWidth
-  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -781,7 +649,7 @@ export function phen1({
   }
 
 /** @function getChartHeight
-  * @description &lt;b>This function is exposed as a method on the API returned from the pie function&lt;/b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -790,10 +658,10 @@ export function phen1({
 
   /**
    * @typedef {Object} api
-   * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:pie~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,
@@ -812,13 +680,13 @@ export function phen1({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Feb 09 2021 09:51:45 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Mar 02 2021 10:56:01 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -118,6 +118,7 @@ export function pie({
     .append('div')
 
   const svg = chartDiv.append('svg').attr('overflow', 'visible')
+  const svgChart = svg.append('svg').attr('class', 'mainChart')
 
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
@@ -125,98 +126,35 @@ export function pie({
     }
   })
 
-  let svgPie, svgLegend, svgTitle, svgSubtitle, svgFooter
-  makeLegend(data)
-  makePie(data) 
-  // Title must come after chart and legend because the 
-  // width of those is required to do wrapping for title
-  //makeTitle()
-  svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-  svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-  svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+  makeChart(data)
+  const textWidth = Number(svgChart.attr("width"))
+  // Texts must come after chart and legend because the 
+  // width of those is required to do wrap text
+  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  gen.positionMainElements(svg, expand)
 
-  positionElements()
-
-  const imgSelected = makeImage()
-
-  function positionElements() {
-
-    const width = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-
-    svgSubtitle.attr("y", Number(svgTitle.attr("height")))
-    svgLegend.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
+  function makeChart(data) {
+    makePie (data)
+    makeLegend (data)
+    const svgPie = svgChart.select('.brc-chart-pie')
+    const svgLegend = svgChart.select('.brc-chart-legend')
     svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
-    svgPie.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap)
-    svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + legendSwatchGap + Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))))
-    
-    const height = Number(svgTitle.attr("height")) + 
-      Number(svgSubtitle.attr("height")) + 
-      legendSwatchGap + 
-      Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))) + 
-      Number(svgFooter.attr("height"))
-
-    if (expand) {
-      svg.attr("viewBox", "0 0 " + width + " " +  height)
-    } else {
-      svg.attr("width", width)
-      svg.attr("height", height)
-    }
-  }
-
-  function makeText (text, svgText, classText, fontSize, textAlign) {
-
-    if (!svgText) {
-      svgText = svg.append('svg')
-    }
-
-    const chartWidth = Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width"))
-    const lines = wrapText(text, svgText, chartWidth, fontSize)
-
-    console.log(classText, text, lines)
-
-    const uText = svgText.selectAll(`.${classText}`)
-      .data(lines)
-
-    const eText = uText.enter()
-      .append('text')
-
-    uText
-      .merge(eText)
-      .text(d => {
-        return d
-      })
-      .attr("class", classText)
-      .style('font-size', fontSize)
-
-    uText.exit()
-      .remove()
-
-    console.log('lines', svgText.select(`.${classText}`).size())
-    const height = svgText.select(`.${classText}`).node().getBBox().height
-    const widths = svgText.selectAll(`.${classText}`).nodes().map(n => (n.getBBox().width))
-
-    svgText.selectAll(`.${classText}`)
-      .attr('y', (d, i) => (i + 1) * height)
-      .attr('x', (d, i) => {
-        if (textAlign === 'centre') {
-          return (chartWidth - widths[i]) / 2
-        } else if(textAlign === 'right') {
-          return chartWidth - widths[i]
-        } else {
-          return 0
-        }
-      })
-    svgText.attr("height", height * lines.length + height * 0.2) // The 0.2 allows for tails of letters like g, y etc.
-
-    return svgText
+    svgChart.attr("width", Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width")))
+    svgChart.attr("height", Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))))
   }
 
   function makeLegend (data) {
 
-    if (!svgLegend) {
-      svgLegend = svg.append('svg').attr('overflow', 'auto')
+    let svgLegend
+    if (svg.select('.brc-chart-legend').size()) {
+      svgLegend = svgChart.select('.brc-chart-legend')
+    } else {
+      svgLegend = svgChart.append('svg').classed('brc-chart-legend', true)
+        .attr('overflow', 'auto')
     }
-  
+
     const uLegendSwatch = svgLegend.selectAll('.legendSwatch')
       .data(data, d => d.name)
 
@@ -339,11 +277,6 @@ export function pie({
     })
     const dataComb = gen.cloneData([...dataNew, ...dataDeleted2])
 
-    console.log('dataDeleted', dataDeleted)
-    console.log('dataDeleted2', dataDeleted2)
-    console.log('dataInserted', dataInserted)
-    console.log('dataComb', dataComb)
-
     const arcsPrev = d3.pie().value(d => d.number).sortValues(fnSort)(dataPrev)
     const arcsComb = d3.pie().value(d => d.number).sortValues(fnSort)(dataComb) 
     
@@ -362,8 +295,6 @@ export function pie({
 
     // Now data processing complete, reset dataPrev variable
     dataPrev = data
-
-    console.log('arcsComb', arcsComb)
 
     const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius)
     const arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius)
@@ -495,17 +426,21 @@ export function pie({
       }
     }
 
-    //let svgPie, gPie
-    let gPie
+    let svgPie, gPie
     if (svg.select('.brc-chart-pie').size()) {
-      svgPie = svg.select('.brc-chart-pie')
+      svgPie = svgChart.select('.brc-chart-pie')
       gPie = svgPie.select('g')
     } else {
-      svgPie = svg.append('svg').classed('brc-chart-pie', true)
+      svgPie = svgChart.append('svg').classed('brc-chart-pie', true)
         .attr('width', 2 * radius)
         .attr('height', 2 * radius)
       gPie = svgPie.append('g')
         .attr('transform', `translate(${radius} ${radius})`)
+
+      gPie.append('image')
+        .classed('brc-item-image', true)
+        .classed('brc-item-image-hide', true)
+        .attr('width', imageWidth)
     }
 
     // map to data
@@ -607,48 +542,6 @@ export function pie({
     }
   }
 
-  function makeImage() {
-    const img = svg.append('image')
-      .classed('brc-item-image-hide', true)
-      //.attr('xlink:href', 'images/Bumblebees.png')
-      .attr('width', imageWidth)
-    return img
-  }
-
-  function wrapText(text, svgTitle, maxWidth, fontSize) {
-
-    const textSplit = text.split(" ")
-    const lines = ['']
-    let line = 0
-
-    for (let i=0; i &lt; textSplit.length; i++) {
-
-      if (textSplit[i] === '\n') {
-        line++
-        lines[line] = ''
-      } else {
-        let workingText = `${lines[line]} ${textSplit[i]}`
-        workingText = workingText.trim()
-
-        const txt = svgTitle.append('text')
-          .text(workingText)
-          .style('font-size', fontSize)
-
-        const width = txt.node().getBBox().width
-
-        if (width > maxWidth) {
-          line++
-          lines[line] = textSplit[i]
-        } else {
-          lines[line] = workingText
-        }
-
-        txt.remove()
-      }
-    }
-    return lines
-  }
-
   function addEventHandlers(sel, isArc) {
     sel
       .on("mouseover", function(d) {
@@ -671,6 +564,9 @@ export function pie({
 
   function highlightItem (name, show) {
     const i = gen.safeId(name)
+
+    const imgSelected = svg.select('.brc-item-image')
+
     if (show) {
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
@@ -714,11 +610,12 @@ export function pie({
   }
 
   function loadImage(d) {
+    const imgSelected = svg.select('.brc-item-image')
     imgSelected.attr('xlink:href', d.image)
     imgSelected.attr('width', d.imageWidth)
     imgSelected.attr('height', d.imageHeight)
-    imgSelected.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap + radius - d.imageWidth / 2)
-    imgSelected.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + 2 * legendSwatchGap + radius - d.imageHeight / 2)
+    imgSelected.attr("x", -d.imageWidth / 2)
+    imgSelected.attr("y", -d.imageHeight / 2)
   }
 
   function colourData(data) {
@@ -789,17 +686,18 @@ export function pie({
         footerAlign = opts.footerAlign
       }
 
-      svgTitle = makeText (title, svgTitle, 'titleText', titleFontSize, titleAlign)
-      svgSubtitle = makeText (subtitle, svgSubtitle, 'subtitleText', subtitleFontSize, subtitleAlign)
-      svgFooter = makeText (footer, svgFooter, 'footerText', footerFontSize, footerAlign)
+      const textWidth = Number(svgChart.attr("width"))
+      gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+      gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+      gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
       if ('data' in opts) {
         colourData(opts.data)
-        makePie(opts.data)
-        makeLegend(opts.data)
+        makeChart(opts.data)
       }
 
-      positionElements()
+      //positionElements()
+      gen.positionMainElements(svg, expand)
     } else {
       console.log('Transition in progress')
     }
@@ -844,13 +742,13 @@ export function pie({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Feb 09 2021 09:51:46 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Mar 02 2021 10:56:01 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1629,7 +1629,7 @@
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(null, false);
+        highlightItem(null, null, false);
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
@@ -1863,7 +1863,7 @@
         return d.id;
       });
       var eLines = mlines.enter().append("path").attr("class", function (d) {
-        return "phen-path-".concat(d.id, "-accum-path");
+        return "accum-path accum-path-".concat(d.id);
       }).attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
@@ -1910,23 +1910,26 @@
         var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(legendHeight + axisTopPadY + height / 2, ") rotate(90)");
 
         if (yAxisLeft) {
-          var gYaxisLeft = svgAccum.append("g").attr("class", "y-axis-left");
+          var axisLabelClass = swapYaxes ? 'brc-accum-axis-count' : 'brc-accum-axis-taxa';
+          var gYaxisLeft = svgAccum.append("g").attr("class", "y-axis y-axis-left").classed(axisLabelClass, true);
           gYaxisLeft.attr("transform", leftYaxisTrans);
 
           if (!swapYaxes && showTaxa || swapYaxes && showCounts) {
             var axisLeftLabel = swapYaxes ? axisCountLabel : axisTaxaLabel;
-            var tYaxisLeftLabel = svgAccum.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+            var tYaxisLeftLabel = svgAccum.append("text").classed(axisLabelClass, true).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
             tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
           }
         }
 
         if (yAxisRight) {
-          var gYaxisCount = svgAccum.append("g").attr("class", "y-axis-right");
+          var _axisLabelClass = swapYaxes ? 'brc-accum-axis-taxa' : 'brc-accum-axis-count';
+
+          var gYaxisCount = svgAccum.append("g").attr("class", "y-axis y-axis-right").classed(_axisLabelClass, true);
           gYaxisCount.attr("transform", rightYaxisTrans);
 
           if (!swapYaxes && showCounts || swapYaxes && showTaxa) {
             var axisRightLabel = swapYaxes ? axisTaxaLabel : axisCountLabel;
-            var tYaxisCountLabel = svgAccum.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+            var tYaxisCountLabel = svgAccum.append("text").classed(_axisLabelClass, true).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
             tYaxisCountLabel.attr("transform", rightYaxisLabelTrans);
           }
         }
@@ -1957,7 +1960,6 @@
     }
 
     function makeLegend(lineData) {
-      console.log(lineData);
       var legendWidth = width + margin.left + margin.right;
       var swatchSize = 20;
       var swatchFact = 1.3; // Loop through all the legend elements and work out their positions
@@ -2017,15 +2019,17 @@
       return swatchSize * swatchFact * (rows + 1);
     }
 
-    function highlightItem(id, highlight) {
-      svgChart.selectAll('.phen-path').classed('lowlight', highlight);
-      console.log('highlightItem', ".phen-path-".concat(safeId(id), "-accum-path"));
-      svgChart.selectAll(".phen-path-".concat(safeId(id), "-accum-path")).classed('lowlight', false);
-      svgChart.selectAll(".phen-path").classed('highlight', false);
+    function highlightItem(id, type, highlight) {
+      console.log(type); // Graph lines
+
+      svgChart.selectAll('.accum-path').classed('lowlight', highlight);
+      svgChart.selectAll(".accum-path-".concat(safeId(id))).classed('lowlight', false);
+      svgChart.selectAll(".accum-path").classed('highlight', false);
 
       if (safeId(id)) {
-        svgChart.selectAll(".phen-path-".concat(safeId(id), "-accum-path")).classed('highlight', highlight);
-      }
+        svgChart.selectAll(".accum-path-".concat(safeId(id))).classed('highlight', highlight);
+      } // Legend items
+
 
       svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
 
@@ -2037,21 +2041,34 @@
         svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
       } else {
         svgChart.selectAll(".brc-legend-item").classed('highlight', false);
+      } // Axes and axis labels
+
+
+      svgChart.selectAll('.brc-accum-axis-taxa, .brc-accum-axis-count').classed('lowlight', highlight);
+
+      if (id) {
+        svgChart.selectAll(".brc-accum-axis-".concat(type)).classed('lowlight', false);
+      }
+
+      if (id) {
+        svgChart.selectAll(".brc-accum-axis-".concat(type)).classed('highlight', highlight);
+      } else {
+        svgChart.selectAll(".brc-accum-axis-taxa, .brc-accum-axis-count").classed('highlight', false);
       }
     }
 
     function addEventHandlers(sel, prop) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true);
+          highlightItem(d[prop], d.type, true);
         }
       }).on("mouseout", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false);
+          highlightItem(d[prop], d.type, false);
         }
       }).on("click", function (d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true);
+          highlightItem(d[prop], d.type, true);
           d3.event.stopPropagation();
         }
       });
