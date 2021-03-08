@@ -1,3 +1,24 @@
+.brc-chart-pie {
+  width: 100%
+}
+
+.brc-chart-pie-legend {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie-chart {
+  float:left;
+  overflow:hidden;
+}
+
+path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
+  opacity: 0.3 !important;
+}
+
+.brc-item-image-hide {
+  display: none;
+}
 .blah {
     background: red;
 }.brc-chart-phen1 path {
@@ -24,27 +45,6 @@
 
 .brc-legend-item-rect.highlight {
     fill:black;
-}
-.brc-chart-pie {
-  width: 100%
-}
-
-.brc-chart-pie-legend {
-  float:left;
-  overflow:hidden;
-}
-
-.brc-chart-pie-chart {
-  float:left;
-  overflow:hidden;
-}
-
-path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
-  opacity: 0.3 !important;
-}
-
-.brc-item-image-hide {
-  display: none;
 }
 .brc-chart-accum path {
     fill: none;

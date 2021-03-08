@@ -39,7 +39,7 @@ import * as gen from './general'
  * <ul>
  * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
  * <li> <b>label</b> - a label for this metric.
- * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
+ * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)

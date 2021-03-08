@@ -914,7 +914,7 @@
    * <ul>
    * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
    * <li> <b>label</b> - a label for this metric.
-   * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
+   * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
@@ -1524,7 +1524,7 @@
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
    * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
-   * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
    * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
@@ -1535,12 +1535,17 @@
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
-   * data for which a line should be generated on the chart.
+   * data for which taxa and/or count accumulation lines should be generated on the chart.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
-   * <li> <b>label</b> - a label for this metric.
-   * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
+   * <li> <b>labelTaxa</b> - a label for the taxa accumulation metric.
+   * <li> <b>labelCounts</b> - a label for the counts accumulation metric.
+   * <li> <b>key</b> - a base key for this metric. If the options are updated using the setChartOpts API method, then if this value is set, it is used to uniquely identify the graphic elements. If not set, then the label is used.
+   * <li> <b>ColourTaxa</b> - optional colour to give the line for the taxa accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+   * <li> <b>ColourCounts</b> - optional colour to give the line for the counts accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+   * <li> <b>styleTaxa</b> - options style to give the line for the taxa accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
+   * <li> <b>styleCounts</b> - options style to give the line for the counts accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
@@ -1559,7 +1564,7 @@
         _ref$selector = _ref.selector,
         selector = _ref$selector === void 0 ? 'body' : _ref$selector,
         _ref$elid = _ref.elid,
-        elid = _ref$elid === void 0 ? 'phen1-chart' : _ref$elid,
+        elid = _ref$elid === void 0 ? 'accum-chart' : _ref$elid,
         _ref$width = _ref.width,
         width = _ref$width === void 0 ? 300 : _ref$width,
         _ref$height = _ref.height,
@@ -1619,8 +1624,6 @@
         interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
-        _ref$taxa = _ref.taxa,
-        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
         _ref$metrics = _ref.metrics,
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
@@ -1646,12 +1649,19 @@
     function preProcessMetrics() {
       // Look for 'fading' colour in taxa and colour appropriately 
       // in fading shades of grey.
-      var iFading = 0;
+      var iFadingTaxa = 0;
+      var iFadingCounts = 0;
+      var iFadeTaxa, iFadeCounts, strokeWidth;
       metricsPlus = metrics.map(function (m) {
-        var iFade, strokeWidth;
+        if (m.colourCounts === 'fading') {
+          iFadeCounts = ++iFadingCounts;
+          strokeWidth = 1;
+        } else {
+          strokeWidth = 2;
+        }
 
-        if (m.colour === 'fading') {
-          iFade = ++iFading;
+        if (m.colourTaxa === 'fading') {
+          iFadeTaxa = ++iFadingTaxa;
           strokeWidth = 1;
         } else {
           strokeWidth = 2;
@@ -1659,20 +1669,27 @@
 
         return {
           prop: m.prop,
+          key: m.key,
           labelTaxa: m.labelTaxa,
           labelCounts: m.labelCounts,
           colourTaxa: m.colourTaxa,
           colourCounts: m.colourCounts,
           styleTaxa: m.styleTaxa,
           styleCounts: m.styleCounts,
-          fading: iFade,
+          fadingTaxa: iFadeTaxa,
+          fadingCounts: iFadeCounts,
           strokeWidth: strokeWidth
         };
       }).reverse();
-      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+      var greyTaxa = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFadeTaxa]);
+      var greyCounts = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFadeCounts]);
       metricsPlus.forEach(function (m) {
-        if (m.fading) {
-          m.colour = grey(m.fading);
+        if (m.fadingTaxa) {
+          m.colourTaxa = greyTaxa(m.fadingTaxa);
+        }
+
+        if (m.fadingCounts) {
+          m.colourCounts = greyCounts(m.fadingCounts);
         }
       });
     }
@@ -1725,6 +1742,7 @@
         if (showTaxa) {
           lineData.push({
             id: "".concat(safeId(m.labelTaxa)),
+            key: m.key ? "".concat(m.key, "_taxa") : "".concat(safeId(m.labelTaxa)),
             type: 'taxa',
             label: m.labelTaxa,
             colour: m.colourTaxa,
@@ -1740,6 +1758,7 @@
         if (showCounts) {
           lineData.push({
             id: "".concat(safeId(m.labelCounts)),
+            key: m.key ? "".concat(m.key, "_counts") : "".concat(safeId(m.labelCounts)),
             type: 'count',
             label: m.labelCounts,
             colour: m.colourCounts,
@@ -1860,10 +1879,11 @@
 
 
       var mlines = gAccum.selectAll("path").data(lineData, function (d) {
-        return d.id;
+        return d.key;
       });
-      var eLines = mlines.enter().append("path").attr("class", function (d) {
-        return "accum-path accum-path-".concat(d.id);
+      var eLines = mlines.enter().append("path") //.attr("class", d => `accum-path accum-path-${d.id}`)
+      .attr("class", function (d) {
+        return "accum-path accum-path-".concat(d.key);
       }).attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
@@ -1873,7 +1893,7 @@
           };
         }));
       });
-      addEventHandlers(eLines, 'id');
+      addEventHandlers(eLines);
       mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points);
@@ -1983,10 +2003,10 @@
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
       });
       var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
-        return safeId(m.label);
+        return m.key;
       }).join(function (enter) {
         var path = enter.append("path").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
+          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(m.key);
         }).attr('d', function (m) {
           return "M ".concat(m.x, " ").concat(m.y + swatchSize / 2, " L ").concat(m.x + swatchSize, " ").concat(m.y + swatchSize / 2);
         });
@@ -2001,44 +2021,43 @@
         return m.strokeWidth;
       });
       var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
-        return safeId(m.label);
+        return m.key;
       }).join(function (enter) {
         var text = enter.append("text").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(safeId(m.label));
-        }).text(function (m) {
-          return m.label;
+          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(m.key);
         }).style('font-size', legendFontSize);
         return text;
+      }).text(function (m) {
+        return m.label;
       }).attr('x', function (m) {
         return m.x + swatchSize * swatchFact;
       }).attr('y', function (m) {
         return m.y + legendFontSize * 1;
       });
-      addEventHandlers(ls, 'label');
-      addEventHandlers(lt, 'label');
+      addEventHandlers(ls);
+      addEventHandlers(lt);
       return swatchSize * swatchFact * (rows + 1);
     }
 
-    function highlightItem(id, type, highlight) {
-      console.log(type); // Graph lines
-
+    function highlightItem(key, type, highlight) {
+      // Graph lines
       svgChart.selectAll('.accum-path').classed('lowlight', highlight);
-      svgChart.selectAll(".accum-path-".concat(safeId(id))).classed('lowlight', false);
+      svgChart.selectAll(".accum-path-".concat(key)).classed('lowlight', false);
       svgChart.selectAll(".accum-path").classed('highlight', false);
 
-      if (safeId(id)) {
-        svgChart.selectAll(".accum-path-".concat(safeId(id))).classed('highlight', highlight);
+      if (key) {
+        svgChart.selectAll(".accum-path-".concat(key)).classed('highlight', highlight);
       } // Legend items
 
 
       svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
 
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
+      if (key) {
+        svgChart.selectAll(".brc-legend-item-".concat(key)).classed('lowlight', false);
       }
 
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
+      if (key) {
+        svgChart.selectAll(".brc-legend-item-".concat(key)).classed('highlight', highlight);
       } else {
         svgChart.selectAll(".brc-legend-item").classed('highlight', false);
       } // Axes and axis labels
@@ -2046,29 +2065,29 @@
 
       svgChart.selectAll('.brc-accum-axis-taxa, .brc-accum-axis-count').classed('lowlight', highlight);
 
-      if (id) {
+      if (key) {
         svgChart.selectAll(".brc-accum-axis-".concat(type)).classed('lowlight', false);
       }
 
-      if (id) {
+      if (key) {
         svgChart.selectAll(".brc-accum-axis-".concat(type)).classed('highlight', highlight);
       } else {
         svgChart.selectAll(".brc-accum-axis-taxa, .brc-accum-axis-count").classed('highlight', false);
       }
     }
 
-    function addEventHandlers(sel, prop) {
+    function addEventHandlers(sel) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], d.type, true);
+          highlightItem(d.key, d.type, true);
         }
       }).on("mouseout", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], d.type, false);
+          highlightItem(d.key, d.type, false);
         }
       }).on("click", function (d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], d.type, true);
+          highlightItem(d.key, d.type, true);
           d3.event.stopPropagation();
         }
       });
@@ -2084,7 +2103,6 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-      * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
@@ -2141,11 +2159,6 @@
         remakeChart = true;
       }
 
-      if ('ytype' in opts) {
-        ytype = opts.ytype;
-        remakeChart = true;
-      }
-
       if ('metrics' in opts) {
         metrics = opts.metrics;
         preProcessMetrics();
@@ -2154,21 +2167,6 @@
 
       if (remakeChart) makeChart();
       positionMainElements(svg, expand);
-    }
-    /** @function setTaxon
-      * @param {string} opts.taxon - The taxon to display.
-      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
-      * For single species charts, this allows you to change the taxon displayed.
-      */
-
-
-    function setTaxon(taxon) {
-      if (taxa.length !== 1) {
-        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
-      } else {
-        taxa = [taxon];
-        makeChart();
-      }
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
@@ -2200,13 +2198,12 @@
     return {
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
-      setChartOpts: setChartOpts,
-      setTaxon: setTaxon
+      setChartOpts: setChartOpts
     };
   }
 
   var name = "brc-d3";
-  var version = "0.1.0";
+  var version = "0.1.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

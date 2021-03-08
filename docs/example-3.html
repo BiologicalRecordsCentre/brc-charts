@@ -4,9 +4,15 @@
   <meta charset="utf-8">
   <title>BRC Charts Library example 3</title>
   <style>
-    .divfl {
-      float: left;
-      overflow: hidden;
+    .flexc {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    /* max-width: 800px; */
+    }
+    .flexi {
+      margin: 0.5em;
+      
     }
   </style>
 </head>
@@ -40,10 +46,42 @@
 <code class="javascript">brccharts.accum({...})</code>
 </pre>
 
-    <div id="chart1" style="margin-top: 1em"></div>
-    <div id="chart2" style="margin-top: 1em"></div>
-    <div id="chart3" style="margin-top: 1em"></div>
-    <div id="chart4" style="margin-top: 1em"></div>
+    <p>
+      The four examples below show how it is possible to configure the chart to show different
+      combinations of species count and accumulation data from one or more years and also that
+      a charts can show either species or count accumulation data separately. 
+    </p>
+    <p>
+      The legend items and lines in the chart can be configured so that they are interactive.
+      Because there can be more than one y-axis scale on these charts, it is a useful feature
+      for quickly highlighting which axis is associated with a line. In the first example
+      the interactivity has been configured to operate on a mouse click. In the second 
+      example, interactivity occurs when the mouse moves over an item. In the last two
+      charts, interactivity has been switched off.
+    </p>
+    <div class="flexc">
+      <div id="chart1" class="flexi"></div>
+      <div id="chart2" class="flexi"></div>
+      <div id="chart3" class="flexi"></div>
+      <div id="chart4" class="flexi"></div>
+    </div>
+    <p>
+      The next example shows a bigger chart with more data. For each line specified for
+      a chart, both the colour and style (solid or dashed) can be specified. If the special
+      colour 'fading' is used for any lines, then successively fading shades of grey are 
+      used for it, as in this example for all but the most recent year. 
+    </p>
+    <div id="chart5"></div>
+    <p>
+      The final example shows how plotted data transitions between different states. 
+    </p>
+    <button onclick="setYear(2020)">2020</button>
+    <button onclick="setYear(2019)">2019</button>
+    <button onclick="setYear(2018)">2018</button>
+    <button onclick="setYear(2017)">2017</button>
+    <button onclick="setYear(2016)">2016</button>
+    <br/><br/>
+    <div id="chart6"></div>
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -64,6 +102,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
+      var accum, chart6
       d3.csv('./data/butterflies-16-20.csv', function(d){
         for (p in d) {
           if (p !== 'taxon') {
@@ -72,12 +111,43 @@
         }
         return d
       }).then(function(data){
-        var accum = {
-          selector: '#chart1',
+        accum = {
           data: data,
           show: 'both',
           swapYaxes: false,
-          metrics: [
+          width: 350,
+          height: 280,
+          margin: {left: 45, right: 68, bottom: 30, top: 10},
+          expand: false,
+          footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
+          footerAlign: 'right',
+          axisCountLabel: 'Number of records',
+          axisTaxaLabel: 'Number of species',
+          titleFontSize: 18,
+          axisLabelFontSize: 12,
+          legendFontSize: 12,
+          interactivity: 'mouseclick'
+        }
+        accum.selector = '#chart1'
+        accum.title = 'Seasonal accumulation of butterfly species and record numbers in 2020'
+        accum.interactivity = 'mouseclick'
+        accum.metrics = [
+            {
+              prop: '2020', 
+              labelTaxa: '2020 species', 
+              labelCounts: '2020 records', 
+              colourTaxa: 'red', 
+              colourCounts: 'red', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+          ]
+        brccharts.accum(accum)
+
+        accum.selector = '#chart2'
+        accum.title = 'Comparison of seasonal accumulation of butterfly species and record numbers in 2019 and 2020'
+        accum.interactivity = 'mousemove'
+        accum.metrics = [
             {
               prop: '2020', 
               labelTaxa: '2020 species', 
@@ -97,42 +167,138 @@
               styleCounts: 'dashed'
             },
           ],
-          width: 400,
-          height: 300,
-          margin: {left: 45, right: 68, bottom: 30, top: 10},
-          //axisTop: 'on',
-          //axisleft: 'tick',
-          expand: false,
-          title: 'Seasonal accumulation of butterfly species and record numbers in 2019 and 2020',
-          subtitle: 'Sub-header demonstration blah blah blah. ',
-          footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
-          footerAlign: 'right',
-          axisCountLabel: 'Number of records',
-          axisTaxaLabel: 'Number of species',
-          axisLabelFontSize: 12,
-          legendFontSize: 14,
-          interactivity: 'mouseclick'
-        }
-        brccharts.accum(accum)
-
-        accum.selector = '#chart2'
-        accum.width = 800
         brccharts.accum(accum)
 
         accum.selector = '#chart3'
-        accum.width = 200
-        accum.height = 150
-        accum.titleFontSize = 16
-        accum.subtitle = ''
+        accum.title = 'Comparison of seasonal accumulation of butterfly species in 2019 and 2020'
+        accum.show = 'taxa'
+        accum.interactivity = 'none'
+        accum.metrics = [
+            {
+              prop: '2020', 
+              labelTaxa: '2020 species', 
+              colourTaxa: 'red', 
+              styleTaxa: 'solid', 
+            },
+            {
+              prop: '2019', 
+              labelTaxa: '2019 species', 
+              colourTaxa: 'blue', 
+              styleTaxa: 'solid', 
+            },
+          ],
         brccharts.accum(accum)
-
 
         accum.selector = '#chart4'
-        accum.width = 150
-        accum.margin = {right: 45, left: 68, bottom: 30, top: 10}
+        accum.title = 'Comparison of seasonal accumulation of butterfly record numbers in 2019 and 2020'
         accum.swapYaxes = true
+        accum.margin = {left: 68, right: 68, bottom: 30, top: 10}
+        accum.width = 350 - (68-45)
+        accum.show = 'counts'
+        accum.metrics = [
+            {
+              prop: '2020',  
+              labelCounts: '2020 records', 
+              colourCounts: 'red', 
+              styleCounts: 'solid'
+            },
+            {
+              prop: '2019', 
+              labelCounts: '2019 records', 
+              colourCounts: 'blue', 
+              styleCounts: 'solid'
+            },
+          ],
         brccharts.accum(accum)
+
+        accum.selector = '#chart5'
+        accum.title = 'Comparison of seasonal accumulation of butterfly species and record counts from 2016 to 2020'
+        accum.swapYaxes = false
+        accum.margin = {left: 45, right: 68, bottom: 30, top: 10}
+        accum.width = 800
+        accum.height = 400
+        accum.show = 'both'
+        accum.interactivity = 'mousemove'
+        accum.metrics = [{
+              prop: '2020', 
+              labelTaxa: '2020 species', 
+              labelCounts: '2020 records', 
+              colourTaxa: 'blue', 
+              colourCounts: 'blue', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+            {
+              prop: '2019', 
+              labelTaxa: '2019 species', 
+              labelCounts: '2019 records', 
+              colourTaxa: 'fading', 
+              colourCounts: 'fading', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+            {
+              prop: '2018', 
+              labelTaxa: '2018 species', 
+              labelCounts: '2018 records', 
+              colourTaxa: 'fading', 
+              colourCounts: 'fading', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+            {
+              prop: '2017', 
+              labelTaxa: '2017 species', 
+              labelCounts: '2017 records', 
+              colourTaxa: 'fading', 
+              colourCounts: 'fading', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+            {
+              prop: '2016', 
+              labelTaxa: '2016 species', 
+              labelCounts: '2016 records', 
+              colourTaxa: 'fading', 
+              colourCounts: 'fading', 
+              styleTaxa: 'solid', 
+              styleCounts: 'dashed'
+            },
+
+        ]
+        brccharts.accum(accum)
+
+        accum.selector = '#chart6'
+        accum.title = 'Comparison of seasonal accumulation of butterfly species and record counts for 2020'
+        accum.metrics = [{
+          key: 'blah',
+          prop: '2020', 
+          labelTaxa: '2020 species', 
+          labelCounts: '2020 records', 
+          colourTaxa: 'blue', 
+          colourCounts: 'blue', 
+          styleTaxa: 'solid', 
+          styleCounts: 'dashed'
+        }]
+        chart6 = brccharts.accum(accum)
       })
+
+      function setYear(year) {
+        var opts = {
+          title: `Comparison of seasonal accumulation of butterfly species and record counts for ${year}`,
+          metrics: [{
+            key: 'blah',
+            prop: `${year}`, 
+            labelTaxa: `${year} species`, 
+            labelCounts: `${year} records`, 
+            colourTaxa: 'blue', 
+            colourCounts: 'blue', 
+            styleTaxa: 'solid', 
+            styleCounts: 'dashed'
+          }]
+        }
+        chart6.setChartOpts(opts)
+      }
     </script>
   </div>
 </body>

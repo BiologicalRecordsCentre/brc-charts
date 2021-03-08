@@ -694,7 +694,7 @@
 
             
 
-            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
         </tr>
 
     
@@ -901,7 +901,7 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading</ul></td>
+            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which taxa and/or count accumulation lines should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>labelTaxa</b> - a label for the taxa accumulation metric.<li> <b>labelCounts</b> - a label for the counts accumulation metric.<li> <b>key</b> - a base key for this metric. If the options are updated using the setChartOpts API method, then if this value is set, it is used to uniquely identify the graphic elements. If not set, then the label is used.<li> <b>ColourTaxa</b> - optional colour to give the line for the taxa accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>ColourCounts</b> - optional colour to give the line for the counts accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>styleTaxa</b> - options style to give the line for the taxa accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.<li> <b>styleCounts</b> - options style to give the line for the counts accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.</ul></td>
         </tr>
 
     
@@ -972,7 +972,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line60">line 60</a>
+        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
@@ -1082,7 +1082,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line700">line 700</a>
+        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line701">line 701</a>
     </li></ul></dd>
     
 
@@ -1170,7 +1170,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line692">line 692</a>
+        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line693">line 693</a>
     </li></ul></dd>
     
 
@@ -1499,29 +1499,6 @@
 
         <tr>
             
-                <td class="name"><code>ytype</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>metrics</code></td>
             
 
@@ -1609,144 +1586,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line602">line 602</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~setTaxon"><span class="type-signature">(inner) </span>setTaxon<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <b>This function is exposed as a method on the API returned from the accum function</b>.For single species charts, this allows you to change the taxon displayed.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>opts.taxon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The taxon to display.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line677">line 677</a>
+        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line623">line 623</a>
     </li></ul></dd>
     
 
@@ -1955,7 +1795,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line708">line 708</a>
+        <a href="accum.js.html">accum.js</a>, <a href="accum.js.html#line709">line 709</a>
     </li></ul></dd>
     
 
@@ -1991,7 +1831,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Mar 02 2021 10:56:01 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Mar 08 2021 16:55:14 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

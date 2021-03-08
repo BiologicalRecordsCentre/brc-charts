@@ -27,7 +27,7 @@ import * as gen from './general'
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
- * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+ * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
  * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
@@ -38,12 +38,17 @@ import * as gen from './general'
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
- * data for which a line should be generated on the chart.
+ * data for which taxa and/or count accumulation lines should be generated on the chart.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
- * <li> <b>label</b> - a label for this metric.
- * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Fading
+ * <li> <b>labelTaxa</b> - a label for the taxa accumulation metric.
+ * <li> <b>labelCounts</b> - a label for the counts accumulation metric.
+ * <li> <b>key</b> - a base key for this metric. If the options are updated using the setChartOpts API method, then if this value is set, it is used to uniquely identify the graphic elements. If not set, then the label is used.
+ * <li> <b>ColourTaxa</b> - optional colour to give the line for the taxa accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+ * <li> <b>ColourCounts</b> - optional colour to give the line for the counts accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+ * <li> <b>styleTaxa</b> - options style to give the line for the taxa accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
+ * <li> <b>styleCounts</b> - options style to give the line for the counts accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
@@ -60,7 +65,7 @@ import * as gen from './general'
 export function accum({
   // Default options in here
   selector = 'body',
-  elid = 'phen1-chart',
+  elid = 'accum-chart',
   width = 300,
   height = 200,
   margin = {left: 0, right: 0, top: 0, bottom: 0},
@@ -88,7 +93,6 @@ export function accum({
   duration = 1000,
   interactivity = 'mousemove',
   data = [],
-  taxa = [],
   metrics = []
 } = {}) {
 
@@ -125,35 +129,51 @@ export function accum({
     // Look for 'fading' colour in taxa and colour appropriately 
     // in fading shades of grey.
     
-    let iFading = 0
+    let iFadingTaxa = 0
+    let iFadingCounts = 0
+    let iFadeTaxa, iFadeCounts, strokeWidth
     metricsPlus = metrics.map(m => {
-      let iFade, strokeWidth
-      if (m.colour === 'fading') {
-        iFade = ++iFading
+      if (m.colourCounts === 'fading') {
+        iFadeCounts = ++iFadingCounts
         strokeWidth = 1
       } else {
         strokeWidth = 2
       }
+      if (m.colourTaxa === 'fading') {
+        iFadeTaxa = ++iFadingTaxa
+        strokeWidth = 1
+      } else {
+        strokeWidth = 2
+      }
+
       return {
         prop: m.prop,
+        key: m.key,
         labelTaxa: m.labelTaxa,
         labelCounts: m.labelCounts,
         colourTaxa: m.colourTaxa,
         colourCounts: m.colourCounts,
         styleTaxa: m.styleTaxa,
         styleCounts: m.styleCounts,
-        fading: iFade,
+        fadingTaxa: iFadeTaxa,
+        fadingCounts: iFadeCounts,
         strokeWidth: strokeWidth
       }
     }).reverse()
 
-    const grey = d3.scaleLinear()
+    const greyTaxa = d3.scaleLinear()
       .range(['#808080', '#E0E0E0'])
-      .domain([1, iFading])
+      .domain([1, iFadeTaxa])
+    const greyCounts = d3.scaleLinear()
+      .range(['#808080', '#E0E0E0'])
+      .domain([1, iFadeCounts])
 
     metricsPlus.forEach(m => {
-      if (m.fading) {
-        m.colour = grey(m.fading)
+      if (m.fadingTaxa) {
+        m.colourTaxa = greyTaxa(m.fadingTaxa)
+      }
+      if (m.fadingCounts) {
+        m.colourCounts = greyCounts(m.fadingCounts)
       }
     })
   }
@@ -199,6 +219,7 @@ export function accum({
       if (showTaxa) {
         lineData.push({
           id: `${gen.safeId(m.labelTaxa)}`,
+          key: m.key ? `${m.key}_taxa` : `${gen.safeId(m.labelTaxa)}`,
           type: 'taxa',
           label: m.labelTaxa,
           colour: m.colourTaxa,
@@ -212,6 +233,7 @@ export function accum({
       if (showCounts){
         lineData.push({
           id: `${gen.safeId(m.labelCounts)}`,
+          key: m.key ? `${m.key}_counts` : `${gen.safeId(m.labelCounts)}`,
           type: 'count',
           label: m.labelCounts,
           colour: m.colourCounts,
@@ -326,11 +348,12 @@ export function accum({
     
     // Create/update the line paths with D3
     const mlines = gAccum.selectAll("path")
-      .data(lineData,  d => d.id)
+      .data(lineData,  d => d.key)
       
     const eLines = mlines.enter()
       .append("path")
-      .attr("class", d => `accum-path accum-path-${d.id}`)
+      //.attr("class", d => `accum-path accum-path-${d.id}`)
+      .attr("class", d => `accum-path accum-path-${d.key}`)
       .attr("d", d => {
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {
@@ -341,7 +364,7 @@ export function accum({
         }))
       })
 
-    addEventHandlers(eLines, 'id')
+    addEventHandlers(eLines)
 
     mlines.merge(eLines)
       .transition()
@@ -494,10 +517,10 @@ export function accum({
     })
     
     const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(metricsReversed, m => gen.safeId(m.label))
+      .data(metricsReversed, m => m.key)
       .join(enter => {
           const path = enter.append("path")
-            .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
+            .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${m.key}`)
             .attr('d', m => `M ${m.x} ${m.y + swatchSize/2} L ${m.x + swatchSize} ${m.y + swatchSize/2}`)
           return path
       })
@@ -507,39 +530,38 @@ export function accum({
       .attr("stroke-width", m => m.strokeWidth)
 
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsReversed, m => gen.safeId(m.label))
-      .join(enter => {
+      .data(metricsReversed, m => m.key)
+      .join(
+        enter => {
           const text = enter.append("text")
-            .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(m.label)}`)
-            .text(m => m.label)
+            .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.key}`)
             .style('font-size', legendFontSize)
           return text
-      })
+        })
+      .text(m => m.label)
       .attr('x', m => m.x + swatchSize * swatchFact)
       .attr('y', m => m.y + legendFontSize * 1)
 
-    addEventHandlers(ls, 'label')
-    addEventHandlers(lt, 'label')
+    addEventHandlers(ls)
+    addEventHandlers(lt)
 
     return swatchSize * swatchFact * (rows + 1)
   }
 
-  function highlightItem(id, type, highlight) {
-
-    console.log(type)
+  function highlightItem(key, type, highlight) {
 
     // Graph lines
     svgChart.selectAll('.accum-path')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.accum-path-${gen.safeId(id)}`)
+    svgChart.selectAll(`.accum-path-${key}`)
       .classed('lowlight', false)
   
     svgChart.selectAll(`.accum-path`)
       .classed('highlight', false)
 
-    if (gen.safeId(id)) {
-      svgChart.selectAll(`.accum-path-${gen.safeId(id)}`)
+    if (key) {
+      svgChart.selectAll(`.accum-path-${key}`)
         .classed('highlight', highlight)
     }
     
@@ -547,13 +569,13 @@ export function accum({
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
 
-    if (id) {
-      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+    if (key) {
+      svgChart.selectAll(`.brc-legend-item-${key}`)
         .classed('lowlight', false)
     }
 
-    if (id) {
-      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+    if (key) {
+      svgChart.selectAll(`.brc-legend-item-${key}`)
         .classed('highlight', highlight)
     } else {
       svgChart.selectAll(`.brc-legend-item`)
@@ -564,12 +586,12 @@ export function accum({
     svgChart.selectAll('.brc-accum-axis-taxa, .brc-accum-axis-count')
       .classed('lowlight', highlight)
 
-    if (id) {
+    if (key) {
       svgChart.selectAll(`.brc-accum-axis-${type}`)
         .classed('lowlight', false)
     }
 
-    if (id) {
+    if (key) {
       svgChart.selectAll(`.brc-accum-axis-${type}`)
         .classed('highlight', highlight)
     } else {
@@ -578,22 +600,21 @@ export function accum({
     }
   }
 
-  function addEventHandlers(sel, prop) {
-
+  function addEventHandlers(sel) {
     sel
       .on("mouseover", function(d) {
-      if (interactivity === 'mousemove') {
-          highlightItem(d[prop], d.type, true)
+        if (interactivity === 'mousemove') {
+          highlightItem(d.key, d.type, true)
         }
       })
       .on("mouseout", function(d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop],  d.type, false)
+          highlightItem(d.key,  d.type, false)
         }
       })
       .on("click", function(d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], d.type, true)
+          highlightItem(d.key, d.type, true)
           d3.event.stopPropagation()
         }
       })
@@ -610,7 +631,6 @@ export function accum({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
@@ -659,11 +679,6 @@ export function accum({
       remakeChart = true
     }
 
-    if ('ytype' in opts) {
-      ytype = opts.ytype
-      remakeChart = true
-    }
-
     if ('metrics' in opts) {
       metrics = opts.metrics
       preProcessMetrics()
@@ -672,20 +687,6 @@ export function accum({
 
     if (remakeChart) makeChart()
     gen.positionMainElements(svg, expand)
-  }
-
-/** @function setTaxon
-  * @param {string} opts.taxon - The taxon to display.
-  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
-  * For single species charts, this allows you to change the taxon displayed.
-  */
-  function setTaxon(taxon){
-    if (taxa.length !== 1) {
-      console.log("You can only use the setTaxon method when your chart displays a single taxon.")
-    } else {
-      taxa = [taxon]
-      makeChart()
-    }
   }
 
 
@@ -715,8 +716,7 @@ export function accum({
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
-    setChartOpts: setChartOpts,
-    setTaxon: setTaxon
+    setChartOpts: setChartOpts
   }
 
 }
