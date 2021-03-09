@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library example 4</title>
+  <style>
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Using the BRC Charts Library</h1>
+    <h2>Link charts for interspecific relationships</h2>
+    <p>
+      Include the required Javascript libraries and CSS in the page. We need the BRC Charts JS libary, the associated
+      CSS and the D3 library which is an external
+      external dependency of the BRC Charts library. In this example they are all included from CDNs.
+    </p>
+<pre>
+<code class="html">&lt;script src=&quot;https://d3js.org/d3.v5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.js&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
+</pre>
+    <p>
+      First we create a div element which will contain the chart.
+    </p>
+<pre>
+<code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
+</pre>
+
+    <p>
+      In the page's Javascript we call the <em>brccharts.accum</em> method, passing in the configuration options
+      which include the data we want to display.
+    </p>
+
+<pre>
+<code class="javascript">brccharts.links({...})</code>
+</pre>
+
+    <div id="chart1"></div>
+
+    <!--JS and CSS required for highlighting inline example code-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!--Page CSS-->
+    <link rel="stylesheet" href="example.css" />
+
+    <!--D3 JS required exernal dependency of BRC Atlas library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS-->
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
+
+    <script>
+
+      // In this example we are dealing with a full DBIF datasets, but we
+      // don't want to dispaly all the data. First we filter on a list
+      // of desired hostplants, also mapping several host taxa to a single
+      // entity in some cases (e.g. both common native Quercus to oak).
+      var hosts1 = {
+        'corylus avellana': "Hazel",
+        'tilia cordata': "Lime",
+        'tilia platyphyllos': "Lime",
+        'ulbus glabra': "Wych elm",
+        'acer campestre': "Field maple",
+        'acer pseudoplatanus': "Sycamore",
+        'fraxinus excelsior': "Ash",
+        'quercus petraea': "Oak",
+        'quercus robur': "Oak"
+      }
+
+      var hosts = hosts1
+      d3.csv('./data/DBIFInteractionFrequencies.csv', function(d){
+        if (d['Plant Species Name'] && d['Insect Species Name']) {
+          var t = d['Plant Species Name'].toLowerCase()
+          if (hosts[t]) {
+            return {
+              taxon1: hosts[t],
+              taxon2: d['Insect Species Name'],
+              key: hosts[t] + '#' + d['Insect Species Name'],
+              data: d['DBIF Source']
+            }
+          }
+        }
+      }).then(function(data){
+
+        // At this point only those records pertaining to our named hosts
+        // remain, but we may still have many records for signle plant
+        // insect relationship (identified by the key field). So here
+        // we reduce these to a single record, collecting the contents of
+        // the data field together into an array.
+        var compressed = []
+        var keys = []
+        data.forEach(d => {
+          if (keys.indexOf(d.key) === -1) {
+            keys.push(d.key)
+            d.data = [d.data]
+            compressed.push(d)
+          } else {
+            var existing = compressed[keys.indexOf(d.key)]
+            existing.data.push(d.data)
+          }
+        })
+
+        var links = {
+          selector: '#chart1',
+          data: compressed,
+          width: 600,
+          height: 600,
+          expand: false,
+          title: 'Insects and their foodplants',
+          footer: 'Data extracted from the BRC database of insects and food plants (DBIF).',
+          footerAlign: 'right',
+          titleFontSize: 18,
+          axisLabelFontSize: 12,
+          legendFontSize: 12,
+          interactivity: 'mouseclick'
+        }
+        brccharts.links(links)
+      });
+    </script>
+  </div>
+</body>
+</html>
