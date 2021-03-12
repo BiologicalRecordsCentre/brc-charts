@@ -2220,6 +2220,10 @@
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {string} opts.backgroundColour - The background colour of the main chart area. Can be set to empty string for none. (Default - empty.)
+   * @param {string} opts.taxa1colour - The colour to use for taxa in column taxa1. Can be any valid CSS colour string or 'auto' to specify a colour automatically. (Deafult - 'black'.)
+   * @param {string} opts.taxa2colour - The colour to use for taxa in column taxa2. Can be any valid CSS colour string or 'auto' to specify a colour automatically. (Deafult - 'black'.)
+   * @param {boolean} opts.overflow - A boolean that indicates whether or not to show graphics that overflow the svg boundary. (Default - true.)
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
@@ -2264,15 +2268,39 @@
         _ref$footerAlign = _ref.footerAlign,
         footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
         _ref$duration = _ref.duration,
+        _ref$overflow = _ref.overflow,
+        overflow = _ref$overflow === void 0 ? true : _ref$overflow,
         _ref$interactivity = _ref.interactivity,
+        _ref$backgroundColour = _ref.backgroundColour,
+        backgroundColour = _ref$backgroundColour === void 0 ? '' : _ref$backgroundColour,
+        _ref$taxa1colour = _ref.taxa1colour,
+        taxa1colour = _ref$taxa1colour === void 0 ? 'black' : _ref$taxa1colour,
+        _ref$taxa2colour = _ref.taxa2colour,
+        taxa2colour = _ref$taxa2colour === void 0 ? 'black' : _ref$taxa2colour,
+        _ref$taxonInfoFn = _ref.taxonInfoFn,
+        taxonInfoFn = _ref$taxonInfoFn === void 0 ? null : _ref$taxonInfoFn,
+        _ref$linkInfoFn = _ref.linkInfoFn,
+        linkInfoFn = _ref$linkInfoFn === void 0 ? null : _ref$linkInfoFn,
+        _ref$radius = _ref.radius,
+        radius = _ref$radius === void 0 ? 5 : _ref$radius,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
 
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-links').style('position', 'relative').style('display', 'inline');
+    mainDiv.classed('chart-overflow', overflow); // Define the div for the tooltip
+
+    var popupDiv = d3.select("body").append("div").attr("class", "brc-chart-links-popup").style("opacity", 0);
     var svg = mainDiv.append('svg');
+
+    if (backgroundColour) {
+      svg.style('background-color', backgroundColour);
+    }
+
     svg.on("click", function () {
     });
-    var svgChart = svg.append('svg').attr('class', 'mainChart');
+    var svgChart = svg.append('svg').attr('class', 'mainChart').attr('x', 0).attr('y', -80).attr("width", width).attr("height", height);
+    var simulation = d3.forceSimulation();
+    var nodes;
     makeChart(data); // Texts must come after chart because 
     // the chart width is required
 
@@ -2284,36 +2312,132 @@
 
     function makeChart(data) {
       // Make two separate arrays - one for nodes and one for links
-      var taxon1 = data.map(function (d) {
+      var taxa1 = data.map(function (d) {
         return d.taxon1;
       });
-      var taxon2 = data.map(function (d) {
+      var taxa2 = data.map(function (d) {
         return d.taxon2;
       });
-      var nodes = [].concat(_toConsumableArray(new Set(taxon1)), _toConsumableArray(new Set(taxon2))).map(function (t) {
+      var taxa = [].concat(_toConsumableArray(new Set(taxa1)), _toConsumableArray(new Set(taxa2))); // Good example of modifying force layout here:
+      // https://observablehq.com/@d3/modifying-a-force-directed-graph
+      // In a force directed layout, the current positions of the nodes is stored
+      // within the data objects - NOT the DOM ojbects. So to preserve current
+      // position of elements when data is updated, we have to keep previous
+      // version of the node object.
+
+      var nodesPrev;
+
+      if (nodes) {
+        // Map gives a dictionary that can be used to lookup
+        nodesPrev = new Map(nodes.map(function (d) {
+          return [d.id, d];
+        }));
+      }
+
+      nodes = taxa.map(function (t) {
         return {
-          id: t
+          id: t,
+          t1: taxa1.includes(t)
         };
       });
+
+      if (nodesPrev) {
+        // Use previous node where it exists
+        nodes = nodes.map(function (d) {
+          return Object.assign(nodesPrev.get(d.id) || {}, d);
+        });
+      }
+
       var links = data.map(function (d) {
         return {
+          key: safeId("".concat(d.taxon1, "-").concat(d.taxon2)),
           source: d.taxon1,
-          target: d.taxon2
+          target: d.taxon2,
+          data: d.data
         };
-      });
-      svgChart.attr("width", width);
-      svgChart.attr("height", height);
-      var simulation = d3.forceSimulation(nodes).force("link", d3.forceLink(links).id(function (d) {
+      }); //const simulation = d3.forceSimulation(nodes)
+
+      simulation.nodes(nodes).force("link", d3.forceLink(links).id(function (d) {
         return d.id;
       })).force("charge", d3.forceManyBody().strength(-30)) // default strength is -30 (repel)
       .force("center", d3.forceCenter(width / 2, height / 2));
-      var link = svgChart.append("g").attr("stroke", "#999").attr("stroke-opacity", 0.6).selectAll("line").data(links).join("line").attr("stroke-width", 1);
-      var node = svgChart.append("g").attr("stroke", "#fff").attr("stroke-width", 1.5).selectAll("circle").data(nodes).join("circle").attr("r", 5) //.attr("fill", color)
-      .call(drag(simulation));
-      node.append("title").text(function (d) {
-        return d.id;
+      simulation.alpha(1).restart();
+      var link = svgChart.selectAll(".display-link").data(links, function (d) {
+        return d.key;
+      }).join(function (enter) {
+        return enter.append("line").classed('display-link', true).attr("id", function (d) {
+          return d.key;
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.remove();
       });
+      var selectLink = svgChart.selectAll(".select-link").data(links, function (d) {
+        return d.key;
+      }).join(function (enter) {
+        return enter.append("line").classed('select-link', true).on("mouseover", function (d) {
+          d3.select(".display-link#".concat(d.key)).classed('highlighted', true);
+          d3.select("circle#".concat(safeId(d.source.id))).classed('highlighted', true);
+          d3.select("circle#".concat(safeId(d.target.id))).classed('highlighted', true);
+          popupDiv.transition().duration(200).style("opacity", 0.9);
+          var html = linkInfoFn ? linkInfoFn(d.source.id, d.target.id, d.data) : '';
+          popupDiv.html(html).style("left", d3.event.pageX + 10 + "px").style("top", d3.event.pageY - 30 + "px");
+        }).on("mouseout", function (d) {
+          d3.select(".display-link#".concat(d.key)).classed('highlighted', false);
+          d3.select("circle#".concat(safeId(d.source.id))).classed('highlighted', false);
+          d3.select("circle#".concat(safeId(d.target.id))).classed('highlighted', false);
+          popupDiv.transition().duration(500).style("opacity", 0);
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.remove();
+      });
+      var node = svgChart.selectAll("circle").data(nodes, function (d) {
+        return d.id;
+      }).join(function (enter) {
+        return enter.append("circle").attr('id', function (d) {
+          return safeId(d.id);
+        }).attr("r", radius).attr("x", width / 2).attr("y", height / 2).attr("fill", function (d, i) {
+          return getColour(taxa1, taxa2, taxa, d);
+        }).on("click", function (d) {
+          delete d.fx;
+          delete d.fy;
+          d3.select(this).classed("fixed", false);
+          simulation.alpha(1).restart();
+        }).on("mouseover", function (d) {
+          d3.select(this).classed("highlighted", true);
+          highLightLinks(d.id, true);
+          popupDiv.transition().duration(200).style("opacity", 0.9);
+          var html = taxonInfoFn ? taxonInfoFn(d.id, d.t1) : d.id;
+          popupDiv.html(html).style("left", d3.event.pageX + 10 + "px").style("top", d3.event.pageY - 30 + "px");
+        }).on("mouseout", function (d) {
+          d3.select(this).classed("highlighted", false);
+          highLightLinks(d.id, false);
+          popupDiv.transition().duration(500).style("opacity", 0);
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition().duration(1000).attr("r", 0).remove();
+        });
+      }).call(drag(simulation));
       simulation.on("tick", function () {
+        node.attr("cx", function (d) {
+          if (overflow) {
+            return d.x;
+          } else {
+            return d.x = Math.max(radius, Math.min(width - radius, d.x));
+          }
+        }).attr("cy", function (d) {
+          if (overflow) {
+            return d.y;
+          } else {
+            return d.y = Math.max(radius, Math.min(height - radius, d.y));
+          }
+        });
         link.attr("x1", function (d) {
           return d.source.x;
         }).attr("y1", function (d) {
@@ -2323,40 +2447,75 @@
         }).attr("y2", function (d) {
           return d.target.y;
         });
-        node.attr("cx", function (d) {
-          return d.x;
-        }).attr("cy", function (d) {
-          return d.y;
+        selectLink.attr("x1", function (d) {
+          return d.source.x;
+        }).attr("y1", function (d) {
+          return d.source.y;
+        }).attr("x2", function (d) {
+          return d.target.x;
+        }).attr("y2", function (d) {
+          return d.target.y;
         });
       });
+
+      function highLightLinks(id, highlight) {
+        var hLinks = links.filter(function (l) {
+          return l.source.id === id || l.target.id === id;
+        });
+        hLinks.forEach(function (link) {
+          d3.selectAll(".display-link#".concat(link.key)).classed('highlighted', highlight);
+        });
+      }
+    }
+
+    function getColour(taxa1, taxa2, taxa, d) {
+      var iAuto;
+
+      if (taxa1colour === 'auto' && taxa2colour === 'auto') {
+        iAuto = taxa.indexOf(d.id);
+      } else if (taxa1colour === 'auto') {
+        iAuto = taxa1.indexOf(d.id);
+      } else if (taxa2colour === 'auto') {
+        iAuto = taxa2.indexOf(d.id);
+      }
+
+      if (d.t1) {
+        if (taxa1colour === 'auto') {
+          return autoColour(iAuto);
+        } else {
+          return taxa1colour;
+        }
+      } else {
+        if (taxa2colour === 'auto') {
+          return autoColour(iAuto);
+        } else {
+          return taxa2colour;
+        }
+      }
+
+      function autoColour(i) {
+        if (!d.colour) {
+          if (i < 10) {
+            return d3.schemeCategory10[i];
+          } else if (i < 18) {
+            return d3.schemeDark2[i - 10];
+          } else if (i < 26) {
+            return d3.schemeAccent[i - 18];
+          } else {
+            return d3.interpolateSpectral(Math.random());
+          }
+        }
+      }
     }
 
     function drag(simulation) {
-      // function dragstarted() {
-      //   if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-      //   d3.event.subject.fx = d3.event.subject.x;
-      //   d3.event.subject.fy = d3.event.subject.y;
-      // }
-      // function dragged() {
-      //   d3.event.subject.fx = d3.event.x;
-      //   d3.event.subject.fy = d3.event.y;
-      // }
-      // function dragended() {
-      //   if (!d3.event.active) simulation.alphaTarget(0);
-      //   d3.event.subject.fx = null;
-      //   d3.event.subject.fy = null;
-      // }
-      // return d3.drag()
-      //     .on("start", dragstarted)
-      //     .on("drag", dragged)
-      //     .on("end", dragended);
       function dragstart() {
         d3.select(this).classed("fixed", true);
       }
 
       function dragged() {
-        d3.event.subject.fx = clamp(d3.event.x, 0, width);
-        d3.event.subject.fy = clamp(d3.event.y, 0, height);
+        d3.event.subject.fx = clamp(d3.event.x);
+        d3.event.subject.fy = clamp(d3.event.y);
         simulation.alpha(1).restart();
       }
 
@@ -2364,7 +2523,8 @@
     }
 
     function clamp(x, lo, hi) {
-      return x < lo ? lo : x > hi ? hi : x;
+      //return x < lo ? lo : x > hi ? hi : x;
+      return x;
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -2456,7 +2616,7 @@
      * @property {module:links~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:links~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:links~setChartOpts} setChartOpts - Sets text options for the chart. 
-       */
+     */
 
 
     return {

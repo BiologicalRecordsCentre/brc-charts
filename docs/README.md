@@ -7,3 +7,4 @@ For API details - [JSDoc API documentation](https://biologicalrecordscentre.gith
 - [Pie/donut charts](example-1.html)
 - [Phenology charts](example-2.html)
 - [Species/record accumulation charts](example-3.html)
+- [Interspecific relationship charts](example-4.html)

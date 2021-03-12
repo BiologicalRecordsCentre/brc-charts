@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <title>BRC Charts Library example 4</title>
   <style>
+    input {
+      margin-left: 1em;
+    }
   </style>
 </head>
 <body>
@@ -35,6 +38,32 @@
 <pre>
 <code class="javascript">brccharts.links({...})</code>
 </pre>
+    <input type="checkbox" id="hazel" checked onchange="checkbox(this, 'Hazel')">
+    <label for="scales">Hazel</label>
+    <input type="checkbox" id="lime" checked onchange="checkbox(this, 'Lime')"">
+    <label for="scales">Lime</label>
+    <input type="checkbox" id="elm" checked onchange="checkbox(this, 'Wych elm')"">
+    <label for="scales">Wych elm</label>
+    <input type="checkbox" id="maple" checked onchange="checkbox(this, 'Field maple')"">
+    <label for="scales">Field maple</label>
+    <input type="checkbox" id="sycamore" checked onchange="checkbox(this, 'Sycamore')"">
+    <label for="scales">Sycamore</label>
+    <input type="checkbox" id="ash" checked onchange="checkbox(this, 'Ash')"">
+    <label for="scales">Ash</label>
+    <input type="checkbox" id="oak" checked onchange="checkbox(this, 'Oak')"">
+    <label for="scales">Oak</label>
+    <p>
+      Early demo - this is a work in progress. Nodes can be dragged - upon which they become locked
+      in the released position. To unlock a node, click on it again. Curent demo shows both species
+      and sources for relationships in popups on mouse hover. The latter tend to get in the way
+      a bit. The behaviour on mouse hover will be configurable so text could, for example, appear
+      below, above or beside the chart, or switched off. There will be a lot of configuration options, for example
+      the size of the dots. It would also be nice to have a search method so that a user could
+      search for, and highlight, a particular insect in this example. There will also be a
+      legend option for the hosts in cases where the graphic needs to illustrate something without
+      being interactive. (There's a problem with the SVG positioning here - its a bit low - which I will address.
+      I also know about the problem with node appearing under links on re-entry.)
+    </p>
 
     <div id="chart1"></div>
 
@@ -57,40 +86,84 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
-
-      // In this example we are dealing with a full DBIF datasets, but we
-      // don't want to dispaly all the data. First we filter on a list
-      // of desired hostplants, also mapping several host taxa to a single
-      // entity in some cases (e.g. both common native Quercus to oak).
-      var hosts1 = {
-        'corylus avellana': "Hazel",
-        'tilia cordata': "Lime",
-        'tilia platyphyllos': "Lime",
-        'ulbus glabra': "Wych elm",
-        'acer campestre': "Field maple",
-        'acer pseudoplatanus': "Sycamore",
-        'fraxinus excelsior': "Ash",
-        'quercus petraea': "Oak",
-        'quercus robur': "Oak"
+      var checked = ["Hazel", "Lime", "Wych elm", "Field maple", "Sycamore", "Ash", "Oak"]
+      var chart, csvData, hosts
+      var opts = {
+        selector: '#chart1',
+        data: null,
+        width: 600,
+        height: 600,
+        expand: false,
+        //title: 'Insects and their foodplants',
+        footer: 'Data extracted from the BRC database of insects and food plants (DBIF).',
+        footerAlign: 'right',
+        titleFontSize: 18,
+        axisLabelFontSize: 12,
+        legendFontSize: 12,
+        interactivity: 'mouseclick',
+        //backgroundColour: 'rgb(245,245,245)',
+        overflow: true,
+        taxa1colour: 'auto',
+        taxa2colour: 'grey',
+        taxonPopups: true,
+        taxonInfoFn: null,
+        linkInfoFn: null
       }
 
-      var hosts = hosts1
-      d3.csv('./data/DBIFInteractionFrequencies.csv', function(d){
-        if (d['Plant Species Name'] && d['Insect Species Name']) {
-          var t = d['Plant Species Name'].toLowerCase()
-          if (hosts[t]) {
-            return {
-              taxon1: hosts[t],
-              taxon2: d['Insect Species Name'],
-              key: hosts[t] + '#' + d['Insect Species Name'],
-              data: d['DBIF Source']
-            }
+      function checkbox(cb, host) {
+        if (cb.checked) {
+          if (checked.indexOf(host) === -1) {
+            checked.push(host)
+          }
+        } else {
+          if (checked.indexOf(host) > -1) {
+            checked.splice(checked.indexOf(host), 1);
           }
         }
-      }).then(function(data){
+        regenerate()
+      }
 
+      function preprocess() {
+        // In this example we are dealing with a full DBIF datasets, but we
+        // don't want to dispaly all the data. We will filter on a list
+        // of desired hostplants, also mapping several host taxa to a single
+        // entity in some cases (e.g. both common native Quercus to oak).
+        hostmap = {
+          "Hazel":  ['Corylus avellana'],
+          "Lime": ['Tilia cordata', 'Tilia platyphyllos'],
+          "Wych elm": ['Ulmus glabra'],
+          "Field maple": ['Acer campestre'],
+          "Sycamore": ['Acer pseudoplatanus'],
+          "Ash": ['Fraxinus excelsior'],
+          "Oak": ['Quercus petraea', 'Quercus robur']
+        }
+        hosts = checked.reduce(function(a,h) {
+          a[h] = hostmap[h]
+          return a
+        }, {})
+        var hostTaxa = Object.keys(hosts).reduce(function(a, k) {
+          hosts[k].forEach(function(t) {
+            a[t.toLowerCase()] = k
+          })
+          return a
+        }, {})
+
+        var data = csvData.filter(function(d) {
+          var t = d['Plant Species Name'].toLowerCase()
+          if (hostTaxa[t]) {
+            return true
+          }
+        }).map(function(d){
+          var t = d['Plant Species Name'].toLowerCase()
+          return {
+            taxon1: hostTaxa[t],
+            taxon2: d['Insect Species Name'],
+            key: hostTaxa[t] + '#' + d['Insect Species Name'],
+            data: d['DBIF Source']
+          }
+        })
         // At this point only those records pertaining to our named hosts
-        // remain, but we may still have many records for signle plant
+        // remain, but we may still have multipe records for particular plant
         // insect relationship (identified by the key field). So here
         // we reduce these to a single record, collecting the contents of
         // the data field together into an array.
@@ -106,23 +179,58 @@
             existing.data.push(d.data)
           }
         })
+        return compressed
+      }
 
-        var links = {
-          selector: '#chart1',
-          data: compressed,
-          width: 600,
-          height: 600,
-          expand: false,
-          title: 'Insects and their foodplants',
-          footer: 'Data extracted from the BRC database of insects and food plants (DBIF).',
-          footerAlign: 'right',
-          titleFontSize: 18,
-          axisLabelFontSize: 12,
-          legendFontSize: 12,
-          interactivity: 'mouseclick'
+      d3.csv('./data/DBIFInteractionFrequencies.csv', function(d){
+        if (d['Plant Species Name'] && d['Insect Species Name']) {
+          // Fitlers out any records where both taxa aren't set
+          return d
         }
-        brccharts.links(links)
+      }).then(function(data){
+        csvData = data
+        opts.data = preprocess()
+        opts.taxonInfoFn = function(taxon, isTaxon1) {
+          if (isTaxon1) {
+            return taxon + " (<i>" + hosts[taxon].join(" & ") + "</i>)"
+          } else {
+            return '<i>' + taxon + '</i>'
+          }
+        }
+        opts.linkInfoFn = function(taxon1, taxon2, data) {
+          var html = 'Foodplant: ' + taxon1 + " (<i>" + hosts[taxon1].join(" & ") + "</i>)" 
+          html = html + '<br/>Insect: <i>' + taxon2 + '</i>'
+          html = html + '<br/>sources:<ul>'
+          data.forEach(function(s) {
+            html = html + '<li>' + s + '</li>'
+          })
+          html = html + '</ul>'
+          return html
+        }
+        chart = brccharts.links(opts)
       });
+
+      function regenerate() {
+        opts.data = preprocess()
+        opts.taxonInfoFn = function(taxon, isTaxon1) {
+          if (isTaxon1) {
+            return taxon + " (<i>" + hosts[taxon].join(" & ") + "</i>)"
+          } else {
+            return '<i>' + taxon + '</i>'
+          }
+        }
+        opts.linkInfoFn = function(taxon1, taxon2, data) {
+          var html = 'Foodplant: ' + taxon1 + " (<i>" + hosts[taxon1].join(" & ") + "</i>)" 
+          html = html + '<br/>Insect: <i>' + taxon2 + '</i>'
+          html = html + '<br/>sources:<ul>'
+          data.forEach(function(s) {
+            html = html + '<li>' + s + '</li>'
+          })
+          html = html + '</ul>'
+          return html
+        }
+        chart.setChartOpts(opts)
+      }
     </script>
   </div>
 </body>

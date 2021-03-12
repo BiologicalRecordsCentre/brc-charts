@@ -1,1 +1,53 @@
 
+.chart-overflow svg {
+    overflow: visible;
+}
+.mainChart {
+    background-color: plum;
+}
+svg line.display-link{
+    stroke-width: 1;
+    stroke: black;
+    opacity: 0.2;
+}
+svg line.select-link{
+    stroke-width: 4;
+    stroke: black;
+    opacity: 0;
+}
+svg line.highlighted {
+    stroke-width: 1;
+    stroke: black;
+    opacity: 1;
+}
+
+svg circle {
+    stroke: "#fff";
+    stroke-width: 1.5;
+}
+
+svg circle.fixed {
+    /* stroke-width: 2; */
+    stroke: black;
+}
+svg circle.highlighted {
+    stroke: white;
+    fill: black;
+}
+
+.brc-chart-links-popup {
+    position: absolute;			
+    /* text-align: center;			 */
+    padding: 0.5em;				
+    font: 12px sans-serif;		
+    background: white;	
+    border: 0px;		
+    border-radius: 5px;			
+    pointer-events: none;		
+    border:  1px solid black;	
+}
+
+.brc-chart-links-popup ul {
+    padding-left: 0;
+    list-style-position: inside;
+}
