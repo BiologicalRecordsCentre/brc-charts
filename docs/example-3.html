@@ -79,7 +79,6 @@
     <button onclick="setYear(2019)">2019</button>
     <button onclick="setYear(2018)">2018</button>
     <button onclick="setYear(2017)">2017</button>
-    <button onclick="setYear(2016)">2016</button>
     <br/><br/>
     <div id="chart6"></div>
 
@@ -212,7 +211,7 @@
         brccharts.accum(accum)
 
         accum.selector = '#chart5'
-        accum.title = 'Comparison of seasonal accumulation of butterfly taxa and record counts from 2016 to 2020'
+        accum.title = 'Comparison of seasonal accumulation of butterfly taxa and record counts from 2017 to 2020'
         accum.swapYaxes = false
         accum.margin = {left: 45, right: 68, bottom: 30, top: 10}
         accum.width = 800
@@ -250,15 +249,6 @@
               prop: '2017', 
               labelTaxa: '2017 taxa', 
               labelCounts: '2017 records', 
-              colourTaxa: 'fading', 
-              colourCounts: 'fading', 
-              styleTaxa: 'solid', 
-              styleCounts: 'dashed'
-            },
-            {
-              prop: '2016', 
-              labelTaxa: '2016 taxa', 
-              labelCounts: '2016 records', 
               colourTaxa: 'fading', 
               colourCounts: 'fading', 
               styleTaxa: 'solid', 
