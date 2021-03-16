@@ -1,6 +1,27 @@
 .blah {
     background: red;
-}.brc-chart-phen1 path {
+}.brc-chart-pie {
+  width: 100%
+}
+
+.brc-chart-pie-legend {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie-chart {
+  float:left;
+  overflow:hidden;
+}
+
+path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
+  opacity: 0.3 !important;
+}
+
+.brc-item-image-hide {
+  display: none;
+}
+.brc-chart-phen1 path {
     fill: none;
 }
 
@@ -24,27 +45,6 @@
 
 .brc-legend-item-rect.highlight {
     fill:black;
-}
-.brc-chart-pie {
-  width: 100%
-}
-
-.brc-chart-pie-legend {
-  float:left;
-  overflow:hidden;
-}
-
-.brc-chart-pie-chart {
-  float:left;
-  overflow:hidden;
-}
-
-path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
-  opacity: 0.3 !important;
-}
-
-.brc-item-image-hide {
-  display: none;
 }
 .brc-chart-accum path {
     fill: none;
@@ -109,6 +109,10 @@ svg line.highlighted {
     opacity: 1;
 }
 
+svg line.lowlighted {
+    opacity: 0.02;
+}
+
 svg circle {
     stroke: "#fff";
     stroke-width: 1.5;
@@ -121,6 +125,10 @@ svg circle.fixed {
 svg circle.highlighted {
     stroke: white;
     fill: black;
+}
+
+svg circle.lowlighted {
+    opacity: 0.3;
 }
 
 .brc-chart-links-popup {

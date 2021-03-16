@@ -1,4 +1,32 @@
-/** @module links */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: links.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: links.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module links */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -36,14 +64,14 @@ import * as gen from './general'
  * and the data object from the data property. If no value is returned, no tool-tip is generated.
  * If the function returns a non-null value, it is displayed in a tool-tip.
  * (Default - null.)
- * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+ * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * <ul>
- * <li> <b>taxon1</b> - the name of a taxon.
- * <li> <b>taxon2</b> - the name of a taxon linked with the taxon specified in taxon1.
- * <li> <b>data</b> - a data object, e.g. with data describing the relationship between taxon1 and taxon2, that will be passed to any
+ * &lt;ul>
+ * &lt;li> &lt;b>taxon1&lt;/b> - the name of a taxon.
+ * &lt;li> &lt;b>taxon2&lt;/b> - the name of a taxon linked with the taxon specified in taxon1.
+ * &lt;li> &lt;b>data&lt;/b> - a data object, e.g. with data describing the relationship between taxon1 and taxon2, that will be passed to any
  * function specified in the linkInfoFn parameter.
- * </ul>
+ * &lt;/ul>
  * @returns {module:links~api} api - Returns an API for the chart.
  */
 
@@ -98,7 +126,7 @@ export function links({
   }
 
   svg.on("click", function() {
-    if (interactivityLink === 'mouseclick' && d3.event.srcElement.tagName === 'svg') {
+    if (interactivityLink === 'mouseclick' &amp;&amp; d3.event.srcElement.tagName === 'svg') {
       unhighlightAllLinks()
     }
   })
@@ -208,8 +236,8 @@ export function links({
       )
 
     function linkHit (d, eventType) {
-      if ((eventType == "mouseover" && interactivityLink === "mousemove") ||
-        (eventType == "click" && interactivityLink === "mouseclick")) {
+      if ((eventType == "mouseover" &amp;&amp; interactivityLink === "mousemove") ||
+        (eventType == "click" &amp;&amp; interactivityLink === "mouseclick")) {
 
         if (eventType == "click") {
           unhighlightAllLinks()
@@ -257,8 +285,7 @@ export function links({
             simulation.alpha(1).restart()
           })
           .on("mouseover", function(d) {
-              //gNodes.selectAll('circle').classed("lowlighted", true)
-              //d3.select(this).classed("lowlighted", false)
+              gNodes.selectAll('circle').classed("lowlighted", true)
               d3.select(this).classed("highlighted", true)
               highLightLinks(d.id, true)
               const html = taxonInfoFn ? taxonInfoFn(d.id, d.t1) : d.id
@@ -272,12 +299,9 @@ export function links({
               }
           })			
           .on("mouseout", function(d) {
-              //gNodes.selectAll('circle').classed("lowlighted", false)
-
-              gLinks.selectAll(`.display-link`).classed('lowlighted', false)
-
+              gNodes.selectAll('circle').classed("lowlighted", false)
               d3.select(this).classed("highlighted", false)
-              //highLightLinks(d.id, false)
+              highLightLinks(d.id, false)
               popupDiv.transition()		
                 .duration(500)		
                 .style("opacity", 0)
@@ -324,19 +348,15 @@ export function links({
 
     function highLightLinks(id, highlight) {
       const hLinks = links.filter(l => l.source.id === id || l.target.id === id)
-
-      gLinks.selectAll(`.display-link`).classed('lowlighted', true)
-
       hLinks.forEach(link => {
-        //d3.selectAll(`.display-link#${link.key}`).classed('highlighted', highlight)
-        d3.selectAll(`.display-link#${link.key}`).classed('lowlighted', !highlight)
+        d3.selectAll(`.display-link#${link.key}`).classed('highlighted', highlight)
       })
     }
   }
 
   function getColour(taxa1, taxa2, taxa, d) {
     let iAuto
-    if (taxa1colour === 'auto' && taxa2colour === 'auto') {
+    if (taxa1colour === 'auto' &amp;&amp; taxa2colour === 'auto') {
       iAuto = taxa.indexOf(d.id)
     } else if (taxa1colour === 'auto') {
       iAuto = taxa1.indexOf(d.id)
@@ -363,13 +383,13 @@ export function links({
       //console.log(i)
 
       if (!d.colour) {
-        if (i < 10) {
+        if (i &lt; 10) {
           return d3.schemeCategory10[i]
         }
-        else if (i < 18) {
+        else if (i &lt; 18) {
           return d3.schemeDark2[i - 10]
         }
-        else if (i < 26) {
+        else if (i &lt; 26) {
           return d3.schemeAccent[i - 18]
         }
         else {
@@ -398,7 +418,7 @@ export function links({
   }
 
   function clamp(x, lo, hi) {
-    //return x < lo ? lo : x > hi ? hi : x;
+    //return x &lt; lo ? lo : x > hi ? hi : x;
     return x
   }
 
@@ -419,8 +439,8 @@ export function links({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
-  * @description <b>This function is exposed as a method on the API returned from the links function</b>.
+  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
+  * @description &lt;b>This function is exposed as a method on the API returned from the links function&lt;/b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -468,7 +488,7 @@ export function links({
   }
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the links function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the links function&lt;/b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -476,7 +496,7 @@ export function links({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the links function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the links function&lt;/b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -494,4 +514,26 @@ export function links({
     getChartWidth: getChartWidth,
     setChartOpts: setChartOpts
   }
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Mar 16 2021 13:25:47 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

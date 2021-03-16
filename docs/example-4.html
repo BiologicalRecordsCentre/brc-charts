@@ -7,6 +7,15 @@
     input {
       margin-left: 1em;
     }
+    .flexc {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    /* max-width: 800px; */
+    }
+    .flexi {
+      margin: 0.5em;
+    }
   </style>
 </head>
 <body>
@@ -61,11 +70,16 @@
       the size of the dots. It would also be nice to have a search method so that a user could
       search for, and highlight, a particular insect in this example. There will also be a
       legend option for the hosts in cases where the graphic needs to illustrate something without
-      being interactive. (There's a problem with the SVG positioning here - its a bit low - which I will address.
-      I also know about the problem with node appearing under links on re-entry.)
+      being interactive.
     </p>
 
-    <div id="chart1"></div>
+    <div class="flexc">
+      <div id="chart1" class="flexi"></div>
+      <div class="flexi" style="width: 300px; font-size: 0.8em">
+        <p>Click on a link to see source information...</p>
+        <div id="chart1Info"></div>
+      </div>
+    </div>
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -93,16 +107,18 @@
         data: null,
         width: 600,
         height: 600,
+        radius: 4,
         expand: false,
-        //title: 'Insects and their foodplants',
+        //title: 'Insects and their foodplants adsf asdf asd fas df asdf asd fa sdf asdf asd f asd fa sdf asd f asdf as df asdf as df asd f asf ads f dsa f asdf asd f asdf asd f asd',
         footer: 'Data extracted from the BRC database of insects and food plants (DBIF).',
         footerAlign: 'right',
         titleFontSize: 18,
         axisLabelFontSize: 12,
         legendFontSize: 12,
-        interactivity: 'mouseclick',
-        //backgroundColour: 'rgb(245,245,245)',
-        overflow: true,
+        interactivityLink: 'mouseclick',
+        backgroundColour: 'rgb(245,245,245)',
+        overflow: false,
+        zoom: true,
         taxa1colour: 'auto',
         taxa2colour: 'grey',
         taxonPopups: true,
@@ -173,6 +189,7 @@
           if (keys.indexOf(d.key) === -1) {
             keys.push(d.key)
             d.data = [d.data]
+            delete d.key
             compressed.push(d)
           } else {
             var existing = compressed[keys.indexOf(d.key)]
@@ -198,14 +215,18 @@
           }
         }
         opts.linkInfoFn = function(taxon1, taxon2, data) {
-          var html = 'Foodplant: ' + taxon1 + " (<i>" + hosts[taxon1].join(" & ") + "</i>)" 
-          html = html + '<br/>Insect: <i>' + taxon2 + '</i>'
-          html = html + '<br/>sources:<ul>'
+          var html = '<b>Foodplant:</b> ' + taxon1 + " (<i>" + hosts[taxon1].join(" & ") + "</i>)" 
+          html = html + '<br/><b>Insect:</b> <i>' + taxon2 + '</i>'
+          html = html + '<br/><b>sources:</b><ul>'
           data.forEach(function(s) {
             html = html + '<li>' + s + '</li>'
           })
           html = html + '</ul>'
-          return html
+
+          document.getElementById('chart1Info').innerHTML = html
+
+          //return html
+          return null
         }
         chart = brccharts.links(opts)
       });

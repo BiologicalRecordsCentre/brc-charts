@@ -21,6 +21,10 @@ svg line.highlighted {
     opacity: 1;
 }
 
+svg line.lowlighted {
+    opacity: 0.02;
+}
+
 svg circle {
     stroke: "#fff";
     stroke-width: 1.5;
@@ -33,6 +37,10 @@ svg circle.fixed {
 svg circle.highlighted {
     stroke: white;
     fill: black;
+}
+
+svg circle.lowlighted {
+    opacity: 0.3;
 }
 
 .brc-chart-links-popup {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: phen1</title>
+    <title>JSDoc: Module: links</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: phen1</h1>
+    <h1 class="page-title">Module: links</h1>
 
     
 
@@ -64,7 +64,7 @@
     
 
     
-    <h4 class="name" id=".phen1"><span class="type-signature">(static) </span>phen1<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-phen1.html#~api">module:phen1~api</a>}</span></h4>
+    <h4 class="name" id=".links"><span class="type-signature">(static) </span>links<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-links.html#~api">module:links~api</a>}</span></h4>
     
 
     
@@ -208,7 +208,7 @@
 
             
 
-            <td class="description last">The width of each sub-chart area in pixels.</td>
+            <td class="description last">The width of the main chart area in pixels (excludes margins).</td>
         </tr>
 
     
@@ -231,14 +231,14 @@
 
             
 
-            <td class="description last">The height of the each sub-chart area in pixels.</td>
+            <td class="description last">The height of the main chart area in pixels (excludes margins).</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>perRow</code></td>
+                <td class="name"><code>radius</code></td>
             
 
             <td class="type">
@@ -254,30 +254,7 @@
 
             
 
-            <td class="description last">The number of sub-charts per row.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ytype</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
+            <td class="description last">The radius of the node in pixels. (Default - 5.)</td>
         </tr>
 
     
@@ -514,30 +491,7 @@
 
         <tr>
             
-                <td class="name"><code>showTaxonLabel</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether or not to show taxon label above each sub-graph.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>taxonLabelFontSize</code></td>
+                <td class="name"><code>interactivityLink</code></td>
             
 
             <td class="type">
@@ -553,145 +507,7 @@
 
             
 
-            <td class="description last">Font size (pixels) of taxon sub-chart label.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>taxonLabelItalics</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether or not to italicise taxon label.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>legendFontSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Font size (pixels) of legend item text.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisLeft</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisBottom</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisRight</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisTop-</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+            <td class="description last">Specifies how link interactivity occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)</td>
         </tr>
 
     
@@ -714,14 +530,14 @@
 
             
 
-            <td class="description last">The duration of each transition phase in milliseconds.</td>
+            <td class="description last">The duration of each transition phase in milliseconds (when nodes removed). (Default - 1000.)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>interactivity</code></td>
+                <td class="name"><code>backgroundColour</code></td>
             
 
             <td class="type">
@@ -737,20 +553,20 @@
 
             
 
-            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
+            <td class="description last">The background colour of the main chart area. Can be set to empty string for none. (Default - empty.)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>taxa</code></td>
+                <td class="name"><code>taxa1colour</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">string</span>
 
 
             
@@ -760,20 +576,20 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created.</td>
+            <td class="description last">The colour to use for taxa in column taxa1. Can be any valid CSS colour string or 'auto' to specify a colour automatically. (Deafult - 'black'.)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>metrics</code></td>
+                <td class="name"><code>taxa2colour</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;Object></span>
+<span class="param-type">string</span>
 
 
             
@@ -783,7 +599,99 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.</ul></td>
+            <td class="description last">The colour to use for taxa in column taxa2. Can be any valid CSS colour string or 'auto' to specify a colour automatically. (Deafult - 'black'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>overflow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A boolean that indicates whether or not to show graphics that overflow the svg boundary. (Default - true.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>zoom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A boolean that indicates whether or not implement zoom behaviour. (Default - true.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonInfoFn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A function called when the user interacts with a taxon node. Two arguments are passed to the function: the taxon name and a boolean indicating if this was from the field taxon1 in the input data. If the function returns a non-null value, it is displayed in a tool-tip. If no value is returned, no tool-tip is generated.(Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>linkInfoFn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A function called when the user interacts with a link.Three arguments are passed to the function: the taxon name from the taxon1 property, the taxon name from the taxon2 property,and the data object from the data property. If no value is returned, no tool-tip is generated.If the function returns a non-null value, it is displayed in a tool-tip.(Default - null.)</td>
         </tr>
 
     
@@ -806,7 +714,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.<li> <b>c1</b> - a count for a given time period (can have any name). <li> <b>c2</b> - a count for a given time period (can have any name).... - there can be any number of these count columns.</ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon1</b> - the name of a taxon.<li> <b>taxon2</b> - the name of a taxon linked with the taxon specified in taxon1.<li> <b>data</b> - a data object, e.g. with data describing the relationship between taxon1 and taxon2, that will be passed to anyfunction specified in the linkInfoFn parameter.</ul></td>
         </tr>
 
     
@@ -854,7 +762,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line56">line 56</a>
+        <a href="links.js.html">links.js</a>, <a href="links.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -894,7 +802,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="module-phen1.html#~api">module:phen1~api</a></span>
+<span class="param-type"><a href="module-links.html#~api">module:links~api</a></span>
 
 
     </dd>
@@ -920,7 +828,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the links function</b>.Return the full height of the chart svg.
 </div>
 
 
@@ -964,7 +872,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line623">line 623</a>
+        <a href="links.js.html">links.js</a>, <a href="links.js.html#line470">line 470</a>
     </li></ul></dd>
     
 
@@ -1008,7 +916,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the links function</b>.Return the full width of the chart svg.
 </div>
 
 
@@ -1052,7 +960,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line615">line 615</a>
+        <a href="links.js.html">links.js</a>, <a href="links.js.html#line462">line 462</a>
     </li></ul></dd>
     
 
@@ -1096,7 +1004,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the links function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
 </div>
 
 
@@ -1381,52 +1289,6 @@
 
         <tr>
             
-                <td class="name"><code>ytype</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>metrics</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Object></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of objects, each describing a numeric property in the input data (see main interface for details).</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>data</code></td>
             
 
@@ -1443,7 +1305,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects (see main interface for details).</td>
+            <td class="description last">Specifies an array of data objects.</td>
         </tr>
 
     
@@ -1491,144 +1353,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line525">line 525</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~setTaxon"><span class="type-signature">(inner) </span>setTaxon<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.For single species charts, this allows you to change the taxon displayed.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>opts.taxon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The taxon to display.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line600">line 600</a>
+        <a href="links.js.html">links.js</a>, <a href="links.js.html#line403">line 403</a>
     </li></ul></dd>
     
 
@@ -1719,7 +1444,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~getChartWidth">module:phen1~getChartWidth</a></span>
+<span class="param-type"><a href="module-links.html#~getChartWidth">module:links~getChartWidth</a></span>
 
 
             
@@ -1742,7 +1467,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~getChartHeight">module:phen1~getChartHeight</a></span>
+<span class="param-type"><a href="module-links.html#~getChartHeight">module:links~getChartHeight</a></span>
 
 
             
@@ -1765,7 +1490,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
+<span class="param-type"><a href="module-links.html#~setChartOpts">module:links~setChartOpts</a></span>
 
 
             
@@ -1776,29 +1501,6 @@
             
 
             <td class="description last">Sets text options for the chart.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>setTaxon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Changes the displayed taxon for single taxon charts.</td>
         </tr>
 
     
@@ -1837,7 +1539,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line631">line 631</a>
+        <a href="links.js.html">links.js</a>, <a href="links.js.html#line478">line 478</a>
     </li></ul></dd>
     
 
