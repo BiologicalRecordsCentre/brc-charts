@@ -36,6 +36,56 @@ export function xAxisMonth(width, ticks) {
   return xAxis
 }
 
+export function xAxisYear(width, ticks, min, max, ntick) {
+  const xScale = d3.scaleLinear()
+    .domain([min, max])
+    .range([0, width])
+
+  const xAxis = d3.axisBottom()
+    .scale(xScale)
+
+  if (ticks) {
+    const years = max - min
+    const threshold = 30
+
+    let ticks
+    if (width / years > threshold) {
+      ticks = years
+    } else if (width / years * 2 > threshold) {
+      ticks = years / 2
+    } else if (width / years * 5 > threshold) {
+      ticks = years / 5
+    } else if (width / years * 10 > threshold ) {
+      ticks = years / 10
+    } else {
+      ticks = 2
+    }
+    xAxis.ticks(ticks) 
+
+    // .tickSize(width >= 200 ? 13 : 5, 0)
+    
+    // xAxis.tickFormat(year => {
+    //   if (width / years < break1) {
+    //     // No labels
+    //     return ''
+    //   } else if (width / years < break) {
+    //     // Return last two digits of year as a string
+    //     return year.toString().substr(2,2)
+    //   } else {
+    //     // Return year as a string
+    //     return year.toString()
+    //   }
+    // })
+
+    xAxis.tickFormat(year => year.toString())
+     
+
+  } else {
+    xAxis.tickValues([]).tickSizeOuter(0)
+  }
+  return xAxis
+}
+
 export function wrapText(text, svg, maxWidth, fontSize) {
 
   const textSplit = text.split(" ")
