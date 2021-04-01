@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: pie</title>
+    <title>JSDoc: Module: trend</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: pie</h1>
+    <h1 class="page-title">Module: trend</h1>
 
     
 
@@ -64,7 +64,7 @@
     
 
     
-    <h4 class="name" id=".pie"><span class="type-signature">(static) </span>pie<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-pie.html#~api">module:pie~api</a>}</span></h4>
+    <h4 class="name" id=".trend"><span class="type-signature">(static) </span>trend<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-trend.html#~api">module:trend~api</a>}</span></h4>
     
 
     
@@ -192,7 +192,7 @@
 
         <tr>
             
-                <td class="name"><code>radius</code></td>
+                <td class="name"><code>width</code></td>
             
 
             <td class="type">
@@ -208,14 +208,14 @@
 
             
 
-            <td class="description last">The desired radius of the chart in pixels.</td>
+            <td class="description last">The width of each sub-chart area in pixels.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>innerRadius</code></td>
+                <td class="name"><code>height</code></td>
             
 
             <td class="type">
@@ -231,14 +231,56 @@
 
             
 
-            <td class="description last">The desired inner radius of the chart in pixels. Default of zero gives a pie char. Specify a value for donut chart.</td>
+            <td class="description last">The height of the each sub-chart area in pixels.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>imageWidth</code></td>
+                <td class="name"><code>margin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object indicating the margins to add around each sub-chart area.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>left</code></td>
             
 
             <td class="type">
@@ -254,14 +296,113 @@
 
             
 
-            <td class="description last">The width of images in pixels. Images will be resized to this width.</td>
+            <td class="description last">Left margin in pixels.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>sort</code></td>
+                <td class="name"><code>right</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Right margin in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>top</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Top margin in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bottom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Bottom margin in pixels.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>perRow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The number of sub-charts per row.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>colour</code></td>
             
 
             <td class="type">
@@ -277,76 +418,7 @@
 
             
 
-            <td class="description last">Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>label</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelFontSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Set to a font size (pixels).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>labelColour</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Specifies the colour of label text.</td>
+            <td class="description last">Colour to use for the line or bars. (Default - 'CornflowerBlue'.)</td>
         </tr>
 
     
@@ -370,75 +442,6 @@
             
 
             <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>legendSwatchSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Specifies the size of legend swatches.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>legendSwatchGap</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Specifies the size of gap between legend swatches.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>legendWidth</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The width of the legend in pixels.</td>
         </tr>
 
     
@@ -652,7 +655,53 @@
 
         <tr>
             
-                <td class="name"><code>interactivity</code></td>
+                <td class="name"><code>showTaxonLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to show taxon label above each sub-graph.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showLegend</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to show an overall chart legend. (Default = true.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelFontSize</code></td>
             
 
             <td class="type">
@@ -668,7 +717,214 @@
 
             
 
-            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
+            <td class="description last">Font size (pixels) of taxon sub-chart label.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelItalics</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to italicise taxon label.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of legend item text.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisLeftLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Value for labelling left axis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisRightLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Value for labelling right axis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisLabelFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) for axist labels. (Default - 10.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisLeft</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'percentages'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisBottom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisRight</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'counts'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisTop-</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
         </tr>
 
     
@@ -698,6 +954,75 @@
 
         <tr>
             
+                <td class="name"><code>interactivity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>group</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. If empty, graphs for all taxa are created.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>data</code></td>
             
 
@@ -714,7 +1039,53 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.<li> <b>number</b> - a numeric value associated with the item.<li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.<li> <b>image</b> - this optional property allows you to specify the url of an image filewhich can be displayed when a user selects the associated item.</ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>year</b> - a four digit number indicating a year.<li> <b>count</b> - a count for the given year. </ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minYear-</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxYear-</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.</td>
         </tr>
 
     
@@ -762,7 +1133,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line48">line 48</a>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line67">line 67</a>
     </li></ul></dd>
     
 
@@ -802,7 +1173,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="module-pie.html#~api">module:pie~api</a></span>
+<span class="param-type"><a href="module-trend.html#~api">module:trend~api</a></span>
 
 
     </dd>
@@ -828,7 +1199,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the pie function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full height of the chart svg.
 </div>
 
 
@@ -872,7 +1243,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line686">line 686</a>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line706">line 706</a>
     </li></ul></dd>
     
 
@@ -916,7 +1287,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the pie function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full width of the chart svg.
 </div>
 
 
@@ -960,7 +1331,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line678">line 678</a>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line698">line 698</a>
     </li></ul></dd>
     
 
@@ -1004,7 +1375,7 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the pie function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
 </div>
 
 
@@ -1305,7 +1676,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.</td>
+            <td class="description last">Specifies an array of data objects (see main interface for details).</td>
         </tr>
 
     
@@ -1353,7 +1724,144 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line612">line 612</a>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line621">line 621</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setTaxon"><span class="type-signature">(inner) </span>setTaxon<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.For single species charts, this allows you to change the taxon displayed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts.taxon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The taxon to display.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line683">line 683</a>
     </li></ul></dd>
     
 
@@ -1444,7 +1952,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-pie.html#~getChartWidth">module:pie~getChartWidth</a></span>
+<span class="param-type"><a href="module-phen1.html#~getChartWidth">module:phen1~getChartWidth</a></span>
 
 
             
@@ -1467,7 +1975,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-pie.html#~getChartHeight">module:pie~getChartHeight</a></span>
+<span class="param-type"><a href="module-phen1.html#~getChartHeight">module:phen1~getChartHeight</a></span>
 
 
             
@@ -1490,7 +1998,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="module-pie.html#~setChartOpts">module:pie~setChartOpts</a></span>
+<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
 
 
             
@@ -1501,6 +2009,29 @@
             
 
             <td class="description last">Sets text options for the chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setTaxon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Changes the displayed taxon for single taxon charts.</td>
         </tr>
 
     
@@ -1539,7 +2070,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line694">line 694</a>
+        <a href="trend.js.html">trend.js</a>, <a href="trend.js.html#line714">line 714</a>
     </li></ul></dd>
     
 

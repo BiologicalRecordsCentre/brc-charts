@@ -73,17 +73,36 @@
         var trend = {
           selector: '#chart1',
           data: data,
-          taxa: ['Adalia bipunctata', 'Coccidula rufa'],
-          minYear: 1950,
+          //taxa: ['Adalia bipunctata', 'Coccidula rufa'],
+          minYear: 2000,
           maxYear: 2020,
           taxonLabelItalics: true,
           width: 200,
-          height: 100,
-          perRow: 2,
-          expand: false,
-          ytype: 'proportion',
+          height: 150,
+          //margin: {left: 50, right: 50, bottom: 20, top: 20},
+          margin: {left: 30, right: 40, bottom: 20, top: 20},
+          perRow: 4,
+          expand: true,
           taxonLabelFontSize: 12,
+          //
+          showCounts: 'bar', 
+          showProps: 'line',
+          showLegend: true,
+          //axisTop: 'on',
+          axisBottom: 'tick',
+          axisLeft: 'percentages',
+          axisRight: 'counts',
+          styleCounts: {colour: 'CornflowerBlue', opacity: 1, strokeWidth: 2, legend: 'Number of records'},
+          styleProps: {colour: 'black', opacity: 1, strokeWidth: 2, legend: 'Percentage of all ladybird records'},
+          // axisRightLabel: 'Number of records',
+          // axisLeftLabel: 'Percentage of all records',
+          axisLabelFontSize: 11,
+          interactivity: 'mousemove',
+          title: 'Trends in the collection of Ladybird records from 2000 to 2020',
+          subtitle: 'Bars indicate absolute numbers of records collected each year and lines indicate the number of records for each species expressed as a percentage of total ladybird records in that year.',
+          footer: 'Data downloaded from the NBN March 2021.',
         }
+
         brccharts.trend(trend)
       })
 

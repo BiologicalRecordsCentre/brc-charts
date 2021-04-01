@@ -5,3 +5,12 @@
 .brc-chart-trend {
     overflow: visible;
 }
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-trend .lowlight {
+    opacity: 0.1;
+}

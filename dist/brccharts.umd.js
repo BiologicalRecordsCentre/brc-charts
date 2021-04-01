@@ -118,8 +118,15 @@
 
     return xAxis;
   }
-  function xAxisYear(width, ticks, min, max, ntick) {
-    var xScale = d3.scaleLinear().domain([min, max]).range([0, width]);
+  function xAxisYear(width, ticks, min, max, bars) {
+    var xScale = d3.scaleLinear().range([0, width]);
+
+    if (bars) {
+      xScale.domain([min - 0.5, max + 0.5]);
+    } else {
+      xScale.domain([min, max]);
+    }
+
     var xAxis = d3.axisBottom().scale(xScale);
 
     if (ticks) {
@@ -157,6 +164,10 @@
       xAxis.tickFormat(function (year) {
         return year.toString();
       });
+
+      if (bars) {
+        xAxis.tickSizeOuter(0);
+      }
     } else {
       xAxis.tickValues([]).tickSizeOuter(0);
     }
@@ -2746,8 +2757,13 @@
    * @param {string} opts.elid - The id for the dom object created.
    * @param {number} opts.width - The width of each sub-chart area in pixels.
    * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area. 
+   * @param {number} opts.margin.left - Left margin in pixels. 
+   * @param {number} opts.margin.right - Right margin in pixels. 
+   * @param {number} opts.margin.top - Top margin in pixels. 
+   * @param {number} opts.margin.bottom - Bottom margin in pixels. 
    * @param {number} opts.perRow - The number of sub-charts per row.
-   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+   * @param {string} opts.colour - Colour to use for the line or bars. (Default - 'CornflowerBlue'.)
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
@@ -2759,12 +2775,20 @@
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
    * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
+   * @param {boolean} opts.showLegend - Whether or not to show an overall chart legend. (Default = true.)
    * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
    * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
-   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisLeftLabel - Value for labelling left axis.
+   * @param {string} opts.axisRightLabel - Value for labelling right axis.
+   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. 
+   * If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'percentages'.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
-   * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. 
+   * If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'counts'.)
    * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
@@ -2794,10 +2818,15 @@
         width = _ref$width === void 0 ? 300 : _ref$width,
         _ref$height = _ref.height,
         height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    } : _ref$margin,
         _ref$perRow = _ref.perRow,
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
-        _ref$ytype = _ref.ytype,
-        ytype = _ref$ytype === void 0 ? 'count' : _ref$ytype,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$title = _ref.title,
@@ -2813,6 +2842,15 @@
         _ref$footerFontSize = _ref.footerFontSize,
         footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
         _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
+        _ref$showLegend = _ref.showLegend,
+        showLegend = _ref$showLegend === void 0 ? true : _ref$showLegend,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$axisRightLabel = _ref.axisRightLabel,
+        axisRightLabel = _ref$axisRightLabel === void 0 ? '' : _ref$axisRightLabel,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
@@ -2826,13 +2864,28 @@
         _ref$taxonLabelItalic = _ref.taxonLabelItalics,
         taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
         _ref$axisLeft = _ref.axisLeft,
-        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'counts' : _ref$axisLeft,
         _ref$axisBottom = _ref.axisBottom,
         axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
         _ref$axisRight = _ref.axisRight,
-        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        axisRight = _ref$axisRight === void 0 ? 'percentages' : _ref$axisRight,
         _ref$axisTop = _ref.axisTop,
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$showCounts = _ref.showCounts,
+        showCounts = _ref$showCounts === void 0 ? 'bar' : _ref$showCounts,
+        _ref$showProps = _ref.showProps,
+        showProps = _ref$showProps === void 0 ? 'line' : _ref$showProps,
+        _ref$styleCounts = _ref.styleCounts,
+        styleCounts = _ref$styleCounts === void 0 ? {
+      colour: 'CornflowerBlue',
+      opacity: 1
+    } : _ref$styleCounts,
+        _ref$styleProps = _ref.styleProps,
+        styleProps = _ref$styleProps === void 0 ? {
+      colour: 'black',
+      opacity: 1,
+      strokeWidth: 2
+    } : _ref$styleProps,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$interactivity = _ref.interactivity,
@@ -2848,6 +2901,13 @@
         _ref$maxYear = _ref.maxYear,
         maxYear = _ref$maxYear === void 0 ? null : _ref$maxYear;
 
+    // Ensure style prop objects have the required properties.
+    styleCounts.colour = styleCounts.colour ? styleCounts.colour : 'CornflowerBlue';
+    styleCounts.opacity = styleCounts.opacity ? styleCounts.opacity : 1;
+    styleCounts.strokeWidth = styleCounts.strokeWidth ? styleCounts.strokeWidth : 2;
+    styleProps.colour = styleProps.colour ? styleProps.colour : 'black';
+    styleProps.opacity = styleProps.opacity ? styleProps.opacity : 1;
+    styleProps.strokeWidth = styleProps.strokeWidth ? styleProps.strokeWidth : 2;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
@@ -2855,7 +2915,7 @@
         highlightItem(null, false);
       }
     });
-    var svgChart = svg.append('svg').attr('class', 'mainChart');
+    var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-trend');
     makeChart(); // Texts must come after chartbecause 
     // the chart width is required
 
@@ -2886,7 +2946,7 @@
         }).filter(function (v, i, a) {
           return a.indexOf(v) === i;
         });
-      } // If group for proportion data not set, set to all in dataset
+      } // If group for proportion/percentage data not set, set to all in dataset
 
 
       if (!group.length) {
@@ -2895,30 +2955,26 @@
         }).filter(function (v, i, a) {
           return a.indexOf(v) === i;
         });
-      }
+      } // Generate object with yearly totals
+
 
       var yearTotals = {};
-
-      if (ytype === 'proportion') {
-        data.filter(function (d) {
-          return group.indexOf(d.taxon) > -1 && d.year >= minYear && d.year <= maxYear;
-        }).forEach(function (d) {
-          if (yearTotals[d.year]) {
-            yearTotals[d.year] = yearTotals[d.year] + d.count;
-          } else {
-            yearTotals[d.year] = d.count;
-          }
-        });
-      }
-
+      data.filter(function (d) {
+        return group.indexOf(d.taxon) > -1 && d.year >= minYear && d.year <= maxYear;
+      }).forEach(function (d) {
+        if (yearTotals[d.year]) {
+          yearTotals[d.year] = yearTotals[d.year] + d.count;
+        } else {
+          yearTotals[d.year] = d.count;
+        }
+      });
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
         return makeTrend(t, yearTotals);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      var legendHeight = 0; //const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad
-
+      var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -2930,75 +2986,76 @@
     }
 
     function makeTrend(taxon, yearTotals) {
-      console.log('yearTotals', yearTotals); // Pre-process data.
-      // Filter to named taxon and to min and max year and sort in week order
+      // Pre-process data.
+      // Filter to named taxon and to min and max year and sort in year order
       // Add max value to each.
-
       var dataFiltered = data.filter(function (d) {
         return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
       }).sort(function (a, b) {
         return a.year > b.year ? 1 : -1;
-      });
-      var dataTransformed = dataFiltered.map(function (d) {
-        return {
-          year: d.year,
-          n: ytype === 'proportion' ? d.count / yearTotals[d.year] : d.count
-        };
-      });
-      var lineData = {
-        colour: 'blue',
-        strokeWidth: 2,
-        points: dataTransformed
-      };
-      console.log(lineData); // Set the maximum value for the y axis
+      }); // Set the maximum values for the y axis
 
-      var yMax = Math.max.apply(Math, _toConsumableArray(dataTransformed.map(function (d) {
-        return d.n;
+      var yMaxProp = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d.count / yearTotals[d.year];
       })));
-      yMax = yMax < 0.005 ? 0.005 : yMax; // Value scales
+      yMaxProp = yMaxProp < 0.005 ? 0.005 : yMaxProp; // Prevents tiny values
 
-      var xScale = d3.scaleLinear().domain([minYear, maxYear]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0]); // Top axis
+      var yMaxCount = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d.count;
+      }))); // Value scales
+
+      var years = [];
+
+      for (var i = minYear; i <= maxYear; i++) {
+        years.push(i);
+      }
+
+      var xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1);
+      var xScaleLine = d3.scaleLinear().domain([minYear, maxYear]).range([0, width]);
+      var yScaleCount = d3.scaleLinear().domain([0, yMaxCount]).range([height, 0]);
+      var yScaleProps = d3.scaleLinear().domain([0, yMaxProp]).range([height, 0]); // Top axis
 
       var tAxis;
 
       if (axisTop === 'on') {
-        tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
-      } // X (bottom) axis
+        tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0);
+      } // Bottom axis
 
 
-      var xAxis;
+      var bAxis;
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        xAxis = xAxisYear(width, axisBottom, minYear, maxYear);
-      } // Right axis
+        bAxis = xAxisYear(width, axisBottom === 'tick', minYear, maxYear, showCounts === 'bar' || showProps === 'bar');
+      }
 
+      var makeXaxis = function makeXaxis(leftRight, axisOpt) {
+        var axis;
+        var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
 
-      var rAxis;
+        switch (axisOpt) {
+          case 'on':
+            axis = d3axis.scale(yScaleCount).tickValues([]).tickSizeOuter(0);
+            break;
 
-      if (axisRight === 'on') {
-        rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
-      } // Y (left) axis
+          case 'counts':
+            axis = d3axis.scale(yScaleCount).ticks(5).tickFormat(d3.format("d"));
+            break;
 
+          case 'proportions':
+            axis = d3axis.scale(yScaleProps).ticks(5);
+            break;
 
-      var yAxis;
-
-      if (axisLeft === 'on' || axisLeft === 'tick') {
-        yAxis = d3.axisLeft().scale(yScale).ticks(5);
-
-        if (axisLeft !== 'tick') {
-          yAxis.tickValues([]).tickSizeOuter(0);
-        } else if (ytype === 'count') {
-          yAxis.tickFormat(d3.format("d"));
+          case 'percentages':
+            axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(d3.format(".0%"));
+            break;
         }
-      } // Line path generator
 
+        return axis;
+      };
 
-      var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-        return xScale(d.year);
-      }).y(function (d) {
-        return yScale(d.n);
-      }); // Create or get the relevant chart svg
+      var lAxis = makeXaxis('left', axisLeft);
+      var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
 
       var init, svgTrend, gTrend;
 
@@ -3014,80 +3071,201 @@
         svgTrend = svgChart.append('svg').classed('brc-chart-trend', true).attr('id', safeId(taxon));
         gTrend = svgTrend.append('g').classed('brc-chart-trend-g', true);
         init = true;
-      } // Create/update the line paths with D3
+      } // Line path generators
 
 
-      var mlines = gTrend.selectAll("path") //.data(lineData,  d => d.id)
-      .data([lineData]);
-      var eLines = mlines.enter().append("path") //.attr("class", d => `trend-path-${d.id} trend-path`)
-      .attr("class", 'trend-path').attr("d", function (d) {
-        return line(d.points.map(function (p) {
-          return {
-            n: 0,
-            year: p.year
-          };
-        }));
-      }); //addEventHandlers(eLines, 'id')
-
-      mlines.merge(eLines).transition().duration(duration).attr("d", function (d) {
-        return line(d.points);
-      }).attr("stroke", function (d) {
-        return d.colour;
-      }).attr("stroke-width", function (d) {
-        return d.strokeWidth;
+      var lineCounts = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScaleLine(d.year);
+      }).y(function (d) {
+        return yScaleCount(d.n);
       });
-      mlines.exit().transition().duration(duration).attr("d", function (d) {
-        return line(d.points.map(function (p) {
+      var lineProps = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScaleLine(d.year);
+      }).y(function (d) {
+        return yScaleProps(d.n);
+      });
+      var chartLines = [];
+
+      if (showCounts === 'line') {
+        chartLines.push({
+          lineGen: lineCounts,
+          colour: styleCounts.colour,
+          opacity: styleCounts.opacity,
+          strokeWidth: styleCounts.strokeWidth,
+          type: 'counts',
+          points: dataFiltered.map(function (d) {
+            return {
+              year: d.year,
+              n: d.count
+            };
+          })
+        });
+      }
+
+      if (showProps === 'line') {
+        chartLines.push({
+          lineGen: lineProps,
+          colour: styleProps.colour,
+          opacity: styleProps.opacity,
+          strokeWidth: styleProps.strokeWidth,
+          type: 'props',
+          points: dataFiltered.map(function (d) {
+            return {
+              year: d.year,
+              n: d.count / yearTotals[d.year]
+            };
+          })
+        });
+      }
+
+      var chartBars = [];
+
+      if (showCounts === 'bar') {
+        var bars = dataFiltered.map(function (d) {
           return {
-            n: 0,
-            week: p.week
+            yScale: yScaleCount,
+            colour: styleCounts.colour,
+            opacity: styleCounts.opacity,
+            type: 'counts',
+            year: d.year,
+            n: yScaleCount(d.count)
           };
-        }));
-      }).remove();
+        });
+        chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
+      }
+
+      if (showProps === 'bar') {
+        var _bars = dataFiltered.map(function (d) {
+          return {
+            yScale: yScaleProps,
+            colour: styleProps.colour,
+            opacity: styleProps.opacity,
+            type: 'props',
+            year: d.year,
+            n: yScaleProps(d.count / yearTotals[d.year])
+          };
+        });
+
+        chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(_bars));
+      }
+
+      var t = svgTrend.transition().duration(duration);
+      var rects = gTrend.selectAll("rect").data(chartBars, function (d) {
+        return "props-".concat(d.year);
+      }).join(function (enter) {
+        return enter.append("rect").attr("class", function (d) {
+          return "trend-type-".concat(d.type);
+        }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
+          return d.colour;
+        }).attr('opacity', function (d) {
+          return d.opacity;
+        }).attr('y', height).attr('x', function (d) {
+          return xScaleBar(d.year);
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition(t).attr('height', 0).remove();
+        });
+      }).transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr('y', function (d) {
+        return d.n;
+      }).attr('height', function (d) {
+        return height - d.n;
+      }).attr("fill", function (d) {
+        return d.colour;
+      });
+      var lines = gTrend.selectAll("path").data(chartLines, function (d) {
+        return d.type;
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (d) {
+          return "trend-type-".concat(d.type);
+        }).attr("opacity", function (d) {
+          return d.opacity;
+        }).attr("stroke", function (d) {
+          return d.colour;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }).attr("d", function (d) {
+          return d.lineGen(d.points.map(function (p) {
+            return {
+              n: 0,
+              year: p.year
+            };
+          }));
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition(t).attr("d", function (d) {
+            return d.lineGen(d.points.map(function (p) {
+              return {
+                n: 0,
+                year: p.year
+              };
+            }));
+          }).remove();
+        });
+      }).transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.lineGen(d.points);
+      });
+      addEventHandlers(gTrend.selectAll("path"), 'type');
+      addEventHandlers(gTrend.selectAll("rect"), 'type');
 
       if (init) {
         // Constants for positioning
-        var axisPadX = axisLeft === 'tick' ? 35 : 0;
-        var axisPadY = axisBottom === 'tick' ? 15 : 0;
-        var labelPadY; // Taxon title
+        var axisLeftPadX = margin.left ? margin.left : 0;
+        var axisRightPadX = margin.right ? margin.right : 0;
+        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+        var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
 
         if (showTaxonLabel) {
           var taxonLabel = svgTrend.append('text').classed('brc-chart-trend-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
           var labelHeight = taxonLabel.node().getBBox().height;
-          taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
-          labelPadY = labelHeight * 1.5;
-        } else {
-          labelPadY = 0;
+          taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
         } // Size SVG
 
 
-        svgTrend.attr('width', width + axisPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+        svgTrend.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
 
-        gTrend.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+        gTrend.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
 
-        if (yAxis) {
-          var gYaxis = svgTrend.append("g").attr("class", "y-axis");
-          gYaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
+        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+        var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(axisTopPadY + height / 2, ") rotate(90)");
+        var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
+
+        if (lAxis) {
+          var gLaxis = svgTrend.append("g").attr("class", "y-axis").classed('trend-type-counts', axisLeft === 'counts').classed('trend-type-props', axisLeft !== 'counts');
+          gLaxis.attr("transform", leftYaxisTrans);
         }
 
-        if (xAxis) {
-          var gXaxis = svgTrend.append("g").attr("class", "x axis").call(xAxis); // gXaxis.selectAll(".tick text")
-          //   .style("text-anchor", "start")
-          //   .attr("x", 6)
-          //   .attr("y", 6)
-
-          gXaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+        if (bAxis) {
+          var gBaxis = svgTrend.append("g").attr("class", "x axis").call(bAxis);
+          gBaxis.attr("transform", bottomXaxisTrans);
         }
 
         if (tAxis) {
           var gTaxis = svgTrend.append("g").call(tAxis);
-          gTaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+          gTaxis.attr("transform", topXaxisTrans);
         }
 
         if (rAxis) {
-          var gRaxis = svgTrend.append("g").call(rAxis);
-          gRaxis.attr("transform", "translate(".concat(axisPadX + width, ",").concat(labelPadY, ")"));
+          var gRaxis = svgTrend.append("g").call(rAxis).classed('trend-type-counts', axisRight === 'counts').classed('trend-type-props', axisRight !== 'counts');
+          gRaxis.attr("transform", rightYaxisTrans);
         }
+
+        var tYaxisLeftLabel = svgTrend.append("text").classed('trend-type-counts', axisLeft === 'counts').classed('trend-type-props', axisLeft !== 'counts').style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+        tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+        var tYaxisRightLabel = svgTrend.append("text").classed('trend-type-counts', axisRight === 'counts').classed('trend-type-props', axisRight !== 'counts').style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+        tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
       } else if (taxa.length === 1) {
         // Update taxon label
         if (showTaxonLabel) {
@@ -3095,30 +3273,120 @@
         }
       }
 
-      svgTrend.select(".y-axis").transition().duration(duration).call(yAxis);
+      if (svgTrend.selectAll(".y-axis").size()) {
+        svgTrend.select(".y-axis").transition().duration(duration).call(lAxis);
+      }
+
       return svgTrend;
     }
 
+    function makeLegend(legendWidth) {
+      var swatchSize = 20;
+      var swatchFact = 1.3;
+      var items = [];
+
+      if (showCounts === 'line' || showCounts === 'bar') {
+        items.push({
+          colour: styleCounts.colour,
+          opacity: styleCounts.opacity,
+          graphic: showCounts,
+          text: styleCounts.legend,
+          type: 'counts'
+        });
+      }
+
+      if (showProps === 'line' || showProps === 'bar') {
+        items.push({
+          colour: styleProps.colour,
+          opacity: styleProps.opacity,
+          graphic: showProps,
+          text: styleProps.legend,
+          type: 'props'
+        });
+      } // Loop through all the legend elements and work out their
+      // positions based on swatch size, item label text size and
+      // legend width.
+
+
+      var rows = 0;
+      var lineWidth = -swatchSize;
+      items.forEach(function (i) {
+        var tmpText = svgChart.append('text').text(i.text).style('font-size', legendFontSize);
+        var widthText = tmpText.node().getBBox().width;
+        tmpText.remove();
+
+        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+          ++rows;
+          lineWidth = -swatchSize;
+        }
+
+        i.x = lineWidth + swatchSize;
+        i.y = rows * swatchSize * swatchFact;
+        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+      });
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(items, function (i) {
+        return safeId(i.label);
+      }).join(function (enter) {
+        var rect = enter.append("rect") //.attr("class", i=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(i.label)}`)
+        .attr('class', function (i) {
+          return "trend-type-".concat(i.type);
+        }).attr('width', swatchSize).attr('height', function (i) {
+          return i.graphic === 'bar' ? swatchSize / 2 : 2;
+        });
+        return rect;
+      }).attr('x', function (i) {
+        return i.x;
+      }).attr('y', function (i) {
+        return i.graphic === 'bar' ? i.y + legendFontSize - swatchSize / 2 : i.y + legendFontSize - 2;
+      }).attr('fill', function (i) {
+        return i.colour;
+      }).attr('opacity', function (i) {
+        return i.opacity;
+      });
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(items, function (i) {
+        return safeId(i.label);
+      }).join(function (enter) {
+        var text = enter.append("text") //.attr("class", i=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(i.label)}`)
+        .attr('class', function (i) {
+          return "trend-type-".concat(i.type);
+        }).text(function (i) {
+          return i.text;
+        }).style('font-size', legendFontSize);
+        return text;
+      }).attr('x', function (i) {
+        return i.x + swatchSize * swatchFact;
+      }).attr('y', function (i) {
+        return i.y + legendFontSize * 1;
+      });
+      addEventHandlers(ls, 'type');
+      addEventHandlers(lt, 'type');
+      return swatchSize * swatchFact * (rows + 1);
+    }
+
     function highlightItem(id, highlight) {
-      svgChart.selectAll('.trend-path').classed('lowlight', highlight);
-      svgChart.selectAll(".trend-path-".concat(safeId(id))).classed('lowlight', false);
-      svgChart.selectAll(".trend-path").classed('highlight', false);
+      svgChart.selectAll('.trend-type-counts,.trend-type-props').classed('lowlight', false);
 
-      if (safeId(id)) {
-        svgChart.selectAll(".trend-path-".concat(safeId(id))).classed('highlight', highlight);
+      if (highlight) {
+        svgChart.selectAll('.trend-type-counts,.trend-type-props').classed('lowlight', true);
+        svgChart.selectAll(".trend-type-".concat(id)).classed('lowlight', false);
       }
+    }
 
-      svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
-
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
-      }
-
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
-      } else {
-        svgChart.selectAll(".brc-legend-item").classed('highlight', false);
-      }
+    function addEventHandlers(sel, prop) {
+      sel.on("mouseover", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], true);
+        }
+      }).on("mouseout", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], false);
+        }
+      }).on("click", function (d) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(d[prop], true);
+          d3.event.stopPropagation();
+        }
+      });
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -3131,7 +3399,6 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-      * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -3184,11 +3451,6 @@
 
       if ('data' in opts) {
         data = opts.data;
-        remakeChart = true;
-      }
-
-      if ('ytype' in opts) {
-        ytype = opts.ytype;
         remakeChart = true;
       }
 

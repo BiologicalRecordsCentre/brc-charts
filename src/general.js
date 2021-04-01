@@ -36,10 +36,15 @@ export function xAxisMonth(width, ticks) {
   return xAxis
 }
 
-export function xAxisYear(width, ticks, min, max, ntick) {
+export function xAxisYear(width, ticks, min, max, bars) {
   const xScale = d3.scaleLinear()
-    .domain([min, max])
     .range([0, width])
+
+  if (bars) {
+    xScale.domain([min - 0.5, max + 0.5])
+  } else {
+    xScale.domain([min, max])
+  }
 
   const xAxis = d3.axisBottom()
     .scale(xScale)
@@ -78,8 +83,10 @@ export function xAxisYear(width, ticks, min, max, ntick) {
     // })
 
     xAxis.tickFormat(year => year.toString())
-     
 
+    if (bars) {
+      xAxis.tickSizeOuter(0)
+    }
   } else {
     xAxis.tickValues([]).tickSizeOuter(0)
   }

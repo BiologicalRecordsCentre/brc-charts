@@ -1,4 +1,32 @@
-/** @module trend */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: trend.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: trend.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module trend */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -44,17 +72,17 @@ import * as gen from './general'
  * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created.
- * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
+ * @param {Array.&lt;string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
  * If empty, graphs for all taxa are created.
- * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+ * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * <ul>
- * <li> <b>taxon</b> - name of a taxon.
- * <li> <b>year</b> - a four digit number indicating a year.
- * <li> <b>count</b> - a count for the given year. 
- * </ul>
+ * &lt;ul>
+ * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
+ * &lt;li> &lt;b>year&lt;/b> - a four digit number indicating a year.
+ * &lt;li> &lt;b>count&lt;/b> - a count for the given year. 
+ * &lt;/ul>
  * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.
  * @param {number} opts.maxYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.
  * @returns {module:trend~api} api - Returns an API for the chart.
@@ -164,7 +192,7 @@ export function trend({
     // Generate object with yearly totals
     const yearTotals = {}
     data
-      .filter(d => group.indexOf(d.taxon) > -1 && d.year >= minYear && d.year <= maxYear)
+      .filter(d => group.indexOf(d.taxon) > -1 &amp;&amp; d.year >= minYear &amp;&amp; d.year &lt;= maxYear)
       .forEach(d => {
         if (yearTotals[d.year]) {
           yearTotals[d.year] = yearTotals[d.year] + d.count
@@ -201,17 +229,17 @@ export function trend({
     // Add max value to each.
 
     const dataFiltered = data
-      .filter(d => d.taxon === taxon && d.year >= minYear && d.year <= maxYear)
+      .filter(d => d.taxon === taxon &amp;&amp; d.year >= minYear &amp;&amp; d.year &lt;= maxYear)
       .sort((a, b) => (a.year > b.year) ? 1 : -1)
 
     // Set the maximum values for the y axis
     let yMaxProp = Math.max(...dataFiltered.map(d => d.count / yearTotals[d.year]))
-    yMaxProp = yMaxProp < 0.005 ? 0.005 : yMaxProp // Prevents tiny values
+    yMaxProp = yMaxProp &lt; 0.005 ? 0.005 : yMaxProp // Prevents tiny values
     let yMaxCount = Math.max(...dataFiltered.map(d => d.count))
 
     // Value scales
     let years = []
-    for (let i = minYear; i <= maxYear; i++) {
+    for (let i = minYear; i &lt;= maxYear; i++) {
       years.push(i)
     }
     const xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1)
@@ -258,7 +286,7 @@ export function trend({
 
     // Create or get the relevant chart svg
     let init, svgTrend, gTrend
-    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-trend').size() === 1) {
+    if (taxa.length === 1 &amp;&amp; svgChart.selectAll('.brc-chart-trend').size() === 1) {
       svgTrend = svgChart.select('.brc-chart-trend')
       gTrend = svgTrend.select('.brc-chart-trend-g')
       init = false
@@ -629,8 +657,8 @@ export function trend({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -682,7 +710,7 @@ export function trend({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -696,7 +724,7 @@ export function trend({
 
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -704,7 +732,7 @@ export function trend({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -725,4 +753,26 @@ export function trend({
     setTaxon: setTaxon
   }
 
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Thu Apr 01 2021 17:32:48 GMT+0100 (British Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
