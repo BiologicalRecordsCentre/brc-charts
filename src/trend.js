@@ -5,49 +5,44 @@ import * as gen from './general'
 
 /** 
  * @param {Object} opts - Initialisation options.
- * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
- * @param {string} opts.elid - The id for the dom object created.
- * @param {number} opts.width - The width of each sub-chart area in pixels.
- * @param {number} opts.height - The height of the each sub-chart area in pixels.
- * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area. 
- * @param {number} opts.margin.left - Left margin in pixels. 
- * @param {number} opts.margin.right - Right margin in pixels. 
- * @param {number} opts.margin.top - Top margin in pixels. 
- * @param {number} opts.margin.bottom - Bottom margin in pixels. 
- * @param {number} opts.perRow - The number of sub-charts per row.
- * @param {string} opts.colour - Colour to use for the line or bars. (Default - 'CornflowerBlue'.)
- * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
- * @param {string} opts.title - Title for the chart.
- * @param {string} opts.subtitle - Subtitle for the chart.
- * @param {string} opts.footer - Footer for the chart.
- * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
- * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
- * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
- * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
- * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
- * @param {boolean} opts.showLegend - Whether or not to show an overall chart legend. (Default = true.)
- * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
- * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
- * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
- * @param {string} opts.axisLeftLabel - Value for labelling left axis.
- * @param {string} opts.axisRightLabel - Value for labelling right axis.
+ * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
+ * @param {string} opts.elid - The id for the dom object created. (Default - 'trend-chart'.)
+ * @param {number} opts.width - The width of each sub-chart area in pixels. (Default - 300.)
+ * @param {number} opts.height - The height of the each sub-chart area in pixels. (Default - 200.)
+ * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
+ * @param {number} opts.margin.left - Left margin in pixels. (Default - 40.)
+ * @param {number} opts.margin.right - Right margin in pixels. (Default - 40.)
+ * @param {number} opts.margin.top - Top margin in pixels. (Default - 20.)
+ * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
+ * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
+ * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+ * @param {string} opts.title - Title for the chart. (Default - ''.)
+ * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
+ * @param {string} opts.footer - Footer for the chart. (Default - ''.)
+ * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+ * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
+ * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
+ * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
+ * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph. (Default - true.)
+ * @param {boolean} opts.showLegend - Whether or not to show an overall chart legend. (Default - true.)
+ * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label. (Default - 10.)
+ * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.(Default - true.)
+ * @param {string} opts.legendFontSize - Font size (pixels) of legend item text. (Default - 16.)
+ * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
+ * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. 
- * If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'percentages'.)
- * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+ * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+ * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)
  * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportions scale. 
- * If set to 'percentages' line and ticks drawn for proportions scale. Any other value results in no axis. (Default - 'counts'.)
- * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
- * @param {number} opts.duration - The duration of each transition phase in milliseconds.
- * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
- * If empty, graphs for all taxa are created.
- * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
- * If empty, graphs for all taxa are created.
+ * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+ * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)
+ * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
+ * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+ * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
+ * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
@@ -55,14 +50,28 @@ import * as gen from './general'
  * <li> <b>year</b> - a four digit number indicating a year.
  * <li> <b>count</b> - a count for the given year. 
  * </ul>
- * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.
- * @param {number} opts.maxYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used.
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * If empty, graphs for all taxa are created. (Default - [].)
+ * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
+ * If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)
+ * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
+ * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+ * @param {string} opts.showCounts- Indicates whether or not to plot the actual number of records for each taxon and, if so, the style of chart to use.
+ * Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'bar'.)
+ * @param {string} opts.showProps- Indicates whether or not to plot the proportion of all records in the group accounted for by each taxon and, if so, the style of chart to use.
+ * Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'line'.)
+ * @param {Object} opts.styleCounts - An object specifying the style to use for the count graphic.
+ * @param {string} opts.styleCounts.colour - Colour of bars or line (as determined by showCounts property). (Default - 'CornflowerBlue'.)
+ * @param {number} opts.styleCounts.strokeWidth - If the showCounts property is set to 'line' then this property indicates the line width. (Default - not set.)
+ * @param {number} opts.styleCounts.opacity - The opacity of the lines/bars in the chart. A number between 0 and 1. (Default - 1.)
+ * @param {string} opts.styleCounts.legend - Text to use for the counts metric in the legend. (Default - ''.)
+ * @param {Object} opts.styleProps - An object specifying the style to use for the proportions/percentage graphic.
+ * @param {string} opts.styleProps.colour - Colour of bars or line (as determined by showProps property). (Default - 'black'.)
+ * @param {number} opts.styleProps.strokeWidth - If the showProps property is set to 'line' then this property indicates the line width. (Default - 2.)
+ * @param {number} opts.styleProps.opacity - The opacity of the lines/bars in the chart. A number between 0 and 1. (Default - 1.)
+ * @param {string} opts.styleProps.legend - Text to use for the proportion/percentage metric in the legend. (Default - ''.)
  * @returns {module:trend~api} api - Returns an API for the chart.
  */
-
-// TODO - document the following compound properties
-// styleCounts: {colour: 'CornflowerBlue', opacity: 1, strokeWidth: 2, legend: 'Number of records'},
-// styleProps: {colour: 'black', opacity: 1, strokeWidth: 2, legend: 'Percentage of all ladybird records'},
 
 export function trend({
   // Default options in here
@@ -70,7 +79,7 @@ export function trend({
   elid = 'trend-chart',
   width = 300,
   height = 200,
-  margin = {left: 0, right: 0, top: 0, bottom: 0},
+  margin = {left: 30, right: 30, top: 15, bottom: 15},
   perRow = 2,
   expand = false,
   title = '',
@@ -80,7 +89,7 @@ export function trend({
   subtitleFontSize = 16,
   footerFontSize = 10,
   legendFontSize = 16,
-  showLegend = true,
+  showLegend = false,
   axisLeftLabel = '',
   axisRightLabel = '',
   axisLabelFontSize = 10,
@@ -88,20 +97,18 @@ export function trend({
   subtitleAlign = 'left',
   footerAlign = 'left',
   showTaxonLabel = true,
-  taxonLabelFontSize = 16,
+  taxonLabelFontSize = 10,
   taxonLabelItalics = false,
   axisLeft = 'counts',
   axisBottom = 'tick',
   axisRight = 'percentages',
   axisTop = '',
-  //
-  showCounts = 'bar', //bar line or anything else
-  showProps = 'line', //bar line or anything else not 
+  showCounts = 'bar', 
+  showProps = 'line', 
   styleCounts = {colour: 'CornflowerBlue', opacity: 1},
   styleProps = {colour: 'black', opacity: 1, strokeWidth: 2},
-  //
   duration = 1000,
-  interactivity = 'mousemove',
+  interactivity = 'none',
   data = [],
   taxa = [],
   group = [],
@@ -208,6 +215,7 @@ export function trend({
     let yMaxProp = Math.max(...dataFiltered.map(d => d.count / yearTotals[d.year]))
     yMaxProp = yMaxProp < 0.005 ? 0.005 : yMaxProp // Prevents tiny values
     let yMaxCount = Math.max(...dataFiltered.map(d => d.count))
+    yMaxCount = yMaxCount < 5 ? 5 : yMaxCount // Prevents tiny values
 
     // Value scales
     let years = []
@@ -235,7 +243,7 @@ export function trend({
     }
 
     const makeXaxis = (leftRight, axisOpt) => {
-      let axis
+      let axis, format
       const d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight()
       switch(axisOpt) {
         case 'on':
@@ -248,7 +256,8 @@ export function trend({
           axis = d3axis.scale(yScaleProps).ticks(5)
           break
         case 'percentages':
-          axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(d3.format(".0%"))
+          format = yMaxProp < 0.05 ? d3.format(".1%") : d3.format(".0%")
+          axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(format)
           break
       }
       return axis
@@ -287,6 +296,10 @@ export function trend({
       .y(d => yScaleProps(d.n))
 
     const chartLines = []
+    const dataDict = dataFiltered.reduce((a,d) => {
+      a[d.year]=d.count
+      return a
+    }, {})
     if (showCounts === 'line') {
       chartLines.push({
         lineGen: lineCounts,
@@ -294,12 +307,12 @@ export function trend({
         opacity: styleCounts.opacity,
         strokeWidth: styleCounts.strokeWidth,
         type: 'counts',
-        points: dataFiltered.map(d => {
+        points: years.map(y => {
           return {
-            year: d.year,
-            n: d.count,
+            year: y,
+            n: dataDict[y] ? dataDict[y] : 0,
           }
-        }) 
+        })
       })
     }
     if (showProps === 'line') {
@@ -309,12 +322,12 @@ export function trend({
         opacity: styleProps.opacity,
         strokeWidth: styleProps.strokeWidth,
         type: 'props',
-        points: dataFiltered.map(d => {
+        points: years.map(y => {
           return {
-            year: d.year,
-            n: d.count / yearTotals[d.year],
+            year: y,
+            n: dataDict[y] ? dataDict[y]/yearTotals[y] : 0,
           }
-        }) 
+        })
       })
     }
     let chartBars = []
@@ -363,6 +376,7 @@ export function trend({
         exit => exit
           .call(exit => exit.transition(t)
             .attr('height', 0)
+            .attr('y', height)
             .remove())
       ).transition(t)
         // The selection returned by the join function is the merged
@@ -446,7 +460,7 @@ export function trend({
       // Create axes and position within SVG
       if (lAxis) {
         const gLaxis = svgTrend.append("g")
-          .attr("class", "y-axis")
+          .attr("class", "l-axis")
           .classed('trend-type-counts',  axisLeft === 'counts')
           .classed('trend-type-props',  axisLeft !== 'counts')
         gLaxis.attr("transform", leftYaxisTrans)
@@ -464,7 +478,8 @@ export function trend({
       }
       if (rAxis) {
         const gRaxis = svgTrend.append("g")
-          .call(rAxis)
+          //.call(rAxis)
+          .attr("class", "r-axis")
           .classed('trend-type-counts',  axisRight === 'counts')
           .classed('trend-type-props',  axisRight !== 'counts')
         gRaxis.attr("transform", rightYaxisTrans)
@@ -493,11 +508,18 @@ export function trend({
       }
     }
 
-    if (svgTrend.selectAll(".y-axis").size()){
-      svgTrend.select(".y-axis")
+    if (svgTrend.selectAll(".l-axis").size()){
+      svgTrend.select(".l-axis")
       .transition()
       .duration(duration)
       .call(lAxis)
+    }
+
+    if (svgTrend.selectAll(".r-axis").size()){
+      svgTrend.select(".r-axis")
+      .transition()
+      .duration(duration)
+      .call(rAxis)
     }
     
     return svgTrend
@@ -550,38 +572,41 @@ export function trend({
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
+
+    // Legend does not need to be recreated if it already exists
+    if (!svgChart.selectAll('.brc-legend-item').size()) {
     
-    const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(items, i => gen.safeId(i.label))
-      .join(enter => {
-          const rect = enter.append("rect")
-            //.attr("class", i=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(i.label)}`)
-            .attr('class', i => `trend-type-${i.type}`)
-            .attr('width', swatchSize)
-            .attr('height', i => i.graphic === 'bar' ? swatchSize/2 : 2)
-          return rect
-      })
-      .attr('x', i => i.x)
-      .attr('y', i => i.graphic === 'bar' ? i.y + legendFontSize - swatchSize/2 : i.y + legendFontSize - 2)
-      .attr('fill', i => i.colour)
-      .attr('opacity', i => i.opacity)
+      const ls = svgChart.selectAll('.brc-legend-item-rect')
+        .data(items, i => gen.safeId(i.label))
+        .join(enter => {
+            const rect = enter.append("rect")
+              //.attr("class", i=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(i.label)}`)
+              .attr('class', i => `brc-legend-item trend-type-${i.type}`)
+              .attr('width', swatchSize)
+              .attr('height', i => i.graphic === 'bar' ? swatchSize/2 : 2)
+            return rect
+        })
+        .attr('x', i => i.x)
+        .attr('y', i => i.graphic === 'bar' ? i.y + legendFontSize - swatchSize/2 : i.y + legendFontSize - 2)
+        .attr('fill', i => i.colour)
+        .attr('opacity', i => i.opacity)
 
-    const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(items, i => gen.safeId(i.label))
-      .join(enter => {
-          const text = enter.append("text")
-            //.attr("class", i=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(i.label)}`)
-            .attr('class', i => `trend-type-${i.type}`)
-            .text(i => i.text)
-            .style('font-size', legendFontSize)
-          return text
-      })
-      .attr('x', i => i.x + swatchSize * swatchFact)
-      .attr('y', i => i.y + legendFontSize * 1)
+      const lt = svgChart.selectAll('.brc-legend-item-text')
+        .data(items, i => gen.safeId(i.label))
+        .join(enter => {
+            const text = enter.append("text")
+              //.attr("class", i=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(i.label)}`)
+              .attr('class', i => `brc-legend-item trend-type-${i.type}`)
+              .text(i => i.text)
+              .style('font-size', legendFontSize)
+            return text
+        })
+        .attr('x', i => i.x + swatchSize * swatchFact)
+        .attr('y', i => i.y + legendFontSize * 1)
 
-    addEventHandlers(ls, 'type')
-    addEventHandlers(lt, 'type')
-
+      addEventHandlers(ls, 'type')
+      addEventHandlers(lt, 'type')
+    }
     return swatchSize * swatchFact * (rows + 1)
   }
 
@@ -630,7 +655,7 @@ export function trend({
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -682,7 +707,7 @@ export function trend({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -690,13 +715,14 @@ export function trend({
       console.log("You can only use the setTaxon method when your chart displays a single taxon.")
     } else {
       taxa = [taxon]
+      highlightItem(null, false)
       makeChart()
     }
   }
 
 
 /** @function getChartWidth
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -704,7 +730,7 @@ export function trend({
   }
 
 /** @function getChartHeight
-  * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+  * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -713,10 +739,10 @@ export function trend({
 
   /**
    * @typedef {Object} api
-   * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:trend~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,
