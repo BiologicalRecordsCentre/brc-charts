@@ -1,5 +1,5 @@
-### BRC Atlas library
-The BRC Atlas library is a Javascript library for producing various charts tailored to biological records.
+### BRC Charts library
+The BRC Charts library is a Javascript library for producing various charts tailored to biological records.
 
 ## Installing
 You can get the javscript amd css builds from 
