@@ -183,7 +183,7 @@ export function phen1({
 
       const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
       const max = Math.max(...dataFiltered.map(d => d[m.prop]))
-      const maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
+      let maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
 
       lineData.push({
         id: gen.safeId(m.label),
@@ -206,12 +206,18 @@ export function phen1({
     if (ytype === 'normalized') {
       yMax = 1
     } else if (ytype === 'proportion') {
-      yMax = Math.max(...lineData.map(d => d.maxProportion))
+      yMax = Math.max(...lineData.map(d => {
+        if (isNaN(d.maxProportion)) {
+          return 0
+        } else {
+          return d.maxProportion
+        }
+      }))
     } else {
       yMax = Math.max(...lineData.map(d => d.max))
       if (yMax < 5) yMax = 5
     }
-
+    
     // Value scales
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
     const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
@@ -310,7 +316,7 @@ export function phen1({
         } else if (ytype === 'proportion') {
           return line(d.points.map(p => {
             return {
-              n: p.n/d.total,
+              n: d.total === 0 ? 0 : p.n/d.total,
               week: p.week
             }
           }))

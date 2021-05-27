@@ -1162,7 +1162,11 @@
         yMax = 1;
       } else if (ytype === 'proportion') {
         yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
-          return d.maxProportion;
+          if (isNaN(d.maxProportion)) {
+            return 0;
+          } else {
+            return d.maxProportion;
+          }
         })));
       } else {
         yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
@@ -1257,7 +1261,7 @@
         } else if (ytype === 'proportion') {
           return line(d.points.map(function (p) {
             return {
-              n: p.n / d.total,
+              n: d.total === 0 ? 0 : p.n / d.total,
               week: p.week
             };
           }));
@@ -3538,7 +3542,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.2.0";
+  var version = "0.2.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
