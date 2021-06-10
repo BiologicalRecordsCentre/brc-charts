@@ -48,7 +48,7 @@ import * as gen from './general'
  * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
  * <li> <b>c1</b> - a count for a given time period (can have any name). 
  * <li> <b>c2</b> - a count for a given time period (can have any name).
- * ... - there can be any number of these count columns.
+ * ... - there must be at leas one count column, but there can be any number of them.
  * </ul>
  * @returns {module:phen1~api} api - Returns an API for the chart.
  */

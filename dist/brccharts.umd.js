@@ -979,7 +979,7 @@
    * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
    * <li> <b>c1</b> - a count for a given time period (can have any name). 
    * <li> <b>c2</b> - a count for a given time period (can have any name).
-   * ... - there can be any number of these count columns.
+   * ... - there must be at leas one count column, but there can be any number of them.
    * </ul>
    * @returns {module:phen1~api} api - Returns an API for the chart.
    */
@@ -2528,7 +2528,7 @@
             popupDiv.transition().duration(200).style("opacity", 0.9);
             popupDiv.html(html).style("left", d3.event.pageX + 10 + "px").style("top", d3.event.pageY - 30 + "px");
           }
-        }).on("mouseout", function (d) {
+        }).on("mouseout", function () {
           //gNodes.selectAll('circle').classed("lowlighted", false)
           gLinks.selectAll(".display-link").classed('lowlighted', false);
           d3.select(this).classed("highlighted", false); //highLightLinks(d.id, false)
@@ -2645,7 +2645,7 @@
       return d3.drag().on("start", dragstart).on("drag", dragged);
     }
 
-    function clamp(x, lo, hi) {
+    function clamp(x) {
       //return x < lo ? lo : x > hi ? hi : x;
       return x;
     }
@@ -3174,7 +3174,7 @@
       }
 
       var t = svgTrend.transition().duration(duration);
-      var rects = gTrend.selectAll("rect").data(chartBars, function (d) {
+      gTrend.selectAll("rect").data(chartBars, function (d) {
         return "props-".concat(d.year);
       }).join(function (enter) {
         return enter.append("rect").attr("class", function (d) {
@@ -3201,7 +3201,7 @@
       }).attr("fill", function (d) {
         return d.colour;
       });
-      var lines = gTrend.selectAll("path").data(chartLines, function (d) {
+      gTrend.selectAll("path").data(chartLines, function (d) {
         return d.type;
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
@@ -3541,8 +3541,719 @@
     };
   }
 
+  /** 
+   * @param {Object} opts - Initialisation options.
+   * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
+   * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
+   * @param {number} opts.width - The width of each sub-chart area in pixels. (Default - 300.)
+   * @param {number} opts.height - The height of the each sub-chart area in pixels. (Default - 200.)
+   * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
+   * @param {number} opts.margin.left - Left margin in pixels. (Default - 40.)
+   * @param {number} opts.margin.right - Right margin in pixels. (Default - 40.)
+   * @param {number} opts.margin.top - Top margin in pixels. (Default - 20.)
+   * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
+   * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+   * @param {string} opts.title - Title for the chart. (Default - ''.)
+   * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
+   * @param {string} opts.footer - Footer for the chart. (Default - ''.)
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph. (Default - true.)
+   * @param {boolean} opts.showLegend - Whether or not to show an overall chart legend. (Default - true.)
+   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label. (Default - 10.)
+   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.(Default - true.)
+   * @param {string} opts.legendFontSize - Font size (pixels) of legend item text. (Default - 16.)
+   * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
+   * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
+   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+   * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+   * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
+   * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
+   * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
+   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+   * data for which graphics should be generated on the chart.
+   * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+   * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
+   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+   * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+   * (Optional - default is 'blue'.)
+   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+   * (Optional - default is 0.5.)
+   * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+   * (Optional - default is 1.)
+   * </ul>
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>year</b> - a four digit number indicating a year.
+   * <li> <b>c1</b> - a count for a given time year (can have any name). 
+   * <li> <b>c2</b> - a count for a given time year (can have any name).
+   * ... - there must be at leas one count column, but there can be any number of them.
+   * </ul>
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * If empty, graphs for all taxa are created. (Default - [].)
+
+   * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
+   * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+   * @returns {module:yearly~api} api - Returns an API for the chart.
+   */
+
+  function yearly() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'yearly-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 30,
+      right: 30,
+      top: 15,
+      bottom: 20
+    } : _ref$margin,
+        _ref$perRow = _ref.perRow,
+        perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
+        _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
+        _ref$showLegend = _ref.showLegend,
+        showLegend = _ref$showLegend === void 0 ? false : _ref$showLegend,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$axisRightLabel = _ref.axisRightLabel,
+        axisRightLabel = _ref$axisRightLabel === void 0 ? '' : _ref$axisRightLabel,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$showTaxonLabel = _ref.showTaxonLabel,
+        showTaxonLabel = _ref$showTaxonLabel === void 0 ? true : _ref$showTaxonLabel,
+        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
+        taxonLabelFontSize = _ref$taxonLabelFontSi === void 0 ? 10 : _ref$taxonLabelFontSi,
+        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
+        taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$showCounts = _ref.showCounts,
+        showCounts = _ref$showCounts === void 0 ? 'bar' : _ref$showCounts,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'none' : _ref$interactivity,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$taxa = _ref.taxa,
+        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
+        _ref$metrics = _ref.metrics,
+        metrics = _ref$metrics === void 0 ? [] : _ref$metrics,
+        _ref$minYear = _ref.minYear,
+        minYear = _ref$minYear === void 0 ? null : _ref$minYear,
+        _ref$maxYear = _ref.maxYear,
+        maxYear = _ref$maxYear === void 0 ? null : _ref$maxYear;
+
+    var metricsPlus;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
+    var svg = mainDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem(null, false);
+      }
+    });
+    var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly');
+    preProcessMetrics();
+    makeChart(); // Texts must come after chartbecause 
+    // the chart width is required
+
+    var textWidth = Number(svg.select('.mainChart').attr("width"));
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand);
+
+    function makeChart() {
+      // Set min and max year from data if not set
+      if (!minYear) {
+        minYear = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
+          return d.year;
+        })));
+      }
+
+      if (!maxYear) {
+        maxYear = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+          return d.year;
+        })));
+      } // If taxa for graphs not set, set to all in dataset
+
+
+      if (!taxa.length) {
+        taxa = data.map(function (d) {
+          return d.taxon;
+        }).filter(function (v, i, a) {
+          return a.indexOf(v) === i;
+        });
+      }
+
+      var subChartPad = 10;
+      var svgsTaxa = taxa.map(function (t) {
+        return makeYearly(t);
+      });
+      var subChartWidth = Number(svgsTaxa[0].attr("width"));
+      var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0;
+      svgsTaxa.forEach(function (svgTaxon, i) {
+        var col = i % perRow;
+        var row = Math.floor(i / perRow);
+        svgTaxon.attr("x", col * (subChartWidth + subChartPad));
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad) + legendHeight);
+      });
+      svgChart.attr("width", perRow * (subChartWidth + subChartPad));
+      svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+    }
+
+    function preProcessMetrics() {
+      // Look for 'fading' colour in taxa and colour appropriately 
+      // in fading shades of grey.
+      var iFading = 0;
+      metricsPlus = metrics.map(function (m) {
+        var iFade, strokeWidth;
+
+        if (m.colour === 'fading') {
+          iFade = ++iFading;
+          strokeWidth = 1;
+        } else {
+          strokeWidth = m.linewidth ? m.linewidth : 2;
+        }
+
+        return {
+          prop: m.prop,
+          label: m.label ? m.label : m.prop,
+          opacity: m.opacity ? m.opacity : 0.5,
+          colour: m.colour ? m.colour : 'blue',
+          fading: iFade,
+          strokeWidth: strokeWidth
+        };
+      }).reverse();
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+      metricsPlus.forEach(function (m) {
+        if (m.fading) {
+          m.colour = grey(m.fading);
+        }
+      });
+    }
+
+    function makeYearly(taxon) {
+      // Pre-process data.
+      // Filter to named taxon and to min and max year and sort in year order
+      // Add max value to each.
+      var dataFiltered = data.filter(function (d) {
+        return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
+      }).sort(function (a, b) {
+        return a.year > b.year ? 1 : -1;
+      }); // Set the maximum values for the y axis
+
+      var maxCounts = metricsPlus.map(function (m) {
+        return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+          return d[m.prop];
+        })));
+      });
+      var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxCounts));
+      yMaxCount = yMaxCount < 5 ? 5 : yMaxCount; // Prevents tiny values
+      // Value scales
+
+      var years = [];
+
+      for (var i = minYear; i <= maxYear; i++) {
+        years.push(i);
+      }
+
+      var xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1);
+      var xScaleLine = d3.scaleLinear().domain([minYear, maxYear]).range([0, width]);
+      var yScaleCount = d3.scaleLinear().domain([0, yMaxCount]).range([height, 0]); // Top axis
+
+      var tAxis;
+
+      if (axisTop === 'on') {
+        tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0);
+      } // Bottom axis
+
+
+      var bAxis;
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        bAxis = xAxisYear(width, axisBottom === 'tick', minYear, maxYear, showCounts === 'bar');
+      }
+
+      var makeXaxis = function makeXaxis(leftRight, axisOpt) {
+        var axis;
+        var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
+
+        switch (axisOpt) {
+          case 'on':
+            axis = d3axis.scale(yScaleCount).tickValues([]).tickSizeOuter(0);
+            break;
+
+          case 'tick':
+            axis = d3axis.scale(yScaleCount).ticks(5).tickFormat(d3.format("d"));
+            break;
+        }
+
+        return axis;
+      };
+
+      var lAxis = makeXaxis('left', axisLeft);
+      var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
+
+      var init, svgYearly, gYearly;
+
+      if (taxa.length === 1 && svgChart.selectAll('.brc-chart-yearly').size() === 1) {
+        svgYearly = svgChart.select('.brc-chart-yearly');
+        gYearly = svgYearly.select('.brc-chart-yearly-g');
+        init = false;
+      } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+        svgYearly = svgChart.select("#".concat(safeId(taxon)));
+        gYearly = svgYearly.select('.brc-chart-yearly-g');
+        init = false;
+      } else {
+        svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon));
+        gYearly = svgYearly.append('g').classed('brc-chart-yearly-g', true);
+        init = true;
+      } // Line path generators
+
+
+      var lineCounts = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScaleLine(d.year);
+      }).y(function (d) {
+        return yScaleCount(d.n);
+      });
+      var chartLines = [];
+      var chartBars = [];
+      metricsPlus.forEach(function (m) {
+        var dataDict = dataFiltered.reduce(function (a, d) {
+          a[d.year] = d[m.prop];
+          return a;
+        }, {});
+
+        if (showCounts === 'line') {
+          chartLines.push({
+            lineGen: lineCounts,
+            colour: m.colour,
+            opacity: m.opacity,
+            strokeWidth: m.strokeWidth,
+            type: 'counts',
+            prop: m.prop,
+            points: years.map(function (y) {
+              return {
+                year: y,
+                n: dataDict[y] ? dataDict[y] : 0
+              };
+            })
+          });
+        }
+
+        if (showCounts === 'bar') {
+          var bars = dataFiltered.map(function (d) {
+            return {
+              yScale: yScaleCount,
+              colour: m.colour,
+              opacity: m.opacity,
+              type: 'counts',
+              prop: m.prop,
+              year: d.year,
+              n: yScaleCount(d[m.prop])
+            };
+          });
+          chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
+        }
+      });
+      var t = svgYearly.transition().duration(duration);
+      gYearly.selectAll("rect").data(chartBars, function (d) {
+        return "props-".concat(d.year);
+      }).join(function (enter) {
+        return enter.append("rect").attr("class", function (d) {
+          return "yearly-graphic yearly-".concat(d.prop);
+        }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
+          return d.colour;
+        }).attr('opacity', function (d) {
+          return d.opacity;
+        }).attr('y', height).attr('x', function (d) {
+          return xScaleBar(d.year);
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition(t).attr('height', 0).attr('y', height).remove();
+        });
+      }).transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr('y', function (d) {
+        return d.n;
+      }).attr('height', function (d) {
+        return height - d.n;
+      }).attr("fill", function (d) {
+        return d.colour;
+      });
+      gYearly.selectAll("path").data(chartLines, function (d) {
+        return d.type;
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (d) {
+          return "yearly-graphic yearly-".concat(d.prop);
+        }).attr("opacity", function (d) {
+          return d.opacity;
+        }).attr("stroke", function (d) {
+          return d.colour;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }).attr("d", function (d) {
+          return d.lineGen(d.points.map(function (p) {
+            return {
+              n: 0,
+              year: p.year
+            };
+          }));
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition(t).attr("d", function (d) {
+            return d.lineGen(d.points.map(function (p) {
+              return {
+                n: 0,
+                year: p.year
+              };
+            }));
+          }).remove();
+        });
+      }).transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.lineGen(d.points);
+      });
+      addEventHandlers(gYearly.selectAll("path"), 'prop');
+      addEventHandlers(gYearly.selectAll("rect"), 'prop');
+
+      if (init) {
+        // Constants for positioning
+        var axisLeftPadX = margin.left ? margin.left : 0;
+        var axisRightPadX = margin.right ? margin.right : 0;
+        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+        var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
+
+        if (showTaxonLabel) {
+          var taxonLabel = svgYearly.append('text').classed('brc-chart-yearly-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var labelHeight = taxonLabel.node().getBBox().height;
+          taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
+        } // Size SVG
+
+
+        svgYearly.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
+
+        gYearly.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
+
+        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
+        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+        var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(axisTopPadY + height / 2, ") rotate(90)");
+        var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
+
+        if (lAxis) {
+          var gLaxis = svgYearly.append("g").attr("class", "l-axis"); // .classed('yearly-type-counts',  axisLeft === 'tick')
+          // .classed('yearly-type-props',  axisLeft !== 'tick')
+
+          gLaxis.attr("transform", leftYaxisTrans);
+        }
+
+        if (bAxis) {
+          var gBaxis = svgYearly.append("g").attr("class", "x axis").call(bAxis);
+          gBaxis.attr("transform", bottomXaxisTrans);
+        }
+
+        if (tAxis) {
+          var gTaxis = svgYearly.append("g").call(tAxis);
+          gTaxis.attr("transform", topXaxisTrans);
+        }
+
+        if (rAxis) {
+          var gRaxis = svgYearly.append("g") //.call(rAxis)
+          .attr("class", "r-axis"); // .classed('yearly-type-counts',  axisRight === 'tick')
+          // .classed('yearly-type-props',  axisRight !== 'tick')
+
+          gRaxis.attr("transform", rightYaxisTrans);
+        }
+
+        var tYaxisLeftLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisLeft === 'tick')
+        // .classed('yearly-type-props',  axisLeft !== 'tick')
+        .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+        tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+        var tYaxisRightLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisRight === 'tick')
+        // .classed('yearly-type-props',  axisRight !== 'tick')
+        .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+        tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
+      } else if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgYearly.select('.brc-chart-yearly-label').text(taxon);
+        }
+      }
+
+      if (svgYearly.selectAll(".l-axis").size()) {
+        svgYearly.select(".l-axis").transition().duration(duration).call(lAxis);
+      }
+
+      if (svgYearly.selectAll(".r-axis").size()) {
+        svgYearly.select(".r-axis").transition().duration(duration).call(rAxis);
+      }
+
+      return svgYearly;
+    }
+
+    function makeLegend(legendWidth) {
+      var swatchSize = 15;
+      var swatchFact = 1.3; // Loop through all the legend elements and work out their
+      // positions based on swatch size, item label text size and
+      // legend width.
+
+      var metricsReversed = cloneData(metricsPlus).reverse();
+      var rows = 0;
+      var lineWidth = -swatchSize;
+      metricsReversed.forEach(function (m) {
+        var tmpText = svgChart.append('text') //.style('display', 'none')
+        .text(m.label).style('font-size', legendFontSize);
+        var widthText = tmpText.node().getBBox().width;
+        tmpText.remove();
+
+        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+          ++rows;
+          lineWidth = -swatchSize;
+        }
+
+        m.x = lineWidth + swatchSize;
+        m.y = rows * swatchSize * swatchFact;
+        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+      });
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var rect = enter.append("rect").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-rect yearly-graphic yearly-".concat(m.prop);
+        }).attr('width', swatchSize).attr('height', showCounts === 'bar' ? swatchSize : 2);
+        return rect;
+      }).attr('x', function (m) {
+        return m.x;
+      }).attr('y', function (m) {
+        return showCounts === 'bar' ? m.y + swatchSize / 5 : m.y + swatchSize / 2;
+      }).attr('fill', function (m) {
+        return m.colour;
+      });
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var text = enter.append("text").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-text yearly-graphic yearly-".concat(m.prop);
+        }).text(function (m) {
+          return m.label;
+        }).style('font-size', legendFontSize);
+        return text;
+      }).attr('x', function (m) {
+        return m.x + swatchSize * swatchFact;
+      }).attr('y', function (m) {
+        return m.y + legendFontSize * 1;
+      });
+      addEventHandlers(ls, 'prop');
+      addEventHandlers(lt, 'prop');
+      return swatchSize * swatchFact * (rows + 1);
+    }
+
+    function highlightItem(id, highlight) {
+      svgChart.selectAll('.yearly-graphic').classed('lowlight', false);
+
+      if (highlight) {
+        svgChart.selectAll('.yearly-graphic').classed('lowlight', true);
+        svgChart.selectAll(".yearly-".concat(id)).classed('lowlight', false);
+      }
+    }
+
+    function addEventHandlers(sel, prop) {
+      sel.on("mouseover", function (d) {
+        if (interactivity === 'mousemove') {
+          console.log(d);
+          highlightItem(d[prop], true);
+        }
+      }).on("mouseout", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], false);
+        }
+      }).on("click", function (d) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(d[prop], true);
+          d3.event.stopPropagation();
+        }
+      });
+    }
+    /** @function setChartOpts
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
+      */
+
+
+    function setChartOpts(opts) {
+      if ('title' in opts) {
+        title = opts.title;
+      }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      var remakeChart = false;
+
+      if ('data' in opts) {
+        data = opts.data;
+        remakeChart = true;
+      }
+
+      if (remakeChart) makeChart();
+      positionMainElements(svg, expand);
+    }
+    /** @function setTaxon
+      * @param {string} opts.taxon - The taxon to display.
+      * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+      * For single species charts, this allows you to change the taxon displayed.
+      */
+
+
+    function setTaxon(taxon) {
+      if (taxa.length !== 1) {
+        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+      } else {
+        taxa = [taxon];
+        highlightItem(null, false);
+        makeChart();
+      }
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
+    /** @function getChartHeight
+      * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+      * Return the full height of the chart svg.
+      */
+
+
+    function getChartHeight() {
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /**
+     * @typedef {Object} api
+     * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:yearly~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     */
+
+
+    return {
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartOpts: setChartOpts,
+      setTaxon: setTaxon
+    };
+  }
+
   var name = "brc-d3";
-  var version = "0.2.1";
+  var version = "0.3.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -3605,6 +4316,7 @@
   exports.phen1 = phen1;
   exports.pie = pie;
   exports.trend = trend;
+  exports.yearly = yearly;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

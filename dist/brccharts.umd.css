@@ -1,31 +1,6 @@
 .blah {
     background: red;
-}.brc-chart-phen1 path {
-    fill: none;
-}
-
-.brc-chart-phen1 path.highlight {
-    stroke: black;
-    stroke-width: 3;
-    opacity: 1;
-}
-
-.brc-chart-phen1 path.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-.brc-chart-pie {
+}.brc-chart-pie {
   width: 100%
 }
 
@@ -86,7 +61,32 @@ path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
 
 .y-axis.highlight {
     font-weight:bold;
+}.brc-chart-phen1 path {
+    fill: none;
 }
+
+.brc-chart-phen1 path.highlight {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-phen1 path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 {
+    overflow: visible;
+}
+
+.brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-legend-item-rect.highlight {
+    fill:black;
+}
+
 .chart-overflow svg {
     overflow: visible;
 }
@@ -160,5 +160,20 @@ svg circle.lowlighted {
 }
 
 .brc-chart-trend .lowlight {
+    opacity: 0.1;
+}.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
     opacity: 0.1;
 }

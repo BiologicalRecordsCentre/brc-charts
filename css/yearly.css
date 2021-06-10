@@ -1,0 +1,16 @@
+.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
+    opacity: 0.1;
+}

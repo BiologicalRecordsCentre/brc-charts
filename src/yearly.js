@@ -1,32 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: trend.js</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Source: trend.js</h1>
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/** @module trend */
+/** @module yearly */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -34,7 +6,7 @@ import * as gen from './general'
 /** 
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
- * @param {string} opts.elid - The id for the dom object created. (Default - 'trend-chart'.)
+ * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
  * @param {number} opts.width - The width of each sub-chart area in pixels. (Default - 300.)
  * @param {number} opts.height - The height of the each sub-chart area in pixels. (Default - 200.)
  * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
@@ -62,52 +34,51 @@ import * as gen from './general'
  * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
- * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)
+ * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)
  * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
- * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)
+ * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
- * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
+ * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+ * data for which graphics should be generated on the chart.
+ * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
+ * <ul>
+ * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+ * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
+ * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+ * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+ * (Optional - default is 'blue'.)
+ * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+ * (Optional - default is 0.5.)
+ * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+ * (Optional - default is 1.)
+ * </ul>
+ * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * &lt;ul>
- * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
- * &lt;li> &lt;b>year&lt;/b> - a four digit number indicating a year.
- * &lt;li> &lt;b>count&lt;/b> - a count for the given year. 
- * &lt;/ul>
- * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * <ul>
+ * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>year</b> - a four digit number indicating a year.
+ * <li> <b>c1</b> - a count for a given time year (can have any name). 
+ * <li> <b>c2</b> - a count for a given time year (can have any name).
+ * ... - there must be at leas one count column, but there can be any number of them.
+ * </ul>
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
- * @param {Array.&lt;string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
- * If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)
+
  * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
  * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
- * @param {string} opts.showCounts- Indicates whether or not to plot the actual number of records for each taxon and, if so, the style of chart to use.
- * Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'bar'.)
- * @param {string} opts.showProps- Indicates whether or not to plot the proportion of all records in the group accounted for by each taxon and, if so, the style of chart to use.
- * Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'line'.)
- * @param {Object} opts.styleCounts - An object specifying the style to use for the count graphic.
- * @param {string} opts.styleCounts.colour - Colour of bars or line (as determined by showCounts property). (Default - 'CornflowerBlue'.)
- * @param {number} opts.styleCounts.strokeWidth - If the showCounts property is set to 'line' then this property indicates the line width. (Default - not set.)
- * @param {number} opts.styleCounts.opacity - The opacity of the lines/bars in the chart. A number between 0 and 1. (Default - 1.)
- * @param {string} opts.styleCounts.legend - Text to use for the counts metric in the legend. (Default - ''.)
- * @param {Object} opts.styleProps - An object specifying the style to use for the proportions/percentage graphic.
- * @param {string} opts.styleProps.colour - Colour of bars or line (as determined by showProps property). (Default - 'black'.)
- * @param {number} opts.styleProps.strokeWidth - If the showProps property is set to 'line' then this property indicates the line width. (Default - 2.)
- * @param {number} opts.styleProps.opacity - The opacity of the lines/bars in the chart. A number between 0 and 1. (Default - 1.)
- * @param {string} opts.styleProps.legend - Text to use for the proportion/percentage metric in the legend. (Default - ''.)
- * @returns {module:trend~api} api - Returns an API for the chart.
+ * @returns {module:yearly~api} api - Returns an API for the chart.
  */
 
-export function trend({
+export function yearly({
   // Default options in here
   selector = 'body',
-  elid = 'trend-chart',
+  elid = 'yearly-chart',
   width = 300,
   height = 200,
-  margin = {left: 30, right: 30, top: 15, bottom: 15},
+  margin = {left: 30, right: 30, top: 15, bottom: 20},
   perRow = 2,
   expand = false,
   title = '',
@@ -127,30 +98,21 @@ export function trend({
   showTaxonLabel = true,
   taxonLabelFontSize = 10,
   taxonLabelItalics = false,
-  axisLeft = 'counts',
+  axisLeft = 'tick',
   axisBottom = 'tick',
-  axisRight = 'percentages',
+  axisRight = '',
   axisTop = '',
   showCounts = 'bar', 
-  showProps = 'line', 
-  styleCounts = {colour: 'CornflowerBlue', opacity: 1},
-  styleProps = {colour: 'black', opacity: 1, strokeWidth: 2},
   duration = 1000,
   interactivity = 'none',
   data = [],
   taxa = [],
-  group = [],
+  metrics = [],
   minYear = null,
   maxYear = null,
 } = {}) {
 
-  // Ensure style prop objects have the required properties.
-  styleCounts.colour = styleCounts.colour ? styleCounts.colour : 'CornflowerBlue'
-  styleCounts.opacity = styleCounts.opacity ? styleCounts.opacity : 1
-  styleCounts.strokeWidth = styleCounts.strokeWidth ? styleCounts.strokeWidth : 2
-  styleProps.colour = styleProps.colour ? styleProps.colour : 'black'
-  styleProps.opacity = styleProps.opacity ? styleProps.opacity : 1
-  styleProps.strokeWidth = styleProps.strokeWidth ? styleProps.strokeWidth : 2
+  let metricsPlus
 
   const mainDiv = d3.select(`${selector}`)
     .append('div')
@@ -165,8 +127,9 @@ export function trend({
     }
   })
 
-  const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-trend')
+  const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly')
   
+  preProcessMetrics()
   makeChart()
   // Texts must come after chartbecause 
   // the chart width is required
@@ -191,25 +154,8 @@ export function trend({
       taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
     }
 
-    // If group for proportion/percentage data not set, set to all in dataset
-    if (!group.length) {
-      group = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
-    }
-
-    // Generate object with yearly totals
-    const yearTotals = {}
-    data
-      .filter(d => group.indexOf(d.taxon) > -1 &amp;&amp; d.year >= minYear &amp;&amp; d.year &lt;= maxYear)
-      .forEach(d => {
-        if (yearTotals[d.year]) {
-          yearTotals[d.year] = yearTotals[d.year] + d.count
-        } else {
-          yearTotals[d.year] = d.count
-        }
-      })
-
     const subChartPad = 10
-    const svgsTaxa = taxa.map(t => makeTrend(t, yearTotals))
+    const svgsTaxa = taxa.map(t => makeYearly(t))
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
     const subChartHeight = Number(svgsTaxa[0].attr("height"))
@@ -229,32 +175,64 @@ export function trend({
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
   }
 
-  function makeTrend (taxon, yearTotals) {
+  function preProcessMetrics () {
+    // Look for 'fading' colour in taxa and colour appropriately 
+    // in fading shades of grey.
+    
+    let iFading = 0
+    metricsPlus = metrics.map(m => {
+      let iFade, strokeWidth
+      if (m.colour === 'fading') {
+        iFade = ++iFading
+        strokeWidth = 1
+      } else {
+        strokeWidth = m.linewidth ? m.linewidth : 2
+      }
+      return {
+        prop: m.prop,
+        label: m.label ?  m.label : m.prop,
+        opacity: m.opacity ? m.opacity : 0.5,
+        colour: m.colour ? m.colour : 'blue',
+        fading: iFade,
+        strokeWidth: strokeWidth
+      }
+    }).reverse()
+
+    const grey = d3.scaleLinear()
+      .range(['#808080', '#E0E0E0'])
+      .domain([1, iFading])
+
+    metricsPlus.forEach(m => {
+      if (m.fading) {
+        m.colour = grey(m.fading)
+      }
+    })
+  }
+
+  function makeYearly (taxon) {
 
     // Pre-process data.
     // Filter to named taxon and to min and max year and sort in year order
     // Add max value to each.
 
     const dataFiltered = data
-      .filter(d => d.taxon === taxon &amp;&amp; d.year >= minYear &amp;&amp; d.year &lt;= maxYear)
+      .filter(d => d.taxon === taxon && d.year >= minYear && d.year <= maxYear)
       .sort((a, b) => (a.year > b.year) ? 1 : -1)
 
     // Set the maximum values for the y axis
-    let yMaxProp = Math.max(...dataFiltered.map(d => d.count / yearTotals[d.year]))
-    yMaxProp = yMaxProp &lt; 0.005 ? 0.005 : yMaxProp // Prevents tiny values
-    let yMaxCount = Math.max(...dataFiltered.map(d => d.count))
-    yMaxCount = yMaxCount &lt; 5 ? 5 : yMaxCount // Prevents tiny values
+    const maxCounts = metricsPlus.map(m => Math.max(...dataFiltered.map(d => d[m.prop])))
+    let yMaxCount = Math.max(...maxCounts)
+    yMaxCount = yMaxCount < 5 ? 5 : yMaxCount // Prevents tiny values
 
     // Value scales
     let years = []
-    for (let i = minYear; i &lt;= maxYear; i++) {
+    for (let i = minYear; i <= maxYear; i++) {
       years.push(i)
     }
     const xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1)
     const xScaleLine = d3.scaleLinear().domain([minYear, maxYear]).range([0, width])
     const yScaleCount = d3.scaleLinear().domain([0, yMaxCount]).range([height, 0])
-    const yScaleProps = d3.scaleLinear().domain([0, yMaxProp]).range([height, 0])
-
+   
     // Top axis
     let tAxis
     if (axisTop === 'on') {
@@ -267,25 +245,18 @@ export function trend({
     // Bottom axis
     let bAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = gen.xAxisYear(width, axisBottom === 'tick', minYear, maxYear, (showCounts === 'bar' || showProps === 'bar'))
+      bAxis = gen.xAxisYear(width, axisBottom === 'tick', minYear, maxYear, showCounts === 'bar')
     }
 
     const makeXaxis = (leftRight, axisOpt) => {
-      let axis, format
+      let axis
       const d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight()
       switch(axisOpt) {
         case 'on':
           axis = d3axis.scale(yScaleCount).tickValues([]).tickSizeOuter(0)
           break
-        case 'counts':
+        case 'tick':
           axis = d3axis.scale(yScaleCount).ticks(5).tickFormat(d3.format("d"))
-          break
-        case 'proportions':
-          axis = d3axis.scale(yScaleProps).ticks(5)
-          break
-        case 'percentages':
-          format = yMaxProp &lt; 0.05 ? d3.format(".1%") : d3.format(".0%")
-          axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(format)
           break
       }
       return axis
@@ -294,21 +265,21 @@ export function trend({
     const rAxis = makeXaxis('right', axisRight)
 
     // Create or get the relevant chart svg
-    let init, svgTrend, gTrend
-    if (taxa.length === 1 &amp;&amp; svgChart.selectAll('.brc-chart-trend').size() === 1) {
-      svgTrend = svgChart.select('.brc-chart-trend')
-      gTrend = svgTrend.select('.brc-chart-trend-g')
+    let init, svgYearly, gYearly
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-yearly').size() === 1) {
+      svgYearly = svgChart.select('.brc-chart-yearly')
+      gYearly = svgYearly.select('.brc-chart-yearly-g')
       init = false
     } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-      svgTrend = svgChart.select(`#${gen.safeId(taxon)}`)
-      gTrend = svgTrend.select('.brc-chart-trend-g')
+      svgYearly = svgChart.select(`#${gen.safeId(taxon)}`)
+      gYearly = svgYearly.select('.brc-chart-yearly-g')
       init = false
     } else {
-      svgTrend = svgChart.append('svg')
-        .classed('brc-chart-trend', true)
+      svgYearly = svgChart.append('svg')
+        .classed('brc-chart-yearly', true)
         .attr('id', gen.safeId(taxon))
-      gTrend = svgTrend.append('g')
-        .classed('brc-chart-trend-g', true)
+      gYearly = svgYearly.append('g')
+        .classed('brc-chart-yearly-g', true)
       init = true
     }
 
@@ -318,82 +289,56 @@ export function trend({
       .x(d => xScaleLine(d.year))
       .y(d => yScaleCount(d.n))
 
-    const lineProps = d3.line()
-      .curve(d3.curveMonotoneX)
-      .x(d => xScaleLine(d.year))
-      .y(d => yScaleProps(d.n))
-
     const chartLines = []
-    const dataDict = dataFiltered.reduce((a,d) => {
-      a[d.year]=d.count
-      return a
-    }, {})
-    if (showCounts === 'line') {
-      chartLines.push({
-        lineGen: lineCounts,
-        colour: styleCounts.colour,
-        opacity: styleCounts.opacity,
-        strokeWidth: styleCounts.strokeWidth,
-        type: 'counts',
-        points: years.map(y => {
-          return {
-            year: y,
-            n: dataDict[y] ? dataDict[y] : 0,
-          }
-        })
-      })
-    }
-    if (showProps === 'line') {
-      chartLines.push({
-        lineGen: lineProps,
-        colour: styleProps.colour,
-        opacity: styleProps.opacity,
-        strokeWidth: styleProps.strokeWidth,
-        type: 'props',
-        points: years.map(y => {
-          return {
-            year: y,
-            n: dataDict[y] ? dataDict[y]/yearTotals[y] : 0,
-          }
-        })
-      })
-    }
     let chartBars = []
-    if (showCounts === 'bar') {
-      const bars = dataFiltered.map(d => {
-        return {
-          yScale: yScaleCount,
-          colour: styleCounts.colour,
-          opacity: styleCounts.opacity,
-          type: 'counts',
-          year: d.year,
-          n: yScaleCount(d.count),
-        }
-      })
-      chartBars = [...chartBars, ...bars]
-    }
-    if (showProps === 'bar') {
-      const bars = dataFiltered.map(d => {
-        return {
-          yScale: yScaleProps,
-          colour: styleProps.colour,
-          opacity: styleProps.opacity,
-          type: 'props',
-          year: d.year,
-          n: yScaleProps(d.count / yearTotals[d.year]),
-        }
-      })
-      chartBars = [...chartBars, ...bars]
-    }
 
-    const t = svgTrend.transition()
+    metricsPlus.forEach(m => {
+      const dataDict = dataFiltered.reduce((a,d) => {
+        a[d.year]=d[m.prop]
+        return a
+      }, {})
+      if (showCounts === 'line') {
+        chartLines.push({
+          lineGen: lineCounts,
+          colour: m.colour,
+          opacity: m.opacity,
+          strokeWidth: m.strokeWidth,
+          type: 'counts',
+          prop: m.prop,
+          points: years.map(y => {
+            return {
+              year: y,
+              n: dataDict[y] ? dataDict[y] : 0,
+            }
+          })
+        })
+      }
+  
+      if (showCounts === 'bar') {
+        const bars = dataFiltered.map(d => {
+          return {
+            yScale: yScaleCount,
+            colour: m.colour,
+            opacity: m.opacity,
+            type: 'counts',
+            prop: m.prop,
+            year: d.year,
+            n: yScaleCount(d[m.prop]),
+          }
+        })
+        chartBars = [...chartBars, ...bars]
+      }
+    })
+
+
+    const t = svgYearly.transition()
         .duration(duration)
 
-    gTrend.selectAll("rect")
+    gYearly.selectAll("rect")
       .data(chartBars, d => `props-${d.year}`)
       .join(
         enter => enter.append("rect")
-          .attr("class", d => `trend-type-${d.type}`)
+          .attr("class", d => `yearly-graphic yearly-${d.prop}`)
           .attr('width', xScaleBar.bandwidth())
           .attr('height', 0)
           .attr('fill', d => d.colour)
@@ -413,11 +358,11 @@ export function trend({
         .attr('height', d => height - d.n)
         .attr("fill", d => d.colour)
   
-    gTrend.selectAll("path")
+    gYearly.selectAll("path")
       .data(chartLines, d => d.type)
       .join(
         enter => enter.append("path")
-          .attr("class", d => `trend-type-${d.type}`)
+          .attr("class", d => `yearly-graphic yearly-${d.prop}`)
           .attr("opacity", d => d.opacity)
           .attr("stroke", d => d.colour)
           .attr("stroke-width", d => d.strokeWidth)
@@ -445,8 +390,8 @@ export function trend({
         // enter and update selections
         .attr("d", d => d.lineGen(d.points))
 
-    addEventHandlers(gTrend.selectAll("path"), 'type')
-    addEventHandlers(gTrend.selectAll("rect"), 'type')
+    addEventHandlers(gYearly.selectAll("path"), 'prop')
+    addEventHandlers(gYearly.selectAll("rect"), 'prop')
         
     if (init) {
 
@@ -458,9 +403,9 @@ export function trend({
 
       // Taxon title
       if (showTaxonLabel) {
-        const taxonLabel = svgTrend
+        const taxonLabel = svgYearly
           .append('text')
-          .classed('brc-chart-trend-label', true)
+          .classed('brc-chart-yearly-label', true)
           .text(taxon)
           .style('font-size', taxonLabelFontSize)
           .style('font-style', taxonLabelItalics ? 'italic' : '')
@@ -470,12 +415,12 @@ export function trend({
       }
       
        // Size SVG
-      svgTrend
+      svgYearly
         .attr('width', width + axisLeftPadX + axisRightPadX)
         .attr('height', height + axisBottomPadY + axisTopPadY)
 
       // Position chart
-      gTrend.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
+      gYearly.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
       
       // Create axes and position within SVG
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
@@ -487,43 +432,43 @@ export function trend({
 
       // Create axes and position within SVG
       if (lAxis) {
-        const gLaxis = svgTrend.append("g")
+        const gLaxis = svgYearly.append("g")
           .attr("class", "l-axis")
-          .classed('trend-type-counts',  axisLeft === 'counts')
-          .classed('trend-type-props',  axisLeft !== 'counts')
+          // .classed('yearly-type-counts',  axisLeft === 'tick')
+          // .classed('yearly-type-props',  axisLeft !== 'tick')
         gLaxis.attr("transform", leftYaxisTrans)
       }
       if (bAxis) {
-        const gBaxis = svgTrend.append("g")
+        const gBaxis = svgYearly.append("g")
           .attr("class", "x axis")
           .call(bAxis)
         gBaxis.attr("transform", bottomXaxisTrans)
       }
       if (tAxis) {
-        const gTaxis = svgTrend.append("g")
+        const gTaxis = svgYearly.append("g")
           .call(tAxis)
         gTaxis.attr("transform", topXaxisTrans)
       }
       if (rAxis) {
-        const gRaxis = svgTrend.append("g")
+        const gRaxis = svgYearly.append("g")
           //.call(rAxis)
           .attr("class", "r-axis")
-          .classed('trend-type-counts',  axisRight === 'counts')
-          .classed('trend-type-props',  axisRight !== 'counts')
+          // .classed('yearly-type-counts',  axisRight === 'tick')
+          // .classed('yearly-type-props',  axisRight !== 'tick')
         gRaxis.attr("transform", rightYaxisTrans)
       }
 
-      const tYaxisLeftLabel = svgTrend.append("text")
-        .classed('trend-type-counts',  axisLeft === 'counts')
-        .classed('trend-type-props',  axisLeft !== 'counts')
+      const tYaxisLeftLabel = svgYearly.append("text")
+        // .classed('yearly-type-counts',  axisLeft === 'tick')
+        // .classed('yearly-type-props',  axisLeft !== 'tick')
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
         .text(axisLeftLabel) 
       tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans)
 
-      const tYaxisRightLabel = svgTrend.append("text")
-        .classed('trend-type-counts',  axisRight === 'counts')
-        .classed('trend-type-props',  axisRight !== 'counts')
+      const tYaxisRightLabel = svgYearly.append("text")
+        // .classed('yearly-type-counts',  axisRight === 'tick')
+        // .classed('yearly-type-props',  axisRight !== 'tick')
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
         .text(axisRightLabel) 
@@ -532,60 +477,42 @@ export function trend({
     } else if (taxa.length === 1) {
       // Update taxon label
       if (showTaxonLabel) {
-        svgTrend.select('.brc-chart-trend-label').text(taxon)
+        svgYearly.select('.brc-chart-yearly-label').text(taxon)
       }
     }
 
-    if (svgTrend.selectAll(".l-axis").size()){
-      svgTrend.select(".l-axis")
+    if (svgYearly.selectAll(".l-axis").size()){
+      svgYearly.select(".l-axis")
       .transition()
       .duration(duration)
       .call(lAxis)
     }
 
-    if (svgTrend.selectAll(".r-axis").size()){
-      svgTrend.select(".r-axis")
+    if (svgYearly.selectAll(".r-axis").size()){
+      svgYearly.select(".r-axis")
       .transition()
       .duration(duration)
       .call(rAxis)
     }
     
-    return svgTrend
+    return svgYearly
   }
 
   function makeLegend (legendWidth) {
     
-    const swatchSize = 20
+    const swatchSize = 15
     const swatchFact = 1.3
-
-    const items = []
-    if (showCounts === 'line' || showCounts === 'bar') {
-      items.push({
-        colour: styleCounts.colour,
-        opacity: styleCounts.opacity,
-        graphic: showCounts,
-        text: styleCounts.legend,
-        type: 'counts'
-      })
-    }
-    if (showProps === 'line' || showProps === 'bar') {
-      items.push({
-        colour: styleProps.colour,
-        opacity: styleProps.opacity,
-        graphic: showProps,
-        text: styleProps.legend,
-        type: 'props'
-      })
-    }
 
     // Loop through all the legend elements and work out their
     // positions based on swatch size, item label text size and
     // legend width.
+    const metricsReversed = gen.cloneData(metricsPlus).reverse()
+
     let rows = 0
     let lineWidth = -swatchSize
-    items.forEach(i => {
-      const tmpText = svgChart.append('text')
-        .text(i.text)
+    metricsReversed.forEach(m => {
+      const tmpText = svgChart.append('text') //.style('display', 'none')
+        .text(m.label)
         .style('font-size', legendFontSize)
 
       const widthText = tmpText.node().getBBox().width
@@ -595,58 +522,52 @@ export function trend({
         ++rows
         lineWidth = -swatchSize
       }
-      i.x = lineWidth + swatchSize
-      i.y = rows * swatchSize * swatchFact
+      m.x = lineWidth + swatchSize
+      m.y = rows * swatchSize * swatchFact
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
 
-    // Legend does not need to be recreated if it already exists
-    if (!svgChart.selectAll('.brc-legend-item').size()) {
-    
-      const ls = svgChart.selectAll('.brc-legend-item-rect')
-        .data(items, i => gen.safeId(i.label))
-        .join(enter => {
-            const rect = enter.append("rect")
-              //.attr("class", i=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(i.label)}`)
-              .attr('class', i => `brc-legend-item trend-type-${i.type}`)
-              .attr('width', swatchSize)
-              .attr('height', i => i.graphic === 'bar' ? swatchSize/2 : 2)
-            return rect
-        })
-        .attr('x', i => i.x)
-        .attr('y', i => i.graphic === 'bar' ? i.y + legendFontSize - swatchSize/2 : i.y + legendFontSize - 2)
-        .attr('fill', i => i.colour)
-        .attr('opacity', i => i.opacity)
+    const ls = svgChart.selectAll('.brc-legend-item-rect')
+      .data(metricsReversed, m => gen.safeId(m.label))
+      .join(enter => {
+          const rect = enter.append("rect")
+            .attr("class", m=> `brc-legend-item brc-legend-item-rect yearly-graphic yearly-${m.prop}`)
+            .attr('width', swatchSize)
+            .attr('height', showCounts === 'bar' ? swatchSize : 2)
+          return rect
+      })
+      .attr('x', m => m.x)
+      .attr('y', m => showCounts === 'bar' ?  m.y + swatchSize/5 : m.y + swatchSize/2)
+      .attr('fill', m => m.colour)
 
-      const lt = svgChart.selectAll('.brc-legend-item-text')
-        .data(items, i => gen.safeId(i.label))
-        .join(enter => {
-            const text = enter.append("text")
-              //.attr("class", i=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(i.label)}`)
-              .attr('class', i => `brc-legend-item trend-type-${i.type}`)
-              .text(i => i.text)
-              .style('font-size', legendFontSize)
-            return text
-        })
-        .attr('x', i => i.x + swatchSize * swatchFact)
-        .attr('y', i => i.y + legendFontSize * 1)
+    const lt = svgChart.selectAll('.brc-legend-item-text')
+      .data(metricsReversed, m => gen.safeId(m.label))
+      .join(enter => {
+          const text = enter.append("text")
+            .attr("class", m=> `brc-legend-item brc-legend-item-text yearly-graphic yearly-${m.prop}`)
+            .text(m => m.label)
+            .style('font-size', legendFontSize)
+          return text
+      })
+      .attr('x', m => m.x + swatchSize * swatchFact)
+      .attr('y', m => m.y + legendFontSize * 1)
 
-      addEventHandlers(ls, 'type')
-      addEventHandlers(lt, 'type')
-    }
+    addEventHandlers(ls, 'prop')
+    addEventHandlers(lt, 'prop')
+
     return swatchSize * swatchFact * (rows + 1)
   }
 
   function highlightItem(id, highlight) {
 
-    svgChart.selectAll('.trend-type-counts,.trend-type-props')
+    svgChart.selectAll('.yearly-graphic')
       .classed('lowlight', false)
 
     if (highlight) {
-      svgChart.selectAll('.trend-type-counts,.trend-type-props')
+      svgChart.selectAll('.yearly-graphic')
         .classed('lowlight', true)
-      svgChart.selectAll(`.trend-type-${id}`)
+      svgChart.selectAll(`.yearly-${id}`)
         .classed('lowlight', false)
     }
   }
@@ -655,6 +576,7 @@ export function trend({
     sel
       .on("mouseover", function(d) {
         if (interactivity === 'mousemove') {
+          console.log(d)
           highlightItem(d[prop], true)
         }
       })
@@ -682,8 +604,8 @@ export function trend({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
+  * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -735,7 +657,7 @@ export function trend({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -750,7 +672,7 @@ export function trend({
 
 
 /** @function getChartWidth
-  * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -758,7 +680,7 @@ export function trend({
   }
 
 /** @function getChartHeight
-  * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -767,10 +689,10 @@ export function trend({
 
   /**
    * @typedef {Object} api
-   * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:trend~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:yearly~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,
@@ -779,26 +701,4 @@ export function trend({
     setTaxon: setTaxon
   }
 
-}</code></pre>
-        </article>
-    </section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Thu Jun 10 2021 21:53:09 GMT+0100 (British Summer Time)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>
+}

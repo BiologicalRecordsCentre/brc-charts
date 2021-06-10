@@ -271,7 +271,7 @@ export function links({
                   .style("top", (d3.event.pageY - 30) + "px")
               }
           })			
-          .on("mouseout", function(d) {
+          .on("mouseout", function() {
               //gNodes.selectAll('circle').classed("lowlighted", false)
 
               gLinks.selectAll(`.display-link`).classed('lowlighted', false)
@@ -397,7 +397,7 @@ export function links({
       .on("drag", dragged)
   }
 
-  function clamp(x, lo, hi) {
+  function clamp(x) {
     //return x < lo ? lo : x > hi ? hi : x;
     return x
   }

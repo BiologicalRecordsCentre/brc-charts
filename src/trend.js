@@ -361,7 +361,7 @@ export function trend({
     const t = svgTrend.transition()
         .duration(duration)
 
-    const rects = gTrend.selectAll("rect")
+    gTrend.selectAll("rect")
       .data(chartBars, d => `props-${d.year}`)
       .join(
         enter => enter.append("rect")
@@ -385,7 +385,7 @@ export function trend({
         .attr('height', d => height - d.n)
         .attr("fill", d => d.colour)
   
-    const lines = gTrend.selectAll("path")
+    gTrend.selectAll("path")
       .data(chartLines, d => d.type)
       .join(
         enter => enter.append("path")
