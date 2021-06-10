@@ -9,3 +9,4 @@ For API details - [JSDoc API documentation](https://biologicalrecordscentre.gith
 - [Species/record accumulation charts](example-3.html)
 - [Interspecific relationship charts](example-4.html)
 - [Trend charts](example-5.html)
+- [Yearly charts](example-6.html)
