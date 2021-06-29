@@ -782,6 +782,7 @@
 
             imgSelected.classed('brc-item-image-hide', false);
           } else {
+            console.log('data', _data);
             var img = new Image();
 
             img.onload = function () {
@@ -790,7 +791,8 @@
               loadImage(_data);
             };
 
-            img.src = 'images/Bumblebees.png';
+            img.src = _data.image; //'images/Bumblebees.png'
+
             imgSelected.classed('brc-item-image-hide', false);
           }
         } else {
@@ -3578,6 +3580,7 @@
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
+   * @param {string} opts.showCounts - The stype of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
    * data for which graphics should be generated on the chart.
@@ -3605,8 +3608,8 @@
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
 
-   * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
-   * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+   * @param {number} opts.minYear Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
+   * @param {number} opts.maxYear Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
    * @returns {module:yearly~api} api - Returns an API for the chart.
    */
 
@@ -4253,7 +4256,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.3.0";
+  var version = "0.3.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

@@ -563,13 +563,14 @@ export function pie({
           }
           imgSelected.classed('brc-item-image-hide', false)
         } else {
+          console.log('data', data)
           const img = new Image
           img.onload = function() {
             data.imageWidth = imageWidth 
             data.imageHeight = imageWidth * this.height / this.width
             loadImage(data)
           }
-          img.src = 'images/Bumblebees.png'
+          img.src = data.image //'images/Bumblebees.png'
           imgSelected.classed('brc-item-image-hide', false)
         }
       } else {
