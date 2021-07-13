@@ -543,9 +543,14 @@ export function pie({
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
       svg.selectAll('.legendText').classed('brc-lowlight', true)
+      svg.selectAll('.labelsPie').classed('brc-lowlight', true)
       svg.select(`#swatch-${i}`).classed('brc-lowlight', false)
       svg.select(`#legend-${i}`).classed('brc-lowlight', false)
       svg.select(`#pie-${i}`).classed('brc-lowlight', false)
+      svg.select(`#label-${i}`).classed('brc-lowlight', false)
+
+      svg.selectAll('.labelsPie').classed('brc-highlight', false)
+      svg.select(`#label-${i}`).classed('brc-highlight', true)
 
       const data = dataPrev.find(d => name === d.name)
 
@@ -563,7 +568,7 @@ export function pie({
           }
           imgSelected.classed('brc-item-image-hide', false)
         } else {
-          console.log('data', data)
+          // console.log('data', data)
           const img = new Image
           img.onload = function() {
             data.imageWidth = imageWidth 
@@ -579,6 +584,7 @@ export function pie({
     } else {
       svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
       imgSelected.classed('brc-item-image-hide', true)
+      svg.selectAll('.labelsPie').classed('brc-highlight', false)
     }
   }
 

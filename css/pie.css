@@ -12,10 +12,20 @@
   overflow:hidden;
 }
 
-path.brc-lowlight, .legendSwatch.brc-lowlight, .legendText.brc-lowlight {
+.brc-chart-pie path.brc-lowlight, .brc-chart-pie .legendSwatch.brc-lowlight, .brc-chart-pie .legendText.brc-lowlight {
   opacity: 0.3 !important;
 }
 
-.brc-item-image-hide {
+.brc-chart-pie .brc-item-image-hide {
   display: none;
+}
+
+.brc-chart-pie .labelsPie.brc-lowlight {
+  opacity: 0;
+}
+
+.brc-chart-pie .labelsPie.brc-highlight {
+  font-size: 1.1em !important;
+  font-weight: bolder;
+  text-shadow: 2px 2px 4px black;
 }

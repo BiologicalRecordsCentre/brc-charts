@@ -759,9 +759,13 @@
         svg.selectAll('path').classed('brc-lowlight', true);
         svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
         svg.selectAll('.legendText').classed('brc-lowlight', true);
+        svg.selectAll('.labelsPie').classed('brc-lowlight', true);
         svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
         svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
         svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
+        svg.select("#label-".concat(i)).classed('brc-lowlight', false);
+        svg.selectAll('.labelsPie').classed('brc-highlight', false);
+        svg.select("#label-".concat(i)).classed('brc-highlight', true);
 
         var _data = dataPrev.find(function (d) {
           return name === d.name;
@@ -782,7 +786,7 @@
 
             imgSelected.classed('brc-item-image-hide', false);
           } else {
-            console.log('data', _data);
+            // console.log('data', data)
             var img = new Image();
 
             img.onload = function () {
@@ -801,6 +805,7 @@
       } else {
         svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
         imgSelected.classed('brc-item-image-hide', true);
+        svg.selectAll('.labelsPie').classed('brc-highlight', false);
       }
     }
 
@@ -4256,7 +4261,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.3.1";
+  var version = "0.3.2";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
