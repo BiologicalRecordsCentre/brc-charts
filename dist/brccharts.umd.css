@@ -1,6 +1,4 @@
-.blah {
-    background: red;
-}.brc-chart-pie {
+.brc-chart-pie {
   width: 100%
 }
 
@@ -27,9 +25,10 @@
 }
 
 .brc-chart-pie .labelsPie.brc-highlight {
-  font-size: 1.1em !important;
   font-weight: bolder;
   text-shadow: 2px 2px 4px black;
+}.blah {
+    background: red;
 }.brc-chart-phen1 path {
     fill: none;
 }
