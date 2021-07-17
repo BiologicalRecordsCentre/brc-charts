@@ -75,7 +75,7 @@ export function pie({
 } = {}) {
 
   let dataPrev
-  let block = false
+  //let block = false
 
   colourData(data)
 
@@ -155,6 +155,7 @@ export function pie({
       .delay(durationExit)
       .duration(duration)
       .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
+      .attr('opacity', 1)
       
     uLegendSwatch.exit()
       .transition()
@@ -192,6 +193,7 @@ export function pie({
       .delay(durationExit)
       .duration(duration)
       .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 4))
+      .attr('opacity', 1)
       
     uLegendText.exit()
       .transition()
@@ -208,7 +210,7 @@ export function pie({
 
   function makePie (data) {
 
-    block = true
+    //block = true
 
     let dataDeleted, dataInserted, dataRetained
     const init = !dataPrev
@@ -415,8 +417,14 @@ export function pie({
         .attr('width', imageWidth)
     }
 
+    // Remove those paths that have been 'deleted'
+    // This because in our transition, we never actually remove
+    // arcs. Best done here because of better handling of
+    // interrupted transitions
+    gPie.selectAll("path[data-deleted='true']").remove()
+
     // map to data
-    const uPie = gPie.selectAll('path')
+    const uPie =gPie.selectAll('path')
       .data(arcsComb, d => d.data.name)
 
     const ePie = uPie.enter()
@@ -429,8 +437,12 @@ export function pie({
       .each(function(d) { this._current = d })
 
     addEventHandlers(ePie, true)
-
     const mPie = ePie.merge(uPie)
+    // Mark paths corresponding to deleted arcs as
+    // deleted so that they can be removed before next 
+    // transition
+    mPie.attr('data-deleted', arc => arc.deleted)
+
     let trans
     let transDuration = duration
     
@@ -467,12 +479,13 @@ export function pie({
     // invisible deleted DOM items (SVG paths) ourselves after 
     // the last transition to avoid messing up the transition
     // next time the data changes.
-    //uPie.exit().remove()
-    trans.on("end", function (arc) {
-      if (arc.deleted) {
-        d3.select(this).remove()
-      }
-      block = false
+    //uPie.exit().remove()  // there is no exit selection 
+    trans.on("end", function () {
+      // Be careful about doing anything in here in case transition interrupted
+      //if (arc.deleted) {
+        //d3.select(this).remove()
+      //}
+      //block = false
     })
 
     if (label) {
@@ -634,7 +647,8 @@ export function pie({
   */
   function setChartOpts(opts){
 
-    if (!block) {
+    //if (!block) {
+
       highlightItem(null, false)
 
       if ('title' in opts) {
@@ -677,9 +691,9 @@ export function pie({
 
       //positionElements()
       gen.positionMainElements(svg, expand)
-    } else {
-      console.log('Transition in progress')
-    }
+    // } else {
+    //   console.log('Transition in progress')
+    // }
   }
 
 /** @function getChartWidth

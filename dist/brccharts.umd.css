@@ -29,32 +29,7 @@
   text-shadow: 2px 2px 4px black;
 }.blah {
     background: red;
-}.brc-chart-phen1 path {
-    fill: none;
-}
-
-.brc-chart-phen1 path.highlight {
-    stroke: black;
-    stroke-width: 3;
-    opacity: 1;
-}
-
-.brc-chart-phen1 path.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-.brc-chart-accum path {
+}.brc-chart-accum path {
     fill: none;
 }
 
@@ -154,6 +129,46 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}.brc-chart-phen1 path {
+    fill: none;
+}
+
+.brc-chart-phen1 path.highlight {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-phen1 path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 {
+    overflow: visible;
+}
+
+.brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-legend-item-rect.highlight {
+    fill:black;
+}
+.brc-chart-trend path {
+    fill: none;
+}
+
+.brc-chart-trend {
+    overflow: visible;
+}
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-trend .lowlight {
+    opacity: 0.1;
 }.brc-chart-yearly path {
     fill: none;
 }
@@ -168,20 +183,5 @@ svg circle.lowlighted {
 }
 
 .brc-chart-yearly .lowlight {
-    opacity: 0.1;
-}.brc-chart-trend path {
-    fill: none;
-}
-
-.brc-chart-trend {
-    overflow: visible;
-}
-.brc-chart-trend .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-trend .lowlight {
     opacity: 0.1;
 }

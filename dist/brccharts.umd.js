@@ -348,8 +348,8 @@
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data;
 
-    var dataPrev;
-    var block = false;
+    var dataPrev; //let block = false
+
     colourData(data);
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).attr('class', 'brc-chart-pie').style('position', 'relative').style('display', 'inline');
     var chartDiv = mainDiv.append('div');
@@ -404,7 +404,7 @@
       eLegendSwatch.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
       uLegendSwatch.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
         return i * (legendSwatchSize + legendSwatchGap);
-      });
+      }).attr('opacity', 1);
       uLegendSwatch.exit().transition().duration(duration).attr('opacity', 0).remove();
       var uLegendText = svgLegend.selectAll('.legendText').data(data, function (d) {
         return d.name;
@@ -425,7 +425,7 @@
       eLegendText.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
       uLegendText.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
         return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 4;
-      });
+      }).attr('opacity', 1);
       uLegendText.exit().transition().duration(duration).attr('opacity', 0).remove(); //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
       //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
 
@@ -435,7 +435,7 @@
     }
 
     function makePie(data) {
-      block = true;
+      //block = true
       var dataDeleted, dataInserted, dataRetained;
       var init = !dataPrev;
       var dataNew = cloneData(data);
@@ -657,8 +657,13 @@
         svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
         gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
         gPie.append('image').classed('brc-item-image', true).classed('brc-item-image-hide', true).attr('width', imageWidth);
-      } // map to data
+      } // Remove those paths that have been 'deleted'
+      // This because in our transition, we never actually remove
+      // arcs. Best done here because of better handling of
+      // interrupted transitions
 
+
+      gPie.selectAll("path[data-deleted='true']").remove(); // map to data
 
       var uPie = gPie.selectAll('path').data(arcsComb, function (d) {
         return d.data.name;
@@ -671,7 +676,13 @@
         this._current = d;
       });
       addEventHandlers(ePie, true);
-      var mPie = ePie.merge(uPie);
+      var mPie = ePie.merge(uPie); // Mark paths corresponding to deleted arcs as
+      // deleted so that they can be removed before next 
+      // transition
+
+      mPie.attr('data-deleted', function (arc) {
+        return arc.deleted;
+      });
       var trans;
       var transDuration = duration; // Transition 1
 
@@ -698,15 +709,14 @@
       // invisible deleted DOM items (SVG paths) ourselves after 
       // the last transition to avoid messing up the transition
       // next time the data changes.
-      //uPie.exit().remove()
+      //uPie.exit().remove()  // there is no exit selection 
 
 
-      trans.on("end", function (arc) {
-        if (arc.deleted) {
-          d3.select(this).remove();
-        }
-
-        block = false;
+      trans.on("end", function () {// Be careful about doing anything in here in case transition interrupted
+        //if (arc.deleted) {
+        //d3.select(this).remove()
+        //}
+        //block = false
       });
 
       if (label) {
@@ -852,61 +862,59 @@
 
 
     function setChartOpts(opts) {
-      if (!block) {
-        highlightItem(null, false);
+      //if (!block) {
+      highlightItem(null, false);
 
-        if ('title' in opts) {
-          title = opts.title;
-        }
-
-        if ('subtitle' in opts) {
-          subtitle = opts.subtitle;
-        }
-
-        if ('footer' in opts) {
-          footer = opts.footer;
-        }
-
-        if ('titleFontSize' in opts) {
-          titleFontSize = opts.titleFontSize;
-        }
-
-        if ('subtitleFontSize' in opts) {
-          subtitleFontSize = opts.subtitleFontSize;
-        }
-
-        if ('footerFontSize' in opts) {
-          footerFontSize = opts.footerFontSize;
-        }
-
-        if ('titleAlign' in opts) {
-          titleAlign = opts.titleAlign;
-        }
-
-        if ('subtitleAlign' in opts) {
-          subtitleAlign = opts.subtitleAlign;
-        }
-
-        if ('footerAlign' in opts) {
-          footerAlign = opts.footerAlign;
-        }
-
-        var _textWidth = Number(svgChart.attr("width"));
-
-        makeText(title, 'titleText', titleFontSize, titleAlign, _textWidth, svg);
-        makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, _textWidth, svg);
-        makeText(footer, 'footerText', footerFontSize, footerAlign, _textWidth, svg);
-
-        if ('data' in opts) {
-          colourData(opts.data);
-          makeChart(opts.data);
-        } //positionElements()
-
-
-        positionMainElements(svg, expand);
-      } else {
-        console.log('Transition in progress');
+      if ('title' in opts) {
+        title = opts.title;
       }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      var textWidth = Number(svgChart.attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+
+      if ('data' in opts) {
+        colourData(opts.data);
+        makeChart(opts.data);
+      } //positionElements()
+
+
+      positionMainElements(svg, expand); // } else {
+      //   console.log('Transition in progress')
+      // }
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
@@ -4261,7 +4269,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.3.3";
+  var version = "0.3.4";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
