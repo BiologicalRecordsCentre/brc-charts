@@ -235,12 +235,17 @@
 
     return svgText;
   }
-  function positionMainElements(svg, expand) {
+  function positionMainElements(svg, expand, headPad) {
+    headPad = headPad ? headPad : 0; // For backward compatibility
+
     var space = 10;
     var svgTitle = svg.select('.titleText');
     var svgSubtitle = svg.select('.subtitleText');
     var svgChart = svg.select('.mainChart');
     var svgFooter = svg.select('.footerText');
+    svgTitle.attr("x", headPad);
+    svgSubtitle.attr("x", headPad);
+    svgFooter.attr("x", headPad);
     svgSubtitle.attr("y", Number(svgTitle.attr("height")));
     svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space);
     svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space + Number(svgChart.attr("height")));
@@ -962,8 +967,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart sub-title.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -975,6 +980,7 @@
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+   * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
@@ -1049,6 +1055,8 @@
         axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
         _ref$axisTop = _ref.axisTop,
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$headPad = _ref.headPad,
+        headPad = _ref$headPad === void 0 ? 0 : _ref$headPad,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$interactivity = _ref.interactivity,
@@ -1073,11 +1081,11 @@
     makeChart(); // Texts must come after chartbecause 
     // the chart width is required
 
-    var textWidth = Number(svg.select('.mainChart').attr("width"));
+    var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
     makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
     makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
     makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionMainElements(svg, expand);
+    positionMainElements(svg, expand, headPad);
 
     function makeChart() {
       if (!taxa.length) {
@@ -1094,7 +1102,7 @@
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      var legendHeight = makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad;
+      var legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -1368,7 +1376,7 @@
           lineWidth = -swatchSize;
         }
 
-        m.x = lineWidth + swatchSize;
+        m.x = lineWidth + swatchSize + headPad;
         m.y = rows * swatchSize * swatchFact;
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
       });
@@ -1564,6 +1572,530 @@
      * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     */
+
+
+    return {
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartOpts: setChartOpts,
+      setTaxon: setTaxon
+    };
+  }
+
+  /** @module phen2 */
+  /** 
+   * @param {Object} opts - Initialisation options.
+   * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
+   * @param {string} opts.elid - The id for the dom object created.
+   * @param {number} opts.width - The width of each sub-chart area in pixels.
+   * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {number} opts.perRow - The number of sub-charts per row.
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+   * @param {string} opts.title - Title for the chart.
+   * @param {string} opts.subtitle - Subtitle for the chart.
+   * @param {string} opts.footer - Footer for the chart.
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart sub-title.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
+   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
+   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+   * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
+   * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+   * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
+   * @param {number} opts.chartPad - A left hand offset, in pixels, for the chart. (Default 0.)
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds.
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
+   * @param {string} opts.backColour - Background colour of the chart. Any accepted way of specifying web colours can be used. (Default - white.)
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * If empty, graphs for all taxa are created.
+   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
+   * data for which a band should be generated on the chart.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
+   * <li> <b>label</b> - a label for this property.
+   * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
+   * </ul>
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. 
+   * There should only be one object per taxon. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>p1</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
+   * <li> <b>p2</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
+   * ... - there must be at leas one property column, but there can be any number of them.
+   * </ul>
+   * The date band objects have the following structure:
+   * <ul>
+   * <li> <b>start</b> - a number between 1 and 53 indicating the week of the year the band starts.
+   * <li> <b>end</b> - a number between 1 and 53 indicating the week of the year the band ends.
+  *  </ul>
+   * @returns {module:phen2~api} api - Returns an API for the chart.
+   */
+
+  function phen2() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'phen2-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 30 : _ref$height,
+        _ref$perRow = _ref.perRow,
+        perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
+        _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$showTaxonLabel = _ref.showTaxonLabel,
+        showTaxonLabel = _ref$showTaxonLabel === void 0 ? true : _ref$showTaxonLabel,
+        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
+        taxonLabelFontSize = _ref$taxonLabelFontSi === void 0 ? 16 : _ref$taxonLabelFontSi,
+        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
+        taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? 'on' : _ref$axisTop,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'on' : _ref$axisLeft,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? 'on' : _ref$axisRight,
+        _ref$headPad = _ref.headPad,
+        headPad = _ref$headPad === void 0 ? 0 : _ref$headPad,
+        _ref$chartPad = _ref.chartPad,
+        chartPad = _ref$chartPad === void 0 ? 0 : _ref$chartPad,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$taxa = _ref.taxa,
+        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
+        _ref$metrics = _ref.metrics,
+        metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
+
+    var metricsPlus;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
+    var svg = mainDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem(null, false);
+      }
+    });
+    var svgChart = svg.append('svg').attr('class', 'mainChart');
+    metricsPlus = metrics.map(function (m) {
+      return {
+        id: safeId(m.label),
+        prop: m.prop,
+        label: m.label,
+        colour: m.colour
+      };
+    });
+    makeChart(); // Texts must come after chart because 
+    // the chart width is required
+
+    var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand, headPad);
+
+    function makeChart() {
+      if (!taxa.length) {
+        taxa = data.map(function (d) {
+          return d.taxon;
+        }).filter(function (v, i, a) {
+          return a.indexOf(v) === i;
+        });
+      }
+
+      var subChartPad = 10;
+      var svgsTaxa = taxa.map(function (t) {
+        return makePhen(t);
+      });
+      var subChartWidth = Number(svgsTaxa[0].attr("width"));
+      var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      var legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad;
+      svgsTaxa.forEach(function (svgTaxon, i) {
+        var col = i % perRow;
+        var row = Math.floor(i / perRow);
+        svgTaxon.attr("x", col * (subChartWidth + subChartPad));
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad) + legendHeight);
+      });
+      svgChart.attr("width", perRow * (subChartWidth + subChartPad));
+      svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+    }
+
+    function makePhen(taxon) {
+      // Get data for named taxon
+      var dataFiltered = data.find(function (d) {
+        return d.taxon === taxon;
+      });
+      var rectData = metricsPlus.map(function (m) {
+        return {
+          id: m.id,
+          colour: m.colour,
+          start: dataFiltered[m.prop].start,
+          end: dataFiltered[m.prop].end
+        };
+      }); // Value scale
+
+      var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]); // X (bottom) axis
+
+      var xAxis;
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        xAxis = xAxisMonth(width, axisBottom === 'tick');
+      } // Top axis
+
+
+      var tAxis;
+
+      if (axisTop === 'on') {
+        tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
+      } // Right axis
+
+
+      var rAxis;
+
+      if (axisRight === 'on') {
+        rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
+      } // Y (left) axis
+
+
+      var yAxis;
+
+      if (axisLeft === 'on') {
+        yAxis = d3.axisLeft().scale(yScale).tickValues([]).tickSizeOuter(0);
+      } // Create or get the relevant chart svg
+
+
+      var init, svgPhen2, gPhen2;
+
+      if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen2').size() === 1) {
+        svgPhen2 = svgChart.select('.brc-chart-phen2');
+        gPhen2 = svgPhen2.select('.brc-chart-phen2-g');
+        init = false;
+      } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+        svgPhen2 = svgChart.select("#".concat(safeId(taxon)));
+        gPhen2 = svgPhen2.select('.brc-chart-phen2-g');
+        init = false;
+      } else {
+        svgPhen2 = svgChart.append('svg').classed('brc-chart-phen2', true).attr('id', safeId(taxon));
+        gPhen2 = svgPhen2.append('g').classed('brc-chart-phen2-g', true);
+        init = true;
+      } // Create/update the band rectangles with D3
+
+
+      var mrects = gPhen2.selectAll("rect").data(rectData, function (d) {
+        return d.id;
+      });
+      var erects = mrects.enter().append("rect").attr("class", function (d) {
+        return "phen-rect-".concat(d.id, " phen-rect");
+      }).attr("height", height).attr("width", 0).attr("x", function (d) {
+        return xScale(d.start + (d.end - d.start) / 2);
+      });
+      addEventHandlers(erects, 'id');
+      mrects.merge(erects).transition().duration(duration).attr("width", function (d) {
+        return xScale(d.end) - xScale(d.start);
+      }).attr("x", function (d) {
+        return xScale(d.start);
+      }).attr("fill", function (d) {
+        return d.colour;
+      });
+      mrects.exit().transition().duration(duration).remove();
+
+      if (init) {
+        // Constants for positioning
+        var axisPadX = chartPad;
+        var axisPadY = axisBottom === 'tick' ? 15 : 0;
+        var labelPadY; // Taxon title
+
+        if (showTaxonLabel) {
+          var taxonLabel = svgPhen2.append('text').classed('brc-chart-phen2-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var labelHeight = taxonLabel.node().getBBox().height;
+          taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
+          labelPadY = labelHeight * 1.5;
+        } else {
+          labelPadY = 0;
+        } // Size SVG
+
+
+        svgPhen2.attr('width', width + axisPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+
+        gPhen2.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+
+        if (xAxis) {
+          var gXaxis = svgPhen2.append("g").attr("class", "x axis").call(xAxis);
+          gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
+          gXaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+        }
+
+        if (yAxis) {
+          var gYaxis = svgPhen2.append("g") //.attr("class", "y-axis")
+          .call(yAxis);
+          gYaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+        }
+
+        if (tAxis) {
+          var gTaxis = svgPhen2.append("g").call(tAxis);
+          gTaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+        }
+
+        if (rAxis) {
+          var gRaxis = svgPhen2.append("g").call(rAxis);
+          gRaxis.attr("transform", "translate(".concat(axisPadX + width, ",").concat(labelPadY, ")"));
+        }
+      } else if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgPhen2.select('.brc-chart-phen2-label').text(taxon);
+        }
+      }
+
+      return svgPhen2;
+    }
+
+    function makeLegend(legendWidth) {
+      var swatchSize = 20;
+      var swatchFact = 1.3; // Loop through all the legend elements and work out their
+      // positions based on swatch size, item lable text size and
+      // legend width.
+
+      var rows = 0;
+      var lineWidth = -swatchSize;
+      metricsPlus.forEach(function (m) {
+        var tmpText = svgChart.append('text') //.style('display', 'none')
+        .text(m.label).style('font-size', legendFontSize);
+        var widthText = tmpText.node().getBBox().width;
+        tmpText.remove();
+
+        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+          ++rows;
+          lineWidth = -swatchSize;
+        }
+
+        m.x = lineWidth + swatchSize + headPad;
+        m.y = rows * swatchSize * swatchFact;
+        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+      });
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsPlus, function (m) {
+        return m.id;
+      }).join(function (enter) {
+        var rect = enter.append("rect").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(m.id);
+        }).attr('width', swatchSize).attr('height', swatchSize / 2);
+        return rect;
+      }).attr('x', function (m) {
+        return m.x;
+      }) //.attr('y', m => m.y)
+      .attr('y', function (m) {
+        return m.y + swatchSize / 3;
+      }).attr('fill', function (m) {
+        return m.colour;
+      });
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsPlus, function (m) {
+        return safeId(m.label);
+      }).join(function (enter) {
+        var text = enter.append("text").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(m.id);
+        }).text(function (m) {
+          return m.label;
+        }).style('font-size', legendFontSize);
+        return text;
+      }).attr('x', function (m) {
+        return m.x + swatchSize * swatchFact;
+      }).attr('y', function (m) {
+        return m.y + legendFontSize * 1;
+      });
+      addEventHandlers(ls, 'label');
+      addEventHandlers(lt, 'label');
+      return swatchSize * swatchFact * (rows + 1);
+    }
+
+    function highlightItem(id, highlight) {
+      svgChart.selectAll('.phen-rect').classed('lowlight', highlight);
+      svgChart.selectAll(".phen-rect-".concat(id)).classed('lowlight', false);
+      svgChart.selectAll(".phen-rect").classed('highlight', false);
+
+      if (id) {
+        svgChart.selectAll(".phen-rect-".concat(id)).classed('highlight', highlight);
+      }
+
+      svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
+
+      if (id) {
+        svgChart.selectAll(".brc-legend-item-".concat(id)).classed('lowlight', false);
+      }
+
+      if (id) {
+        svgChart.selectAll(".brc-legend-item-".concat(id)).classed('highlight', highlight);
+      } else {
+        svgChart.selectAll(".brc-legend-item").classed('highlight', false);
+      }
+    }
+
+    function addEventHandlers(sel, prop) {
+      sel.on("mouseover", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], true);
+        }
+      }).on("mouseout", function (d) {
+        if (interactivity === 'mousemove') {
+          highlightItem(d[prop], false);
+        }
+      }).on("click", function (d) {
+        if (interactivity === 'mouseclick') {
+          highlightItem(d[prop], true);
+          d3.event.stopPropagation();
+        }
+      });
+    }
+    /** @function setChartOpts
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
+      */
+
+
+    function setChartOpts(opts) {
+      if ('title' in opts) {
+        title = opts.title;
+      }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      var remakeChart = false;
+
+      if ('data' in opts) {
+        data = opts.data;
+        remakeChart = true;
+      }
+
+      if ('metrics' in opts) {
+        metrics = opts.metrics;
+        remakeChart = true;
+      }
+
+      if (remakeChart) makeChart();
+      positionMainElements(svg, expand);
+    }
+    /** @function setTaxon
+      * @param {string} opts.taxon - The taxon to display.
+      * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+      * For single species charts, this allows you to change the taxon displayed.
+      */
+
+
+    function setTaxon(taxon) {
+      if (taxa.length !== 1) {
+        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+      } else {
+        taxa = [taxon];
+        makeChart();
+      }
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
+    /** @function getChartHeight
+      * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+      * Return the full height of the chart svg.
+      */
+
+
+    function getChartHeight() {
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /**
+     * @typedef {Object} api
+     * @property {module:phen2~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
      */
 
 
@@ -4269,7 +4801,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.3.4";
+  var version = "0.4.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -4330,6 +4862,7 @@
   exports.accum = accum;
   exports.links = links;
   exports.phen1 = phen1;
+  exports.phen2 = phen2;
   exports.pie = pie;
   exports.trend = trend;
   exports.yearly = yearly;

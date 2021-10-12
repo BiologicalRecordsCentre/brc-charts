@@ -1,6 +1,7 @@
 import '../css/general.css'
 import '../css/pie.css'
 import '../css/phen1.css'
+import '../css/phen2.css'
 import '../css/accum.css'
 import '../css/links.css'
 import '../css/trend.css'

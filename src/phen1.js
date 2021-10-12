@@ -16,8 +16,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart sub-title.
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -29,6 +29,7 @@ import * as gen from './general'
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+ * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
@@ -79,6 +80,7 @@ export function phen1({
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
+  headPad = 0,
   duration = 1000,
   interactivity = 'mousemove',
   data = [],
@@ -107,11 +109,11 @@ export function phen1({
   makeChart()
   // Texts must come after chartbecause 
   // the chart width is required
-  const textWidth = Number(svg.select('.mainChart').attr("width"))
+  const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
   gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
   gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  gen.positionMainElements(svg, expand)
+  gen.positionMainElements(svg, expand, headPad)
 
   function makeChart () {
     if (!taxa.length) {
@@ -124,7 +126,7 @@ export function phen1({
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
     const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
-    const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad
+    const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
 
     svgsTaxa.forEach((svgTaxon, i) => {
       
@@ -438,7 +440,7 @@ export function phen1({
         ++rows
         lineWidth = -swatchSize
       }
-      m.x = lineWidth + swatchSize
+      m.x = lineWidth + swatchSize + headPad
       m.y = rows * swatchSize * swatchFact
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText

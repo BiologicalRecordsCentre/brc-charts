@@ -1,32 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: phen1.js</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Source: phen1.js</h1>
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/** @module phen1 */
+/** @module phen2 */
 
 import * as d3 from 'd3'
 import * as gen from './general'
@@ -38,7 +10,6 @@ import * as gen from './general'
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
  * @param {number} opts.perRow - The number of sub-charts per row.
- * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
@@ -53,43 +24,49 @@ import * as gen from './general'
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+ * @param {string} opts.axisLeft - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
+ * @param {number} opts.chartPad - A left hand offset, in pixels, for the chart. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {string} opts.backColour - Background colour of the chart. Any accepted way of specifying web colours can be used. (Default - white.)
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created.
- * @param {Array.&lt;Object>} opts.metrics - An array of objects, each describing a numeric property in the input
- * data for which a line should be generated on the chart.
+ * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
+ * data for which a band should be generated on the chart.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * &lt;ul>
- * &lt;li> &lt;b>prop&lt;/b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
- * &lt;li> &lt;b>label&lt;/b> - a label for this metric.
- * &lt;li> &lt;b>colour&lt;/b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
- * &lt;/ul>
- * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
- * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
- * &lt;ul>
- * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
- * &lt;li> &lt;b>week&lt;/b> - a number between 1 and 53 indicating the week of the year.
- * &lt;li> &lt;b>c1&lt;/b> - a count for a given time period (can have any name). 
- * &lt;li> &lt;b>c2&lt;/b> - a count for a given time period (can have any name).
- * ... - there must be at leas one count column, but there can be any number of them.
- * &lt;/ul>
- * @returns {module:phen1~api} api - Returns an API for the chart.
+ * <ul>
+ * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
+ * <li> <b>label</b> - a label for this property.
+ * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
+ * </ul>
+ * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+ * Each of the objects in the data array must be sepecified with the properties shown below. 
+ * There should only be one object per taxon. (The order is not important.)
+ * <ul>
+ * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>p1</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
+ * <li> <b>p2</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
+ * ... - there must be at leas one property column, but there can be any number of them.
+ * </ul>
+ * The date band objects have the following structure:
+ * <ul>
+ * <li> <b>start</b> - a number between 1 and 53 indicating the week of the year the band starts.
+ * <li> <b>end</b> - a number between 1 and 53 indicating the week of the year the band ends.
+*  </ul>
+ * @returns {module:phen2~api} api - Returns an API for the chart.
  */
 
-export function phen1({
+export function phen2({
   // Default options in here
   selector = 'body',
-  elid = 'phen1-chart',
+  elid = 'phen2-chart',
   width = 300,
-  height = 200,
+  height = 30,
   perRow = 2,
-  ytype = 'count',
   expand = false,
   title = '',
   subtitle = '',
@@ -104,13 +81,15 @@ export function phen1({
   showTaxonLabel = true,
   taxonLabelFontSize = 16,
   taxonLabelItalics = false,
-  axisLeft = 'tick',
   axisBottom = 'tick',
-  axisRight = '',
-  axisTop = '',
+  axisTop = 'on',
+  axisLeft = 'on',
+  axisRight = 'on',
   headPad = 0,
+  chartPad = 0,
   duration = 1000,
   interactivity = 'mousemove',
+  //backColour = 'white',
   data = [],
   taxa = [],
   metrics = []
@@ -133,9 +112,17 @@ export function phen1({
 
   const svgChart = svg.append('svg').attr('class', 'mainChart')
   
-  preProcessMetrics()
+    metricsPlus = metrics.map(m => {
+      return {
+        id:  gen.safeId(m.label),
+        prop: m.prop,
+        label: m.label,
+        colour: m.colour
+      }
+    })
+
   makeChart()
-  // Texts must come after chartbecause 
+  // Texts must come after chart because 
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -169,88 +156,28 @@ export function phen1({
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
   }
 
-  function preProcessMetrics () {
-    // Look for 'fading' colour in taxa and colour appropriately 
-    // in fading shades of grey.
-    
-    let iFading = 0
-    metricsPlus = metrics.map(m => {
-      let iFade, strokeWidth
-      if (m.colour === 'fading') {
-        iFade = ++iFading
-        strokeWidth = 1
-      } else {
-        strokeWidth = 2
-      }
-      return {
-        prop: m.prop,
-        label: m.label,
-        colour: m.colour,
-        fading: iFade,
-        strokeWidth: strokeWidth
-      }
-    }).reverse()
-
-    const grey = d3.scaleLinear()
-      .range(['#808080', '#E0E0E0'])
-      .domain([1, iFading])
-
-    metricsPlus.forEach(m => {
-      if (m.fading) {
-        m.colour = grey(m.fading)
-      }
-    })
-  }
-
   function makePhen (taxon) {
 
-    // Pre-process data.
-    // Filter to named taxon and sort in week order
-    // Add max value to each.
-    const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
-    let lineData = [] 
-    metricsPlus.forEach(m => {
-
-      const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
-      const max = Math.max(...dataFiltered.map(d => d[m.prop]))
-      let maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
-
-      lineData.push({
-        id: gen.safeId(m.label),
+    // Get data for named taxon
+    const dataFiltered = data.find(d => d.taxon === taxon)
+    const rectData = metricsPlus.map(m => {
+      return {
+        id: m.id,
         colour: m.colour,
-        strokeWidth: m.strokeWidth,
-        max: max,
-        maxProportion: maxProportion,
-        total: total,
-        points: dataFiltered.map(d => {
-          return {
-            n: d[m.prop],
-            week: d.week
-          }
-        })
-      })
+        start: dataFiltered[m.prop].start,
+        end: dataFiltered[m.prop].end,
+      }
     })
-
-    // Set the maximum value for the y axis
-    let yMax
-    if (ytype === 'normalized') {
-      yMax = 1
-    } else if (ytype === 'proportion') {
-      yMax = Math.max(...lineData.map(d => {
-        if (isNaN(d.maxProportion)) {
-          return 0
-        } else {
-          return d.maxProportion
-        }
-      }))
-    } else {
-      yMax = Math.max(...lineData.map(d => d.max))
-      if (yMax &lt; 5) yMax = 5
-    }
     
-    // Value scales
+    // Value scale
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
-    const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
+    const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0])
+
+    // X (bottom) axis
+    let xAxis
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
+    }
 
     // Top axis
     let tAxis
@@ -261,13 +188,7 @@ export function phen1({
         .tickSizeOuter(0)
     }
 
-    // X (bottom) axis
-    let xAxis
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
-    }
-
-    // Right axis
+     // Right axis
     let rAxis
     if (axisRight === 'on') {
       rAxis = d3.axisRight()
@@ -278,109 +199,68 @@ export function phen1({
 
     // Y (left) axis
     let yAxis
-    if (axisLeft === 'on' || axisLeft === 'tick') {
+    if (axisLeft === 'on') {
       yAxis = d3.axisLeft()
         .scale(yScale)
-        .ticks(5)
-      if (axisLeft !== 'tick') {
-        yAxis.tickValues([]).tickSizeOuter(0)
-      } else if (ytype === 'count') {
-        yAxis.tickFormat(d3.format("d"))
-      }
+        .tickValues([])
+        .tickSizeOuter(0)
     }
-    
-    // Line path generator
-    const line = d3.line()
-      .curve(d3.curveMonotoneX)
-      .x(d => xScale(d.week))
-      .y(d => yScale(d.n))
 
     // Create or get the relevant chart svg
-    let init, svgPhen1, gPhen1
-    if (taxa.length === 1 &amp;&amp; svgChart.selectAll('.brc-chart-phen1').size() === 1) {
-      svgPhen1 = svgChart.select('.brc-chart-phen1')
-      gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
+    let init, svgPhen2, gPhen2
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen2').size() === 1) {
+      svgPhen2 = svgChart.select('.brc-chart-phen2')
+      gPhen2 = svgPhen2.select('.brc-chart-phen2-g')
       init = false
     } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-      svgPhen1 = svgChart.select(`#${gen.safeId(taxon)}`)
-      gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
+      svgPhen2 = svgChart.select(`#${gen.safeId(taxon)}`)
+      gPhen2 = svgPhen2.select('.brc-chart-phen2-g')
       init = false
     } else {
-      svgPhen1 = svgChart.append('svg')
-        .classed('brc-chart-phen1', true)
+      svgPhen2 = svgChart.append('svg')
+        .classed('brc-chart-phen2', true)
         .attr('id', gen.safeId(taxon))
-      gPhen1 = svgPhen1.append('g')
-        .classed('brc-chart-phen1-g', true)
+      gPhen2 = svgPhen2.append('g')
+        .classed('brc-chart-phen2-g', true)
       init = true
     }
     
-    // Create/update the line paths with D3
-    const mlines = gPhen1.selectAll("path")
-      .data(lineData,  d => d.id)
+    // Create/update the band rectangles with D3
+    const mrects = gPhen2.selectAll("rect")
+      .data(rectData,  d => d.id)
 
-    const eLines = mlines.enter()
-      .append("path")
-      .attr("class", d => `phen-path-${d.id} phen-path`)
-      .attr("d", d => {
-        return line(d.points.map(p => {
-          return {
-            n: 0,
-            week: p.week
-          }
-        }))
-      })
+    const erects = mrects.enter()
+      .append("rect")
+      .attr("class", d => `phen-rect-${d.id} phen-rect`)
+      .attr("height",  height)
+      .attr("width", 0)
+      .attr("x", d => xScale(d.start+(d.end-d.start)/2))
 
-    addEventHandlers(eLines, 'id')
+    addEventHandlers(erects, 'id')
 
-    mlines.merge(eLines)
+    mrects.merge(erects)
       .transition()
       .duration(duration)
-      .attr("d", d => {
-        if (ytype === 'normalized') {
-          return line(d.points.map(p => {
-            return {
-              n: d.max ? p.n/d.max : 0,
-              week: p.week
-            }
-          }))
-        } else if (ytype === 'proportion') {
-          return line(d.points.map(p => {
-            return {
-              n: d.total === 0 ? 0 : p.n/d.total,
-              week: p.week
-            }
-          }))
-        } else {
-          return line(d.points)
-        }
-      })
-      .attr("stroke", d => d.colour)
-      .attr("stroke-width", d => d.strokeWidth)
-
-    mlines.exit()
+      .attr("width", d => xScale(d.end) - xScale(d.start))
+      .attr("x", d => xScale(d.start))
+      .attr("fill", d => d.colour)
+    
+    mrects.exit()
       .transition()
       .duration(duration)
-      .attr("d", d => {
-        return line(d.points.map(p => {
-          return {
-            n: 0,
-            week: p.week
-          }
-        }))
-      })
       .remove()
 
     if (init) {
       // Constants for positioning
-      const axisPadX = axisLeft === 'tick' ? 35 : 0
+      const axisPadX = chartPad
       const axisPadY = axisBottom === 'tick' ? 15 : 0
       let labelPadY 
 
       // Taxon title
       if (showTaxonLabel) {
-        const taxonLabel = svgPhen1
+        const taxonLabel = svgPhen2
           .append('text')
-          .classed('brc-chart-phen1-label', true)
+          .classed('brc-chart-phen2-label', true)
           .text(taxon)
           .style('font-size', taxonLabelFontSize)
           .style('font-style', taxonLabelItalics ? 'italic' : '')
@@ -393,22 +273,16 @@ export function phen1({
       }
       
       // Size SVG
-      svgPhen1
+      svgPhen2
         .attr('width', width + axisPadX + 1)
         .attr('height', height + axisPadY + labelPadY + 1)
 
-
       // Position chart
-      gPhen1.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      gPhen2.attr("transform", `translate(${axisPadX},${labelPadY})`)
       
       // Create axes and position within SVG
-      if (yAxis) {
-        const gYaxis = svgPhen1.append("g")
-          .attr("class", "y-axis")
-        gYaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
-      }
       if (xAxis) {
-        const gXaxis = svgPhen1.append("g")
+        const gXaxis = svgPhen2.append("g")
           .attr("class", "x axis")
           .call(xAxis)
 
@@ -419,29 +293,31 @@ export function phen1({
 
         gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
       }
+
+      if (yAxis) {
+        const gYaxis = svgPhen2.append("g")
+          //.attr("class", "y-axis")
+          .call(yAxis)
+        gYaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      }
       if (tAxis) {
-        const gTaxis = svgPhen1.append("g")
+        const gTaxis = svgPhen2.append("g")
           .call(tAxis)
         gTaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
       }
       if (rAxis) {
-        const gRaxis = svgPhen1.append("g")
+        const gRaxis = svgPhen2.append("g")
           .call(rAxis)
         gRaxis.attr("transform", `translate(${axisPadX + width},${labelPadY})`)
       }
+
     } else if (taxa.length === 1) {
       // Update taxon label
       if (showTaxonLabel) {
-        svgPhen1.select('.brc-chart-phen1-label').text(taxon)
+        svgPhen2.select('.brc-chart-phen2-label').text(taxon)
       }
     }
-
-    svgPhen1.select(".y-axis")
-      .transition()
-      .duration(duration)
-      .call(yAxis)
-
-    return svgPhen1
+    return svgPhen2
   }
 
   function makeLegend (legendWidth) {
@@ -452,11 +328,9 @@ export function phen1({
     // Loop through all the legend elements and work out their
     // positions based on swatch size, item lable text size and
     // legend width.
-    const metricsReversed = gen.cloneData(metricsPlus).reverse()
-
     let rows = 0
     let lineWidth = -swatchSize
-    metricsReversed.forEach(m => {
+    metricsPlus.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
         .style('font-size', legendFontSize)
@@ -475,23 +349,24 @@ export function phen1({
     })
     
     const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(metricsReversed, m => gen.safeId(m.label))
+      .data(metricsPlus, m => m.id)
       .join(enter => {
           const rect = enter.append("rect")
-            .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
+            .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
             .attr('width', swatchSize)
-            .attr('height', 2)
+            .attr('height', swatchSize/2)
           return rect
       })
       .attr('x', m => m.x)
-      .attr('y', m => m.y + swatchSize/2)
+      //.attr('y', m => m.y)
+      .attr('y', m => m.y + swatchSize/3)
       .attr('fill', m => m.colour)
 
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsReversed, m => gen.safeId(m.label))
+      .data(metricsPlus, m => gen.safeId(m.label))
       .join(enter => {
           const text = enter.append("text")
-            .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${gen.safeId(m.label)}`)
+            .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
             .text(m => m.label)
             .style('font-size', legendFontSize)
           return text
@@ -507,17 +382,17 @@ export function phen1({
 
   function highlightItem(id, highlight) {
 
-    svgChart.selectAll('.phen-path')
+    svgChart.selectAll('.phen-rect')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+    svgChart.selectAll(`.phen-rect-${id}`)
       .classed('lowlight', false)
   
-    svgChart.selectAll(`.phen-path`)
+    svgChart.selectAll(`.phen-rect`)
       .classed('highlight', false)
 
-    if (gen.safeId(id)) {
-      svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+    if (id) {
+      svgChart.selectAll(`.phen-rect-${id}`)
         .classed('highlight', highlight)
     }
     
@@ -525,12 +400,12 @@ export function phen1({
       .classed('lowlight', highlight)
 
     if (id) {
-      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+      svgChart.selectAll(`.brc-legend-item-${id}`)
         .classed('lowlight', false)
     }
 
     if (id) {
-      svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+      svgChart.selectAll(`.brc-legend-item-${id}`)
         .classed('highlight', highlight)
     } else {
       svgChart.selectAll(`.brc-legend-item`)
@@ -569,10 +444,9 @@ export function phen1({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
-  * @param {Array.&lt;Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
-  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
-  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
+  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
+  * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
   */
@@ -618,14 +492,8 @@ export function phen1({
       remakeChart = true
     }
 
-    if ('ytype' in opts) {
-      ytype = opts.ytype
-      remakeChart = true
-    }
-
     if ('metrics' in opts) {
       metrics = opts.metrics
-      preProcessMetrics()
       remakeChart = true
     }
 
@@ -635,7 +503,7 @@ export function phen1({
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
-  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
@@ -649,7 +517,7 @@ export function phen1({
 
 
 /** @function getChartWidth
-  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Return the full width of the chart svg.
   */
   function getChartWidth(){
@@ -657,7 +525,7 @@ export function phen1({
   }
 
 /** @function getChartHeight
-  * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
+  * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Return the full height of the chart svg.
   */
   function getChartHeight(){
@@ -666,10 +534,10 @@ export function phen1({
 
   /**
    * @typedef {Object} api
-   * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:phen2~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+   * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+   * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,
@@ -678,26 +546,4 @@ export function phen1({
     setTaxon: setTaxon
   }
 
-}</code></pre>
-        </article>
-    </section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Oct 12 2021 15:50:14 GMT+0100 (British Summer Time)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>
+}

@@ -103,7 +103,7 @@ export function pie({
 } = {}) {
 
   let dataPrev
-  let block = false
+  //let block = false
 
   colourData(data)
 
@@ -183,6 +183,7 @@ export function pie({
       .delay(durationExit)
       .duration(duration)
       .attr('y', (d, i) => i * (legendSwatchSize + legendSwatchGap))
+      .attr('opacity', 1)
       
     uLegendSwatch.exit()
       .transition()
@@ -220,6 +221,7 @@ export function pie({
       .delay(durationExit)
       .duration(duration)
       .attr('y', (d, i) => (i + 1) * (legendSwatchSize + legendSwatchGap) - (legendSwatchSize / 2) - (legendTextHeight / 4))
+      .attr('opacity', 1)
       
     uLegendText.exit()
       .transition()
@@ -236,7 +238,7 @@ export function pie({
 
   function makePie (data) {
 
-    block = true
+    //block = true
 
     let dataDeleted, dataInserted, dataRetained
     const init = !dataPrev
@@ -443,8 +445,14 @@ export function pie({
         .attr('width', imageWidth)
     }
 
+    // Remove those paths that have been 'deleted'
+    // This because in our transition, we never actually remove
+    // arcs. Best done here because of better handling of
+    // interrupted transitions
+    gPie.selectAll("path[data-deleted='true']").remove()
+
     // map to data
-    const uPie = gPie.selectAll('path')
+    const uPie =gPie.selectAll('path')
       .data(arcsComb, d => d.data.name)
 
     const ePie = uPie.enter()
@@ -457,8 +465,12 @@ export function pie({
       .each(function(d) { this._current = d })
 
     addEventHandlers(ePie, true)
-
     const mPie = ePie.merge(uPie)
+    // Mark paths corresponding to deleted arcs as
+    // deleted so that they can be removed before next 
+    // transition
+    mPie.attr('data-deleted', arc => arc.deleted)
+
     let trans
     let transDuration = duration
     
@@ -495,12 +507,13 @@ export function pie({
     // invisible deleted DOM items (SVG paths) ourselves after 
     // the last transition to avoid messing up the transition
     // next time the data changes.
-    //uPie.exit().remove()
-    trans.on("end", function (arc) {
-      if (arc.deleted) {
-        d3.select(this).remove()
-      }
-      block = false
+    //uPie.exit().remove()  // there is no exit selection 
+    trans.on("end", function () {
+      // Be careful about doing anything in here in case transition interrupted
+      //if (arc.deleted) {
+        //d3.select(this).remove()
+      //}
+      //block = false
     })
 
     if (label) {
@@ -571,9 +584,14 @@ export function pie({
       svg.selectAll('path').classed('brc-lowlight', true)
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
       svg.selectAll('.legendText').classed('brc-lowlight', true)
+      svg.selectAll('.labelsPie').classed('brc-lowlight', true)
       svg.select(`#swatch-${i}`).classed('brc-lowlight', false)
       svg.select(`#legend-${i}`).classed('brc-lowlight', false)
       svg.select(`#pie-${i}`).classed('brc-lowlight', false)
+      svg.select(`#label-${i}`).classed('brc-lowlight', false)
+
+      svg.selectAll('.labelsPie').classed('brc-highlight', false)
+      svg.select(`#label-${i}`).classed('brc-highlight', true)
 
       const data = dataPrev.find(d => name === d.name)
 
@@ -591,13 +609,14 @@ export function pie({
           }
           imgSelected.classed('brc-item-image-hide', false)
         } else {
+          // console.log('data', data)
           const img = new Image
           img.onload = function() {
             data.imageWidth = imageWidth 
             data.imageHeight = imageWidth * this.height / this.width
             loadImage(data)
           }
-          img.src = 'images/Bumblebees.png'
+          img.src = data.image //'images/Bumblebees.png'
           imgSelected.classed('brc-item-image-hide', false)
         }
       } else {
@@ -606,6 +625,7 @@ export function pie({
     } else {
       svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
       imgSelected.classed('brc-item-image-hide', true)
+      svg.selectAll('.labelsPie').classed('brc-highlight', false)
     }
   }
 
@@ -655,7 +675,8 @@ export function pie({
   */
   function setChartOpts(opts){
 
-    if (!block) {
+    //if (!block) {
+
       highlightItem(null, false)
 
       if ('title' in opts) {
@@ -698,9 +719,9 @@ export function pie({
 
       //positionElements()
       gen.positionMainElements(svg, expand)
-    } else {
-      console.log('Transition in progress')
-    }
+    // } else {
+    //   console.log('Transition in progress')
+    // }
   }
 
 /** @function getChartWidth
@@ -742,13 +763,13 @@ export function pie({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Jun 15 2021 17:27:35 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Oct 12 2021 15:50:14 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

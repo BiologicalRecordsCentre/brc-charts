@@ -171,13 +171,18 @@ export function makeText (text, classText, fontSize, textAlign, textWidth, svg) 
   return svgText
 }
 
-export function positionMainElements(svg, expand) {
+export function positionMainElements(svg, expand, headPad) {
 
+    headPad = headPad ? headPad : 0 // For backward compatibility
     const space = 10
     const svgTitle = svg.select('.titleText')
     const svgSubtitle = svg.select('.subtitleText')
     const svgChart = svg.select('.mainChart')
     const svgFooter = svg.select('.footerText')
+
+    svgTitle.attr("x", headPad)
+    svgSubtitle.attr("x", headPad)
+    svgFooter.attr("x", headPad)
 
     svgSubtitle.attr("y", Number(svgTitle.attr("height")))
     svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space)
