@@ -54,8 +54,8 @@ import * as gen from './general'
  * </ul>
  * The date band objects have the following structure:
  * <ul>
- * <li> <b>start</b> - a number between 1 and 53 indicating the week of the year the band starts.
- * <li> <b>end</b> - a number between 1 and 53 indicating the week of the year the band ends.
+ * <li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.
+ * <li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends.
 *  </ul>
  * @returns {module:phen2~api} api - Returns an API for the chart.
  */
@@ -170,7 +170,9 @@ export function phen2({
     })
     
     // Value scale
-    const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
+    //const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
+    const xScale = d3.scaleLinear().domain([1, 365]).range([0, width])
+
     const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0])
 
     // X (bottom) axis

@@ -1635,8 +1635,8 @@
    * </ul>
    * The date band objects have the following structure:
    * <ul>
-   * <li> <b>start</b> - a number between 1 and 53 indicating the week of the year the band starts.
-   * <li> <b>end</b> - a number between 1 and 53 indicating the week of the year the band ends.
+   * <li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.
+   * <li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends.
   *  </ul>
    * @returns {module:phen2~api} api - Returns an API for the chart.
    */
@@ -1769,8 +1769,9 @@
           end: dataFiltered[m.prop].end
         };
       }); // Value scale
+      //const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
 
-      var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
+      var xScale = d3.scaleLinear().domain([1, 365]).range([0, width]);
       var yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]); // X (bottom) axis
 
       var xAxis;
@@ -4801,7 +4802,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.4.0";
+  var version = "0.4.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -4833,10 +4834,10 @@
   	"@rollup/plugin-node-resolve": "^8.1.0",
   	eslint: "^7.4.0",
   	"eslint-plugin-jest": "^23.17.1",
-  	jest: "^26.1.0",
+  	jest: "^27.2.5",
   	rollup: "^2.23.0",
   	"rollup-plugin-css-only": "^2.1.0",
-  	"rollup-plugin-eslint": "^7.0.0",
+  	"rollup-plugin-eslint": "^4.0.0",
   	"rollup-plugin-terser": "^6.1.0"
   };
   var pkg = {

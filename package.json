@@ -1,6 +1,6 @@
 {
   "name": "brc-d3",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Javscript library for various D3 visualisations of biological record data.",
   "type": "module",
   "main": "dist/brccharts.umd.js",
@@ -32,10 +32,10 @@
     "@rollup/plugin-node-resolve": "^8.1.0",
     "eslint": "^7.4.0",
     "eslint-plugin-jest": "^23.17.1",
-    "jest": "^26.1.0",
+    "jest": "^27.2.5",
     "rollup": "^2.23.0",
     "rollup-plugin-css-only": "^2.1.0",
-    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-eslint": "^4.0.0",
     "rollup-plugin-terser": "^6.1.0"
   }
 }
