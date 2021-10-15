@@ -1713,14 +1713,6 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
-    metricsPlus = metrics.map(function (m) {
-      return {
-        id: safeId(m.label),
-        prop: m.prop,
-        label: m.label,
-        colour: m.colour
-      };
-    });
     makeChart(); // Texts must come after chart because 
     // the chart width is required
 
@@ -1731,6 +1723,15 @@
     positionMainElements(svg, expand, headPad);
 
     function makeChart() {
+      metricsPlus = metrics.map(function (m) {
+        return {
+          id: safeId(m.label),
+          prop: m.prop,
+          label: m.label,
+          colour: m.colour
+        };
+      });
+
       if (!taxa.length) {
         taxa = data.map(function (d) {
           return d.taxon;
@@ -4802,7 +4803,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.4.1";
+  var version = "0.4.2";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

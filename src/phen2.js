@@ -112,15 +112,6 @@ export function phen2({
 
   const svgChart = svg.append('svg').attr('class', 'mainChart')
   
-    metricsPlus = metrics.map(m => {
-      return {
-        id:  gen.safeId(m.label),
-        prop: m.prop,
-        label: m.label,
-        colour: m.colour
-      }
-    })
-
   makeChart()
   // Texts must come after chart because 
   // the chart width is required
@@ -131,6 +122,16 @@ export function phen2({
   gen.positionMainElements(svg, expand, headPad)
 
   function makeChart () {
+
+    metricsPlus = metrics.map(m => {
+      return {
+        id:  gen.safeId(m.label),
+        prop: m.prop,
+        label: m.label,
+        colour: m.colour
+      }
+    })
+
     if (!taxa.length) {
       taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
     }
@@ -157,7 +158,6 @@ export function phen2({
   }
 
   function makePhen (taxon) {
-
     // Get data for named taxon
     const dataFiltered = data.find(d => d.taxon === taxon)
     const rectData = metricsPlus.map(m => {
