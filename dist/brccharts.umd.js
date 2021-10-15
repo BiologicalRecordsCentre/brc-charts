@@ -1947,6 +1947,7 @@
     }
 
     function highlightItem(id, highlight) {
+      console.log('highlight', id);
       svgChart.selectAll('.phen-rect').classed('lowlight', highlight);
       svgChart.selectAll(".phen-rect-".concat(id)).classed('lowlight', false);
       svgChart.selectAll(".phen-rect").classed('highlight', false);
@@ -1971,15 +1972,15 @@
     function addEventHandlers(sel, prop) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true);
+          highlightItem(safeId(d[prop]), true);
         }
       }).on("mouseout", function (d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false);
+          highlightItem(safeId(d[prop]), false);
         }
       }).on("click", function (d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true);
+          highlightItem(safeId(d[prop]), true);
           d3.event.stopPropagation();
         }
       });
@@ -4803,7 +4804,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.4.2";
+  var version = "0.4.3";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

@@ -384,6 +384,8 @@ export function phen2({
 
   function highlightItem(id, highlight) {
 
+    console.log('highlight', id)
+
     svgChart.selectAll('.phen-rect')
       .classed('lowlight', highlight)
 
@@ -419,17 +421,17 @@ export function phen2({
     sel
       .on("mouseover", function(d) {
       if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true)
+          highlightItem(gen.safeId(d[prop]), true)
         }
       })
       .on("mouseout", function(d) {
         if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false)
+          highlightItem(gen.safeId(d[prop]), false)
         }
       })
       .on("click", function(d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true)
+          highlightItem(gen.safeId(d[prop]), true)
           d3.event.stopPropagation()
         }
       })
