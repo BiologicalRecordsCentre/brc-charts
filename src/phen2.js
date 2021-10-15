@@ -37,12 +37,15 @@ import * as gen from './general'
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
  * data for which a band should be generated on the chart.
- * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+ * Each of the objects in the data array must be sepecified with the properties shown below.
  * <ul>
  * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
  * <li> <b>label</b> - a label for this property.
  * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
  * </ul>
+ * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
+ * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
+ * come last. Because this will generally be the most important, the order is reversed for the chart legend.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. 
  * There should only be one object per taxon. (The order is not important.)
@@ -332,7 +335,10 @@ export function phen2({
     // legend width.
     let rows = 0
     let lineWidth = -swatchSize
-    metricsPlus.forEach(m => {
+
+    const metricsReversed = gen.cloneData(metricsPlus).reverse()
+
+    metricsReversed.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
         .style('font-size', legendFontSize)
@@ -349,9 +355,9 @@ export function phen2({
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
-    
+
     const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(metricsPlus, m => m.id)
+      .data(metricsReversed, m => m.id)
       .join(enter => {
           const rect = enter.append("rect")
             .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
@@ -365,7 +371,7 @@ export function phen2({
       .attr('fill', m => m.colour)
 
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsPlus, m => gen.safeId(m.label))
+      .data(metricsReversed, m => gen.safeId(m.label))
       .join(enter => {
           const text = enter.append("text")
             .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
@@ -383,8 +389,6 @@ export function phen2({
   }
 
   function highlightItem(id, highlight) {
-
-    console.log('highlight', id)
 
     svgChart.selectAll('.phen-rect')
       .classed('lowlight', highlight)

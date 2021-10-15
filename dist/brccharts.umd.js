@@ -1618,12 +1618,15 @@
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
    * data for which a band should be generated on the chart.
-   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * Each of the objects in the data array must be sepecified with the properties shown below.
    * <ul>
    * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
    * <li> <b>label</b> - a label for this property.
    * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
    * </ul>
+   * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
+   * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
+   * come last. Because this will generally be the most important, the order is reversed for the chart legend.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. 
    * There should only be one object per taxon. (The order is not important.)
@@ -1897,7 +1900,8 @@
 
       var rows = 0;
       var lineWidth = -swatchSize;
-      metricsPlus.forEach(function (m) {
+      var metricsReversed = cloneData(metricsPlus).reverse();
+      metricsReversed.forEach(function (m) {
         var tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label).style('font-size', legendFontSize);
         var widthText = tmpText.node().getBBox().width;
@@ -1912,7 +1916,7 @@
         m.y = rows * swatchSize * swatchFact;
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
       });
-      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsPlus, function (m) {
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
         return m.id;
       }).join(function (enter) {
         var rect = enter.append("rect").attr("class", function (m) {
@@ -1927,7 +1931,7 @@
       }).attr('fill', function (m) {
         return m.colour;
       });
-      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsPlus, function (m) {
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
         return safeId(m.label);
       }).join(function (enter) {
         var text = enter.append("text").attr("class", function (m) {
@@ -1947,7 +1951,6 @@
     }
 
     function highlightItem(id, highlight) {
-      console.log('highlight', id);
       svgChart.selectAll('.phen-rect').classed('lowlight', highlight);
       svgChart.selectAll(".phen-rect-".concat(id)).classed('lowlight', false);
       svgChart.selectAll(".phen-rect").classed('highlight', false);
@@ -4804,7 +4807,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.4.3";
+  var version = "0.4.5";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
