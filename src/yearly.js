@@ -20,8 +20,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
  * @param {string} opts.footer - Footer for the chart. (Default - ''.)
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle. (Default - 16.)
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer. (Default - 10.)
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
@@ -39,6 +39,7 @@ import * as gen from './general'
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+ * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
  * @param {string} opts.showCounts - The stype of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
@@ -104,6 +105,7 @@ export function yearly({
   axisRight = '',
   axisTop = '',
   showCounts = 'bar', 
+  headPad = 0,
   duration = 1000,
   interactivity = 'none',
   data = [],
@@ -134,11 +136,11 @@ export function yearly({
   makeChart()
   // Texts must come after chartbecause 
   // the chart width is required
-  const textWidth = Number(svg.select('.mainChart').attr("width"))
+  const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
   gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
   gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  gen.positionMainElements(svg, expand)
+  gen.positionMainElements(svg, expand, headPad)
 
   function makeChart () {
 
@@ -161,7 +163,7 @@ export function yearly({
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
     const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
-    const legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0
+    const legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad : 0
 
     svgsTaxa.forEach((svgTaxon, i) => {
       
@@ -279,6 +281,7 @@ export function yearly({
       svgYearly = svgChart.append('svg')
         .classed('brc-chart-yearly', true)
         .attr('id', gen.safeId(taxon))
+        .style('overflow', 'visible')
       gYearly = svgYearly.append('g')
         .classed('brc-chart-yearly-g', true)
       init = true
@@ -523,7 +526,7 @@ export function yearly({
         ++rows
         lineWidth = -swatchSize
       }
-      m.x = lineWidth + swatchSize
+      m.x = lineWidth + swatchSize + headPad
       m.y = rows * swatchSize * swatchFact
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
@@ -600,8 +603,8 @@ export function yearly({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

@@ -15,8 +15,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -414,8 +414,8 @@ export function links({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

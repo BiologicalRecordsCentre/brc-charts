@@ -20,8 +20,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
  * @param {string} opts.footer - Footer for the chart. (Default - ''.)
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle. (Default - 16.)
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer. (Default - 10.)
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
@@ -279,6 +279,7 @@ export function trend({
       svgTrend = svgChart.append('svg')
         .classed('brc-chart-trend', true)
         .attr('id', gen.safeId(taxon))
+        .style('overflow', 'visible')
       gTrend = svgTrend.append('g')
         .classed('brc-chart-trend-g', true)
       init = true
@@ -649,8 +650,8 @@ export function trend({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

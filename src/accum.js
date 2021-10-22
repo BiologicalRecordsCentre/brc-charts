@@ -19,8 +19,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -31,7 +31,7 @@ import * as gen from './general'
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
  * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
- * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels.
+ * @param {string} opts.axisLabelFontSize - Font size (pixels) for axis labels.
  * @param {string} opts.show - Indicates whether to show accumulation curves for taxa, counts or both. Permitted values: 'taxa', 'counts' or 'both'.
  * @param {boolean} opts.swapYaxes - The default display is number of taxa on left axis and counts on right. Set this to true to swap that.
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
@@ -341,6 +341,7 @@ export function accum({
     } else {
       svgAccum = svgChart.append('svg')
         .classed('brc-chart-accum', true)
+        .style('overflow', 'visible')
       gAccum = svgAccum.append('g')
         .classed('brc-chart-accum-g', true)
       init = true
@@ -626,8 +627,8 @@ export function accum({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

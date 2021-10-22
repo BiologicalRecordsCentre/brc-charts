@@ -15,7 +15,7 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart sub-title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
@@ -225,6 +225,7 @@ export function phen2({
       svgPhen2 = svgChart.append('svg')
         .classed('brc-chart-phen2', true)
         .attr('id', gen.safeId(taxon))
+        .style('overflow', 'visible')
       gPhen2 = svgPhen2.append('g')
         .classed('brc-chart-phen2-g', true)
       init = true
@@ -447,8 +448,8 @@ export function phen2({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

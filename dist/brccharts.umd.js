@@ -270,7 +270,7 @@
    * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
    * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
    * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
-   * @param {string} opts.labelFontSize - Set to a font size (pixels).
+   * @param {string} opts.labelFontSize - Specifies the size of label and legend text.
    * @param {string} opts.labelColour - Specifies the colour of label text.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
@@ -280,8 +280,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -659,7 +659,7 @@
         svgPie = svgChart.select('.brc-chart-pie');
         gPie = svgPie.select('g');
       } else {
-        svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius);
+        svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius).style('overflow', 'visible');
         gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
         gPie.append('image').classed('brc-item-image', true).classed('brc-item-image-hide', true).attr('width', imageWidth);
       } // Remove those paths that have been 'deleted'
@@ -742,9 +742,21 @@
           if (label === 'value') {
             return d.data.number;
           } else if (label === 'percent') {
-            return "".concat(Math.round(d.data.number / total * 100), "%");
+            var l = Math.round(d.data.number / total * 100);
+
+            if (l === 0) {
+              l = Math.round(d.data.number / total * 1000) / 10;
+            }
+
+            return "".concat(l, "%");
           }
-        }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', 1);
+        }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', function (d) {
+          if (Math.round(d.data.number / total * 100) === 0) {
+            return 0;
+          } else {
+            return 1;
+          }
+        });
         uPieLabels.exit().remove();
       }
     }
@@ -854,8 +866,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -979,7 +991,7 @@
    * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
-   * @param {string} opts.axisTop- If set to 'on' line is drawn otherwise not.
+   * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
    * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
@@ -1253,7 +1265,7 @@
         gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
         init = false;
       } else {
-        svgPhen1 = svgChart.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon));
+        svgPhen1 = svgChart.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon)).style('overflow', 'visible');
         gPhen1 = svgPhen1.append('g').classed('brc-chart-phen1-g', true);
         init = true;
       } // Create/update the line paths with D3
@@ -1457,8 +1469,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -1596,7 +1608,7 @@
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart sub-title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
    * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
@@ -1817,7 +1829,7 @@
         gPhen2 = svgPhen2.select('.brc-chart-phen2-g');
         init = false;
       } else {
-        svgPhen2 = svgChart.append('svg').classed('brc-chart-phen2', true).attr('id', safeId(taxon));
+        svgPhen2 = svgChart.append('svg').classed('brc-chart-phen2', true).attr('id', safeId(taxon)).style('overflow', 'visible');
         gPhen2 = svgPhen2.append('g').classed('brc-chart-phen2-g', true);
         init = true;
       } // Create/update the band rectangles with D3
@@ -1994,8 +2006,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -2129,8 +2141,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -2141,7 +2153,7 @@
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisTaxaLabel - Value for labelling taxa accumulation axis.
    * @param {string} opts.axisCountLabel - Value for labelling count accumulation axis.
-   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels.
+   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axis labels.
    * @param {string} opts.show - Indicates whether to show accumulation curves for taxa, counts or both. Permitted values: 'taxa', 'counts' or 'both'.
    * @param {boolean} opts.swapYaxes - The default display is number of taxa on left axis and counts on right. Set this to true to swap that.
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
@@ -2485,7 +2497,7 @@
         gAccum = svgAccum.select('.brc-chart-accum-g');
         init = false;
       } else {
-        svgAccum = svgChart.append('svg').classed('brc-chart-accum', true);
+        svgAccum = svgChart.append('svg').classed('brc-chart-accum', true).style('overflow', 'visible');
         gAccum = svgAccum.append('g').classed('brc-chart-accum-g', true);
         init = true;
       } // Create/update the line paths with D3
@@ -2711,8 +2723,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -2827,8 +2839,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -3214,8 +3226,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -3325,8 +3337,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
    * @param {string} opts.footer - Footer for the chart. (Default - ''.)
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle. (Default - 16.)
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer. (Default - 10.)
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
@@ -3641,7 +3653,7 @@
         gTrend = svgTrend.select('.brc-chart-trend-g');
         init = false;
       } else {
-        svgTrend = svgChart.append('svg').classed('brc-chart-trend', true).attr('id', safeId(taxon));
+        svgTrend = svgChart.append('svg').classed('brc-chart-trend', true).attr('id', safeId(taxon)).style('overflow', 'visible');
         gTrend = svgTrend.append('g').classed('brc-chart-trend-g', true);
         init = true;
       } // Line path generators
@@ -3980,8 +3992,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -4111,8 +4123,8 @@
    * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
    * @param {string} opts.footer - Footer for the chart. (Default - ''.)
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
-   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title. (Default - 16.)
-   * @param {string} opts.footerFontSize - Font size (pixels) of chart title. (Default - 10.)
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle. (Default - 16.)
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer. (Default - 10.)
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
@@ -4130,6 +4142,7 @@
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
    * @param {string} opts.showCounts - The stype of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
@@ -4229,6 +4242,8 @@
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
         _ref$showCounts = _ref.showCounts,
         showCounts = _ref$showCounts === void 0 ? 'bar' : _ref$showCounts,
+        _ref$headPad = _ref.headPad,
+        headPad = _ref$headPad === void 0 ? 0 : _ref$headPad,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$interactivity = _ref.interactivity,
@@ -4257,11 +4272,11 @@
     makeChart(); // Texts must come after chartbecause 
     // the chart width is required
 
-    var textWidth = Number(svg.select('.mainChart').attr("width"));
+    var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
     makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
     makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
     makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionMainElements(svg, expand);
+    positionMainElements(svg, expand, headPad);
 
     function makeChart() {
       // Set min and max year from data if not set
@@ -4292,7 +4307,7 @@
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0;
+      var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad : 0;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -4408,7 +4423,7 @@
         gYearly = svgYearly.select('.brc-chart-yearly-g');
         init = false;
       } else {
-        svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon));
+        svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon)).style('overflow', 'visible');
         gYearly = svgYearly.append('g').classed('brc-chart-yearly-g', true);
         init = true;
       } // Line path generators
@@ -4623,7 +4638,7 @@
           lineWidth = -swatchSize;
         }
 
-        m.x = lineWidth + swatchSize;
+        m.x = lineWidth + swatchSize + headPad;
         m.y = rows * swatchSize * swatchFact;
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
       });
@@ -4692,8 +4707,8 @@
       * @param {string} opts.subtitle - Subtitle for the chart.
       * @param {string} opts.footer - Footer for the chart.
       * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-      * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.

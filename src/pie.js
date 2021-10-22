@@ -15,7 +15,7 @@ import * as gen from './general'
  * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
  * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
  * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
- * @param {string} opts.labelFontSize - Set to a font size (pixels).
+ * @param {string} opts.labelFontSize - Specifies the size of label and legend text.
  * @param {string} opts.labelColour - Specifies the colour of label text.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
@@ -25,8 +25,8 @@ import * as gen from './general'
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
- * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+ * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+ * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
@@ -408,6 +408,7 @@ export function pie({
       svgPie = svgChart.append('svg').classed('brc-chart-pie', true)
         .attr('width', 2 * radius)
         .attr('height', 2 * radius)
+        .style('overflow', 'visible')
       gPie = svgPie.append('g')
         .attr('transform', `translate(${radius} ${radius})`)
 
@@ -512,7 +513,11 @@ export function pie({
           if (label ==='value') {
             return d.data.number
           } else if (label ==='percent') {
-              return `${Math.round(d.data.number / total * 100)}%`
+            let l = Math.round(d.data.number / total * 100)
+            if (l === 0) {
+              l = Math.round(d.data.number / total * 1000)/10
+            }
+            return `${l}%`
           }
         })
         .attr('opacity', 0)
@@ -521,7 +526,13 @@ export function pie({
         .attrTween('transform', centroidTween)
         .transition()
         .duration(0)
-        .attr('opacity', 1)
+        .attr('opacity', d => {
+          if (Math.round(d.data.number / total * 100) === 0) {
+            return 0
+          } else {
+            return 1
+          }
+        })
       uPieLabels.exit()
         .remove()
     }
@@ -635,8 +646,8 @@ export function pie({
   * @param {string} opts.subtitle - Subtitle for the chart.
   * @param {string} opts.footer - Footer for the chart.
   * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart title.
-  * @param {string} opts.footerFontSize - Font size (pixels) of chart title.
+  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
