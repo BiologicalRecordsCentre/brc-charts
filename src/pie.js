@@ -513,11 +513,16 @@ export function pie({
           if (label ==='value') {
             return d.data.number
           } else if (label ==='percent') {
-            let l = Math.round(d.data.number / total * 100)
-            if (l === 0) {
-              l = Math.round(d.data.number / total * 1000)/10
+            if (Number.isNaN(d.data.number) || total === 0) {
+               return ''
+            } else {
+              console.log('lab', d.data.number)
+              let l = Math.round(d.data.number / total * 100)
+              if (l === 0) {
+                l = Math.ceil(d.data.number / total * 1000)/10
+              }
+              return `${l}%`
             }
-            return `${l}%`
           }
         })
         .attr('opacity', 0)

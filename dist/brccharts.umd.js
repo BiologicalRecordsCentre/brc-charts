@@ -742,13 +742,18 @@
           if (label === 'value') {
             return d.data.number;
           } else if (label === 'percent') {
-            var l = Math.round(d.data.number / total * 100);
+            if (Number.isNaN(d.data.number) || total === 0) {
+              return '';
+            } else {
+              console.log('lab', d.data.number);
+              var l = Math.round(d.data.number / total * 100);
 
-            if (l === 0) {
-              l = Math.round(d.data.number / total * 1000) / 10;
+              if (l === 0) {
+                l = Math.ceil(d.data.number / total * 1000) / 10;
+              }
+
+              return "".concat(l, "%");
             }
-
-            return "".concat(l, "%");
           }
         }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', function (d) {
           if (Math.round(d.data.number / total * 100) === 0) {

@@ -27,5 +27,8 @@
 .brc-chart-pie .labelsPie.brc-highlight {
   opacity: 1;
   font-weight: bolder;
-  text-shadow: 2px 2px 4px black;
+  text-shadow: -1px 1px 2px #000,
+    1px 1px 2px #000,
+    1px -1px 0 #000,
+    -1px -1px 0 #000;
 }
