@@ -977,6 +977,7 @@
    * @param {string} opts.elid - The id for the dom object created.
    * @param {number} opts.width - The width of each sub-chart area in pixels.
    * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
    * @param {number} opts.perRow - The number of sub-charts per row.
    * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
@@ -1032,6 +1033,13 @@
         width = _ref$width === void 0 ? 300 : _ref$width,
         _ref$height = _ref.height,
         height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 35,
+      right: 0,
+      top: 20,
+      bottom: 5
+    } : _ref$margin,
         _ref$perRow = _ref.perRow,
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
         _ref$ytype = _ref.ytype,
@@ -1324,43 +1332,46 @@
 
       if (init) {
         // Constants for positioning
-        var axisPadX = axisLeft === 'tick' ? 35 : 0;
-        var axisPadY = axisBottom === 'tick' ? 15 : 0;
-        var labelPadY; // Taxon title
+        var axisLeftPadX = margin.left ? margin.left : 0;
+        var axisRightPadX = margin.right ? margin.right : 0;
+        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+        var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
 
         if (showTaxonLabel) {
           var taxonLabel = svgPhen1.append('text').classed('brc-chart-phen1-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
           var labelHeight = taxonLabel.node().getBBox().height;
-          taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
-          labelPadY = labelHeight * 1.5;
-        } else {
-          labelPadY = 0;
+          taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
         } // Size SVG
 
 
-        svgPhen1.attr('width', width + axisPadX + 1).attr('height', height + axisPadY + labelPadY + 1); // Position chart
+        svgPhen1.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
 
-        gPhen1.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
+        gPhen1.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
+
+        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+        var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+        var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
 
         if (yAxis) {
           var gYaxis = svgPhen1.append("g").attr("class", "y-axis");
-          gYaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+          gYaxis.attr("transform", leftYaxisTrans);
         }
 
         if (xAxis) {
           var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
           gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-          gXaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+          gXaxis.attr("transform", bottomXaxisTrans);
         }
 
         if (tAxis) {
           var gTaxis = svgPhen1.append("g").call(tAxis);
-          gTaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")"));
+          gTaxis.attr("transform", topXaxisTrans);
         }
 
         if (rAxis) {
           var gRaxis = svgPhen1.append("g").call(rAxis);
-          gRaxis.attr("transform", "translate(".concat(axisPadX + width, ",").concat(labelPadY, ")"));
+          gRaxis.attr("transform", rightYaxisTrans);
         }
       } else if (taxa.length === 1) {
         // Update taxon label

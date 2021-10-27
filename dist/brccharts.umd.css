@@ -1,6 +1,4 @@
-.blah {
-    background: red;
-}.brc-chart-pie {
+.brc-chart-pie {
   width: 100%
 }
 
@@ -33,7 +31,27 @@
     1px 1px 2px #000,
     1px -1px 0 #000,
     -1px -1px 0 #000;
-}.brc-chart-phen1 path {
+}.brc-chart-phen2 rect.highlight {
+    fill: black;
+    opacity: 1;
+}
+
+.brc-chart-phen2 rect.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen2 {
+    overflow: visible;
+}
+
+.brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-legend-item-rect.highlight {
+    fill:black;
+}
+.brc-chart-phen1 path {
     fill: none;
 }
 
@@ -48,26 +66,6 @@
 }
 
 .brc-chart-phen1 {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-.brc-chart-phen2 rect.highlight {
-    fill: black;
-    opacity: 1;
-}
-
-.brc-chart-phen2 rect.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen2 {
     overflow: visible;
 }
 
@@ -118,36 +116,8 @@
 
 .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-trend path {
-    fill: none;
-}
-
-.brc-chart-trend {
-    overflow: visible;
-}
-.brc-chart-trend .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-trend .lowlight {
-    opacity: 0.1;
-}.brc-chart-yearly path {
-    fill: none;
-}
-
-.brc-chart-yearly {
-    overflow: visible;
-}
-.brc-chart-yearly .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-yearly .lowlight {
-    opacity: 0.1;
+}.blah {
+    background: red;
 }
 .chart-overflow svg {
     overflow: visible;
@@ -208,4 +178,34 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
+    opacity: 0.1;
+}.brc-chart-trend path {
+    fill: none;
+}
+
+.brc-chart-trend {
+    overflow: visible;
+}
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-trend .lowlight {
+    opacity: 0.1;
 }

@@ -9,6 +9,7 @@ import * as gen from './general'
  * @param {string} opts.elid - The id for the dom object created.
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
+ * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
  * @param {number} opts.perRow - The number of sub-charts per row.
  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
@@ -60,6 +61,7 @@ export function phen1({
   elid = 'phen1-chart',
   width = 300,
   height = 200,
+  margin = {left: 35, right: 0, top: 20, bottom: 5},
   perRow = 2,
   ytype = 'count',
   expand = false,
@@ -345,9 +347,10 @@ export function phen1({
 
     if (init) {
       // Constants for positioning
-      const axisPadX = axisLeft === 'tick' ? 35 : 0
-      const axisPadY = axisBottom === 'tick' ? 15 : 0
-      let labelPadY 
+      const axisLeftPadX = margin.left ? margin.left : 0
+      const axisRightPadX = margin.right ? margin.right : 0
+      const axisBottomPadY = margin.bottom ? margin.bottom : 0
+      const axisTopPadY = margin.top ? margin.top : 0
 
       // Taxon title
       if (showTaxonLabel) {
@@ -359,26 +362,28 @@ export function phen1({
           .style('font-style', taxonLabelItalics ? 'italic' : '')
 
         const labelHeight = taxonLabel.node().getBBox().height
-        taxonLabel.attr("transform", `translate(${axisPadX}, ${labelHeight})`)
-        labelPadY = labelHeight * 1.5
-      } else {
-        labelPadY = 0
+        taxonLabel.attr("transform", `translate(${axisLeftPadX}, ${labelHeight})`)
       }
       
       // Size SVG
       svgPhen1
-        .attr('width', width + axisPadX + 1)
-        .attr('height', height + axisPadY + labelPadY + 1)
-
+        .attr('width', width + axisLeftPadX + axisRightPadX)
+        .attr('height', height + axisBottomPadY + axisTopPadY)
 
       // Position chart
-      gPhen1.attr("transform", `translate(${axisPadX},${labelPadY})`)
+      gPhen1.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
+
+      // Create axes and position within SVG
+      const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
+      const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${axisTopPadY})`
+      const topXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
+      const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
       
       // Create axes and position within SVG
       if (yAxis) {
         const gYaxis = svgPhen1.append("g")
           .attr("class", "y-axis")
-        gYaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+        gYaxis.attr("transform", leftYaxisTrans)
       }
       if (xAxis) {
         const gXaxis = svgPhen1.append("g")
@@ -390,17 +395,17 @@ export function phen1({
           .attr("x", 6)
           .attr("y", 6)
 
-        gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+        gXaxis.attr("transform", bottomXaxisTrans)
       }
       if (tAxis) {
         const gTaxis = svgPhen1.append("g")
           .call(tAxis)
-        gTaxis.attr("transform", `translate(${axisPadX},${labelPadY})`)
+        gTaxis.attr("transform", topXaxisTrans)
       }
       if (rAxis) {
         const gRaxis = svgPhen1.append("g")
           .call(rAxis)
-        gRaxis.attr("transform", `translate(${axisPadX + width},${labelPadY})`)
+        gRaxis.attr("transform", rightYaxisTrans)
       }
     } else if (taxa.length === 1) {
       // Update taxon label
