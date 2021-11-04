@@ -1,20 +1,13 @@
-.blah {
-    background: red;
-}/* .brc-chart-phen1 path {
-    fill: none;
-} */
-
-.brc-chart-phen1 path.highlight.phen-path-line {
-    stroke: black;
-    stroke-width: 3;
+.brc-chart-phen2 rect.highlight {
+    fill: black;
     opacity: 1;
 }
 
-.brc-chart-phen1 path.lowlight {
+.brc-chart-phen2 rect.lowlight {
     opacity:0.3;
 }
 
-.brc-chart-phen1 {
+.brc-chart-phen2 {
     overflow: visible;
 }
 
@@ -58,16 +51,21 @@
     1px 1px 2px #000,
     1px -1px 0 #000,
     -1px -1px 0 #000;
-}.brc-chart-phen2 rect.highlight {
-    fill: black;
+}/* .brc-chart-phen1 path {
+    fill: none;
+} */
+
+.brc-chart-phen1 path.highlight.phen-path-line {
+    stroke: black;
+    stroke-width: 3;
     opacity: 1;
 }
 
-.brc-chart-phen2 rect.lowlight {
+.brc-chart-phen1 path.lowlight {
     opacity:0.3;
 }
 
-.brc-chart-phen2 {
+.brc-chart-phen1 {
     overflow: visible;
 }
 
@@ -118,6 +116,8 @@
 
 .y-axis.highlight {
     font-weight:bold;
+}.blah {
+    background: red;
 }
 .chart-overflow svg {
     overflow: visible;

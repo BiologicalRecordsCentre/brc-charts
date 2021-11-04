@@ -231,7 +231,7 @@ brccharts.phen1(phen)</code></pre>
     <div id="chart3" style="margin-top: 1em"></div>
 
     <p>
-      Finally here is a similar chart but with some different configuration options
+      Here is a similar chart but with some different configuration options
       set to alter the appearance and behaviour of the chart. (The options are
       illustrated after the charts.) 
     </p>
@@ -271,8 +271,33 @@ brccharts.phen1(phen)</code></pre>
   subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',
   footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
   footerAlign: 'right'
-}
-brccharts.phen1(phen2)</code></pre>
+}</code></pre>
+
+    <p>
+      Finally here is a different style of phenology chart which uses a simple shaded band to represent
+      the phenology. All previous examples used the the <em>phen1</em> method, but the style of chart
+      shown below uses the <em>phen2</em> method.
+    </p>
+
+    <div id="chart5" style="margin-top: 1em"></div>
+
+<pre><code class="javascript">brccharts.phen2({
+  selector: '#chart5',
+  taxa: ['Some taxon'],
+  data: [{
+    taxon: 'Some taxon',
+    flower: {start: 100, end: 200},
+    leaf: {start: 150, end: 250},
+  }],
+  metrics: [
+    { prop: 'flower', label: 'Flowering' , colour: '#ff990080'},
+    { prop: 'leaf', label: 'In leaf' , colour: '#3399ff80'}
+  ],
+  width: 400,
+  height: 25,
+  perRow: 1,
+  showTaxonLabel: false,
+})</code></pre>
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -482,6 +507,25 @@ brccharts.phen1(phen2)</code></pre>
       function button10Click() {
         chart3.setChartOpts({ytype: 'proportion'})
       }
+
+      var phenBand = brccharts.phen2({
+        selector: '#chart5',
+        taxa: ['taxon'],
+        data: [{
+          taxon: 'taxon',
+          flower: {start: 100, end: 200},
+          leaf: {start: 150, end: 250},
+        }],
+        metrics: [
+          { prop: 'flower', label: 'Flowering' , colour: '#ff990080'},
+          { prop: 'leaf', label: 'In leaf' , colour: '#3399ff80'}
+        ],
+        width: 400,
+        height: 25,
+        perRow: 1,
+        showTaxonLabel: false,
+      })
+
     </script>
   </div>
 </body>
