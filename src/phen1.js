@@ -13,6 +13,7 @@ import * as gen from './general'
  * @param {number} opts.perRow - The number of sub-charts per row.
  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+ * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
@@ -25,11 +26,17 @@ import * as gen from './general'
  * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+ * @param {boolean} opts.showLegend - Whether or not to show the legend.
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
+ * @param {Array.<string>} opts.bands - An array of up to 12 colours (any standard colour notation), used to display bands for each month
+ * as a background on the chart. (Default is an empty array.)
+ * @param {Array.<string>} opts.lines - An array of up to 12 colours (any standard colour notation), used to display vertical lines to
+ * delineat each month as a background on the chart. (Default is an empty array.)
+ * @param {number} opts.monthLineWidth - The width of lines used to delineate months.
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
@@ -42,6 +49,7 @@ import * as gen from './general'
  * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
  * <li> <b>label</b> - a label for this metric.
  * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+ * <li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
@@ -62,9 +70,13 @@ export function phen1({
   width = 300,
   height = 200,
   margin = {left: 35, right: 0, top: 20, bottom: 5},
+  bands= [],
+  lines=[],
+  monthLineWidth = 1,
   perRow = 2,
   ytype = 'count',
   expand = false,
+  spread = false,
   title = '',
   subtitle = '',
   footer = '',
@@ -72,6 +84,7 @@ export function phen1({
   subtitleFontSize = 16,
   footerFontSize = 10,
   legendFontSize = 16,
+  showLegend = true,
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
@@ -128,7 +141,10 @@ export function phen1({
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
     const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
-    const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
+    let legendHeight = 0
+    if (showLegend) {
+      legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
+    }
 
     svgsTaxa.forEach((svgTaxon, i) => {
       
@@ -160,6 +176,7 @@ export function phen1({
         prop: m.prop,
         label: m.label,
         colour: m.colour,
+        fill: m.fill,
         fading: iFade,
         strokeWidth: strokeWidth
       }
@@ -184,24 +201,41 @@ export function phen1({
     const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
     let lineData = [] 
     metricsPlus.forEach(m => {
-
       const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
       const max = Math.max(...dataFiltered.map(d => d[m.prop]))
       let maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
+
+      let points = dataFiltered.map(d => {
+        return {
+          n: d[m.prop],
+          week: d.week
+        }
+      })
+
+      // The closure array is a small array of points which can
+      // be used, in conjunction with the main points, to make
+      // a properly enclosed polygon that drops open sides down
+      // to the x axis.
+      let closure=[]
+      if (points.length) {
+        if (points[points.length-1].n > 0) {
+          closure.push({n: 0, week: points[points.length-1].week})
+        }
+        if (points[0].n > 0) {
+          closure.push({n: 0, week: points[0].week})
+        }
+      }
 
       lineData.push({
         id: gen.safeId(m.label),
         colour: m.colour,
         strokeWidth: m.strokeWidth,
+        fill: m.fill ? m.fill : 'none',
         max: max,
         maxProportion: maxProportion,
         total: total,
-        points: dataFiltered.map(d => {
-          return {
-            n: d[m.prop],
-            week: d.week
-          }
-        })
+        points: points,
+        closure: closure
       })
     })
 
@@ -219,13 +253,50 @@ export function phen1({
       }))
     } else {
       yMax = Math.max(...lineData.map(d => d.max))
-      if (yMax < 5) yMax = 5
+      if (yMax < 5 && !spread) yMax = 5
     }
     
+    // Calculate spread metrics
+    let maxMetricHeight = height
+    let topProp = 0
+    let spreadHeight = 0
+    if (spread && lineData.length > 1) {
+      const maxProp = 1.8
+      let valMax
+      if (ytype === 'normalized') {
+        valMax = 1
+      } else if(ytype === 'proportion') {
+        valMax = lineData[0].maxProportion
+      } else {
+        valMax = lineData[0].max
+      }
+      const h1Prop = maxProp * valMax / yMax
+      const h2Prop = maxProp * valMax / yMax
+      topProp = Math.max(h1Prop, h2Prop-1)
+      spreadHeight = height / (0.5 + lineData.length-1 + topProp)
+      maxMetricHeight = maxProp * spreadHeight
+    }
+
     // Value scales
     const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
-    const yScale = d3.scaleLinear().domain([0, yMax]).range([height, 0])
-
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0])
+    // jScale is for bands and lines
+    const jScale = d3.scaleLinear().domain([1, 365]).range([0, width])
+    // sScale is for spread displays
+    const ysDomain = ['']
+    const ysRange = [0]
+    if (metricsPlus.length){
+      for (let i=0; i<metricsPlus.length; i++) {
+        ysDomain.push(metricsPlus[i].label)
+        ysRange.push(topProp*spreadHeight+i*spreadHeight)
+      }
+      ysDomain.push('')
+      ysRange.push(height)
+    } else {
+      ysRange.push(height)
+    }
+    const sScale = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+  
     // Top axis
     let tAxis
     if (axisTop === 'on') {
@@ -253,21 +324,31 @@ export function phen1({
     // Y (left) axis
     let yAxis
     if (axisLeft === 'on' || axisLeft === 'tick') {
-      yAxis = d3.axisLeft()
-        .scale(yScale)
-        .ticks(5)
-      if (axisLeft !== 'tick') {
-        yAxis.tickValues([]).tickSizeOuter(0)
-      } else if (ytype === 'count') {
-        yAxis.tickFormat(d3.format("d"))
+      if (spread) {
+        yAxis = d3.axisLeft()
+          .scale(sScale)
+          .ticks(5)
+      } else {
+        yAxis = d3.axisLeft()
+          .scale(yScale)
+          .ticks(5)
+        if (axisLeft !== 'tick') {
+          yAxis.tickValues([]).tickSizeOuter(0)
+        } else if (ytype === 'count') {
+          yAxis.tickFormat(d3.format("d"))
+        }
       }
     }
-    
-    // Line path generator
+
+    // Main path generators
     const line = d3.line()
       .curve(d3.curveMonotoneX)
       .x(d => xScale(d.week))
-      .y(d => yScale(d.n))
+      .y(d => height - maxMetricHeight + yScale(d.n))
+    // Closure path generator - no interpolation
+    const close = d3.line()
+      .x(d => xScale(d.week))
+      .y(d => height - maxMetricHeight + yScale(d.n))
 
     // Create or get the relevant chart svg
     let init, svgPhen1, gPhen1
@@ -288,63 +369,155 @@ export function phen1({
         .classed('brc-chart-phen1-g', true)
       init = true
     }
+
+    // Vertical bands and lines
+    const month2day = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 364]
+    gPhen1.selectAll(".brc-chart-month-band")
+      .data(bands,  (b, i) => `month-band-${i}`)
+    .enter()
+      .append("rect")
+      .attr("class", `brc-chart-month-band`)
+      .style("fill", (d,i) => bands[i])
+      .attr("y", 0)
+      .attr("x", (d,i) => jScale(month2day[i]) + 1)
+      .attr("height", height)
+      .attr("width", (d,i) => {
+        return jScale(month2day[i+1]) - jScale(month2day[i] - 1)
+      })
+    gPhen1.selectAll(".brc-chart-month-line")
+      .data(lines,  (b, i) => `month-line-${i}`)
+    .enter()
+      .append("rect")
+      .attr("class", `brc-chart-month-line`)
+      .style("fill", (d,i) => lines[i])
+      .attr("y", 0)
+      .attr("x", (d,i) => jScale(month2day[i+1]) - monthLineWidth/2)
+      .attr("height", height)
+      .attr("width", monthLineWidth)
+
     
     // Create/update the line paths with D3
-    const mlines = gPhen1.selectAll("path")
+    const agroups = gPhen1.selectAll("g")
       .data(lineData,  d => d.id)
 
-    const eLines = mlines.enter()
-      .append("path")
-      .attr("class", d => `phen-path-${d.id} phen-path`)
+    const egroups = agroups.enter()
+      .append("g")
+        .attr("opacity", 0)
+        .attr("class", d => `phen-path-${d.id} phen-path`)
+    egroups.append("path")
+      .attr("class", 'phen-path-fill')
       .attr("d", d => {
-        return line(d.points.map(p => {
+        let flat = line(d.points.map(p => {
           return {
             n: 0,
-            week: p.week
+            week: p.week,
           }
         }))
+        if (d.closure.length) {
+          flat = `${flat}L${close(d.closure).substring(1)}`
+        } 
+        return flat
       })
 
-    addEventHandlers(eLines, 'id')
+    egroups.append("path")
+      .attr("class", 'phen-path-line')
+      .attr("d", d => {
+        let flat = line(d.points.map(p => {
+          return {
+            n: 0,
+            week: p.week,
+          }
+        }))
+        return flat
+      })
+     
+    addEventHandlers(egroups, 'id')
 
-    mlines.merge(eLines)
+    const mgroups = agroups.merge(egroups)
+    
+    mgroups.transition()
+      .duration(duration)
+      .attr('opacity', 1)
+      .attr("transform", (d,i) => `translate(0,-${(lineData.length-1-i + 0.5) * spreadHeight})`)
+
+    // Path generation function for use in sub-selections
+    function getPath(d, poly) {
+      let lPath
+      if (ytype === 'normalized') {
+        lPath = line(d.points.map(p => {
+          return {
+            n: d.max ? p.n/d.max : 0,
+            week: p.week,
+          }
+        }))
+      } else if (ytype === 'proportion') {
+        lPath = line(d.points.map(p => {
+          return {
+            n: d.total === 0 ? 0 : p.n/d.total,
+            week: p.week,
+          }
+        }))
+      } else {
+        lPath = line(d.points)
+      }
+      // If this is for a poly, close the path if required
+      if (d.closure.length && poly) {
+        lPath = `${lPath}L${close(d.closure).substring(1)}`
+      } 
+      return lPath
+    }
+
+    // Each phenology line consists of both a line and polygon. This
+    // is necessary because if we relied on a single polygon, it is
+    // not always possible to confine the line graphics to the part
+    // of the polygon which represents the phenology line.
+
+    // Important for correct data binding to use select - NOT selectAll
+    // in sub-selections (https://bost.ocks.org/mike/selection/#non-grouping)
+    mgroups.select('.phen-path-line')
       .transition()
       .duration(duration)
-      .attr("d", d => {
-        if (ytype === 'normalized') {
-          return line(d.points.map(p => {
-            return {
-              n: d.max ? p.n/d.max : 0,
-              week: p.week
-            }
-          }))
-        } else if (ytype === 'proportion') {
-          return line(d.points.map(p => {
-            return {
-              n: d.total === 0 ? 0 : p.n/d.total,
-              week: p.week
-            }
-          }))
-        } else {
-          return line(d.points)
-        }
-      })
+      .attr("d", d => getPath(d, false))
       .attr("stroke", d => d.colour)
       .attr("stroke-width", d => d.strokeWidth)
+      .attr("fill", "none")
 
-    mlines.exit()
+    mgroups.select('.phen-path-fill')
       .transition()
       .duration(duration)
-      .attr("d", d => {
-        return line(d.points.map(p => {
-          return {
-            n: 0,
-            week: p.week
-          }
-        }))
-      })
+      .attr("d", d => getPath(d, true))
+      .attr("fill", d => d.fill)
+
+    const xgroups = agroups.exit()
+
+    xgroups.transition()
+      .duration(duration)
+      .attr("opacity", 0)
       .remove()
 
+    function flatPath(d, poly) {
+      let flat = line(d.points.map(p => {
+          return {
+            n: 0,
+            week: p.week,
+          }
+        }))
+      if (d.closure.length && poly) {
+        flat = `${flat}L${close(d.closure).substring(1)}`
+      } 
+      return flat
+    }
+
+    xgroups.select('.phen-path-line')
+      .transition()
+      .duration(duration)
+      .attr("d", d => flatPath(d, false))
+
+    xgroups.select('.phen-path-fill')
+      .transition()
+      .duration(duration)
+      .attr("d", d => flatPath(d, true))
+      
     if (init) {
       // Constants for positioning
       const axisLeftPadX = margin.left ? margin.left : 0
@@ -368,6 +541,7 @@ export function phen1({
       // Size SVG
       svgPhen1
         .attr('width', width + axisLeftPadX + axisRightPadX)
+        //.attr('height', height + axisBottomPadY + axisTopPadY)
         .attr('height', height + axisBottomPadY + axisTopPadY)
 
       // Position chart
@@ -377,6 +551,7 @@ export function phen1({
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
       const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${axisTopPadY})`
       const topXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
+      //const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
       const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
       
       // Create axes and position within SVG
@@ -414,11 +589,12 @@ export function phen1({
       }
     }
 
-    svgPhen1.select(".y-axis")
-      .transition()
-      .duration(duration)
-      .call(yAxis)
-
+    if (yAxis) {
+      svgPhen1.select(".y-axis")
+        .transition()
+        .duration(duration)
+        .call(yAxis)
+    }
     return svgPhen1
   }
 
@@ -485,17 +661,17 @@ export function phen1({
 
   function highlightItem(id, highlight) {
 
-    svgChart.selectAll('.phen-path')
+    svgChart.selectAll('.phen-path path')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+    svgChart.selectAll(`.phen-path-${gen.safeId(id)} path`)
       .classed('lowlight', false)
   
-    svgChart.selectAll(`.phen-path`)
+    svgChart.selectAll(`.phen-path path`)
       .classed('highlight', false)
 
     if (gen.safeId(id)) {
-      svgChart.selectAll(`.phen-path-${gen.safeId(id)}`)
+      svgChart.selectAll(`.phen-path-${gen.safeId(id)} path`)
         .classed('highlight', highlight)
     }
     
@@ -548,6 +724,7 @@ export function phen1({
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
+  * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
@@ -583,7 +760,7 @@ export function phen1({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-
+    
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
@@ -604,6 +781,11 @@ export function phen1({
     if ('metrics' in opts) {
       metrics = opts.metrics
       preProcessMetrics()
+      remakeChart = true
+    }
+
+    if ('spread' in opts) {
+      spread = opts.spread
       remakeChart = true
     }
 

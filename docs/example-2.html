@@ -178,12 +178,24 @@ brccharts.phen1(phen)</code></pre>
     link this to a drop-down list of taxa. This is only available on 'single' charts.
   <p>
   <p>
-    Secondly it demonstrates that the range of years displayed (as well as the colours used to
+    It demonstrates that the range of years displayed (as well as the colours used to
     display them), can be dynamically changed.
   </p>
   <p>
-    Finally it demonstrates switching between the display of counts, weekly proportions or a 
-    normalized display (each weekly count expressed as a proportion of the weekly maximum).
+    It demonstrates switching between the display of counts, weekly proportions or a 
+    normalized display (each weekly count expressed as a proportion of the weekly maximum)
+    using the <i>type</i> config option.
+  </p>
+  <p>
+    It demonstrates switching between overlapping lines and spread lines using 
+    <i>spread</i> config option.
+  </p>
+  <p>
+    It demonstrates the use of the <i>bands</i> config option which creates vertical
+    bands across the chart. (There is a similar <i>lines</i> config option.)
+  </p>
+  <p>
+    View the page source to see how these options work (or view the API documentation).
   </p>
 
     <button onclick="button1Click()">Aglais urticae</button>
@@ -197,6 +209,9 @@ brccharts.phen1(phen)</code></pre>
     <button onclick="button3Click()">Counts</button>
     <button onclick="button4Click()">Proportions</button>
     <button onclick="button5Click()">Normalized</button>
+    <br/><br/>
+    <input type="checkbox" id="cbSpread" name="cbSpread" onchange="spreadChanged()">
+    <label for="cbSpread">Spread</label>
     
     <div id="chart2" style="margin-top: 1em"></div>
 
@@ -236,8 +251,8 @@ brccharts.phen1(phen)</code></pre>
   data: data,
   taxa: [],
   metrics: [   
-    { prop: '2020', label: '2020', colour: '#4188A3' },
-    { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+    { prop: '2020', label: '2020', colour: '#ff9900', fill: '#ff990080' },
+    { prop: '2016-19', label: '2016-2019', colour: '#3399ff', fill: '#3399ff80' },
   ],
   taxonLabelItalics: true,
   taxonLabelFontSize: 9,
@@ -291,6 +306,7 @@ brccharts.phen1(phen2)</code></pre>
           selector: '#chart1',
           data: data,
           taxa: ['Vanessa cardui', 'Aglais urticae'],
+          monthLineWidth: 1,
           metrics: [
             { prop: '2020', label: '2020', colour: 'red' },
             { prop: '2019', label: '2019', colour: '#4188A3' },
@@ -346,6 +362,7 @@ brccharts.phen1(phen2)</code></pre>
             data: data,
             taxa: ['Vanessa cardui'],
             metrics: metrics1,
+            bands: ['#ffffff', '#f8f8f8', '#ffffff', '#f8f8f8', '#ffffff', '#f8f8f8', '#ffffff', '#f8f8f8', '#ffffff', '#f8f8f8', '#ffffff', '#f8f8f8'],
             taxonLabelItalics: true,
             legendFontSize: 12,
             width: 900,
@@ -353,7 +370,7 @@ brccharts.phen1(phen2)</code></pre>
             expand: true,
             perRow: 1,
             axisLeft: 'tick',
-            axisBottom: 'tick',
+            axisBottom: 'tick'
         }
         chart2 = brccharts.phen1(phen)
       })
@@ -384,6 +401,9 @@ brccharts.phen1(phen2)</code></pre>
       }
       function button8Click() {
         chart2.setChartOpts({metrics: metrics3})
+      }
+      function spreadChanged() {
+        chart2.setChartOpts({spread: d3.select("#cbSpread").property("checked")})
       }
 
       var chart3, chart4
@@ -431,8 +451,8 @@ brccharts.phen1(phen2)</code></pre>
           data: data,
           taxa: [],
           metrics: [   
-            { prop: '2020', label: '2020', colour: '#4188A3' },
-            { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+            { prop: '2020', label: '2020', colour: '#ff9900', fill: '#ff990080' },
+            { prop: '2016-19', label: '2016-2019', colour: '#3399ff', fill: '#3399ff80' },
           ],
           taxonLabelItalics: true,
           taxonLabelFontSize: 9,
@@ -446,7 +466,7 @@ brccharts.phen1(phen2)</code></pre>
           axisBottom: 'tick',
           axisRight: 'on',
           axisTop: 'on',
-          ytype: 'proportion',
+          //ytype: 'proportion',
           interactivity: '',
           title: 'Phenology of butterflies recorded in the UK between 2016 and 2020',
           subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',

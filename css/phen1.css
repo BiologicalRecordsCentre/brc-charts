@@ -1,8 +1,8 @@
-.brc-chart-phen1 path {
+/* .brc-chart-phen1 path {
     fill: none;
-}
+} */
 
-.brc-chart-phen1 path.highlight {
+.brc-chart-phen1 path.highlight.phen-path-line {
     stroke: black;
     stroke-width: 3;
     opacity: 1;
