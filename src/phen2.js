@@ -42,6 +42,7 @@ import * as gen from './general'
  * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
  * <li> <b>label</b> - a label for this property.
  * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
+ * <li> <b>svg</b> - Optinal string defining an SVG path of an icon to use in place of a colour swatch in the legend.
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -131,7 +132,8 @@ export function phen2({
         id:  gen.safeId(m.label),
         prop: m.prop,
         label: m.label,
-        colour: m.colour
+        colour: m.colour,
+        svg: m.svg,
       }
     })
 
@@ -339,6 +341,15 @@ export function phen2({
 
     const metricsReversed = gen.cloneData(metricsPlus).reverse()
 
+    // Get the bbox of any SVG icons in metrics
+    metricsReversed.filter(m => m.svg).forEach(m => {
+      const path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden')
+      m.svgbbox = path.node().getBBox()
+      path.remove()
+    })
+
+    console.log('metricsReversed', metricsReversed)
+
     metricsReversed.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
@@ -357,20 +368,48 @@ export function phen2({
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
 
+    // Note that the stuff below uses the D3 Join general udpate pattern
+    // https://observablehq.com/@d3/selection-join
+
+    // Swatch
     const ls = svgChart.selectAll('.brc-legend-item-rect')
       .data(metricsReversed, m => m.id)
       .join(enter => {
           const rect = enter.append("rect")
-            .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
+            .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
             .attr('width', swatchSize)
             .attr('height', swatchSize/2)
+            .attr('display', m => m.svg ? 'none' : '')
           return rect
       })
       .attr('x', m => m.x)
-      //.attr('y', m => m.y)
       .attr('y', m => m.y + swatchSize/3)
       .attr('fill', m => m.colour)
 
+    // SVG icon
+    const li = svgChart.selectAll('.brc-legend-item-icon')
+      .data(metricsReversed, m => m.id)
+      .join(enter => enter
+        .append("path")
+        .attr("class", m=> `brc-legend-item brc-legend-item-icon brc-legend-item-${m.id}`)
+        .attr("d", m => m.svg)
+      )
+      // The transform has to come outside the enter selection so that it is executed whenever
+      // the code is called. Important because the bbox stuff only works if gui is visible and
+      // the first time this code is called, it may not be visible.
+      .attr('transform', m => {
+        if (m.svg) {
+          const iScale = swatchSize / m.svgbbox.width
+          const xAdj =  m.svgbbox.x * iScale
+          const yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale)/2
+          return `translate(${m.x - xAdj} ${m.y - yAdj}) scale(${iScale} ${iScale})`
+        } else {
+          return ''
+        }
+      })
+      .attr('fill', m => m.colour)
+
+    // Text
     const lt = svgChart.selectAll('.brc-legend-item-text')
       .data(metricsReversed, m => gen.safeId(m.label))
       .join(enter => {
@@ -385,6 +424,7 @@ export function phen2({
 
     addEventHandlers(ls, 'label')
     addEventHandlers(lt, 'label')
+    addEventHandlers(li, 'label')
 
     return swatchSize * swatchFact * (rows + 1)
   }

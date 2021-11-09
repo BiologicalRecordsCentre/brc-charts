@@ -18,3 +18,11 @@
 .brc-legend-item-rect.highlight {
     fill:black;
 }
+
+.brc-legend-item-icon.highlight {
+    fill:black;
+}
+
+#phen2-chart .mainChart {
+    overflow: visible;
+}

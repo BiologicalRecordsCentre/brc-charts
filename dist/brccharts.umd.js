@@ -1843,6 +1843,7 @@
    * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
    * <li> <b>label</b> - a label for this property.
    * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
+   * <li> <b>svg</b> - Optinal string defining an SVG path of an icon to use in place of a colour swatch in the legend.
    * </ul>
    * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
    * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -1951,7 +1952,8 @@
           id: safeId(m.label),
           prop: m.prop,
           label: m.label,
-          colour: m.colour
+          colour: m.colour,
+          svg: m.svg
         };
       });
 
@@ -2120,7 +2122,16 @@
 
       var rows = 0;
       var lineWidth = -swatchSize;
-      var metricsReversed = cloneData(metricsPlus).reverse();
+      var metricsReversed = cloneData(metricsPlus).reverse(); // Get the bbox of any SVG icons in metrics
+
+      metricsReversed.filter(function (m) {
+        return m.svg;
+      }).forEach(function (m) {
+        var path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden');
+        m.svgbbox = path.node().getBBox();
+        path.remove();
+      });
+      console.log('metricsReversed', metricsReversed);
       metricsReversed.forEach(function (m) {
         var tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label).style('font-size', legendFontSize);
@@ -2135,22 +2146,51 @@
         m.x = lineWidth + swatchSize + headPad;
         m.y = rows * swatchSize * swatchFact;
         lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
-      });
+      }); // Note that the stuff below uses the D3 Join general udpate pattern
+      // https://observablehq.com/@d3/selection-join
+      // Swatch
+
       var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
         return m.id;
       }).join(function (enter) {
         var rect = enter.append("rect").attr("class", function (m) {
           return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(m.id);
-        }).attr('width', swatchSize).attr('height', swatchSize / 2);
+        }).attr('width', swatchSize).attr('height', swatchSize / 2).attr('display', function (m) {
+          return m.svg ? 'none' : '';
+        });
         return rect;
       }).attr('x', function (m) {
         return m.x;
-      }) //.attr('y', m => m.y)
-      .attr('y', function (m) {
+      }).attr('y', function (m) {
         return m.y + swatchSize / 3;
       }).attr('fill', function (m) {
         return m.colour;
-      });
+      }); // SVG icon
+
+      var li = svgChart.selectAll('.brc-legend-item-icon').data(metricsReversed, function (m) {
+        return m.id;
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (m) {
+          return "brc-legend-item brc-legend-item-icon brc-legend-item-".concat(m.id);
+        }).attr("d", function (m) {
+          return m.svg;
+        });
+      }) // The transform has to come outside the enter selection so that it is executed whenever
+      // the code is called. Important because the bbox stuff only works if gui is visible and
+      // the first time this code is called, it may not be visible.
+      .attr('transform', function (m) {
+        if (m.svg) {
+          var iScale = swatchSize / m.svgbbox.width;
+          var xAdj = m.svgbbox.x * iScale;
+          var yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale) / 2;
+          return "translate(".concat(m.x - xAdj, " ").concat(m.y - yAdj, ") scale(").concat(iScale, " ").concat(iScale, ")");
+        } else {
+          return '';
+        }
+      }).attr('fill', function (m) {
+        return m.colour;
+      }); // Text
+
       var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
         return safeId(m.label);
       }).join(function (enter) {
@@ -2167,6 +2207,7 @@
       });
       addEventHandlers(ls, 'label');
       addEventHandlers(lt, 'label');
+      addEventHandlers(li, 'label');
       return swatchSize * swatchFact * (rows + 1);
     }
 
@@ -5030,7 +5071,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.5.0";
+  var version = "0.5.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
