@@ -390,7 +390,6 @@ export function altlat({
       .join(
         enter => {
           const swatches = enter.append("circle")
-            .attr("class", i => `brc-altlat-legend-item-circle brc-altlat brc-altlat-${i.radius}`)
             .attr('r', 0)
             .attr('cx', xOffset)
             .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
@@ -401,6 +400,8 @@ export function altlat({
       .attr("class", i => `brc-altlat-legend-item-circle brc-altlat brc-altlat-${i.radius}`)
     ls.transition(t)
       .attr('r', i => i.radiusTrans)
+      .attr('cx', xOffset)
+      .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
 
     const lt = gAltLat.selectAll('.brc-altlat-legend-item-text')
       .data(items, i => gen.safeId(i.text))
@@ -409,14 +410,18 @@ export function altlat({
           const text = enter.append("text")
             .text(i => i.text)
             .style('font-size', legendFontSize)
-        
+            .attr('x', xOffset + maxRadius * 1.3)
+            .attr('y', (i,j) => yOffset + maxRadius * 2.2 * j + maxRadius * 0.5)
+            .style('opacity', 0)
           return text
         },
         update => update
       )
       .attr("class", i => `brc-altlat-legend-item-text brc-altlat brc-altlat-${i.radius}`)
+    lt.transition(t)
       .attr('x', xOffset + maxRadius * 1.3)
       .attr('y', (i,j) => yOffset + maxRadius * 2.2 * j + maxRadius * 0.5)
+      .style('opacity', 1)
 
     addEventHandlers(ls)
     addEventHandlers(lt)
@@ -474,9 +479,19 @@ export function altlat({
   */
   function dataFromTetrads(tetrads) {
 
-    const altlatTetrads = `${constants.thisCdn}/altlat-tetrads.csv`
+    let altlatTetrads 
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+      altlatTetrads = `../dist/altlat-tetrads.csv`
+    } else {
+      altlatTetrads = `${constants.thisCdn}/altlat-tetrads.csv`
+    }
 
     return d3.csv(altlatTetrads).then(function(altlat){
+
+      // To maximise the performance of this function, both the altlat and tetrad arrays
+      // are sorted on tetrad name. Then when we loop the tetrad array, when a match is
+      // found and the tetrad processed, all the leading tetrads in the altlat list, up
+      // to and including the matched tetrad, are removed from the list.
 
       const altlatSorted = altlat.sort((a,b) => {
         if (a.tetrad < b.tetrad) {
@@ -503,6 +518,7 @@ export function altlat({
       console.time("process tetrads")
       tetradsSorted.forEach(t => {
         //const tmi = altlatSorted.findIndex(al => al.tetrad === t)
+        // A for loop is faster that the findIndex array method
         let tmi
         for (let i=0; i<altlatSorted.length; i++) {
           if (altlatSorted[i].tetrad === t) {
@@ -530,6 +546,8 @@ export function altlat({
             })
           }
         }
+        // Remove all tetrads from the altlat array up to and including the matched tetrad
+        // to speed up subsequent searches.
         altlatSorted.splice(0, tmi+1)
       })
       console.timeEnd("process tetrads")
@@ -565,6 +583,7 @@ export function altlat({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
@@ -599,6 +618,9 @@ export function altlat({
     }
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
+    }
+    if ('interactivity' in opts) {
+      interactivity = opts.interactivity
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))

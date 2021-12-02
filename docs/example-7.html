@@ -5,18 +5,42 @@
   <title>BRC Charts Library example 7</title>
 
   <style>
+    label {
+      margin-right: 1em;
+    }
   </style>
 </head>
 <body>
   <div class="content">
     <div id="chart1" style="margin-top: 1em"></div>
-    <button onclick="TetradDistribution()">Tetrad distribution</button><br/><br/>
+    <button onclick="TetradDistribution()">Tetrad distribution</button>
+    <br/><br/>
     <button onclick="Taxon('./data/2cd4p9h_xs8.csv')">Cranberry</button>
     <button onclick="Taxon('./data/2cd4p9h_cnp.csv')">Globeflower</button>
     <button onclick="Taxon('./data/2cd4p9h_cc0.csv')">Grass-of-Parnassus</button>
     <button onclick="Taxon('./data/2cd4p9h_26d.csv')">Cowberry</button>
     <button onclick="Taxon('./data/2cd4p9h_52h.csv')">Few-flowered Spike-rush</button>
     <button onclick="Taxon('./data/2cd4p9h_9c0.csv')">Common nettle</button>
+    <br/><br/>
+    <fieldset>
+      <legend>Granularity examples</legend>
+      <input type="radio" id="ranges1" name="ranges" value="ranges1" checked>
+      <label for="ranges1">After bryophytes atlas</label>
+      <input type="radio" id="ranges2" name="ranges" value="ranges2">
+      <label for="ranges2">Example 2</label>
+      <input type="radio" id="ranges3" name="ranges" value="ranges3">
+      <label for="ranges3">Example 3</label>
+    </fieldset>
+    <br/>
+    <fieldset>
+      <legend>Interactivity</legend>
+      <input type="radio" id="none" name="interactivity" value="none">
+      <label for="none">None</label>
+      <input type="radio" id="mouseclick" name="interactivity" value="mouseclick">
+      <label for="mouseclick">On mouse click</label>
+      <input type="radio" id="mousemove" name="interactivity" value="mousemove" checked>
+      <label for="mousemove">On mouse move</label>
+    </fieldset>
   </div>
 
   <!--Page CSS-->
@@ -30,6 +54,8 @@
   <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
 
   <script>
+    var showingTetrads = false
+
     var opts = {
         selector: '#chart1',
         data: [],
@@ -47,64 +73,58 @@
         interactivity: 'mousemove'
       }
     var altlatChart = brccharts.altlat(opts)
+
+    d3.selectAll('input[name="interactivity"]').on("change", function() {
+      altlatChart.setChartOpts({interactivity: d3.select('input[name="interactivity"]:checked').node().value})
+    })
+
+    d3.selectAll('input[name="ranges"]').on("change", function() {
+      if (!showingTetrads) {
+        altlatChart.setChartOpts({ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
+      }
+    })
+
+    var rangesTetradDensition = [
+      {
+        min: 1,
+        max: 25,
+        radius: 5,
+        legend: '1-25'
+      },
+      {
+        min: 26,
+        max: 100,
+        radius: 8,
+        legend: '26-100'
+      },
+      {
+        min: 101,
+        max: 500,
+        radius: 12,
+        legend: '101-500'
+      },
+      {
+        min: 501,
+        max: 1000,
+        radius: 16,
+        legend: '501-1000'
+      },
+      {
+        min: 1001,
+        max: 1500,
+        radius: 20,
+        legend: '1001-1500'
+      },
+      {
+        min: 1500,
+        max: 5000,
+        radius: 23,
+        legend: '>1500'
+      }
+    ]
  
-    function TetradDistribution() {
-
-      var ranges = [
-        {
-          min: 1,
-          max: 25,
-          radius: 5,
-          legend: '1-25'
-        },
-        {
-          min: 26,
-          max: 100,
-          radius: 8,
-          legend: '26-100'
-        },
-        {
-          min: 101,
-          max: 500,
-          radius: 12,
-          legend: '101-500'
-        },
-        {
-          min: 501,
-          max: 1000,
-          radius: 16,
-          legend: '501-1000'
-        },
-        {
-          min: 1001,
-          max: 1500,
-          radius: 20,
-          legend: '1001-1500'
-        },
-        {
-          min: 1500,
-          max: 5000,
-          radius: 23,
-          legend: '>1500'
-        }
-      ]
-
-      d3.json('../src/altlat.json').then(data => {
-        var dataTrans = data.map(g => {
-          return {
-            distance: g[0],
-            altitude: g[1],
-            metric: g[2],
-            taxon: 'dummy'
-          }
-        })
-        altlatChart.setChartOpts({data: dataTrans, ranges: ranges})
-      })
-    }
-
-    function Taxon(file) {
-
-      var ranges = [
+    var ranges = {
+      ranges1: [
         {
           min: 0,
           max: 0.99999,
@@ -118,20 +138,90 @@
           legend: '1-10%'
         },
         {
-          min: 11,
+          min: 10.00001,
           max: 100,
           radius: 20,
           legend: '11-100%'
         }
+      ],
+      ranges2: [
+        {
+          min: 0,
+          max: 0.99999,
+          radius: 8,
+          legend: '<1%'
+        },
+        {
+          min: 1,
+          max: 5,
+          radius: 12,
+          legend: '1-5%'
+        },
+        {
+          min: 5.00001,
+          max: 10,
+          radius: 16,
+          legend: '6-10%'
+        },
+        {
+          min: 10.00001,
+          max: 100,
+          radius: 20,
+          legend: '11-100%'
+        }
+      ],
+      ranges3: [
+        {
+          min: 0,
+          max: 0.99999,
+          radius: 8,
+          legend: '<1%'
+        },
+        {
+          min: 1,
+          max: 10,
+          radius: 12,
+          legend: '1-10%'
+        },
+        {
+          min: 10.00001,
+          max: 30,
+          radius: 16,
+          legend: '11-30%'
+        },
+        {
+          min: 30.00001,
+          max: 100,
+          radius: 20,
+          legend: '31-100%'
+        }
       ]
+    }
+    
+    function TetradDistribution() {
+      showingTetrads=true
+      d3.json('../src/altlat.json').then(data => {
+        var dataTrans = data.map(g => {
+          return {
+            distance: g[0],
+            altitude: g[1],
+            metric: g[2],
+            taxon: 'dummy'
+          }
+        })
+        altlatChart.setChartOpts({data: dataTrans, ranges: rangesTetradDensition})
+      })
+    }
 
+    function Taxon(file) {
+      showingTetrads=false
       d3.csv(file, function(row) {
         return row.tetrad
       }).then(function(data){
         //console.log("Make call")
         altlatChart.dataFromTetrads(data).then(function(data) {
           //console.log("Returned data", data)
-          altlatChart.setChartOpts({data: data, ranges: ranges})
+          altlatChart.setChartOpts({data: data, ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
         })
       })
     }

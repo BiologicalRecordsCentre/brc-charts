@@ -13254,6 +13254,10 @@
     };
   }
 
+  var constants = {
+    thisCdn: 'https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist'
+  };
+
   var backData = [
   	[
   		1200,
@@ -14430,9 +14434,7 @@
       var ls = gAltLat.selectAll('.brc-altlat-legend-item-circle').data(items, function (i) {
         return safeId(i.text);
       }).join(function (enter) {
-        var swatches = enter.append("circle").attr("class", function (i) {
-          return "brc-altlat-legend-item-circle brc-altlat brc-altlat-".concat(i.radius);
-        }).attr('r', 0).attr('cx', xOffset).attr('cy', function (i, j) {
+        var swatches = enter.append("circle").attr('r', 0).attr('cx', xOffset).attr('cy', function (i, j) {
           return yOffset + maxRadius * 2.2 * j;
         });
         return swatches;
@@ -14443,21 +14445,26 @@
       });
       ls.transition(t).attr('r', function (i) {
         return i.radiusTrans;
+      }).attr('cx', xOffset).attr('cy', function (i, j) {
+        return yOffset + maxRadius * 2.2 * j;
       });
       var lt = gAltLat.selectAll('.brc-altlat-legend-item-text').data(items, function (i) {
         return safeId(i.text);
       }).join(function (enter) {
         var text = enter.append("text").text(function (i) {
           return i.text;
-        }).style('font-size', legendFontSize);
+        }).style('font-size', legendFontSize).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
+          return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
+        }).style('opacity', 0);
         return text;
       }, function (update) {
         return update;
       }).attr("class", function (i) {
         return "brc-altlat-legend-item-text brc-altlat brc-altlat-".concat(i.radius);
-      }).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
-        return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
       });
+      lt.transition(t).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
+        return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
+      }).style('opacity', 1);
       addEventHandlers(ls);
       addEventHandlers(lt);
     }
@@ -14505,8 +14512,19 @@
 
 
     function dataFromTetrads(tetrads) {
-      var altlatTetrads = '/dist/altlat-tetrads.csv';
+      var altlatTetrads;
+
+      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        altlatTetrads = "../dist/altlat-tetrads.csv";
+      } else {
+        altlatTetrads = "".concat(constants.thisCdn, "/altlat-tetrads.csv");
+      }
+
       return d3.csv(altlatTetrads).then(function (altlat) {
+        // To maximise the performance of this function, both the altlat and tetrad arrays
+        // are sorted on tetrad name. Then when we loop the tetrad array, when a match is
+        // found and the tetrad processed, all the leading tetrads in the altlat list, up
+        // to and including the matched tetrad, are removed from the list.
         var altlatSorted = altlat.sort(function (a, b) {
           if (a.tetrad < b.tetrad) {
             return -1;
@@ -14533,6 +14551,7 @@
         console.time("process tetrads");
         tetradsSorted.forEach(function (t) {
           //const tmi = altlatSorted.findIndex(al => al.tetrad === t)
+          // A for loop is faster that the findIndex array method
           var tmi;
 
           for (var i = 0; i < altlatSorted.length; i++) {
@@ -14563,7 +14582,9 @@
                 tetrads: 1
               });
             }
-          }
+          } // Remove all tetrads from the altlat array up to and including the matched tetrad
+          // to speed up subsequent searches.
+
 
           altlatSorted.splice(0, tmi + 1);
         });
@@ -14582,7 +14603,7 @@
             taxon: 'dummy'
           };
         });
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
           resolve(pgroupss);
         });
       });
@@ -14598,6 +14619,7 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
@@ -14641,6 +14663,10 @@
 
       if ('footerAlign' in opts) {
         footerAlign = opts.footerAlign;
+      }
+
+      if ('interactivity' in opts) {
+        interactivity = opts.interactivity;
       }
 
       var textWidth = Number(svg.select('.mainChart').attr("width"));
@@ -14716,7 +14742,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.5.1";
+  var version = "0.6.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
