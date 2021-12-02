@@ -26,6 +26,7 @@
       is reasonable, exept for taxa with many tetrads - exemplified here by Common Nettle. For the BSBI atlas we may have to
       bulk preprocess the tetrad data for this chart to ensure good performance over all taxa.
     </p>
+    <img id="loading" src="./images/loading.gif" style="width: 50px; float: right; display: none"/>
     <button onclick="TetradDistribution()">Tetrad distribution</button>
     <br/><br/>
     <button onclick="Taxon('./data/2cd4p9h_xs8.csv', 'Cranberry')">Cranberry</button>
@@ -237,6 +238,7 @@
 
     function Taxon(file, taxon) {
       showingTetrads=false
+      d3.select('#loading').style('display', '')
       d3.csv(file, function(row) {
         return row.tetrad
       }).then(function(data){
@@ -244,6 +246,7 @@
         altlatChart.dataFromTetrads(data).then(function(data) {
           //console.log("Returned data", data)
           altlatChart.setChartOpts({title: taxon, data: data, ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
+          d3.select('#loading').style('display', 'none')
         })
       })
     }
