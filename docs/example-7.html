@@ -8,39 +8,60 @@
     label {
       margin-right: 1em;
     }
+    body {
+      font-size: 0.8em !important;
+    }
   </style>
 </head>
 <body>
   <div class="content">
     <div id="chart1" style="margin-top: 1em"></div>
+    <p>
+      Use the buttons below to display various example datasets. 
+      <i>Tetrad distribution</i> simply shows the distribution of tetrads in the altitude/latitudinal space
+      in GB. For the taxa, the raw data used are the tetrad datasets
+      supplied for the atlas, without preprocessing. (Irish and CI tetrads/records are not used.) 
+      The chart library provides a method to convert these data (by comparison
+      to a CSV which details the altitude of every GB tetrad) to the relatively small dataset required by the chart. Performance
+      is reasonable, exept for taxa with many tetrads - exemplified here by Common Nettle. For the BSBI atlas we may have to
+      bulk preprocess the tetrad data for this chart to ensure good performance over all taxa.
+    </p>
     <button onclick="TetradDistribution()">Tetrad distribution</button>
     <br/><br/>
-    <button onclick="Taxon('./data/2cd4p9h_xs8.csv')">Cranberry</button>
-    <button onclick="Taxon('./data/2cd4p9h_cnp.csv')">Globeflower</button>
-    <button onclick="Taxon('./data/2cd4p9h_cc0.csv')">Grass-of-Parnassus</button>
-    <button onclick="Taxon('./data/2cd4p9h_26d.csv')">Cowberry</button>
-    <button onclick="Taxon('./data/2cd4p9h_52h.csv')">Few-flowered Spike-rush</button>
-    <button onclick="Taxon('./data/2cd4p9h_9c0.csv')">Common nettle</button>
-    <br/><br/>
-    <fieldset>
-      <legend>Granularity examples</legend>
-      <input type="radio" id="ranges1" name="ranges" value="ranges1" checked>
-      <label for="ranges1">After bryophytes atlas</label>
-      <input type="radio" id="ranges2" name="ranges" value="ranges2">
-      <label for="ranges2">Example 2</label>
-      <input type="radio" id="ranges3" name="ranges" value="ranges3">
-      <label for="ranges3">Example 3</label>
-    </fieldset>
-    <br/>
-    <fieldset>
-      <legend>Interactivity</legend>
-      <input type="radio" id="none" name="interactivity" value="none">
-      <label for="none">None</label>
-      <input type="radio" id="mouseclick" name="interactivity" value="mouseclick">
-      <label for="mouseclick">On mouse click</label>
-      <input type="radio" id="mousemove" name="interactivity" value="mousemove" checked>
-      <label for="mousemove">On mouse move</label>
-    </fieldset>
+    <button onclick="Taxon('./data/2cd4p9h_xs8.csv', 'Cranberry')">Cranberry</button>
+    <button onclick="Taxon('./data/2cd4p9h_cnp.csv', 'Globeflower')">Globeflower</button>
+    <button onclick="Taxon('./data/2cd4p9h_cc0.csv', 'Grass-of-Parnassus')">Grass-of-Parnassus</button>
+    <button onclick="Taxon('./data/2cd4p9h_26d.csv', 'Cowberry')">Cowberry</button>
+    <button onclick="Taxon('./data/2cd4p9h_52h.csv', 'Few-flowered Spike-rush')">Few-flowered Spike-rush</button>
+    <button onclick="Taxon('./data/2cd4p9h_9c0.csv', 'Common nettle')">Common nettle</button>
+    <p>
+      <b>Ranges</b>. The default ranges for displaying the % of tetrads in which the taxon occurs
+      are the same as the Bryophyte atlas (&lt;1%, 1-10% and &gt;10%). But this is not hard-coded into the chart,
+      we can use any ranges we like, or potentially have a number of ranges which the user can choose between.
+      A few examples are included below. Change the radio selection to switch between them.
+    </p>
+    <input type="radio" id="ranges1" name="ranges" value="ranges1" checked>
+    <label for="ranges1">After bryophytes atlas</label>
+    <input type="radio" id="ranges2" name="ranges" value="ranges2">
+    <label for="ranges2">Example 2</label>
+    <input type="radio" id="ranges3" name="ranges" value="ranges3">
+    <label for="ranges3">Example 3</label>
+    <p>
+      <b>Interactivity</b>. The interactivity really brings something to this chart above a printed static 
+      version - allowing the user to view a single range in isolation which often better exposes any pattern.
+      As usual the interactivity can be switch off or activated either on mouse click or mouse movement - use the 
+      radios below to change the interactivity. It might be better, for this chart, to provide a different kind
+      of interactive behaviour whereby the user can toggle individual ranges on/off by clicking on them. That way
+      it would be possible, for example, to fade out a single range - e.g. the lowest range - leaving all the others
+      visible. You can't do that with the current interactive behaviou - only one range can be left 'highlighted' 
+      - fading out all the others.
+    </p>
+    <input type="radio" id="none" name="interactivity" value="none">
+    <label for="none">None</label>
+    <input type="radio" id="mouseclick" name="interactivity" value="mouseclick">
+    <label for="mouseclick">On mouse click</label>
+    <input type="radio" id="mousemove" name="interactivity" value="mousemove" checked>
+    <label for="mousemove">On mouse move</label>
   </div>
 
   <!--Page CSS-->
@@ -61,8 +82,8 @@
         data: [],
         ranges: [],
         taxa: ['dummy'],
-        width: 400,
-        height: 200,
+        width: 600,
+        height: 300,
         perRow: 1,
         expand: false,
         margin: {left: 45, right: 10, top: 20, bottom: 35},
@@ -70,7 +91,8 @@
         showLegend: true,
         axisLabelFontSize: 12,
         legendFontSize: 10,
-        interactivity: 'mousemove'
+        interactivity: 'mousemove',
+        title: 'No data displayed'
       }
     var altlatChart = brccharts.altlat(opts)
 
@@ -209,11 +231,11 @@
             taxon: 'dummy'
           }
         })
-        altlatChart.setChartOpts({data: dataTrans, ranges: rangesTetradDensition})
+        altlatChart.setChartOpts({title: 'Tetrad distribution', data: dataTrans, ranges: rangesTetradDensition})
       })
     }
 
-    function Taxon(file) {
+    function Taxon(file, taxon) {
       showingTetrads=false
       d3.csv(file, function(row) {
         return row.tetrad
@@ -221,7 +243,7 @@
         //console.log("Make call")
         altlatChart.dataFromTetrads(data).then(function(data) {
           //console.log("Returned data", data)
-          altlatChart.setChartOpts({data: data, ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
+          altlatChart.setChartOpts({title: taxon, data: data, ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
         })
       })
     }
