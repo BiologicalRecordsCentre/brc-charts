@@ -254,7 +254,125 @@
 
             
 
-            <td class="description last">An object indicating the margins to add around each sub-chart area.</td>
+            <td class="description last">An object indicating the margins to add around each sub-chart area.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>left</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Left margin in pixels. (Default - 35.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>right</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Right margin in pixels. (Default - 0.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>top</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Top margin in pixels. (Default - 20.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bottom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Bottom margin in pixels. (Default - 5.)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -629,6 +747,29 @@
 
         <tr>
             
+                <td class="name"><code>axisLabelFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) for axist labels. (Default - 10.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>showLegend</code></td>
             
 
@@ -761,6 +902,29 @@
             
 
             <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisLeftLabel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Value for labelling left axis. (Default - ''.)</td>
         </tr>
 
     
@@ -944,7 +1108,7 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.</ul></td>
+            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.</ul>Note that if a metric has no data for a given taxon, then the graphics representing it will bemarked with the CSS class 'phen-path-no-data'. You can use this to style as you see fit.</td>
         </tr>
 
     
@@ -1015,7 +1179,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line66">line 66</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -1125,7 +1289,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line819">line 819</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line850">line 850</a>
     </li></ul></dd>
     
 
@@ -1213,7 +1377,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line811">line 811</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line842">line 842</a>
     </li></ul></dd>
     
 
@@ -1675,7 +1839,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line715">line 715</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line746">line 746</a>
     </li></ul></dd>
     
 
@@ -1812,7 +1976,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line796">line 796</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line827">line 827</a>
     </li></ul></dd>
     
 
@@ -2021,7 +2185,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line827">line 827</a>
+        <a href="phen1.js.html">phen1.js</a>, <a href="phen1.js.html#line858">line 858</a>
     </li></ul></dd>
     
 
@@ -2051,13 +2215,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-altlat.html">altlat</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Nov 09 2021 15:15:05 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Thu Dec 02 2021 12:14:50 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

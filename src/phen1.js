@@ -10,6 +10,10 @@ import * as gen from './general'
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
  * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
+ * @param {number} opts.margin.left - Left margin in pixels. (Default - 35.)
+ * @param {number} opts.margin.right - Right margin in pixels. (Default - 0.)
+ * @param {number} opts.margin.top - Top margin in pixels. (Default - 20.)
+ * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 5.)
  * @param {number} opts.perRow - The number of sub-charts per row.
  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
@@ -26,12 +30,14 @@ import * as gen from './general'
  * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+ * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
  * @param {boolean} opts.showLegend - Whether or not to show the legend.
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
+ * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
  * @param {Array.<string>} opts.bands - An array of up to 12 colours (any standard colour notation), used to display bands for each month
  * as a background on the chart. (Default is an empty array.)
  * @param {Array.<string>} opts.lines - An array of up to 12 colours (any standard colour notation), used to display vertical lines to
@@ -51,6 +57,8 @@ import * as gen from './general'
  * <li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * <li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.
  * </ul>
+ * Note that if a metric has no data for a given taxon, then the graphics representing it will be
+ * marked with the CSS class 'phen-path-no-data'. You can use this to style as you see fit.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
@@ -84,6 +92,7 @@ export function phen1({
   subtitleFontSize = 16,
   footerFontSize = 10,
   legendFontSize = 16,
+  axisLabelFontSize = 10,
   showLegend = true,
   titleAlign = 'left',
   subtitleAlign = 'left',
@@ -95,6 +104,7 @@ export function phen1({
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
+  axisLeftLabel = '',
   headPad = 0,
   duration = 1000,
   interactivity = 'mousemove',
@@ -201,13 +211,20 @@ export function phen1({
     const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
     let lineData = [] 
     metricsPlus.forEach(m => {
-      const total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
-      const max = Math.max(...dataFiltered.map(d => d[m.prop]))
+      let total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
+      let max = Math.max(...dataFiltered.map(d => d[m.prop]))
       let maxProportion =  Math.max(...dataFiltered.map(d => d[m.prop]/total))
+
+      // If there are no data for this metric, then reset values
+      // The metric will also be marked as no data so that it can
+      // be styled as required.
+      if (isNaN(total)) {
+        total = max = maxProportion = 0
+      }
 
       let points = dataFiltered.map(d => {
         return {
-          n: d[m.prop],
+          n: total ? d[m.prop] : 0,
           week: d.week
         }
       })
@@ -235,7 +252,8 @@ export function phen1({
         maxProportion: maxProportion,
         total: total,
         points: points,
-        closure: closure
+        closure: closure,
+        hasData: total ? true : false
       })
     })
 
@@ -260,18 +278,23 @@ export function phen1({
     let maxMetricHeight = height
     let topProp = 0
     let spreadHeight = 0
+
+    console.log(lineData)
     if (spread && lineData.length > 1) {
       const maxProp = 1.8
-      let valMax
+      let valMax0, valMax1
       if (ytype === 'normalized') {
-        valMax = 1
+        valMax0 = lineData[0].hasData ? 1 : 0
+        valMax1 = lineData[1].hasData ? 1 : 0
       } else if(ytype === 'proportion') {
-        valMax = lineData[0].maxProportion
+        valMax0 = lineData[0].maxProportion
+        valMax1 = lineData[1].maxProportion
       } else {
-        valMax = lineData[0].max
+        valMax0 = lineData[0].max
+        valMax1 = lineData[1].max
       }
-      const h1Prop = maxProp * valMax / yMax
-      const h2Prop = maxProp * valMax / yMax
+      const h1Prop = maxProp * valMax0 / yMax
+      const h2Prop = maxProp * valMax1 / yMax
       topProp = Math.max(h1Prop, h2Prop-1)
       spreadHeight = height / (0.5 + lineData.length-1 + topProp)
       maxMetricHeight = maxProp * spreadHeight
@@ -434,6 +457,7 @@ export function phen1({
     addEventHandlers(egroups, 'id')
 
     const mgroups = agroups.merge(egroups)
+      .classed(`phen-path-no-data`, d => !d.hasData)
     
     mgroups.transition()
       .duration(duration)
@@ -551,9 +575,9 @@ export function phen1({
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
       const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${axisTopPadY})`
       const topXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
-      //const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
       const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
-      
+      const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
+     
       // Create axes and position within SVG
       if (yAxis) {
         const gYaxis = svgPhen1.append("g")
@@ -582,6 +606,13 @@ export function phen1({
           .call(rAxis)
         gRaxis.attr("transform", rightYaxisTrans)
       }
+
+      const tYaxisLeftLabel = svgPhen1.append("text")
+        .style("text-anchor", "middle")
+        .style('font-size', axisLabelFontSize)
+        .text(axisLeftLabel) 
+      tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans)
+
     } else if (taxa.length === 1) {
       // Update taxon label
       if (showTaxonLabel) {

@@ -1,6 +1,6 @@
 {
   "name": "brc-d3",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Javscript library for various D3 visualisations of biological record data.",
   "type": "module",
   "main": "dist/brccharts.umd.js",
@@ -21,6 +21,7 @@
     "url": "https://github.com/BiologicalRecordsCentre/brc-charts.git"
   },
   "dependencies": {
+    "brc-atlas-bigr": "^2.2.2",
     "d3": "^5.16.0"
   },
   "devDependencies": {

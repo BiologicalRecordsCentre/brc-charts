@@ -1,0 +1,7 @@
+.brc-chart-altlat .highlight {
+    opacity: 1;
+}
+
+.brc-chart-altlat .lowlight {
+    opacity: 0.1;
+}

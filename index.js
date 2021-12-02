@@ -5,6 +5,7 @@ import { accum } from './src/accum'
 import { links } from './src/links'
 import { trend } from './src/trend'
 import { yearly } from './src/yearly'
+import { altlat } from './src/altlat'
 import pkg from './package.json'
 
 // Output version from package json to console
@@ -18,5 +19,6 @@ export {
   accum,
   links,
   trend,
-  yearly
+  yearly,
+  altlat
 } 

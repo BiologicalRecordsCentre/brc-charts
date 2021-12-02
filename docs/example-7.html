@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library example 7</title>
+
+  <style>
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div id="chart1" style="margin-top: 1em"></div>
+    <button onclick="TetradDistribution()">Tetrad distribution</button><br/><br/>
+    <button onclick="Taxon('./data/2cd4p9h_xs8.csv')">Cranberry</button>
+    <button onclick="Taxon('./data/2cd4p9h_cnp.csv')">Globeflower</button>
+    <button onclick="Taxon('./data/2cd4p9h_cc0.csv')">Grass-of-Parnassus</button>
+    <button onclick="Taxon('./data/2cd4p9h_26d.csv')">Cowberry</button>
+    <button onclick="Taxon('./data/2cd4p9h_52h.csv')">Few-flowered Spike-rush</button>
+    <button onclick="Taxon('./data/2cd4p9h_9c0.csv')">Common nettle</button>
+  </div>
+
+  <!--Page CSS-->
+  <link rel="stylesheet" href="example.css" />
+
+  <!--D3 JS required exernal dependency of BRC Charts library-->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!--BRC Charts library JS and CSS-->
+  <script src="./../dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+
+  <script>
+    var opts = {
+        selector: '#chart1',
+        data: [],
+        ranges: [],
+        taxa: ['dummy'],
+        width: 400,
+        height: 200,
+        perRow: 1,
+        expand: false,
+        margin: {left: 45, right: 10, top: 20, bottom: 35},
+        showTaxonLabel: false,
+        showLegend: true,
+        axisLabelFontSize: 12,
+        legendFontSize: 10,
+        interactivity: 'mousemove'
+      }
+    var altlatChart = brccharts.altlat(opts)
+ 
+    function TetradDistribution() {
+
+      var ranges = [
+        {
+          min: 1,
+          max: 25,
+          radius: 5,
+          legend: '1-25'
+        },
+        {
+          min: 26,
+          max: 100,
+          radius: 8,
+          legend: '26-100'
+        },
+        {
+          min: 101,
+          max: 500,
+          radius: 12,
+          legend: '101-500'
+        },
+        {
+          min: 501,
+          max: 1000,
+          radius: 16,
+          legend: '501-1000'
+        },
+        {
+          min: 1001,
+          max: 1500,
+          radius: 20,
+          legend: '1001-1500'
+        },
+        {
+          min: 1500,
+          max: 5000,
+          radius: 23,
+          legend: '>1500'
+        }
+      ]
+
+      d3.json('../src/altlat.json').then(data => {
+        var dataTrans = data.map(g => {
+          return {
+            distance: g[0],
+            altitude: g[1],
+            metric: g[2],
+            taxon: 'dummy'
+          }
+        })
+        altlatChart.setChartOpts({data: dataTrans, ranges: ranges})
+      })
+    }
+
+    function Taxon(file) {
+
+      var ranges = [
+        {
+          min: 0,
+          max: 0.99999,
+          radius: 8,
+          legend: '<1%'
+        },
+        {
+          min: 1,
+          max: 10,
+          radius: 14,
+          legend: '1-10%'
+        },
+        {
+          min: 11,
+          max: 100,
+          radius: 20,
+          legend: '11-100%'
+        }
+      ]
+
+      d3.csv(file, function(row) {
+        return row.tetrad
+      }).then(function(data){
+        //console.log("Make call")
+        altlatChart.dataFromTetrads(data).then(function(data) {
+          //console.log("Returned data", data)
+          altlatChart.setChartOpts({data: data, ranges: ranges})
+        })
+      })
+    }
+
+  </script>
+</body>
+</html>
