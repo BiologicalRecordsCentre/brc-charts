@@ -35,6 +35,7 @@
     <button onclick="Taxon('./data/2cd4p9h_26d.csv', 'Cowberry')">Cowberry</button>
     <button onclick="Taxon('./data/2cd4p9h_52h.csv', 'Few-flowered Spike-rush')">Few-flowered Spike-rush</button>
     <button onclick="Taxon('./data/2cd4p9h_9c0.csv', 'Common nettle')">Common nettle</button>
+    <button onclick="Taxon('./data/2cd4p9h_p6b.csv', 'Sibbaldia')">Sibbaldia</button>
     <p>
       <b>Ranges</b>. The default ranges for displaying the % of tetrads in which the taxon occurs
       are the same as the Bryophyte atlas (&lt;1%, 1-10% and &gt;10%). But this is not hard-coded into the chart,
@@ -47,22 +48,25 @@
     <label for="ranges2">Example 2</label>
     <input type="radio" id="ranges3" name="ranges" value="ranges3">
     <label for="ranges3">Example 3</label>
+    <input type="radio" id="ranges4" name="ranges" value="ranges4">
+    <label for="ranges4">Example 4</label>
+    <input type="radio" id="ranges5" name="ranges" value="ranges5">
+    <label for="ranges5">Example 5</label>
     <p>
       <b>Interactivity</b>. The interactivity really brings something to this chart above a printed static 
       version - allowing the user to view a single range in isolation which often better exposes any pattern.
-      As usual the interactivity can be switch off or activated either on mouse click or mouse movement - use the 
-      radios below to change the interactivity. It might be better, for this chart, to provide a different kind
-      of interactive behaviour whereby the user can toggle individual ranges on/off by clicking on them. That way
-      it would be possible, for example, to fade out a single range - e.g. the lowest range - leaving all the others
-      visible. You can't do that with the current interactive behaviou - only one range can be left 'highlighted' 
-      - fading out all the others.
+      As usual the interactivity can be switch off or activated either on mouse click or mouse movement. I have
+      added a new interactivity behaviour - toggle - which allows individual ranges to be toggled on an off therefore
+      allow several ranges to be hidden and several shown (which is not possible with the other interactivity options).
     </p>
     <input type="radio" id="none" name="interactivity" value="none">
     <label for="none">None</label>
     <input type="radio" id="mouseclick" name="interactivity" value="mouseclick">
     <label for="mouseclick">On mouse click</label>
-    <input type="radio" id="mousemove" name="interactivity" value="mousemove" checked>
+    <input type="radio" id="mousemove" name="interactivity" value="mousemove">
     <label for="mousemove">On mouse move</label>
+    <input type="radio" id="toggle" name="interactivity" value="toggle" checked>
+    <label for="toggle">Toggle on click</label>
   </div>
 
   <!--Page CSS-->
@@ -92,7 +96,7 @@
         showLegend: true,
         axisLabelFontSize: 12,
         legendFontSize: 10,
-        interactivity: 'mousemove',
+        interactivity: 'toggle',
         title: 'No data displayed'
       }
     var altlatChart = brccharts.altlat(opts)
@@ -217,6 +221,76 @@
           max: 100,
           radius: 20,
           legend: '31-100%'
+        }
+      ],
+      ranges4: [
+        {
+          min: 0,
+          max: 0.99999,
+          radius: 8,
+          legend: '<1%'
+        },
+        {
+          min: 1,
+          max: 10,
+          radius: 11,
+          legend: '1-10%'
+        },
+        {
+          min: 10.00001,
+          max: 30,
+          radius: 14,
+          legend: '11-30%'
+        },
+        {
+          min: 30.00001,
+          max: 40,
+          radius: 17,
+          legend: '31-40%'
+        },
+        {
+          min: 40.00001,
+          max: 100,
+          radius: 20,
+          legend: '41-100%'
+        }
+      ],
+      ranges5: [
+        {
+          min: 0,
+          max: 0.99999,
+          radius: 8,
+          legend: '<1%'
+        },
+        {
+          min: 1,
+          max: 10,
+          radius: 11,
+          legend: '1-10%'
+        },
+        {
+          min: 10.00001,
+          max: 30,
+          radius: 14,
+          legend: '11-30%'
+        },
+        {
+          min: 30.00001,
+          max: 40,
+          radius: 16,
+          legend: '31-40%'
+        },
+        {
+          min: 40.00001,
+          max: 50,
+          radius: 18,
+          legend: '41-50%'
+        },
+        {
+          min: 50.00001,
+          max: 100,
+          radius: 20,
+          legend: '51-100%'
         }
       ]
     }

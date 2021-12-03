@@ -41,7 +41,7 @@ import backData from './altlat.json'
  * @param {string} opts.axisTop - If set to 'on' line is drawn without ticks. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
- * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
+ * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * For each taxon, there is assumed to be a single data item for each rounded distance/altitude combination for which there is a metric value.
@@ -451,6 +451,14 @@ export function altlat({
     }
   }
 
+  function highlightItemToggle(d) {
+    const rad = d.radius ? d.radius : d.metric ? getRadius(d.metric) : null
+    if (rad) {
+      const lowlighted = svgChart.selectAll(`.brc-altlat-${rad}`).classed('lowlight')
+      svgChart.selectAll(`.brc-altlat-${rad}`).classed('lowlight', !lowlighted)
+    }
+  }
+
   function addEventHandlers(sel) {
     sel
       .on("mouseover", function(d) {
@@ -466,6 +474,10 @@ export function altlat({
       .on("click", function(d) {
         if (interactivity === 'mouseclick') {
           highlightItem(d, true)
+          d3.event.stopPropagation()
+        }
+        if (interactivity === 'toggle') {
+          highlightItemToggle(d)
           d3.event.stopPropagation()
         }
       })
@@ -583,7 +595,7 @@ export function altlat({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
-  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
+  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
