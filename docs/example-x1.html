@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Yorkshire butterfly example</title>
+</head>
+<body>
+
+  <input type="checkbox" id="normalize" onchange="scalechange()">
+  <label for="scale">Normalize</label>
+  <br/><br/>
+  <b><i>Aglais urticae</i></b>
+  <div id="chart1"></div>
+  <br/>
+  <b><i>Ochlodes sylvanus</i></b>
+  <div id="chart2"></div>
+  <br/>
+  <b><i>Callophrys rubi</i></b>
+  <div id="chart3"></div>
+
+  <!--JS and CSS required for highlighting inline example code-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <!--D3 JS required exernal dependency of BRC Charts library-->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!--BRC Charts library JS and CSS-->
+  <script src="./../dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+  <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
+
+  <script>
+  
+    const charts = []
+    loadData('./data/yorkshire-aglais-urticae.csv', '#chart1')
+    loadData('./data/yorkshire-ochlodes-sylvanus.csv', '#chart2')
+    loadData('./data/yorkshire-callophrys-rubi.csv', '#chart3')
+
+    function loadData(file, id) {
+
+      // Convert the CSV file into an array of objects of the format required
+      // by the chart (https://biologicalrecordscentre.github.io/brc-charts/docs/api/module-phen1.html)
+      const data = []
+      for (let i=1; i<=53; i++) {
+        data.push({
+          week: i,
+          taxon: 'taxon',
+          '53.3': 0,'53.5': 0,'53.7': 0,'53.9': 0,'54.1': 0,'54.3': 0,'54.5': 0
+        })
+      }
+
+      d3.csv(file).then(recs => {
+        recs.forEach(r => {
+          const datum = data.find(d => d.week === Number(r.week))
+  
+          const lat = (Math.round(r.Latitude * 10)/10)
+          const lat0 = (Math.round((r.Latitude - 0.1) * 10)/10)
+          if (typeof(datum[String(lat)]) !== 'undefined') {
+            datum[String(lat)] += 1
+          } else {
+            datum[String(lat0)] += 1
+          }
+        })
+        display(data, id)
+      })
+    }
+
+    function display(data, id) {
+      var phen = {
+        selector: id,
+        data: data,
+        taxa: ['taxon'],
+        metrics: [
+          { prop: '53.3', label: '53.3', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '53.5', label: '53.5', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '53.7', label: '53.7', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '53.9', label: '53.9', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '54.1', label: '54.1', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '54.3', label: '54.3', colour: '#3399ff', fill: '#e6f2ff' },
+          { prop: '54.5', label: '54.5', colour: '#3399ff', fill: '#e6f2ff' }
+        ],
+        taxonLabelItalics: true,
+        width: 400,
+        height: 250,
+        perRow: 1,
+        spread: true,
+        //ytype: 'normalized',
+        showLegend: false,
+        showTaxonLabel: false
+      }
+      const chart = brccharts.phen1(phen)
+      charts.push(chart)
+    }
+
+    function scalechange() {
+      const normalize = d3.select('#normalize').property("checked")
+      charts.forEach(c => {
+        c.setChartOpts({ytype: normalize ? 'normalized' : 'count'})
+      })
+    }
+  </script>
+</body>
+</html>
