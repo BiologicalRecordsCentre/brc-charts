@@ -179,18 +179,21 @@
 
 <pre>
 <code class="javascript">function button1Click() {
-  chart.setChartData(items)
-  chart.setChartText({title: 'Original data'})
+  chart.setChartOpts({title: 'Original data', footer: '', data: items})
 }
 function button2Click() {
-  chart.setChartData(itemsDataReduced1)
-  chart.setChartText({title: 'Original data reduce 1'})
+  chart.setChartOpts({title: 'Original data reduce 1', footer: '', data: itemsDataReduced1})
 }
 function button3Click() {
-  chart.setChartData(itemsDataReduced2)
-  chart.setChartText({title: 'Original data reduce 2'})
+  chart.setChartOpts({title: 'Original data reduce 2', footer: '', data: itemsDataReduced2})
 }
-
+function button4Click() {
+  chart.setChartOpts({
+    title: 'Typology of walkers on the Pennine Way', 
+    footer: 'As classified by Simon Armitage in his book Walking Home - Travels with a Troubadour on The Pennine Way',
+    data: armitage
+  })
+}
 </code>
 </pre>
     
