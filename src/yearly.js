@@ -41,7 +41,7 @@ import * as gen from './general'
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
- * @param {string} opts.showCounts - The stype of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
+ * @param {string} opts.showCounts - The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
  * data for which graphics should be generated on the chart.

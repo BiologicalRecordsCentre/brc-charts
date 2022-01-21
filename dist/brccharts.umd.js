@@ -987,6 +987,583 @@
     };
   }
 
+  function addEventHandlers(sel, prop, interactivity, svgChart) {
+    sel.on("mouseover", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem(d[prop], true, svgChart);
+      }
+    }).on("mouseout", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem(d[prop], false, svgChart);
+      }
+    }).on("click", function (d) {
+      if (interactivity === 'mouseclick') {
+        highlightItem(d[prop], true, svgChart);
+        d3.event.stopPropagation();
+      }
+    });
+  }
+  function highlightItem(id, highlight, svgChart) {
+    svgChart.selectAll('.phen-metric path').classed('lowlight', highlight);
+    svgChart.selectAll(".phen-metric-".concat(safeId(id), " path")).classed('lowlight', false);
+    svgChart.selectAll(".phen-metric path").classed('highlight', false);
+
+    if (safeId(id)) {
+      svgChart.selectAll(".phen-metric-".concat(safeId(id), " path")).classed('highlight', highlight);
+    }
+
+    svgChart.selectAll('.phen-metric rect').classed('lowlight', highlight);
+    svgChart.selectAll(".phen-metric-".concat(safeId(id), " rect")).classed('lowlight', false);
+    svgChart.selectAll(".phen-metric rect").classed('highlight', false);
+
+    if (safeId(id)) {
+      svgChart.selectAll(".phen-metric-".concat(safeId(id), " rect")).classed('highlight', highlight);
+    }
+
+    svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
+
+    if (id) {
+      svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
+    }
+
+    if (id) {
+      svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
+    } else {
+      svgChart.selectAll(".brc-legend-item").classed('highlight', false);
+    }
+  }
+
+  function makePhen(taxon, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity) {
+    // Pre-process data.
+    // Filter to named taxon and sort in week order
+    // Add max value to each.
+    var dataFiltered = data.filter(function (d) {
+      return d.taxon === taxon;
+    }).sort(function (a, b) {
+      return a.week > b.week ? 1 : -1;
+    });
+    var metricData = [];
+    metrics.forEach(function (m) {
+      var total = dataFiltered.reduce(function (a, d) {
+        return a + d[m.prop];
+      }, 0);
+      var max = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })));
+      var maxProportion = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop] / total;
+      }))); // If there are no data for this metric, then reset values
+      // The metric will also be marked as no data so that it can
+      // be styled as required.
+
+      if (isNaN(total)) {
+        total = max = maxProportion = 0;
+      }
+
+      var points = dataFiltered.map(function (d) {
+        return {
+          n: total ? d[m.prop] : 0,
+          week: d.week,
+          id: "".concat(safeId(m.label), "-").concat(d.week)
+        };
+      }); // The closure array is a small array of points which can
+      // be used, in conjunction with the main points, to make
+      // a properly enclosed polygon that drops open sides down
+      // to the x axis.
+
+      var closure = [];
+
+      if (points.length) {
+        if (points[points.length - 1].n > 0) {
+          closure.push({
+            n: 0,
+            week: points[points.length - 1].week
+          });
+        }
+
+        if (points[0].n > 0) {
+          closure.push({
+            n: 0,
+            week: points[0].week
+          });
+        }
+      }
+
+      metricData.push({
+        id: safeId(m.label),
+        colour: m.colour,
+        strokeWidth: m.strokeWidth,
+        fill: m.fill ? m.fill : 'none',
+        max: max,
+        maxProportion: maxProportion,
+        total: total,
+        points: points,
+        closure: closure,
+        hasData: total ? true : false
+      });
+    }); // Set the maximum value for the y axis
+
+    var yMax;
+
+    if (ytype === 'normalized') {
+      yMax = 1;
+    } else if (ytype === 'proportion') {
+      yMax = Math.max.apply(Math, _toConsumableArray(metricData.map(function (d) {
+        if (isNaN(d.maxProportion)) {
+          return 0;
+        } else {
+          return d.maxProportion;
+        }
+      })));
+    } else {
+      yMax = Math.max.apply(Math, _toConsumableArray(metricData.map(function (d) {
+        return d.max;
+      })));
+      if (yMax < 5 && !spread) yMax = 5;
+    } // Calculate spread metrics
+
+
+    var maxMetricHeight = height;
+    var topProp = 0;
+    var spreadHeight = 0;
+
+    if (spread && metricData.length > 1) {
+      var maxProp = 1.8;
+      var valMax0, valMax1;
+
+      if (ytype === 'normalized') {
+        valMax0 = metricData[0].hasData ? 1 : 0;
+        valMax1 = metricData[1].hasData ? 1 : 0;
+      } else if (ytype === 'proportion') {
+        valMax0 = metricData[0].maxProportion;
+        valMax1 = metricData[1].maxProportion;
+      } else {
+        valMax0 = metricData[0].max;
+        valMax1 = metricData[1].max;
+      }
+
+      var h1Prop = maxProp * valMax0 / yMax;
+      var h2Prop = maxProp * valMax1 / yMax;
+      topProp = Math.max(h1Prop, h2Prop - 1);
+      spreadHeight = height / (0.5 + metricData.length - 1 + topProp);
+      maxMetricHeight = maxProp * spreadHeight;
+    } // Value scales
+
+
+    var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0]); // jScale is for bands and lines
+
+    var jScale = d3.scaleLinear().domain([1, 365]).range([0, width]); // sScale is for the y axis for spread displays
+
+    var ysDomain = [''];
+    var ysRange = [0];
+
+    if (metrics.length) {
+      for (var i = 0; i < metrics.length; i++) {
+        ysDomain.push(metrics[i].label);
+        ysRange.push(topProp * spreadHeight + i * spreadHeight);
+      }
+
+      ysDomain.push('');
+      ysRange.push(height);
+    } else {
+      ysRange.push(height);
+    }
+
+    var sScale = d3.scaleOrdinal().domain(ysDomain).range(ysRange); // Top axis
+
+    var tAxis;
+
+    if (axisTop === 'on') {
+      tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
+    } // X (bottom) axis
+
+
+    var xAxis;
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      xAxis = xAxisMonth(width, axisBottom === 'tick');
+    } // Right axis
+
+
+    var rAxis;
+
+    if (axisRight === 'on') {
+      rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
+    } // Y (left) axis
+
+
+    var yAxis;
+
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      if (spread) {
+        yAxis = d3.axisLeft().scale(sScale).ticks(5);
+      } else {
+        yAxis = d3.axisLeft().scale(yScale).ticks(5);
+
+        if (axisLeft !== 'tick') {
+          yAxis.tickValues([]).tickSizeOuter(0);
+        } else if (ytype === 'count') {
+          yAxis.tickFormat(d3.format("d"));
+        }
+      }
+    } // Main path generators
+
+
+    var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+      return xScale(d.week);
+    }).y(function (d) {
+      return height - maxMetricHeight + yScale(d.n);
+    }); // Closure path generator - no interpolation
+
+    var close = d3.line().x(function (d) {
+      return xScale(d.week);
+    }).y(function (d) {
+      return height - maxMetricHeight + yScale(d.n);
+    }); // Create or get the relevant chart svg
+
+    var init, svgPhen1, gPhen1;
+
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen1').size() === 1) {
+      svgPhen1 = svgChart.select('.brc-chart-phen1');
+      gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
+      init = false;
+    } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+      svgPhen1 = svgChart.select("#".concat(safeId(taxon)));
+      gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
+      init = false;
+    } else {
+      svgPhen1 = svgChart.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon)).style('overflow', 'visible');
+      gPhen1 = svgPhen1.append('g').classed('brc-chart-phen1-g', true);
+      init = true;
+    } // Vertical bands and lines
+
+
+    var month2day = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 364];
+    gPhen1.selectAll(".brc-chart-month-band").data(bands, function (b, i) {
+      return "month-band-".concat(i);
+    }).enter().append("rect").attr("class", "brc-chart-month-band").style("fill", function (d, i) {
+      return bands[i];
+    }).attr("y", 0).attr("x", function (d, i) {
+      return jScale(month2day[i]) + 1;
+    }).attr("height", height).attr("width", function (d, i) {
+      return jScale(month2day[i + 1]) - jScale(month2day[i] - 1);
+    });
+    gPhen1.selectAll(".brc-chart-month-line").data(lines, function (b, i) {
+      return "month-line-".concat(i);
+    }).enter().append("rect").attr("class", "brc-chart-month-line").style("fill", function (d, i) {
+      return lines[i];
+    }).attr("y", 0).attr("x", function (d, i) {
+      return jScale(month2day[i + 1]) - monthLineWidth / 2;
+    }).attr("height", height).attr("width", monthLineWidth); // Create/update the graphics for the metrics 
+
+    var agroups = gPhen1.selectAll("g").data(metricData, function (d) {
+      return d.id;
+    });
+    var egroups = agroups.enter().append("g").attr("opacity", 0).attr("class", function (d) {
+      return "phen-metric-".concat(d.id, " phen-metric");
+    });
+    addEventHandlers(egroups, 'id', interactivity, svgChart);
+    var mgroups = agroups.merge(egroups).classed("phen-metric-no-data", function (d) {
+      return !d.hasData;
+    });
+    mgroups.transition().duration(duration).attr('opacity', 1).attr("transform", function (d, i) {
+      return "translate(0,-".concat((metricData.length - 1 - i + 0.5) * spreadHeight, ")");
+    });
+    var xgroups = agroups.exit();
+
+    if (style === 'bars') {
+      var t = svgChart.transition().duration(duration);
+      mgroups.each(function (d) {
+        var colour = d.colour;
+        var max = d.max;
+        var total = d.total;
+        gPhen1.select(".phen-metric-".concat(d.id)).selectAll('rect').data(d.points, function (d) {
+          return d.id;
+        }).join(function (enter) {
+          return enter.append("rect").attr("fill", colour).attr("x", function (d) {
+            return xScale(d.week);
+          }).attr("y", height).attr("width", xScale(2) - xScale(1) - 1).attr("height", 0).call(function (update) {
+            return update.transition(t).attr("y", function (d) {
+              return getBarY(d, max, total);
+            }).attr("height", function (d) {
+              return getBarHeight(d, max, total);
+            });
+          });
+        }, function (update) {
+          return update.call(function (update) {
+            return update.transition(t).attr("fill", colour).attr("y", function (d) {
+              return getBarY(d, max, total);
+            }).attr("height", function (d) {
+              return getBarHeight(d, max, total);
+            });
+          });
+        }, function (exit) {
+          return exit.call(function (exit) {
+            return exit.transition(t).attr("height", 0).remove();
+          });
+        });
+      });
+    } else {
+      // style ==='line'
+      egroups.append("path").attr("class", 'phen-path-fill').attr("d", function (d) {
+        return flatPath(d, true);
+      });
+      egroups.append("path").attr("class", 'phen-path-line').attr("d", function (d) {
+        return flatPath(d, false);
+      });
+    } // Each phenology line consists of both a line and polygon. This
+    // is necessary because if we relied on a single polygon, it is
+    // not always possible to confine the line graphics to the part
+    // of the polygon which represents the phenology line.
+    // Important for correct data binding to use select - NOT selectAll
+    // in sub-selections (https://bost.ocks.org/mike/selection/#non-grouping)
+
+
+    mgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
+      return getPath(d, false);
+    }).attr("stroke", function (d) {
+      return d.colour;
+    }).attr("stroke-width", function (d) {
+      return d.strokeWidth;
+    }).attr("fill", "none");
+    mgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
+      return getPath(d, true);
+    }).attr("fill", function (d) {
+      return d.fill;
+    });
+    xgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
+      return flatPath(d, false);
+    });
+    xgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
+      return flatPath(d, true);
+    });
+    xgroups.transition().duration(duration).attr("opacity", 0).remove(); // Path and bar generation helper functions
+
+    function flatPath(d, poly) {
+      var flat = line(d.points.map(function (p) {
+        return {
+          n: 0,
+          week: p.week
+        };
+      }));
+
+      if (d.closure.length && poly) {
+        flat = "".concat(flat, "L").concat(close(d.closure).substring(1));
+      }
+
+      return flat;
+    }
+
+    function getPath(d, poly) {
+      var lPath;
+
+      if (ytype === 'normalized') {
+        lPath = line(d.points.map(function (p) {
+          return {
+            n: d.max ? p.n / d.max : 0,
+            week: p.week
+          };
+        }));
+      } else if (ytype === 'proportion') {
+        lPath = line(d.points.map(function (p) {
+          return {
+            n: d.total === 0 ? 0 : p.n / d.total,
+            week: p.week
+          };
+        }));
+      } else {
+        lPath = line(d.points);
+      } // If this is for a poly, close the path if required
+
+
+      if (d.closure.length && poly) {
+        lPath = "".concat(lPath, "L").concat(close(d.closure).substring(1));
+      }
+
+      return lPath;
+    }
+
+    function getBarHeight(d, max, total) {
+      var v;
+
+      if (ytype === 'normalized') {
+        v = max ? d.n / max : 0;
+      } else if (ytype === 'proportion') {
+        v = total === 0 ? 0 : d.n / total;
+      } else {
+        v = d.n;
+      }
+
+      return maxMetricHeight - yScale(v);
+    }
+
+    function getBarY(d, max, total) {
+      var barY;
+
+      if (ytype === 'normalized') {
+        barY = yScale(max ? d.n / max : 0);
+      } else if (ytype === 'proportion') {
+        barY = yScale(total === 0 ? 0 : d.n / total);
+      } else {
+        barY = yScale(d.n);
+      }
+
+      return barY + (height - maxMetricHeight);
+    }
+
+    if (init) {
+      // Constants for positioning
+      var axisLeftPadX = margin.left ? margin.left : 0;
+      var axisRightPadX = margin.right ? margin.right : 0;
+      var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+      var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
+
+      if (showTaxonLabel) {
+        var taxonLabel = svgPhen1.append('text').classed('brc-chart-phen1-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+        var labelHeight = taxonLabel.node().getBBox().height;
+        taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
+      } // Size SVG
+
+
+      svgPhen1.attr('width', width + axisLeftPadX + axisRightPadX) //.attr('height', height + axisBottomPadY + axisTopPadY)
+      .attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
+
+      gPhen1.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
+
+      var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+      var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")");
+      var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)"); // Create axes and position within SVG
+
+      if (yAxis) {
+        var gYaxis = svgPhen1.append("g").attr("class", "y-axis");
+        gYaxis.attr("transform", leftYaxisTrans);
+      }
+
+      if (xAxis) {
+        var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
+        gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
+        gXaxis.attr("transform", bottomXaxisTrans);
+      }
+
+      if (tAxis) {
+        var gTaxis = svgPhen1.append("g").call(tAxis);
+        gTaxis.attr("transform", topXaxisTrans);
+      }
+
+      if (rAxis) {
+        var gRaxis = svgPhen1.append("g").call(rAxis);
+        gRaxis.attr("transform", rightYaxisTrans);
+      }
+
+      var tYaxisLeftLabel = svgPhen1.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+      tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+    } else if (taxa.length === 1) {
+      // Update taxon label
+      if (showTaxonLabel) {
+        svgPhen1.select('.brc-chart-phen1-label').text(taxon);
+      }
+    }
+
+    if (yAxis) {
+      svgPhen1.select(".y-axis").transition().duration(duration).call(yAxis);
+    }
+
+    return svgPhen1;
+  }
+
+  function preProcessMetrics(metrics) {
+    // Look for 'fading' colour in taxa and colour appropriately 
+    // in fading shades of grey.
+    var iFading = 0;
+    var metricsPlus = metrics.map(function (m) {
+      var iFade, strokeWidth;
+
+      if (m.colour === 'fading') {
+        iFade = ++iFading;
+        strokeWidth = 1;
+      } else {
+        strokeWidth = 2;
+      }
+
+      return {
+        prop: m.prop,
+        label: m.label,
+        colour: m.colour,
+        fill: m.fill,
+        fading: iFade,
+        strokeWidth: strokeWidth
+      };
+    }).reverse();
+    var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+    metricsPlus.forEach(function (m) {
+      if (m.fading) {
+        m.colour = grey(m.fading);
+      }
+    });
+    return metricsPlus;
+  }
+
+  function makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) {
+    var swatchSize = 20;
+    var swatchFact = 1.3; // Loop through all the legend elements and work out their
+    // positions based on swatch size, item lable text size and
+    // legend width.
+
+    var metricsReversed = cloneData(metrics).reverse();
+    var rows = 0;
+    var lineWidth = -swatchSize;
+    metricsReversed.forEach(function (m) {
+      var tmpText = svgChart.append('text') //.style('display', 'none')
+      .text(m.label).style('font-size', legendFontSize);
+      var widthText = tmpText.node().getBBox().width;
+      tmpText.remove();
+
+      if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+        ++rows;
+        lineWidth = -swatchSize;
+      }
+
+      m.x = lineWidth + swatchSize + headPad;
+      m.y = rows * swatchSize * swatchFact;
+      lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+    });
+    var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var rect = enter.append("rect").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
+      }).attr('width', swatchSize).attr('height', 2);
+      return rect;
+    }).attr('x', function (m) {
+      return m.x;
+    }).attr('y', function (m) {
+      return m.y + swatchSize / 2;
+    }).attr('fill', function (m) {
+      return m.colour;
+    });
+    var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var text = enter.append("text").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(safeId(m.label));
+      }).text(function (m) {
+        return m.label;
+      }).style('font-size', legendFontSize);
+      return text;
+    }).attr('x', function (m) {
+      return m.x + swatchSize * swatchFact;
+    }).attr('y', function (m) {
+      return m.y + legendFontSize * 1;
+    });
+    addEventHandlers(ls, 'label', interactivity, svgChart);
+    addEventHandlers(lt, 'label', interactivity, svgChart);
+    return swatchSize * swatchFact * (rows + 1);
+  }
+
+  /** @module phen1 */
   /** 
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
@@ -1002,6 +1579,7 @@
    * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
+   * @param {string} opts.style - Indicates the type of graphics to be used for the chart. Can be 'bars' or 'lines'. (Default - 'lines'.)
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
@@ -1086,6 +1664,8 @@
         expand = _ref$expand === void 0 ? false : _ref$expand,
         _ref$spread = _ref.spread,
         spread = _ref$spread === void 0 ? false : _ref$spread,
+        _ref$style = _ref.style,
+        style = _ref$style === void 0 ? 'lines' : _ref$style,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
@@ -1139,17 +1719,16 @@
         _ref$metrics = _ref.metrics,
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
-    var metricsPlus;
+    metrics = preProcessMetrics(metrics);
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(null, false);
+        highlightItem(null, false, svgChart);
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
-    preProcessMetrics();
-    makeChart(); // Texts must come after chartbecause 
+    makeChart(); // Texts must come after chart because 
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
@@ -1169,14 +1748,15 @@
 
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
-        return makePhen(t);
+        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
       var legendHeight = 0;
 
       if (showLegend) {
-        legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad;
+        var legendWidth = perRow * (subChartWidth + subChartPad) - headPad;
+        legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) + subChartPad;
       }
 
       svgsTaxa.forEach(function (svgTaxon, i) {
@@ -1187,528 +1767,6 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
-    }
-
-    function preProcessMetrics() {
-      // Look for 'fading' colour in taxa and colour appropriately 
-      // in fading shades of grey.
-      var iFading = 0;
-      metricsPlus = metrics.map(function (m) {
-        var iFade, strokeWidth;
-
-        if (m.colour === 'fading') {
-          iFade = ++iFading;
-          strokeWidth = 1;
-        } else {
-          strokeWidth = 2;
-        }
-
-        return {
-          prop: m.prop,
-          label: m.label,
-          colour: m.colour,
-          fill: m.fill,
-          fading: iFade,
-          strokeWidth: strokeWidth
-        };
-      }).reverse();
-      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
-      metricsPlus.forEach(function (m) {
-        if (m.fading) {
-          m.colour = grey(m.fading);
-        }
-      });
-    }
-
-    function makePhen(taxon) {
-      // Pre-process data.
-      // Filter to named taxon and sort in week order
-      // Add max value to each.
-      var dataFiltered = data.filter(function (d) {
-        return d.taxon === taxon;
-      }).sort(function (a, b) {
-        return a.week > b.week ? 1 : -1;
-      });
-      var lineData = [];
-      metricsPlus.forEach(function (m) {
-        var total = dataFiltered.reduce(function (a, d) {
-          return a + d[m.prop];
-        }, 0);
-        var max = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-          return d[m.prop];
-        })));
-        var maxProportion = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-          return d[m.prop] / total;
-        }))); // If there are no data for this metric, then reset values
-        // The metric will also be marked as no data so that it can
-        // be styled as required.
-
-        if (isNaN(total)) {
-          total = max = maxProportion = 0;
-        }
-
-        var points = dataFiltered.map(function (d) {
-          return {
-            n: total ? d[m.prop] : 0,
-            week: d.week
-          };
-        }); // The closure array is a small array of points which can
-        // be used, in conjunction with the main points, to make
-        // a properly enclosed polygon that drops open sides down
-        // to the x axis.
-
-        var closure = [];
-
-        if (points.length) {
-          if (points[points.length - 1].n > 0) {
-            closure.push({
-              n: 0,
-              week: points[points.length - 1].week
-            });
-          }
-
-          if (points[0].n > 0) {
-            closure.push({
-              n: 0,
-              week: points[0].week
-            });
-          }
-        }
-
-        lineData.push({
-          id: safeId(m.label),
-          colour: m.colour,
-          strokeWidth: m.strokeWidth,
-          fill: m.fill ? m.fill : 'none',
-          max: max,
-          maxProportion: maxProportion,
-          total: total,
-          points: points,
-          closure: closure,
-          hasData: total ? true : false
-        });
-      }); // Set the maximum value for the y axis
-
-      var yMax;
-
-      if (ytype === 'normalized') {
-        yMax = 1;
-      } else if (ytype === 'proportion') {
-        yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
-          if (isNaN(d.maxProportion)) {
-            return 0;
-          } else {
-            return d.maxProportion;
-          }
-        })));
-      } else {
-        yMax = Math.max.apply(Math, _toConsumableArray(lineData.map(function (d) {
-          return d.max;
-        })));
-        if (yMax < 5 && !spread) yMax = 5;
-      } // Calculate spread metrics
-
-
-      var maxMetricHeight = height;
-      var topProp = 0;
-      var spreadHeight = 0;
-      console.log(lineData);
-
-      if (spread && lineData.length > 1) {
-        var maxProp = 1.8;
-        var valMax0, valMax1;
-
-        if (ytype === 'normalized') {
-          valMax0 = lineData[0].hasData ? 1 : 0;
-          valMax1 = lineData[1].hasData ? 1 : 0;
-        } else if (ytype === 'proportion') {
-          valMax0 = lineData[0].maxProportion;
-          valMax1 = lineData[1].maxProportion;
-        } else {
-          valMax0 = lineData[0].max;
-          valMax1 = lineData[1].max;
-        }
-
-        var h1Prop = maxProp * valMax0 / yMax;
-        var h2Prop = maxProp * valMax1 / yMax;
-        topProp = Math.max(h1Prop, h2Prop - 1);
-        spreadHeight = height / (0.5 + lineData.length - 1 + topProp);
-        maxMetricHeight = maxProp * spreadHeight;
-      } // Value scales
-
-
-      var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0]); // jScale is for bands and lines
-
-      var jScale = d3.scaleLinear().domain([1, 365]).range([0, width]); // sScale is for spread displays
-
-      var ysDomain = [''];
-      var ysRange = [0];
-
-      if (metricsPlus.length) {
-        for (var i = 0; i < metricsPlus.length; i++) {
-          ysDomain.push(metricsPlus[i].label);
-          ysRange.push(topProp * spreadHeight + i * spreadHeight);
-        }
-
-        ysDomain.push('');
-        ysRange.push(height);
-      } else {
-        ysRange.push(height);
-      }
-
-      var sScale = d3.scaleOrdinal().domain(ysDomain).range(ysRange); // Top axis
-
-      var tAxis;
-
-      if (axisTop === 'on') {
-        tAxis = d3.axisTop().scale(xScale).tickValues([]).tickSizeOuter(0);
-      } // X (bottom) axis
-
-
-      var xAxis;
-
-      if (axisBottom === 'on' || axisBottom === 'tick') {
-        xAxis = xAxisMonth(width, axisBottom === 'tick');
-      } // Right axis
-
-
-      var rAxis;
-
-      if (axisRight === 'on') {
-        rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
-      } // Y (left) axis
-
-
-      var yAxis;
-
-      if (axisLeft === 'on' || axisLeft === 'tick') {
-        if (spread) {
-          yAxis = d3.axisLeft().scale(sScale).ticks(5);
-        } else {
-          yAxis = d3.axisLeft().scale(yScale).ticks(5);
-
-          if (axisLeft !== 'tick') {
-            yAxis.tickValues([]).tickSizeOuter(0);
-          } else if (ytype === 'count') {
-            yAxis.tickFormat(d3.format("d"));
-          }
-        }
-      } // Main path generators
-
-
-      var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-        return xScale(d.week);
-      }).y(function (d) {
-        return height - maxMetricHeight + yScale(d.n);
-      }); // Closure path generator - no interpolation
-
-      var close = d3.line().x(function (d) {
-        return xScale(d.week);
-      }).y(function (d) {
-        return height - maxMetricHeight + yScale(d.n);
-      }); // Create or get the relevant chart svg
-
-      var init, svgPhen1, gPhen1;
-
-      if (taxa.length === 1 && svgChart.selectAll('.brc-chart-phen1').size() === 1) {
-        svgPhen1 = svgChart.select('.brc-chart-phen1');
-        gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
-        init = false;
-      } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
-        svgPhen1 = svgChart.select("#".concat(safeId(taxon)));
-        gPhen1 = svgPhen1.select('.brc-chart-phen1-g');
-        init = false;
-      } else {
-        svgPhen1 = svgChart.append('svg').classed('brc-chart-phen1', true).attr('id', safeId(taxon)).style('overflow', 'visible');
-        gPhen1 = svgPhen1.append('g').classed('brc-chart-phen1-g', true);
-        init = true;
-      } // Vertical bands and lines
-
-
-      var month2day = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 364];
-      gPhen1.selectAll(".brc-chart-month-band").data(bands, function (b, i) {
-        return "month-band-".concat(i);
-      }).enter().append("rect").attr("class", "brc-chart-month-band").style("fill", function (d, i) {
-        return bands[i];
-      }).attr("y", 0).attr("x", function (d, i) {
-        return jScale(month2day[i]) + 1;
-      }).attr("height", height).attr("width", function (d, i) {
-        return jScale(month2day[i + 1]) - jScale(month2day[i] - 1);
-      });
-      gPhen1.selectAll(".brc-chart-month-line").data(lines, function (b, i) {
-        return "month-line-".concat(i);
-      }).enter().append("rect").attr("class", "brc-chart-month-line").style("fill", function (d, i) {
-        return lines[i];
-      }).attr("y", 0).attr("x", function (d, i) {
-        return jScale(month2day[i + 1]) - monthLineWidth / 2;
-      }).attr("height", height).attr("width", monthLineWidth); // Create/update the line paths with D3
-
-      var agroups = gPhen1.selectAll("g").data(lineData, function (d) {
-        return d.id;
-      });
-      var egroups = agroups.enter().append("g").attr("opacity", 0).attr("class", function (d) {
-        return "phen-path-".concat(d.id, " phen-path");
-      });
-      egroups.append("path").attr("class", 'phen-path-fill').attr("d", function (d) {
-        var flat = line(d.points.map(function (p) {
-          return {
-            n: 0,
-            week: p.week
-          };
-        }));
-
-        if (d.closure.length) {
-          flat = "".concat(flat, "L").concat(close(d.closure).substring(1));
-        }
-
-        return flat;
-      });
-      egroups.append("path").attr("class", 'phen-path-line').attr("d", function (d) {
-        var flat = line(d.points.map(function (p) {
-          return {
-            n: 0,
-            week: p.week
-          };
-        }));
-        return flat;
-      });
-      addEventHandlers(egroups, 'id');
-      var mgroups = agroups.merge(egroups).classed("phen-path-no-data", function (d) {
-        return !d.hasData;
-      });
-      mgroups.transition().duration(duration).attr('opacity', 1).attr("transform", function (d, i) {
-        return "translate(0,-".concat((lineData.length - 1 - i + 0.5) * spreadHeight, ")");
-      }); // Path generation function for use in sub-selections
-
-      function getPath(d, poly) {
-        var lPath;
-
-        if (ytype === 'normalized') {
-          lPath = line(d.points.map(function (p) {
-            return {
-              n: d.max ? p.n / d.max : 0,
-              week: p.week
-            };
-          }));
-        } else if (ytype === 'proportion') {
-          lPath = line(d.points.map(function (p) {
-            return {
-              n: d.total === 0 ? 0 : p.n / d.total,
-              week: p.week
-            };
-          }));
-        } else {
-          lPath = line(d.points);
-        } // If this is for a poly, close the path if required
-
-
-        if (d.closure.length && poly) {
-          lPath = "".concat(lPath, "L").concat(close(d.closure).substring(1));
-        }
-
-        return lPath;
-      } // Each phenology line consists of both a line and polygon. This
-      // is necessary because if we relied on a single polygon, it is
-      // not always possible to confine the line graphics to the part
-      // of the polygon which represents the phenology line.
-      // Important for correct data binding to use select - NOT selectAll
-      // in sub-selections (https://bost.ocks.org/mike/selection/#non-grouping)
-
-
-      mgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
-        return getPath(d, false);
-      }).attr("stroke", function (d) {
-        return d.colour;
-      }).attr("stroke-width", function (d) {
-        return d.strokeWidth;
-      }).attr("fill", "none");
-      mgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
-        return getPath(d, true);
-      }).attr("fill", function (d) {
-        return d.fill;
-      });
-      var xgroups = agroups.exit();
-      xgroups.transition().duration(duration).attr("opacity", 0).remove();
-
-      function flatPath(d, poly) {
-        var flat = line(d.points.map(function (p) {
-          return {
-            n: 0,
-            week: p.week
-          };
-        }));
-
-        if (d.closure.length && poly) {
-          flat = "".concat(flat, "L").concat(close(d.closure).substring(1));
-        }
-
-        return flat;
-      }
-
-      xgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
-        return flatPath(d, false);
-      });
-      xgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
-        return flatPath(d, true);
-      });
-
-      if (init) {
-        // Constants for positioning
-        var axisLeftPadX = margin.left ? margin.left : 0;
-        var axisRightPadX = margin.right ? margin.right : 0;
-        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
-        var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
-
-        if (showTaxonLabel) {
-          var taxonLabel = svgPhen1.append('text').classed('brc-chart-phen1-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
-          var labelHeight = taxonLabel.node().getBBox().height;
-          taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
-        } // Size SVG
-
-
-        svgPhen1.attr('width', width + axisLeftPadX + axisRightPadX) //.attr('height', height + axisBottomPadY + axisTopPadY)
-        .attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
-
-        gPhen1.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
-
-        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
-        var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-        var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")");
-        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)"); // Create axes and position within SVG
-
-        if (yAxis) {
-          var gYaxis = svgPhen1.append("g").attr("class", "y-axis");
-          gYaxis.attr("transform", leftYaxisTrans);
-        }
-
-        if (xAxis) {
-          var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
-          gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-          gXaxis.attr("transform", bottomXaxisTrans);
-        }
-
-        if (tAxis) {
-          var gTaxis = svgPhen1.append("g").call(tAxis);
-          gTaxis.attr("transform", topXaxisTrans);
-        }
-
-        if (rAxis) {
-          var gRaxis = svgPhen1.append("g").call(rAxis);
-          gRaxis.attr("transform", rightYaxisTrans);
-        }
-
-        var tYaxisLeftLabel = svgPhen1.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
-        tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
-      } else if (taxa.length === 1) {
-        // Update taxon label
-        if (showTaxonLabel) {
-          svgPhen1.select('.brc-chart-phen1-label').text(taxon);
-        }
-      }
-
-      if (yAxis) {
-        svgPhen1.select(".y-axis").transition().duration(duration).call(yAxis);
-      }
-
-      return svgPhen1;
-    }
-
-    function makeLegend(legendWidth) {
-      var swatchSize = 20;
-      var swatchFact = 1.3; // Loop through all the legend elements and work out their
-      // positions based on swatch size, item lable text size and
-      // legend width.
-
-      var metricsReversed = cloneData(metricsPlus).reverse();
-      var rows = 0;
-      var lineWidth = -swatchSize;
-      metricsReversed.forEach(function (m) {
-        var tmpText = svgChart.append('text') //.style('display', 'none')
-        .text(m.label).style('font-size', legendFontSize);
-        var widthText = tmpText.node().getBBox().width;
-        tmpText.remove();
-
-        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
-          ++rows;
-          lineWidth = -swatchSize;
-        }
-
-        m.x = lineWidth + swatchSize + headPad;
-        m.y = rows * swatchSize * swatchFact;
-        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
-      });
-      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
-        return safeId(m.label);
-      }).join(function (enter) {
-        var rect = enter.append("rect").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
-        }).attr('width', swatchSize).attr('height', 2);
-        return rect;
-      }).attr('x', function (m) {
-        return m.x;
-      }).attr('y', function (m) {
-        return m.y + swatchSize / 2;
-      }).attr('fill', function (m) {
-        return m.colour;
-      });
-      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
-        return safeId(m.label);
-      }).join(function (enter) {
-        var text = enter.append("text").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(safeId(m.label));
-        }).text(function (m) {
-          return m.label;
-        }).style('font-size', legendFontSize);
-        return text;
-      }).attr('x', function (m) {
-        return m.x + swatchSize * swatchFact;
-      }).attr('y', function (m) {
-        return m.y + legendFontSize * 1;
-      });
-      addEventHandlers(ls, 'label');
-      addEventHandlers(lt, 'label');
-      return swatchSize * swatchFact * (rows + 1);
-    }
-
-    function highlightItem(id, highlight) {
-      svgChart.selectAll('.phen-path path').classed('lowlight', highlight);
-      svgChart.selectAll(".phen-path-".concat(safeId(id), " path")).classed('lowlight', false);
-      svgChart.selectAll(".phen-path path").classed('highlight', false);
-
-      if (safeId(id)) {
-        svgChart.selectAll(".phen-path-".concat(safeId(id), " path")).classed('highlight', highlight);
-      }
-
-      svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
-
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
-      }
-
-      if (id) {
-        svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
-      } else {
-        svgChart.selectAll(".brc-legend-item").classed('highlight', false);
-      }
-    }
-
-    function addEventHandlers(sel, prop) {
-      sel.on("mouseover", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true);
-        }
-      }).on("mouseout", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false);
-        }
-      }).on("click", function (d) {
-        if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true);
-          d3.event.stopPropagation();
-        }
-      });
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -1785,8 +1843,7 @@
       }
 
       if ('metrics' in opts) {
-        metrics = opts.metrics;
-        preProcessMetrics();
+        metrics = preProcessMetrics(opts.metrics);
         remakeChart = true;
       }
 
@@ -4438,7 +4495,7 @@
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
    * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
-   * @param {string} opts.showCounts - The stype of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
+   * @param {string} opts.showCounts - The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
    * data for which graphics should be generated on the chart.

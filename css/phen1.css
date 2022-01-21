@@ -12,6 +12,10 @@
     opacity:0.3;
 }
 
+.brc-chart-phen1 rect.lowlight {
+    opacity:0.3;
+}
+
 .brc-chart-phen1 {
     overflow: visible;
 }
