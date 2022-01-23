@@ -69,10 +69,11 @@ import { makeLegend } from './legend'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
- * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
+ * <li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
+ * <li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
  * <li> <b>c1</b> - a count for a given time period (can have any name). 
  * <li> <b>c2</b> - a count for a given time period (can have any name).
- * ... - there must be at leas one count column, but there can be any number of them.
+ * ... - there must be at least one count column, but there can be any number of them.
  * </ul>
  * @returns {module:phen1~api} api - Returns an API for the chart.
  */
@@ -167,7 +168,7 @@ export function phen1({
     let legendHeight = 0
     if (showLegend) {
       const legendWidth = perRow * (subChartWidth + subChartPad) - headPad
-      legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) + subChartPad
+      legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) + subChartPad
     }
 
     svgsTaxa.forEach((svgTaxon, i) => {

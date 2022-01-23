@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import * as gen from '../general'
+import { month2day, safeId, xAxisMonth } from '../general'
 import { addEventHandlers} from './highlightitem'
 
 export function makePhen (taxon, taxa, data, metrics, svgChart, width, height, 
@@ -8,11 +8,21 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
   axisLabelFontSize, axisLeftLabel, interactivity
 ) {
 
+  // Examine the first record to see if week or month is specified for period
+  let period
+  if ('week' in data[0]) {
+    period = 'week'
+  } else {
+    period = 'month'
+  }
 
   // Pre-process data.
-  // Filter to named taxon and sort in week order
+  // Filter to named taxon and sort in week/month order
   // Add max value to each.
-  const dataFiltered = data.filter(d => d.taxon === taxon).sort((a, b) => (a.week > b.week) ? 1 : -1)
+  const dataFiltered = data.filter(d => d.taxon === taxon)
+    .filter(d => period === 'week' ? d[period] < 53 : d[period] < 13)
+    .sort((a, b) => (a[period] > b[period]) ? 1 : -1)
+
   let metricData = [] 
 
   metrics.forEach(m => {
@@ -30,8 +40,8 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     let points = dataFiltered.map(d => {
       return {
         n: total ? d[m.prop] : 0,
-        week: d.week,
-        id: `${gen.safeId(m.label)}-${d.week}`,
+        period: d[period],
+        id: `${safeId(m.label)}-${d[period]}`,
       }
     })
 
@@ -42,15 +52,15 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     let closure=[]
     if (points.length) {
       if (points[points.length-1].n > 0) {
-        closure.push({n: 0, week: points[points.length-1].week})
+        closure.push({n: 0, period: points[points.length-1].period})
       }
       if (points[0].n > 0) {
-        closure.push({n: 0, week: points[0].week})
+        closure.push({n: 0, period: points[0].period})
       }
     }
 
     metricData.push({
-      id: gen.safeId(m.label),
+      id: safeId(m.label),
       colour: m.colour,
       strokeWidth: m.strokeWidth,
       fill: m.fill ? m.fill : 'none',
@@ -105,11 +115,37 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     maxMetricHeight = maxProp * spreadHeight
   }
 
-  // Value scales
-  const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
+  // Value scales and related data and functions
+  //const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
+  // const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
+
+  function periodToDay(p) {
+    if (period === 'week') {
+      if (style === 'bars') {
+        return (p-1)*7
+      } else {
+        // style is lines
+        return (p-1)*7 + 3.5
+      }
+    } else {
+      // period === month
+      if (style === 'bars') {
+        return month2day[p]
+      } else {
+        // style is lines
+        return month2day[p] + ((month2day[p+1] - month2day[p]) / 2)
+      }
+    }
+  }
+  function periodToWidth(p) {
+    if (period === 'week') {
+      return xScale(7) - xScale(0) - 1
+    } else {
+      return xScale(month2day[p+1]) - xScale(month2day[p]) - 1
+    }
+  }
+  const xScale = d3.scaleLinear().domain([0, 366]).range([0, width])
   const yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0])
-  // jScale is for bands and lines
-  const jScale = d3.scaleLinear().domain([1, 365]).range([0, width])
   // sScale is for the y axis for spread displays
   const ysDomain = ['']
   const ysRange = [0]
@@ -137,7 +173,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
   // X (bottom) axis
   let xAxis
   if (axisBottom === 'on' || axisBottom === 'tick') {
-    xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
+    xAxis = xAxisMonth(width, axisBottom === 'tick')
   }
 
   // Right axis
@@ -171,11 +207,11 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
   // Main path generators
   const line = d3.line()
     .curve(d3.curveMonotoneX)
-    .x(d => xScale(d.week))
+    .x(d => xScale(periodToDay(d.period)))
     .y(d => height - maxMetricHeight + yScale(d.n))
   // Closure path generator - no interpolation
   const close = d3.line()
-    .x(d => xScale(d.week))
+    .x(d => xScale(periodToDay(d.period)))
     .y(d => height - maxMetricHeight + yScale(d.n))
 
   // Create or get the relevant chart svg
@@ -184,14 +220,14 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     svgPhen1 = svgChart.select('.brc-chart-phen1')
     gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
     init = false
-  } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-    svgPhen1 = svgChart.select(`#${gen.safeId(taxon)}`)
+  } else if (svgChart.select(`#${safeId(taxon)}`).size()) {
+    svgPhen1 = svgChart.select(`#${safeId(taxon)}`)
     gPhen1 = svgPhen1.select('.brc-chart-phen1-g')
     init = false
   } else {
     svgPhen1 = svgChart.append('svg')
       .classed('brc-chart-phen1', true)
-      .attr('id', gen.safeId(taxon))
+      .attr('id', safeId(taxon))
       .style('overflow', 'visible')
     gPhen1 = svgPhen1.append('g')
       .classed('brc-chart-phen1-g', true)
@@ -199,7 +235,6 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
   }
 
   // Vertical bands and lines
-  const month2day = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 364]
   gPhen1.selectAll(".brc-chart-month-band")
     .data(bands,  (b, i) => `month-band-${i}`)
   .enter()
@@ -207,10 +242,10 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     .attr("class", `brc-chart-month-band`)
     .style("fill", (d,i) => bands[i])
     .attr("y", 0)
-    .attr("x", (d,i) => jScale(month2day[i]) + 1)
+    .attr("x", (d,i) => xScale(month2day[i]) - 1)
     .attr("height", height)
     .attr("width", (d,i) => {
-      return jScale(month2day[i+1]) - jScale(month2day[i] - 1)
+      return xScale(month2day[i+1]) - xScale(month2day[i])
     })
   gPhen1.selectAll(".brc-chart-month-line")
     .data(lines,  (b, i) => `month-line-${i}`)
@@ -219,7 +254,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     .attr("class", `brc-chart-month-line`)
     .style("fill", (d,i) => lines[i])
     .attr("y", 0)
-    .attr("x", (d,i) => jScale(month2day[i+1]) - monthLineWidth/2)
+    .attr("x", (d,i) => xScale(month2day[i+1]) - monthLineWidth/2 - 1)
     .attr("height", height)
     .attr("width", monthLineWidth)
 
@@ -257,9 +292,11 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
         .join (
           enter => enter.append("rect")
               .attr("fill", colour)
-              .attr("x", d => xScale(d.week))
+              .attr("stroke", 'white')
+              .attr("stroke-width", 1)
+              .attr("x", d => xScale(periodToDay(d.period))-1)
               .attr("y", height)
-              .attr("width", xScale(2) - xScale(1) - 1 )
+              .attr("width", d => periodToWidth(d.period))
               .attr("height", 0)
             .call(update => update.transition(t)
               .attr("y", d => getBarY(d, max, total))
@@ -327,7 +364,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     let flat = line(d.points.map(p => {
         return {
           n: 0,
-          week: p.week,
+          period: p.period,
         }
       }))
     if (d.closure.length && poly) {
@@ -341,14 +378,14 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       lPath = line(d.points.map(p => {
         return {
           n: d.max ? p.n/d.max : 0,
-          week: p.week,
+          period: p.period,
         }
       }))
     } else if (ytype === 'proportion') {
       lPath = line(d.points.map(p => {
         return {
           n: d.total === 0 ? 0 : p.n/d.total,
-          week: p.week,
+          period: p.period,
         }
       }))
     } else {

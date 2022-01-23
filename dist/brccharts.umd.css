@@ -190,21 +190,6 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
-}.brc-chart-yearly path {
-    fill: none;
-}
-
-.brc-chart-yearly {
-    overflow: visible;
-}
-.brc-chart-yearly .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-yearly .lowlight {
-    opacity: 0.1;
 }.brc-chart-trend path {
     fill: none;
 }
@@ -219,6 +204,21 @@ svg circle.lowlighted {
 }
 
 .brc-chart-trend .lowlight {
+    opacity: 0.1;
+}.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
     opacity: 0.1;
 }.brc-chart-altlat .highlight {
     opacity: 1;

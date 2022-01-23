@@ -1,7 +1,7 @@
 import * as gen from '../general'
 import { addEventHandlers} from './highlightitem'
 
-export function makeLegend (legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) {
+export function makeLegend (legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) {
   
   const swatchSize = 20
   const swatchFact = 1.3
@@ -37,11 +37,17 @@ export function makeLegend (legendWidth, metrics, svgChart, legendFontSize, head
         const rect = enter.append("rect")
           .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
           .attr('width', swatchSize)
-          .attr('height', 2)
+          .attr('height', style === 'bars' ? swatchSize : 2)
         return rect
     })
     .attr('x', m => m.x)
-    .attr('y', m => m.y + swatchSize/2)
+    .attr('y', m => {
+        if (style === 'bars'){
+          return m.y - swatchSize/5
+        } else {
+          return m.y + swatchSize/2
+        }
+    })
     .attr('fill', m => m.colour)
 
   const lt = svgChart.selectAll('.brc-legend-item-text')

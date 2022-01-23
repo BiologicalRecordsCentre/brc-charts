@@ -8,9 +8,9 @@ export function cloneData(data) {
   return data.map(d => { return {...d}})
 }
 
-export function xAxisMonth(width, ticks) {
+export function xAxisMonthSafe(width, ticks) {
   const xScaleTime = d3.scaleTime()
-    .domain([new Date(2020, 0, 1), new Date(2020, 11, 31)])
+    .domain([new Date(2000, 0, 1), new Date(2000, 11, 31)])
     .range([0, width])
   
   const xAxis = d3.axisBottom()
@@ -26,6 +26,37 @@ export function xAxisMonth(width, ticks) {
           return d3.timeFormat('%b')(date)
         } else if (width >= 200) {
           return date.toLocaleString('default', { month: 'short' }).substr(0,1)
+        } else {
+          return ''
+        }
+      })
+  } else {
+    xAxis.tickValues([]).tickSizeOuter(0)
+  }
+  return xAxis
+}
+
+export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
+
+export function xAxisMonth(width, ticks) {
+
+  const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const ysRange = month2day.map(d => (d-1)/366 * width)
+  const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+
+  const xAxis = d3.axisBottom()
+    .scale(xScaleTime)
+
+  if (ticks) {
+    xAxis.ticks(ysDomain)
+      .tickSize(width >= 200 ? 13 : 5, 0)
+      .tickFormat(month => {
+        if (width >= 750) {
+          return month
+        } else if (width >= 330) {
+          return month.substr(0,3)
+        } else if (width >= 200) {
+          return month.substr(0,1)
         } else {
           return ''
         }
@@ -66,21 +97,6 @@ export function xAxisYear(width, ticks, min, max, bars) {
       ticks = 2
     }
     xAxis.ticks(ticks) 
-
-    // .tickSize(width >= 200 ? 13 : 5, 0)
-    
-    // xAxis.tickFormat(year => {
-    //   if (width / years < break1) {
-    //     // No labels
-    //     return ''
-    //   } else if (width / years < break) {
-    //     // Return last two digits of year as a string
-    //     return year.toString().substr(2,2)
-    //   } else {
-    //     // Return year as a string
-    //     return year.toString()
-    //   }
-    // })
 
     xAxis.tickFormat(year => year.toString())
 

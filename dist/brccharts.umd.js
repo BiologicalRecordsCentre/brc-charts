@@ -110,20 +110,23 @@
       return _objectSpread2({}, d);
     });
   }
+  var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367];
   function xAxisMonth(width, ticks) {
-    var xScaleTime = d3.scaleTime().domain([new Date(2020, 0, 1), new Date(2020, 11, 31)]).range([0, width]);
+    var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var ysRange = month2day.map(function (d) {
+      return (d - 1) / 366 * width;
+    });
+    var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
     var xAxis = d3.axisBottom().scale(xScaleTime);
 
     if (ticks) {
-      xAxis.ticks(d3.timeMonth).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (date) {
+      xAxis.ticks(ysDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (month) {
         if (width >= 750) {
-          return d3.timeFormat('%B')(date);
+          return month;
         } else if (width >= 330) {
-          return d3.timeFormat('%b')(date);
+          return month.substr(0, 3);
         } else if (width >= 200) {
-          return date.toLocaleString('default', {
-            month: 'short'
-          }).substr(0, 1);
+          return month.substr(0, 1);
         } else {
           return '';
         }
@@ -163,20 +166,7 @@
         _ticks = 2;
       }
 
-      xAxis.ticks(_ticks); // .tickSize(width >= 200 ? 13 : 5, 0)
-      // xAxis.tickFormat(year => {
-      //   if (width / years < break1) {
-      //     // No labels
-      //     return ''
-      //   } else if (width / years < break) {
-      //     // Return last two digits of year as a string
-      //     return year.toString().substr(2,2)
-      //   } else {
-      //     // Return year as a string
-      //     return year.toString()
-      //   }
-      // })
-
+      xAxis.ticks(_ticks);
       xAxis.tickFormat(function (year) {
         return year.toString();
       });
@@ -1034,13 +1024,24 @@
   }
 
   function makePhen(taxon, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity) {
-    // Pre-process data.
-    // Filter to named taxon and sort in week order
+    // Examine the first record to see if week or month is specified for period
+    var period;
+
+    if ('week' in data[0]) {
+      period = 'week';
+    } else {
+      period = 'month';
+    } // Pre-process data.
+    // Filter to named taxon and sort in week/month order
     // Add max value to each.
+
+
     var dataFiltered = data.filter(function (d) {
       return d.taxon === taxon;
+    }).filter(function (d) {
+      return period === 'week' ? d[period] < 53 : d[period] < 13;
     }).sort(function (a, b) {
-      return a.week > b.week ? 1 : -1;
+      return a[period] > b[period] ? 1 : -1;
     });
     var metricData = [];
     metrics.forEach(function (m) {
@@ -1063,8 +1064,8 @@
       var points = dataFiltered.map(function (d) {
         return {
           n: total ? d[m.prop] : 0,
-          week: d.week,
-          id: "".concat(safeId(m.label), "-").concat(d.week)
+          period: d[period],
+          id: "".concat(safeId(m.label), "-").concat(d[period])
         };
       }); // The closure array is a small array of points which can
       // be used, in conjunction with the main points, to make
@@ -1077,14 +1078,14 @@
         if (points[points.length - 1].n > 0) {
           closure.push({
             n: 0,
-            week: points[points.length - 1].week
+            period: points[points.length - 1].period
           });
         }
 
         if (points[0].n > 0) {
           closure.push({
             n: 0,
-            week: points[0].week
+            period: points[0].period
           });
         }
       }
@@ -1147,13 +1148,40 @@
       topProp = Math.max(h1Prop, h2Prop - 1);
       spreadHeight = height / (0.5 + metricData.length - 1 + topProp);
       maxMetricHeight = maxProp * spreadHeight;
-    } // Value scales
+    } // Value scales and related data and functions
+    //const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
+    // const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
 
 
-    var xScale = d3.scaleLinear().domain([1, 53]).range([0, width]);
-    var yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0]); // jScale is for bands and lines
+    function periodToDay(p) {
+      if (period === 'week') {
+        if (style === 'bars') {
+          return (p - 1) * 7;
+        } else {
+          // style is lines
+          return (p - 1) * 7 + 3.5;
+        }
+      } else {
+        // period === month
+        if (style === 'bars') {
+          return month2day[p];
+        } else {
+          // style is lines
+          return month2day[p] + (month2day[p + 1] - month2day[p]) / 2;
+        }
+      }
+    }
 
-    var jScale = d3.scaleLinear().domain([1, 365]).range([0, width]); // sScale is for the y axis for spread displays
+    function periodToWidth(p) {
+      if (period === 'week') {
+        return xScale(7) - xScale(0) - 1;
+      } else {
+        return xScale(month2day[p + 1]) - xScale(month2day[p]) - 1;
+      }
+    }
+
+    var xScale = d3.scaleLinear().domain([0, 366]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([0, yMax]).range([maxMetricHeight, 0]); // sScale is for the y axis for spread displays
 
     var ysDomain = [''];
     var ysRange = [0];
@@ -1211,13 +1239,13 @@
 
 
     var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-      return xScale(d.week);
+      return xScale(periodToDay(d.period));
     }).y(function (d) {
       return height - maxMetricHeight + yScale(d.n);
     }); // Closure path generator - no interpolation
 
     var close = d3.line().x(function (d) {
-      return xScale(d.week);
+      return xScale(periodToDay(d.period));
     }).y(function (d) {
       return height - maxMetricHeight + yScale(d.n);
     }); // Create or get the relevant chart svg
@@ -1239,22 +1267,21 @@
     } // Vertical bands and lines
 
 
-    var month2day = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 364];
     gPhen1.selectAll(".brc-chart-month-band").data(bands, function (b, i) {
       return "month-band-".concat(i);
     }).enter().append("rect").attr("class", "brc-chart-month-band").style("fill", function (d, i) {
       return bands[i];
     }).attr("y", 0).attr("x", function (d, i) {
-      return jScale(month2day[i]) + 1;
+      return xScale(month2day[i]) - 1;
     }).attr("height", height).attr("width", function (d, i) {
-      return jScale(month2day[i + 1]) - jScale(month2day[i] - 1);
+      return xScale(month2day[i + 1]) - xScale(month2day[i]);
     });
     gPhen1.selectAll(".brc-chart-month-line").data(lines, function (b, i) {
       return "month-line-".concat(i);
     }).enter().append("rect").attr("class", "brc-chart-month-line").style("fill", function (d, i) {
       return lines[i];
     }).attr("y", 0).attr("x", function (d, i) {
-      return jScale(month2day[i + 1]) - monthLineWidth / 2;
+      return xScale(month2day[i + 1]) - monthLineWidth / 2 - 1;
     }).attr("height", height).attr("width", monthLineWidth); // Create/update the graphics for the metrics 
 
     var agroups = gPhen1.selectAll("g").data(metricData, function (d) {
@@ -1281,9 +1308,11 @@
         gPhen1.select(".phen-metric-".concat(d.id)).selectAll('rect').data(d.points, function (d) {
           return d.id;
         }).join(function (enter) {
-          return enter.append("rect").attr("fill", colour).attr("x", function (d) {
-            return xScale(d.week);
-          }).attr("y", height).attr("width", xScale(2) - xScale(1) - 1).attr("height", 0).call(function (update) {
+          return enter.append("rect").attr("fill", colour).attr("stroke", 'white').attr("stroke-width", 1).attr("x", function (d) {
+            return xScale(periodToDay(d.period)) - 1;
+          }).attr("y", height).attr("width", function (d) {
+            return periodToWidth(d.period);
+          }).attr("height", 0).call(function (update) {
             return update.transition(t).attr("y", function (d) {
               return getBarY(d, max, total);
             }).attr("height", function (d) {
@@ -1344,7 +1373,7 @@
       var flat = line(d.points.map(function (p) {
         return {
           n: 0,
-          week: p.week
+          period: p.period
         };
       }));
 
@@ -1362,14 +1391,14 @@
         lPath = line(d.points.map(function (p) {
           return {
             n: d.max ? p.n / d.max : 0,
-            week: p.week
+            period: p.period
           };
         }));
       } else if (ytype === 'proportion') {
         lPath = line(d.points.map(function (p) {
           return {
             n: d.total === 0 ? 0 : p.n / d.total,
-            week: p.week
+            period: p.period
           };
         }));
       } else {
@@ -1506,7 +1535,7 @@
     return metricsPlus;
   }
 
-  function makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) {
+  function makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) {
     var swatchSize = 20;
     var swatchFact = 1.3; // Loop through all the legend elements and work out their
     // positions based on swatch size, item lable text size and
@@ -1535,12 +1564,16 @@
     }).join(function (enter) {
       var rect = enter.append("rect").attr("class", function (m) {
         return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
-      }).attr('width', swatchSize).attr('height', 2);
+      }).attr('width', swatchSize).attr('height', style === 'bars' ? swatchSize : 2);
       return rect;
     }).attr('x', function (m) {
       return m.x;
     }).attr('y', function (m) {
-      return m.y + swatchSize / 2;
+      if (style === 'bars') {
+        return m.y - swatchSize / 5;
+      } else {
+        return m.y + swatchSize / 2;
+      }
     }).attr('fill', function (m) {
       return m.colour;
     });
@@ -1625,10 +1658,11 @@
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
-   * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
+   * <li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
+   * <li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
    * <li> <b>c1</b> - a count for a given time period (can have any name). 
    * <li> <b>c2</b> - a count for a given time period (can have any name).
-   * ... - there must be at leas one count column, but there can be any number of them.
+   * ... - there must be at least one count column, but there can be any number of them.
    * </ul>
    * @returns {module:phen1~api} api - Returns an API for the chart.
    */
@@ -1756,7 +1790,7 @@
 
       if (showLegend) {
         var legendWidth = perRow * (subChartWidth + subChartPad) - headPad;
-        legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity) + subChartPad;
+        legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) + subChartPad;
       }
 
       svgsTaxa.forEach(function (svgTaxon, i) {
