@@ -20,10 +20,12 @@
     overflow: visible;
 }
 
-.brc-legend-item.lowlight {
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item.lowlight {
     opacity:0.3;
 }
 
-.brc-legend-item-rect.highlight {
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item-line.highlight {
     fill:black;
 }

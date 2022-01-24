@@ -16,11 +16,11 @@
     overflow: visible;
 }
 
-.brc-legend-item.lowlight {
+.brc-chart-accum .brc-legend-item.lowlight {
     opacity:0.3;
 }
 
-.brc-legend-item-rect.highlight {
+.brc-chart-accum .brc-legend-item-rect.highlight {
     fill:black;
 }
 
@@ -32,10 +32,10 @@
     font-weight:bold;
 }
 
-.y-axis.lowlight {
+.brc-chart-accum .y-axis.lowlight {
     opacity:0.3;
 }
 
-.y-axis.highlight {
+.brc-chart-accum .y-axis.highlight {
     font-weight:bold;
 }

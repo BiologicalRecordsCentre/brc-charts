@@ -36,13 +36,14 @@ export function makeLegend (legendWidth, metrics, svgChart, legendFontSize, head
     .join(enter => {
         const rect = enter.append("rect")
           .attr("class", m=> `brc-legend-item brc-legend-item-rect brc-legend-item-${gen.safeId(m.label)}`)
+          .classed('brc-legend-item-line', style === 'lines')
           .attr('width', swatchSize)
-          .attr('height', style === 'bars' ? swatchSize : 2)
+          .attr('height', style === 'lines' ? 2 : swatchSize)
         return rect
     })
     .attr('x', m => m.x)
     .attr('y', m => {
-        if (style === 'bars'){
+        if (style === 'bars' || style === 'areas'){
           return m.y - swatchSize/5
         } else {
           return m.y + swatchSize/2

@@ -1023,18 +1023,20 @@
     }
   }
 
-  function makePhen(taxon, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity) {
+  function makePhen(taxon, taxa, data, metricsin, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity) {
     // Examine the first record to see if week or month is specified for period
     var period;
 
-    if ('week' in data[0]) {
+    if (data.length === 0 || 'week' in data[0]) {
       period = 'week';
     } else {
       period = 'month';
-    } // Pre-process data.
+    } // Reverse the metrics if this is a stacked display
+
+
+    var metrics = stacked ? _toConsumableArray(metricsin).reverse() : _toConsumableArray(metricsin); // Pre-process data.
     // Filter to named taxon and sort in week/month order
     // Add max value to each.
-
 
     var dataFiltered = data.filter(function (d) {
       return d.taxon === taxon;
@@ -1044,6 +1046,7 @@
       return a[period] > b[period] ? 1 : -1;
     });
     var metricData = [];
+    var stackOffsets = new Array(period === 'week' ? 52 : 12).fill(0);
     metrics.forEach(function (m) {
       var total = dataFiltered.reduce(function (a, d) {
         return a + d[m.prop];
@@ -1067,10 +1070,10 @@
           period: d[period],
           id: "".concat(safeId(m.label), "-").concat(d[period])
         };
-      }); // If the style is area, then ensure that there is a point 
+      }); // If the style is areas, then ensure that there is a point 
       // for every week or month.
 
-      if (style === 'area') {
+      if (style === 'areas') {
         var maxPeriod = period === 'week' ? 52 : 12;
         var pointsPlus = [];
 
@@ -1128,9 +1131,16 @@
         maxProportion: maxProportion,
         total: total,
         points: points,
+        stackOffsets: _toConsumableArray(stackOffsets),
         closure: closure,
         hasData: total ? true : false
-      });
+      }); // If stacked display updated the stackOffsets array
+
+      if (stacked) {
+        points.forEach(function (d) {
+          return stackOffsets[d.period - 1] += d.n;
+        });
+      }
     }); // Set the maximum value for the y axis
 
     var yMax;
@@ -1144,6 +1154,10 @@
         } else {
           return d.maxProportion;
         }
+      })));
+    } else if (stacked) {
+      yMax = Math.max.apply(Math, _toConsumableArray(stackOffsets.filter(function (d) {
+        return d;
       })));
     } else {
       yMax = Math.max.apply(Math, _toConsumableArray(metricData.map(function (d) {
@@ -1191,7 +1205,7 @@
       } else {
         // period === month
         if (style === 'bars') {
-          return month2day[p];
+          return month2day[p - 1];
         } else {
           // style is lines
           return month2day[p - 1] + (month2day[p] - month2day[p - 1]) / 2;
@@ -1203,7 +1217,7 @@
       if (period === 'week') {
         return xScale(7) - xScale(0) - 1;
       } else {
-        return xScale(month2day[p + 1]) - xScale(month2day[p]) - 1;
+        return xScale(month2day[p]) - xScale(month2day[p - 1]) - 1;
       }
     }
 
@@ -1332,6 +1346,7 @@
         var colour = d.colour;
         var max = d.max;
         var total = d.total;
+        var stackOffsets = d.stackOffsets;
         gPhen1.select(".phen-metric-".concat(d.id)).selectAll('rect').data(d.points, function (d) {
           return d.id;
         }).join(function (enter) {
@@ -1341,7 +1356,7 @@
             return periodToWidth(d.period);
           }).attr("height", 0).call(function (update) {
             return update.transition(t).attr("y", function (d) {
-              return getBarY(d, max, total);
+              return getBarY(d, max, total, stackOffsets);
             }).attr("height", function (d) {
               return getBarHeight(d, max, total);
             });
@@ -1349,7 +1364,7 @@
         }, function (update) {
           return update.call(function (update) {
             return update.transition(t).attr("fill", colour).attr("y", function (d) {
-              return getBarY(d, max, total);
+              return getBarY(d, max, total, stackOffsets);
             }).attr("height", function (d) {
               return getBarHeight(d, max, total);
             });
@@ -1360,7 +1375,7 @@
           });
         });
       });
-    } else if (style === 'area') {
+    } else if (style === 'areas') {
       egroups.append("path").attr("class", 'phen-path-area').attr("d", function (d) {
         return flatPath(d, true);
       });
@@ -1409,7 +1424,7 @@
     xgroups.transition().duration(duration).attr("opacity", 0).remove(); // Path and bar generation helper functions
 
     function flatPath(d, poly) {
-      var lineFn = style === 'area' ? lineNotCurved : lineCurved;
+      var lineFn = style === 'areas' ? lineNotCurved : lineCurved;
       var flat = lineFn(d.points.map(function (p) {
         return {
           n: 0,
@@ -1425,7 +1440,7 @@
     }
 
     function getPath(d, poly) {
-      var lineFn = style === 'area' ? lineNotCurved : lineCurved;
+      var lineFn = style === 'areas' ? lineNotCurved : lineCurved;
       var lPath;
 
       if (ytype === 'normalized') {
@@ -1442,12 +1457,35 @@
             period: p.period
           };
         }));
+      } else if (stacked) {
+        var so1 = _toConsumableArray(d.stackOffsets);
+
+        var so2 = _toConsumableArray(d.stackOffsets);
+
+        d.points.forEach(function (p) {
+          so2[p.period - 1] += p.n;
+        });
+        var p1 = so1.map(function (n, i) {
+          return {
+            period: i + 1,
+            n: n
+          };
+        });
+        var p2 = so2.map(function (n, i) {
+          return {
+            period: i + 1,
+            n: n
+          };
+        });
+        var all = [].concat(_toConsumableArray(p1), _toConsumableArray(p2.reverse()));
+        lPath = lineFn(all);
       } else {
         lPath = lineFn(d.points);
-      } // If this is for a poly, close the path if required
+      } // If this is for a poly underneath a line
+      // display, close the path 
 
 
-      if (d.closure.length && poly) {
+      if (poly && d.closure.length && !stacked) {
         lPath = "".concat(lPath, "L").concat(lineNotCurved(d.closure).substring(1));
       }
 
@@ -1468,13 +1506,15 @@
       return maxMetricHeight - yScale(v);
     }
 
-    function getBarY(d, max, total) {
+    function getBarY(d, max, total, stackOffsets) {
       var barY;
 
       if (ytype === 'normalized') {
         barY = yScale(max ? d.n / max : 0);
       } else if (ytype === 'proportion') {
         barY = yScale(total === 0 ? 0 : d.n / total);
+      } else if (stacked) {
+        barY = yScale(stackOffsets[d.period - 1] + d.n);
       } else {
         barY = yScale(d.n);
       }
@@ -1605,12 +1645,12 @@
     }).join(function (enter) {
       var rect = enter.append("rect").attr("class", function (m) {
         return "brc-legend-item brc-legend-item-rect brc-legend-item-".concat(safeId(m.label));
-      }).attr('width', swatchSize).attr('height', style === 'bars' ? swatchSize : 2);
+      }).classed('brc-legend-item-line', style === 'lines').attr('width', swatchSize).attr('height', style === 'lines' ? 2 : swatchSize);
       return rect;
     }).attr('x', function (m) {
       return m.x;
     }).attr('y', function (m) {
-      if (style === 'bars') {
+      if (style === 'bars' || style === 'areas') {
         return m.y - swatchSize / 5;
       } else {
         return m.y + swatchSize / 2;
@@ -1653,7 +1693,9 @@
    * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
-   * @param {string} opts.style - Indicates the type of graphics to be used for the chart. Can be 'bars' or 'lines'. (Default - 'lines'.)
+   * @param {string} opts.style - Indicates the type of graphics to be used for the chart. Can be 'lines', 'bars' or 'areas'. (Default - 'lines'.)
+   * @param {boolean} opts.stacked - Indicates whether to stack metrics or superimpose them. If true, the metrics are stacked. This
+   * is only relevant for charts of style 'bars' or 'areas'. It has no effect on charts with the style 'lines'. (Default - false.)
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
    * @param {string} opts.footer - Footer for the chart.
@@ -1741,6 +1783,8 @@
         spread = _ref$spread === void 0 ? false : _ref$spread,
         _ref$style = _ref.style,
         style = _ref$style === void 0 ? 'lines' : _ref$style,
+        _ref$stacked = _ref.stacked,
+        stacked = _ref$stacked === void 0 ? false : _ref$stacked,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
@@ -1795,7 +1839,7 @@
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
     metrics = preProcessMetrics(metrics);
-    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).classed('brc-chart-phen1-top', true).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
@@ -1813,6 +1857,17 @@
     positionMainElements(svg, expand, headPad);
 
     function makeChart() {
+      // Give warning and return if invalid option combinations are used
+      if (stacked && spread) {
+        console.log('You cannot set both the stacked and spread options to true.');
+        return;
+      }
+
+      if ((ytype === 'normalized' || ytype === 'proportion') && stacked) {
+        console.log('You cannot used a y axis type of normalized or proportion with a stacked display.');
+        return;
+      }
+
       if (!taxa.length) {
         taxa = data.map(function (d) {
           return d.taxon;
@@ -1823,7 +1878,7 @@
 
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
-        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity);
+        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -2106,7 +2161,7 @@
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
     var metricsPlus;
-    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
+    var mainDiv = d3.select("".concat(selector)).append('div').classed('brc-chart-phen2-top', true).attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {

@@ -2,19 +2,22 @@ import * as d3 from 'd3'
 import { month2day, safeId, xAxisMonth } from '../general'
 import { addEventHandlers} from './highlightitem'
 
-export function makePhen (taxon, taxa, data, metrics, svgChart, width, height, 
+export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height, 
   ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
-  style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
+  style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
   axisLabelFontSize, axisLeftLabel, interactivity
 ) {
 
   // Examine the first record to see if week or month is specified for period
   let period
-  if ('week' in data[0]) {
+  if (data.length === 0 || 'week' in data[0]) {
     period = 'week'
   } else {
     period = 'month'
   }
+
+  // Reverse the metrics if this is a stacked display
+  const metrics = stacked ? [...metricsin].reverse() : [...metricsin]
 
   // Pre-process data.
   // Filter to named taxon and sort in week/month order
@@ -23,7 +26,8 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     .filter(d => period === 'week' ? d[period] < 53 : d[period] < 13)
     .sort((a, b) => (a[period] > b[period]) ? 1 : -1)
 
-  let metricData = [] 
+  const metricData = [] 
+  const stackOffsets = new Array(period === 'week' ? 52 : 12).fill(0) 
 
   metrics.forEach(m => {
     let total = dataFiltered.reduce((a, d) => a + d[m.prop], 0)
@@ -45,9 +49,9 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       }
     })
 
-    // If the style is area, then ensure that there is a point 
+    // If the style is areas, then ensure that there is a point 
     // for every week or month.
-    if (style === 'area') {
+    if (style === 'areas') {
       const maxPeriod = period === 'week' ? 52 : 12
       const pointsPlus = []
       for (let p = 1; p <= maxPeriod; p++) {
@@ -64,7 +68,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       }
       points = pointsPlus
     }
-    
+
     // The closure array is a small array of points which can
     // be used, in conjunction with the main points, to make
     // a properly enclosed polygon that drops open sides down
@@ -88,9 +92,15 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       maxProportion: maxProportion,
       total: total,
       points: points,
+      stackOffsets: [...stackOffsets],
       closure: closure,
       hasData: total ? true : false
     })
+
+    // If stacked display updated the stackOffsets array
+    if (stacked) {
+      points.forEach(d => stackOffsets[d.period-1] += d.n)
+    }
   })
 
   // Set the maximum value for the y axis
@@ -105,6 +115,8 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
         return d.maxProportion
       }
     }))
+  } else if (stacked) {
+    yMax = Math.max(...stackOffsets.filter(d => d))
   } else {
     yMax = Math.max(...metricData.map(d => d.max))
     if (yMax < 5 && !spread) yMax = 5
@@ -147,7 +159,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     } else {
       // period === month
       if (style === 'bars') {
-        return month2day[p]
+        return month2day[p-1]
       } else {
         // style is lines
         return month2day[p-1] + ((month2day[p] - month2day[p-1]) / 2)
@@ -158,7 +170,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     if (period === 'week') {
       return xScale(7) - xScale(0) - 1
     } else {
-      return xScale(month2day[p+1]) - xScale(month2day[p]) - 1
+      return xScale(month2day[p]) - xScale(month2day[p-1]) - 1
     }
   }
   const xScale = d3.scaleLinear().domain([0, 366]).range([0, width])
@@ -303,6 +315,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       const colour = d.colour
       const max = d.max
       const total = d.total
+      const stackOffsets = d.stackOffsets
 
       gPhen1.select(`.phen-metric-${d.id}`).selectAll('rect')
         .data(d.points,  d => d.id)
@@ -316,12 +329,12 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
               .attr("width", d => periodToWidth(d.period))
               .attr("height", 0)
             .call(update => update.transition(t)
-              .attr("y", d => getBarY(d, max, total))
+              .attr("y", d => getBarY(d, max, total, stackOffsets))
               .attr("height", d => getBarHeight(d, max, total))),
           update => update
             .call(update => update.transition(t)
               .attr("fill", colour)
-              .attr("y", d => getBarY(d, max, total))
+              .attr("y", d => getBarY(d, max, total, stackOffsets))
               .attr("height", d => getBarHeight(d, max, total))),
           exit => exit
             .call(exit => exit.transition(t)
@@ -329,7 +342,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
               .remove())
         )
     })
-  } else if (style === 'area') {
+  } else if (style === 'areas') {
     egroups.append("path")
       .attr("class", 'phen-path-area')
       .attr("d", d => flatPath(d, true))
@@ -393,7 +406,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
 
   // Path and bar generation helper functions
   function flatPath(d, poly) {
-    const lineFn = style === 'area' ? lineNotCurved : lineCurved
+    const lineFn = style === 'areas' ? lineNotCurved : lineCurved
     let flat = lineFn(d.points.map(p => {
         return {
           n: 0,
@@ -406,7 +419,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     return flat
   }
   function getPath(d, poly) {
-    const lineFn = style === 'area' ? lineNotCurved : lineCurved
+    const lineFn = style === 'areas' ? lineNotCurved : lineCurved
     let lPath
     if (ytype === 'normalized') {
       lPath = lineFn(d.points.map(p => {
@@ -422,11 +435,22 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
           period: p.period,
         }
       }))
+    } else if (stacked) {
+      const so1 = [...d.stackOffsets]
+      const so2 = [...d.stackOffsets]
+      d.points.forEach(p => {
+        so2[p.period-1]+=p.n
+      })
+      const p1 = so1.map((n,i) => {return {period: i+1, n: n}})
+      const p2 = so2.map((n,i) => {return {period: i+1, n: n}})
+      const all = [...p1, ...p2.reverse()]
+      lPath = lineFn(all)
     } else {
       lPath = lineFn(d.points)
     }
-    // If this is for a poly, close the path if required
-    if (d.closure.length && poly) {
+    // If this is for a poly underneath a line
+    // display, close the path 
+    if (poly && d.closure.length && !stacked) {
       lPath = `${lPath}L${lineNotCurved(d.closure).substring(1)}`
     }
     return lPath
@@ -443,12 +467,14 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     return maxMetricHeight - yScale(v)
   }
 
-  function getBarY(d, max, total) {
+  function getBarY(d, max, total, stackOffsets) {
     let barY
     if (ytype === 'normalized') {
       barY = yScale(max ? d.n/max : 0)
     } else if (ytype === 'proportion') {
       barY = yScale(total === 0 ? 0 : d.n/total)
+    } else if (stacked) {
+      barY = yScale(stackOffsets[d.period-1] + d.n)
     } else {
       barY = yScale(d.n)
     }

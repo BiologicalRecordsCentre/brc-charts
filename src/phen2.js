@@ -103,6 +103,7 @@ export function phen2({
 
   const mainDiv = d3.select(`${selector}`)
     .append('div')
+    .classed('brc-chart-phen2-top', true)
     .attr('id', elid)
     .style('position', 'relative')
     .style('display', 'inline')

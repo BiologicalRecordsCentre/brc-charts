@@ -23,7 +23,9 @@ import { makeLegend } from './legend'
  * @param {string} opts.ytype - Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
- * @param {string} opts.style - Indicates the type of graphics to be used for the chart. Can be 'bars' or 'lines'. (Default - 'lines'.)
+ * @param {string} opts.style - Indicates the type of graphics to be used for the chart. Can be 'lines', 'bars' or 'areas'. (Default - 'lines'.)
+ * @param {boolean} opts.stacked - Indicates whether to stack metrics or superimpose them. If true, the metrics are stacked. This
+ * is only relevant for charts of style 'bars' or 'areas'. It has no effect on charts with the style 'lines'. (Default - false.)
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
  * @param {string} opts.footer - Footer for the chart.
@@ -93,6 +95,7 @@ export function phen1({
   expand = false,
   spread = false,
   style = 'lines',
+  stacked = false,
   title = '',
   subtitle = '',
   footer = '',
@@ -126,6 +129,7 @@ export function phen1({
   const mainDiv = d3.select(`${selector}`)
     .append('div')
     .attr('id', elid)
+    .classed('brc-chart-phen1-top', true)
     .style('position', 'relative')
     .style('display', 'inline')
 
@@ -150,6 +154,17 @@ export function phen1({
   positionMainElements(svg, expand, headPad)
 
   function makeChart () {
+
+    // Give warning and return if invalid option combinations are used
+    if (stacked && spread) {
+      console.log('You cannot set both the stacked and spread options to true.')
+      return
+    }
+    if ((ytype === 'normalized' || ytype === 'proportion') && stacked) {
+      console.log('You cannot used a y axis type of normalized or proportion with a stacked display.')
+      return
+    }
+
     if (!taxa.length) {
       taxa = data.map(d => d.taxon).filter((v, i, a) => a.indexOf(v) === i)
     }
@@ -158,7 +173,7 @@ export function phen1({
     const svgsTaxa = taxa.map(t => {
       return makePhen (t, taxa, data, metrics, svgChart, width, height, 
         ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
-        style, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
+        style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
         axisLabelFontSize, axisLeftLabel, interactivity)
     })
 

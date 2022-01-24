@@ -1,103 +1,6 @@
 .blah {
     background: red;
-}.brc-chart-phen2 rect.highlight {
-    fill: black;
-    opacity: 1;
-}
-
-.brc-chart-phen2 rect.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen2 {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-
-.brc-legend-item-icon.highlight {
-    fill:black;
-}
-
-#phen2-chart .mainChart {
-    overflow: visible;
-}
-.brc-chart-accum path {
-    fill: none;
-}
-
-.brc-chart-accum path.highlight {
-    stroke: black;
-    stroke-width: 3;
-    opacity: 1;
-}
-
-.brc-chart-accum path.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-accum {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-
-.brc-chart-accum text.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-accum text.highlight {
-    font-weight:bold;
-}
-
-.y-axis.lowlight {
-    opacity:0.3;
-}
-
-.y-axis.highlight {
-    font-weight:bold;
-}/* .brc-chart-phen1 path {
-    fill: none;
-} */
-
-.brc-chart-phen1 path.highlight.phen-path-line {
-    stroke: black;
-    stroke-width: 3;
-    opacity: 1;
-}
-
-.brc-chart-phen1 path.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 rect.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 {
-    overflow: visible;
-}
-
-.brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-legend-item-rect.highlight {
-    fill:black;
-}
-.brc-chart-pie {
+}.brc-chart-pie {
   width: 100%
 }
 
@@ -130,7 +33,66 @@
     1px 1px 2px #000,
     1px -1px 0 #000,
     -1px -1px 0 #000;
+}.brc-chart-phen2 rect.highlight {
+    fill: black;
+    opacity: 1;
 }
+
+.brc-chart-phen2 rect.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen2 {
+    overflow: visible;
+}
+
+.brc-chart-phen2-top .brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen2-top .brc-legend-item-rect.highlight {
+    fill:black;
+}
+
+.brc-chart-phen2-top .brc-legend-item-icon.highlight {
+    fill:black;
+}
+
+#phen2-chart .mainChart {
+    overflow: visible;
+}
+/* .brc-chart-phen1 path {
+    fill: none;
+} */
+
+.brc-chart-phen1 path.highlight.phen-path-line {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-phen1 path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 rect.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 {
+    overflow: visible;
+}
+
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item-line.highlight {
+    fill:black;
+}
+
 .chart-overflow svg {
     overflow: visible;
 }
@@ -190,6 +152,61 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}.brc-chart-accum path {
+    fill: none;
+}
+
+.brc-chart-accum path.highlight {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-accum path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-accum {
+    overflow: visible;
+}
+
+.brc-chart-accum .brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-accum .brc-legend-item-rect.highlight {
+    fill:black;
+}
+
+.brc-chart-accum text.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-accum text.highlight {
+    font-weight:bold;
+}
+
+.brc-chart-accum .y-axis.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-accum .y-axis.highlight {
+    font-weight:bold;
+}.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
+    opacity: 0.1;
 }.brc-chart-trend path {
     fill: none;
 }
@@ -210,20 +227,5 @@ svg circle.lowlighted {
 }
 
 .brc-chart-altlat .lowlight {
-    opacity: 0.1;
-}.brc-chart-yearly path {
-    fill: none;
-}
-
-.brc-chart-yearly {
-    overflow: visible;
-}
-.brc-chart-yearly .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-yearly .lowlight {
     opacity: 0.1;
 }
