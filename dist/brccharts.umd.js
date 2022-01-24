@@ -1067,10 +1067,39 @@
           period: d[period],
           id: "".concat(safeId(m.label), "-").concat(d[period])
         };
-      }); // The closure array is a small array of points which can
+      }); // If the style is area, then ensure that there is a point 
+      // for every week or month.
+
+      if (style === 'area') {
+        var maxPeriod = period === 'week' ? 52 : 12;
+        var pointsPlus = [];
+
+        var _loop = function _loop(p) {
+          var match = points.find(function (p1) {
+            return p1.period === p;
+          });
+
+          if (typeof match !== 'undefined') {
+            pointsPlus.push(match);
+          } else {
+            pointsPlus.push({
+              n: 0,
+              period: p,
+              id: "".concat(safeId(m.label), "-").concat(p)
+            });
+          }
+        };
+
+        for (var p = 1; p <= maxPeriod; p++) {
+          _loop(p);
+        }
+
+        points = pointsPlus;
+      } // The closure array is a small array of points which can
       // be used, in conjunction with the main points, to make
       // a properly enclosed polygon that drops open sides down
       // to the x axis.
+
 
       var closure = [];
 
@@ -1149,8 +1178,6 @@
       spreadHeight = height / (0.5 + metricData.length - 1 + topProp);
       maxMetricHeight = maxProp * spreadHeight;
     } // Value scales and related data and functions
-    //const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
-    // const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
 
 
     function periodToDay(p) {
@@ -1167,7 +1194,7 @@
           return month2day[p];
         } else {
           // style is lines
-          return month2day[p] + (month2day[p + 1] - month2day[p]) / 2;
+          return month2day[p - 1] + (month2day[p] - month2day[p - 1]) / 2;
         }
       }
     }
@@ -1235,16 +1262,16 @@
           yAxis.tickFormat(d3.format("d"));
         }
       }
-    } // Main path generators
+    } // Line generator with curves
 
 
-    var line = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+    var lineCurved = d3.line().curve(d3.curveMonotoneX).x(function (d) {
       return xScale(periodToDay(d.period));
     }).y(function (d) {
       return height - maxMetricHeight + yScale(d.n);
-    }); // Closure path generator - no interpolation
+    }); // Line generator without curves
 
-    var close = d3.line().x(function (d) {
+    var lineNotCurved = d3.line().x(function (d) {
       return xScale(periodToDay(d.period));
     }).y(function (d) {
       return height - maxMetricHeight + yScale(d.n);
@@ -1333,6 +1360,10 @@
           });
         });
       });
+    } else if (style === 'area') {
+      egroups.append("path").attr("class", 'phen-path-area').attr("d", function (d) {
+        return flatPath(d, true);
+      });
     } else {
       // style ==='line'
       egroups.append("path").attr("class", 'phen-path-fill').attr("d", function (d) {
@@ -1361,16 +1392,25 @@
     }).attr("fill", function (d) {
       return d.fill;
     });
+    mgroups.select('.phen-path-area').transition().duration(duration).attr("d", function (d) {
+      return getPath(d, true);
+    }).attr("fill", function (d) {
+      return d.colour;
+    });
     xgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
       return flatPath(d, false);
     });
     xgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
       return flatPath(d, true);
     });
+    xgroups.select('.phen-path-area').transition().duration(duration).attr("d", function (d) {
+      return flatPath(d, true);
+    });
     xgroups.transition().duration(duration).attr("opacity", 0).remove(); // Path and bar generation helper functions
 
     function flatPath(d, poly) {
-      var flat = line(d.points.map(function (p) {
+      var lineFn = style === 'area' ? lineNotCurved : lineCurved;
+      var flat = lineFn(d.points.map(function (p) {
         return {
           n: 0,
           period: p.period
@@ -1378,36 +1418,37 @@
       }));
 
       if (d.closure.length && poly) {
-        flat = "".concat(flat, "L").concat(close(d.closure).substring(1));
+        flat = "".concat(flat, "L").concat(lineNotCurved(d.closure).substring(1));
       }
 
       return flat;
     }
 
     function getPath(d, poly) {
+      var lineFn = style === 'area' ? lineNotCurved : lineCurved;
       var lPath;
 
       if (ytype === 'normalized') {
-        lPath = line(d.points.map(function (p) {
+        lPath = lineFn(d.points.map(function (p) {
           return {
             n: d.max ? p.n / d.max : 0,
             period: p.period
           };
         }));
       } else if (ytype === 'proportion') {
-        lPath = line(d.points.map(function (p) {
+        lPath = lineFn(d.points.map(function (p) {
           return {
             n: d.total === 0 ? 0 : p.n / d.total,
             period: p.period
           };
         }));
       } else {
-        lPath = line(d.points);
+        lPath = lineFn(d.points);
       } // If this is for a poly, close the path if required
 
 
       if (d.closure.length && poly) {
-        lPath = "".concat(lPath, "L").concat(close(d.closure).substring(1));
+        lPath = "".concat(lPath, "L").concat(lineNotCurved(d.closure).substring(1));
       }
 
       return lPath;
@@ -2267,7 +2308,6 @@
         m.svgbbox = path.node().getBBox();
         path.remove();
       });
-      console.log('metricsReversed', metricsReversed);
       metricsReversed.forEach(function (m) {
         var tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label).style('font-size', legendFontSize);
@@ -14852,6 +14892,7 @@
   var type = "module";
   var main = "dist/brccharts.umd.js";
   var browser = "dist/brccharts.umd.js";
+  var browsermin = "dist/brccharts.min.umd.js";
   var scripts = {
   	lint: "npx eslint src",
   	test: "jest",
@@ -14893,6 +14934,7 @@
   	type: type,
   	main: main,
   	browser: browser,
+  	browsermin: browsermin,
   	scripts: scripts,
   	author: author,
   	license: license,

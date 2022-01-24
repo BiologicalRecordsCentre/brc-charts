@@ -4,6 +4,7 @@ import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import babel from '@rollup/plugin-babel'
 import json from '@rollup/plugin-json'
+import { terser } from 'rollup-plugin-terser'
 import pkg from './package.json'
 import css from 'rollup-plugin-css-only'
 
@@ -41,6 +42,26 @@ export default [
       commonjs(), // so Rollup can convert CommonJS modules to an ES modules
       json(), // required to import package into index.js
       babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
+		]
+  },
+  {
+    external: ['d3'],
+    globals: {
+      'd3': 'd3',
+    },
+		input: 'index.js',
+		output: {
+			name: 'brccharts',
+			file: pkg.browsermin,
+			format: 'umd'
+		},
+		plugins: [
+      //eslint(),
+			resolve(), // so Rollup can find node libs
+      commonjs(), // so Rollup can convert CommonJS modules to an ES modules
+      json(), // required to import package into index.js
+      babel({ babelHelpers: 'bundled', presets: ['@babel/preset-env'] }),
+      terser()
 		]
   }
 ]

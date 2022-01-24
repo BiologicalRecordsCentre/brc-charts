@@ -5,6 +5,7 @@
   "type": "module",
   "main": "dist/brccharts.umd.js",
   "browser": "dist/brccharts.umd.js",
+  "browsermin": "dist/brccharts.min.umd.js",
   "scripts": {
     "lint": "npx eslint src",
     "test": "jest",

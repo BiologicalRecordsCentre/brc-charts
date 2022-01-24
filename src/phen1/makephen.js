@@ -45,6 +45,26 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
       }
     })
 
+    // If the style is area, then ensure that there is a point 
+    // for every week or month.
+    if (style === 'area') {
+      const maxPeriod = period === 'week' ? 52 : 12
+      const pointsPlus = []
+      for (let p = 1; p <= maxPeriod; p++) {
+        const match = points.find(p1 => p1.period === p)
+        if (typeof(match) !== 'undefined') {
+          pointsPlus.push(match)
+        } else {
+          pointsPlus.push({
+            n: 0,
+            period: p,
+            id: `${safeId(m.label)}-${p}`,
+          })
+        }
+      }
+      points = pointsPlus
+    }
+    
     // The closure array is a small array of points which can
     // be used, in conjunction with the main points, to make
     // a properly enclosed polygon that drops open sides down
@@ -116,9 +136,6 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
   }
 
   // Value scales and related data and functions
-  //const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
-  // const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
-
   function periodToDay(p) {
     if (period === 'week') {
       if (style === 'bars') {
@@ -133,7 +150,7 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
         return month2day[p]
       } else {
         // style is lines
-        return month2day[p] + ((month2day[p+1] - month2day[p]) / 2)
+        return month2day[p-1] + ((month2day[p] - month2day[p-1]) / 2)
       }
     }
   }
@@ -204,13 +221,13 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     }
   }
 
-  // Main path generators
-  const line = d3.line()
+  // Line generator with curves
+  const lineCurved = d3.line()
     .curve(d3.curveMonotoneX)
     .x(d => xScale(periodToDay(d.period)))
     .y(d => height - maxMetricHeight + yScale(d.n))
-  // Closure path generator - no interpolation
-  const close = d3.line()
+  // Line generator without curves
+  const lineNotCurved = d3.line()
     .x(d => xScale(periodToDay(d.period)))
     .y(d => height - maxMetricHeight + yScale(d.n))
 
@@ -312,6 +329,10 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
               .remove())
         )
     })
+  } else if (style === 'area') {
+    egroups.append("path")
+      .attr("class", 'phen-path-area')
+      .attr("d", d => flatPath(d, true))
   } else {
     // style ==='line'
     egroups.append("path")
@@ -344,12 +365,23 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
     .attr("d", d => getPath(d, true))
     .attr("fill", d => d.fill)
 
+  mgroups.select('.phen-path-area')
+    .transition()
+    .duration(duration)
+    .attr("d", d => getPath(d, true))
+    .attr("fill", d => d.colour)
+
   xgroups.select('.phen-path-line')
     .transition()
     .duration(duration)
     .attr("d", d => flatPath(d, false))
 
   xgroups.select('.phen-path-fill')
+    .transition()
+    .duration(duration)
+    .attr("d", d => flatPath(d, true))
+
+  xgroups.select('.phen-path-area')
     .transition()
     .duration(duration)
     .attr("d", d => flatPath(d, true))
@@ -361,40 +393,42 @@ export function makePhen (taxon, taxa, data, metrics, svgChart, width, height,
 
   // Path and bar generation helper functions
   function flatPath(d, poly) {
-    let flat = line(d.points.map(p => {
+    const lineFn = style === 'area' ? lineNotCurved : lineCurved
+    let flat = lineFn(d.points.map(p => {
         return {
           n: 0,
           period: p.period,
         }
       }))
     if (d.closure.length && poly) {
-      flat = `${flat}L${close(d.closure).substring(1)}`
+      flat = `${flat}L${lineNotCurved(d.closure).substring(1)}`
     } 
     return flat
   }
   function getPath(d, poly) {
+    const lineFn = style === 'area' ? lineNotCurved : lineCurved
     let lPath
     if (ytype === 'normalized') {
-      lPath = line(d.points.map(p => {
+      lPath = lineFn(d.points.map(p => {
         return {
           n: d.max ? p.n/d.max : 0,
           period: p.period,
         }
       }))
     } else if (ytype === 'proportion') {
-      lPath = line(d.points.map(p => {
+      lPath = lineFn(d.points.map(p => {
         return {
           n: d.total === 0 ? 0 : p.n/d.total,
           period: p.period,
         }
       }))
     } else {
-      lPath = line(d.points)
+      lPath = lineFn(d.points)
     }
     // If this is for a poly, close the path if required
     if (d.closure.length && poly) {
-      lPath = `${lPath}L${close(d.closure).substring(1)}`
-    } 
+      lPath = `${lPath}L${lineNotCurved(d.closure).substring(1)}`
+    }
     return lPath
   }
   function getBarHeight(d, max, total) {

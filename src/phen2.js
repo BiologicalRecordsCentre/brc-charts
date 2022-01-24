@@ -348,8 +348,6 @@ export function phen2({
       path.remove()
     })
 
-    console.log('metricsReversed', metricsReversed)
-
     metricsReversed.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
