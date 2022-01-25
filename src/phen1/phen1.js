@@ -141,7 +141,7 @@ export function phen1({
     }
   })
 
-  const svgChart = svg.append('svg').attr('class', 'mainChart')
+  const svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible')
   
   makeChart()
 

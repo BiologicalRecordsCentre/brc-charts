@@ -1846,7 +1846,7 @@
         highlightItem(null, false, svgChart);
       }
     });
-    var svgChart = svg.append('svg').attr('class', 'mainChart');
+    var svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible');
     makeChart(); // Texts must come after chart because 
     // the chart width is required
 
@@ -14942,7 +14942,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.6.2";
+  var version = "0.7.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
