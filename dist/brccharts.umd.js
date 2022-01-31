@@ -14426,11 +14426,11 @@
     }
 
     function makeAltLat(taxon) {
-      //console.log(ranges)
-      //console.log(data)
-      // Pre-process data - filter to named taxon
-      //const dataFiltered = data.filter(d => d.taxon === taxon)
-      // Top axis
+      // Fo;ter pit any empty rows
+      data = data.filter(function (d) {
+        return d.metric !== 0;
+      }); // Top axis
+
       var tAxis;
 
       if (axisTop === 'on') {
