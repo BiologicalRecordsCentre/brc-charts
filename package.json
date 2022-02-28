@@ -10,7 +10,7 @@
     "lint": "npx eslint src",
     "test": "jest",
     "build": "rollup --config",
-    "docs": "jsdoc ./src/ -R README.md -d ./docs/api"
+    "docs": "jsdoc ./src/ --recurse -R README.md -d ./docs/api"
   },
   "author": "UKCEH Biological Records Centre",
   "license": "GPL-3.0-only",

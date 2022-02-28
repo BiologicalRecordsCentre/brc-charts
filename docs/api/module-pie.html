@@ -231,7 +231,30 @@
 
             
 
-            <td class="description last">The desired inner radius of the chart in pixels. Default of zero gives a pie char. Specify a value for donut chart.</td>
+            <td class="description last">The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>innerRadius2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The desired inner radius of the second dataset in pixels, for a donut chart with two concentric donuts.Default of zero gives a pie char. Specify a value for donut chart.</td>
         </tr>
 
     
@@ -370,6 +393,75 @@
             
 
             <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendTitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies text, if required, for a legend title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendTitle2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies text, if required, for a legend title for second dataset (inner concentric donut).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendTitleFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of legend title(s).</td>
         </tr>
 
     
@@ -714,7 +806,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.<li> <b>number</b> - a numeric value associated with the item.<li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.<li> <b>image</b> - this optional property allows you to specify the url of an image filewhich can be displayed when a user selects the associated item.</ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>set</b> - a number to indicate to which 'dataset' this item belongs. Used when concentric donuts are requred.<li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.<li> <b>number</b> - a numeric value associated with the item.<li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.<li> <b>image</b> - this optional property allows you to specify the url of an image filewhich can be displayed when a user selects the associated item.</ul></td>
         </tr>
 
     
@@ -762,7 +854,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line48">line 48</a>
+        <a href="pie_pie.js.html">pie/pie.js</a>, <a href="pie_pie.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -872,7 +964,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line723">line 723</a>
+        <a href="pie_pie.js.html">pie/pie.js</a>, <a href="pie_pie.js.html#line252">line 252</a>
     </li></ul></dd>
     
 
@@ -960,7 +1052,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line715">line 715</a>
+        <a href="pie_pie.js.html">pie/pie.js</a>, <a href="pie_pie.js.html#line244">line 244</a>
     </li></ul></dd>
     
 
@@ -1289,6 +1381,121 @@
 
         <tr>
             
+                <td class="name"><code>radius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The desired radius of the chart in pixels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>innerRadius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>innerRadius2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The desired inner radius of the second dataset in pixels, for a donut chart with two concentric donuts.Default of zero gives a pie char. Specify a value for donut chart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendTitle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies text, if requiredi, for a legend title.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>legendTitle2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies text, if required, for a legend title for second dataset (inner concentric donut).</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>data</code></td>
             
 
@@ -1353,7 +1560,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line648">line 648</a>
+        <a href="pie_pie.js.html">pie/pie.js</a>, <a href="pie_pie.js.html#line155">line 155</a>
     </li></ul></dd>
     
 
@@ -1539,7 +1746,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pie.js.html">pie.js</a>, <a href="pie.js.html#line731">line 731</a>
+        <a href="pie_pie.js.html">pie/pie.js</a>, <a href="pie_pie.js.html#line260">line 260</a>
     </li></ul></dd>
     
 
@@ -1569,13 +1776,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-altlat.html">altlat</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-altlat.html">altlat</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 14:54:09 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Feb 28 2022 15:05:21 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>
