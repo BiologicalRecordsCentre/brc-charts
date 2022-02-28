@@ -1,4 +1,4 @@
-import { pie } from './src/pie'
+import { pie } from './src/pie/pie'
 import { phen1 } from './src/phen1/phen1'
 import { phen2 } from './src/phen2'
 import { accum } from './src/accum'

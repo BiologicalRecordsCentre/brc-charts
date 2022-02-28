@@ -265,6 +265,605 @@
     }
   }
 
+  function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth) {
+    sel.on("mouseover", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth);
+      }
+    }).on("mouseout", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem(svg, isArc ? d.data.name : d.name, false, dataPrev, imageWidth);
+      }
+    }).on("click", function (d) {
+      if (interactivity === 'mouseclick') {
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth);
+        d3.event.stopPropagation();
+      }
+    });
+  }
+  function highlightItem(svg, name, show, dataPrev, imageWidth) {
+    var i = safeId(name);
+    var imgSelected = svg.select('.brc-item-image');
+
+    if (show) {
+      svg.selectAll('path').classed('brc-lowlight', true);
+      svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
+      svg.selectAll('.legendText').classed('brc-lowlight', true);
+      svg.selectAll('.labelsPie').classed('brc-lowlight', true);
+      svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
+      svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
+      svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
+      svg.select("#label-".concat(i)).classed('brc-lowlight', false);
+      svg.selectAll('.labelsPie').classed('brc-highlight', false);
+      svg.select("#label-".concat(i)).classed('brc-highlight', true);
+      var data = dataPrev.find(function (d) {
+        return name === d.name;
+      });
+
+      if (data && data.image) {
+        // Loading image into SVG and setting to specified width
+        // and then querying bbox returns zero height. So in order
+        // to get the height of the image (required for correct)
+        // positioning, it is necessary first to load the image and
+        // get the dimensions.
+        if (data.imageHeight) {
+          if (imgSelected.attr('xlink:href') !== data.image) {
+            // The loaded image is different from that of the
+            // highlighted item, so load.
+            loadImage(data, svg);
+          }
+
+          imgSelected.classed('brc-item-image-hide', false);
+        } else {
+          // console.log('data', data)
+          var img = new Image();
+
+          img.onload = function () {
+            data.imageWidth = imageWidth;
+            data.imageHeight = imageWidth * this.height / this.width;
+            loadImage(data, svg);
+          };
+
+          img.src = data.image;
+          imgSelected.classed('brc-item-image-hide', false);
+        }
+      } else {
+        imgSelected.classed('brc-item-image-hide', true);
+      }
+    } else {
+      svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
+      imgSelected.classed('brc-item-image-hide', true);
+      svg.selectAll('.labelsPie').classed('brc-highlight', false);
+    }
+  }
+
+  function loadImage(d, svg) {
+    var imgSelected = svg.select('.brc-item-image');
+    imgSelected.attr('xlink:href', d.image);
+    imgSelected.attr('width', d.imageWidth);
+    imgSelected.attr('height', d.imageHeight);
+    imgSelected.attr("x", -d.imageWidth / 2);
+    imgSelected.attr("y", -d.imageHeight / 2);
+  }
+
+  function makePie(data, dataPrevIn, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
+    //block = true
+    var dataDeleted, dataInserted, dataRetained;
+    var init = !dataPrevIn;
+    var dataNew = cloneData(data);
+    var dataPrev;
+
+    if (init) {
+      dataInserted = [];
+      dataDeleted = [];
+      dataRetained = [];
+      dataPrev = [];
+    } else {
+      dataPrev = _toConsumableArray(dataPrevIn);
+      var prevNames = dataPrev.map(function (d) {
+        return d.name;
+      });
+      var newNames = dataNew.map(function (d) {
+        return d.name;
+      });
+      dataDeleted = dataPrev.filter(function (d) {
+        return !newNames.includes(d.name);
+      });
+      dataDeleted = cloneData(dataDeleted);
+      dataInserted = dataNew.filter(function (d) {
+        return !prevNames.includes(d.name);
+      });
+      dataInserted = cloneData(dataInserted);
+      dataRetained = dataNew.filter(function (d) {
+        return prevNames.includes(d.name);
+      });
+      dataRetained = cloneData(dataRetained);
+    }
+
+    var fnSort;
+
+    if (sort === 'asc') {
+      fnSort = function fnSort(a, b) {
+        return b - a;
+      };
+    } else if (sort === 'desc') {
+      fnSort = function fnSort(a, b) {
+        return a - b;
+      };
+    } else {
+      fnSort = null;
+    }
+
+    var dataDeleted2 = dataDeleted.map(function (d) {
+      var nd = _objectSpread2({}, d);
+
+      nd.number = 0;
+      return nd;
+    });
+    var dataComb = cloneData([].concat(_toConsumableArray(dataNew), _toConsumableArray(dataDeleted2))); //const arcsPrev = d3.pie().value(d => d.number).sortValues(fnSort)(dataPrev)
+    //const arcsComb = d3.pie().value(d => d.number).sortValues(fnSort)(dataComb) 
+
+    var arcsPrev = getArcs(dataPrev);
+    var arcsComb = getArcs(dataComb);
+    console.log('dataComb', dataComb);
+
+    function getArcs(data) {
+      var data1 = data.filter(function (d) {
+        return !d.set || d.set === 1;
+      });
+      var data2 = data.filter(function (d) {
+        return d.set && d.set === 2;
+      });
+      var arcs1 = d3.pie().value(function (d) {
+        return d.number;
+      }).sortValues(fnSort)(data1);
+      var arcs2 = d3.pie().value(function (d) {
+        return d.number;
+      }).sortValues(fnSort)(data2);
+      return [].concat(_toConsumableArray(arcs1), _toConsumableArray(arcs2));
+    }
+
+    arcsComb.forEach(function (arcComb) {
+      var prevArc = arcsPrev.find(function (arcPrev) {
+        return arcComb.data.name === arcPrev.data.name;
+      });
+
+      if (prevArc) {
+        arcComb.prevArc = prevArc;
+
+        if (dataDeleted.find(function (d) {
+          return d.name === arcComb.data.name;
+        })) {
+          arcComb.deleted = true;
+        }
+      }
+
+      if (dataInserted.find(function (d) {
+        return d.name === arcComb.data.name;
+      })) {
+        arcComb.inserted = true;
+      }
+    }); // Now data processing complete, reset dataPrev variable
+
+    dataPrev = data;
+    var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius);
+    var arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius);
+    var arcGeneratorLables2 = d3.arc().innerRadius(innerRadius2).outerRadius(innerRadius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
+    // and here https://bl.ocks.org/mbostock/1346410
+    // Store the displayed angles in _current.
+    // Then, interpolate from _current to the new angles.
+    // During the transition, _current is updated in-place by d3.interpolate.
+
+    function arcTween(arc, _this, trans, radiusx, innerRadiusx, innerRadius2) {
+      var radius, innerRadius;
+
+      if (!arc.data.set || arc.data.set === 1) {
+        radius = radiusx;
+        innerRadius = innerRadiusx;
+      } else {
+        radius = innerRadiusx;
+        innerRadius = innerRadius2;
+      }
+
+      var i;
+      var iPrev = d3.interpolate(_this._current, arc.prevArc);
+      var iCurr = d3.interpolate(_this._current, arc);
+      var midRadius = innerRadius + (radius - innerRadius) / 2;
+      return function (t) {
+        if (trans === 1) {
+          if (init) {
+            i = iCurr;
+            arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t));
+            arcGenerator.innerRadius(innerRadius);
+          } else if (dataInserted.length) {
+            if (arc.deleted) {
+              // Previous arcs to be deleted
+              i = iPrev;
+
+              if (dataRetained.length) {
+                arcGenerator.outerRadius(d3.interpolate(radius, midRadius)(t));
+                arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
+              } else {
+                arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t));
+                arcGenerator.innerRadius(innerRadius);
+              }
+            } else if (arc.inserted) {
+              // New arcs to be inserted (invisibly)
+              i = iCurr;
+              arcGenerator.outerRadius(innerRadius);
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              // Existing arcs to be shrunk to outer ring
+              i = iPrev;
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
+            }
+          } else if (dataDeleted.length) {
+            if (arc.deleted) {
+              // Previous arcs to be deleted
+              i = iPrev;
+              arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t));
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              i = iPrev;
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(innerRadius);
+            }
+          } else {
+            i = iCurr;
+            arcGenerator.outerRadius(radius);
+            arcGenerator.innerRadius(innerRadius);
+          }
+        }
+
+        if (trans === 2) {
+          if (dataInserted.length) {
+            if (arc.inserted) {
+              i = iCurr;
+
+              if (dataRetained.length) {
+                // Shown inserted arcs in inner ring
+                arcGenerator.outerRadius(d3.interpolate(innerRadius, midRadius)(t));
+                arcGenerator.innerRadius(innerRadius);
+              } else {
+                arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t));
+                arcGenerator.innerRadius(innerRadius);
+              }
+            } else if (arc.deleted) {
+              i = iCurr;
+
+              if (dataRetained.length) {
+                // Deleted arcs to be kept with inner & outer radius the same (invisible)
+                arcGenerator.outerRadius(midRadius);
+                arcGenerator.innerRadius(midRadius);
+              } else {
+                arcGenerator.outerRadius(innerRadius);
+                arcGenerator.innerRadius(innerRadius);
+              }
+            } else {
+              // Existing arcs to be shown in new positions in outer ring
+              i = iCurr;
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(midRadius);
+            }
+          } else {
+            if (arc.deleted) {
+              i = iCurr;
+              arcGenerator.outerRadius(innerRadius);
+              arcGenerator.innerRadius(innerRadius);
+            } else {
+              i = iCurr;
+              arcGenerator.outerRadius(radius);
+              arcGenerator.innerRadius(innerRadius);
+            }
+          }
+        }
+
+        if (trans === 3) {
+          if (arc.inserted) {
+            // Shown inserted arcs in inner ring
+            i = iCurr;
+            arcGenerator.outerRadius(d3.interpolate(midRadius, radius)(t));
+            arcGenerator.innerRadius(innerRadius);
+          } else if (!arc.deleted) {
+            // Existing arcs to be shown in new positions in outer ring
+            i = iCurr;
+            arcGenerator.outerRadius(radius);
+            arcGenerator.innerRadius(d3.interpolate(midRadius, innerRadius)(t));
+          } else {
+            // Deletions - do nothing
+            i = iCurr;
+          }
+        }
+
+        _this._current = i(0);
+        return arcGenerator(i(t));
+      };
+    }
+
+    function centroidTween(a) {
+      var i = d3.interpolate(this._current, a);
+      this._current = i(0);
+      return function (t) {
+        var gen = a.data.set && a.data.set === 2 ? arcGeneratorLables2 : arcGeneratorLables;
+        return "translate(".concat(gen.centroid(i(t)), ")");
+      };
+    }
+
+    var svgPie, gPie;
+
+    if (svg.select('.brc-chart-pie').size()) {
+      svgPie = svgChart.select('.brc-chart-pie');
+      gPie = svgPie.select('g');
+    } else {
+      svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius).style('overflow', 'visible');
+      gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
+      gPie.append('image').classed('brc-item-image', true).classed('brc-item-image-hide', true).attr('width', imageWidth);
+    } // Remove those paths that have been 'deleted'
+    // This because in our transition, we never actually remove
+    // arcs. Best done here because of better handling of
+    // interrupted transitions
+
+
+    gPie.selectAll("path[data-deleted='true']").remove(); // map to data
+
+    var uPie = gPie.selectAll('path').data(arcsComb, function (d) {
+      return d.data.name;
+    });
+    var ePie = uPie.enter().append('path').attr('id', function (d) {
+      return "pie-".concat(safeId(d.data.name));
+    }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
+      return d.data.colour;
+    }).each(function (d) {
+      this._current = d;
+    });
+    addEventHandlers(svg, ePie, true, interactivity, dataPrev, imageWidth);
+    var mPie = ePie.merge(uPie); // Mark paths corresponding to deleted arcs as
+    // deleted so that they can be removed before next 
+    // transition
+
+    mPie.attr('data-deleted', function (arc) {
+      return arc.deleted;
+    });
+    var trans;
+    var transDuration = duration; // Transition 1
+
+    trans = mPie.transition().duration(duration).attrTween('d', function (arc) {
+      return arcTween(arc, this, 1, radius, innerRadius, innerRadius2);
+    }); // Transition 2 
+
+    if (dataDeleted.length || dataInserted.length) {
+      trans = trans.transition().duration(duration).attrTween('d', function (arc) {
+        return arcTween(arc, this, 2, radius, innerRadius, innerRadius2);
+      });
+      transDuration += duration;
+    } // Transition 3
+
+
+    if (dataInserted.length && dataRetained.length) {
+      trans = trans.transition().duration(duration).attrTween('d', function (arc) {
+        return arcTween(arc, this, 3, radius, innerRadius, innerRadius2);
+      });
+      transDuration += duration;
+    } // Because we always retain deleted items in order
+    // to make smooth transitions, the D3 exit selection
+    // is never populated. Instead we have to remove
+    // invisible deleted DOM items (SVG paths) ourselves after 
+    // the last transition to avoid messing up the transition
+    // next time the data changes.
+    //uPie.exit().remove()  // there is no exit selection 
+
+
+    trans.on("end", function () {// Be careful about doing anything in here in case transition interrupted
+      //if (arc.deleted) {
+      //d3.select(this).remove()
+      //}
+      //block = false
+    });
+
+    if (label) {
+      //const arcsNew = d3.pie().value(d => d.number).sortValues(fnSort)(dataNew) 
+      //console.log(arcsNew)
+      var data1 = dataNew.filter(function (d) {
+        return !d.set || d.set === 1;
+      });
+      var data2 = dataNew.filter(function (d) {
+        return d.set && d.set === 2;
+      });
+      var arcs1 = d3.pie().value(function (d) {
+        return d.number;
+      }).sortValues(fnSort)(data1);
+      var arcs2 = d3.pie().value(function (d) {
+        return d.number;
+      }).sortValues(fnSort)(data2);
+      var arcsNew = [].concat(_toConsumableArray(arcs1), _toConsumableArray(arcs2));
+      var uPieLabels = gPie.selectAll('.labelsPie').data(arcsNew, function (d) {
+        return d.data.name;
+      });
+      var total1 = data1.reduce(function (t, c) {
+        return t + c.number;
+      }, 0);
+      var total2 = data2.reduce(function (t, c) {
+        return t + c.number;
+      }, 0);
+      var ePieLabels = uPieLabels.enter().append('text').attr('id', function (d) {
+        return "label-".concat(safeId(d.data.name));
+      }).attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
+      addEventHandlers(svg, ePieLabels, true, interactivity, dataPrev, imageWidth);
+      ePieLabels.merge(uPieLabels).text(function (d) {
+        if (label === 'value') {
+          return d.data.number;
+        } else if (label === 'percent') {
+          var total = total1;
+
+          if (d.data.set && d.data.set === 2) {
+            total = total2;
+          }
+
+          if (Number.isNaN(d.data.number) || total === 0) {
+            return '';
+          } else {
+            var l = Math.round(d.data.number / total * 100);
+
+            if (l === 0) {
+              l = Math.ceil(d.data.number / total * 1000) / 10;
+            }
+
+            return "".concat(l, "%");
+          }
+        }
+      }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', function (d) {
+        var total = total1;
+
+        if (d.data.set && d.data.set === 2) {
+          total = total2;
+        }
+
+        if (Math.round(d.data.number / total * 100) === 0) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+      uPieLabels.exit().remove();
+    }
+
+    return dataPrev;
+  }
+
+  function makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth) {
+    var svgLegend;
+
+    if (svg.select('.brc-chart-legend').size()) {
+      svgLegend = svgChart.select('.brc-chart-legend');
+    } else {
+      svgLegend = svgChart.append('svg').classed('brc-chart-legend', true).attr('overflow', 'auto');
+    } // Constants relating to legendTexts
+
+
+    var legendTitleHeight = legendTitle ? textHeight(legendTitleFontSize) : 0;
+    var legendTitleGap = legendTitle ? legendSwatchGap : 0;
+    var legendTitleHeight2 = legendTitle2 ? textHeight(legendTitleFontSize) : 0;
+    var legendTitleGap2 = legendTitle2 ? legendSwatchGap : 0; // Legend swatches
+
+    var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data, function (d) {
+      return d.name;
+    });
+    var durationUpdate = uLegendSwatch.nodes().length ? duration : 0;
+    var durationExit = uLegendSwatch.exit().nodes().length ? duration : 0;
+    var eLegendSwatch = uLegendSwatch.enter().append('rect').attr('id', function (d) {
+      return "swatch-".concat(safeId(d.name));
+    }).classed('legendSwatch', true).attr('y', function (d, i) {
+      var titleHeight;
+
+      if (!d.set || d.set === 1) {
+        titleHeight = legendTitleHeight + legendTitleGap;
+      } else {
+        titleHeight = legendTitleHeight + legendTitleGap + legendTitleHeight2 + legendTitleGap2;
+      }
+
+      return titleHeight + i * (legendSwatchSize + legendSwatchGap);
+    }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
+      return d.colour;
+    }).attr('opacity', 0);
+    addEventHandlers(svg, eLegendSwatch, false, interactivity, dataPrev, imageWidth);
+    eLegendSwatch.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
+    uLegendSwatch.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
+      var titleHeight;
+
+      if (!d.set || d.set === 1) {
+        titleHeight = legendTitleHeight + legendTitleGap;
+      } else {
+        titleHeight = legendTitleHeight + legendTitleGap + legendTitleHeight2 + legendTitleGap2;
+      }
+
+      return titleHeight + i * (legendSwatchSize + legendSwatchGap);
+    }).attr('opacity', 1);
+    uLegendSwatch.exit().transition().duration(duration).attr('opacity', 0).remove(); // Legend text
+
+    var uLegendText = svgLegend.selectAll('.legendText').data(data, function (d) {
+      return d.name;
+    });
+    var legendTextHeight = textHeight(labelFontSize);
+    var eLegendText = uLegendText.enter().append('text').text(function (d) {
+      return d.name;
+    }).attr('alignment-baseline', 'middle').attr('id', function (d) {
+      return "legend-".concat(safeId(d.name));
+    }).classed('legendText', true).attr('x', function () {
+      return legendSwatchSize + legendSwatchGap;
+    }).attr('y', function (d, i) {
+      var titleHeight;
+
+      if (!d.set || d.set === 1) {
+        titleHeight = legendTitleHeight + legendTitleGap;
+      } else {
+        titleHeight = legendTitleHeight + legendTitleGap + legendTitleHeight2 + legendTitleGap2;
+      }
+
+      return titleHeight + (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 3;
+    }).style('font-size', labelFontSize).attr('opacity', 0);
+    addEventHandlers(svg, eLegendText, false, dataPrev, imageWidth);
+    eLegendText.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
+    uLegendText.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
+      var titleHeight;
+
+      if (!d.set || d.set === 1) {
+        titleHeight = legendTitleHeight + legendTitleGap;
+      } else {
+        titleHeight = legendTitleHeight + legendTitleGap + legendTitleHeight2 + legendTitleGap2;
+      }
+
+      return titleHeight + (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 3;
+    }).attr('opacity', 1);
+    uLegendText.exit().transition().duration(duration).attr('opacity', 0).remove(); // Legend titles
+
+    var legendTitles = [];
+    if (legendTitle) legendTitles.push(legendTitle);
+    if (legendTitle2) legendTitles.push(legendTitle2);
+    var uLegendTitle = svgLegend.selectAll('.legendTitle').data(legendTitles, function (d) {
+      return d;
+    });
+    var eLegendTitle = uLegendTitle.enter().append('text').text(function (d) {
+      return d;
+    }).attr('id', function (d) {
+      return "legend-title-".concat(safeId(d));
+    }).classed('legendTitle', true).attr('y', function (d, i) {
+      if (i === 0) {
+        return legendTitleHeight;
+      } else {
+        var dataSet1Length = data.filter(function (d) {
+          return !d.set || d.set === 1;
+        }).length;
+        return 2 * legendTitleHeight + legendTitleGap + dataSet1Length * (legendSwatchSize + legendSwatchGap);
+      }
+    }).style('font-size', legendTitleFontSize).attr('opacity', 0);
+    eLegendTitle.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
+    uLegendTitle.transition().delay(durationExit).duration(duration) //.attr('y', (d, i) => i * (legendTitleFontSize + legendTitleGap))
+    .attr('y', function (d, i) {
+      if (i === 0) {
+        return legendTitleHeight;
+      } else {
+        var dataSet1Length = data.filter(function (d) {
+          return !d.set || d.set === 1;
+        }).length;
+        return 2 * legendTitleHeight + legendTitleGap + dataSet1Length * (legendSwatchSize + legendSwatchGap);
+      }
+    }).attr('opacity', 1);
+    uLegendTitle.exit().transition().duration(duration).attr('opacity', 0).remove(); //Legend size
+
+    svgLegend.attr("width", legendWidth);
+    var legendHeight = legendTitleHeight + legendTitleGap + legendTitleHeight2 + legendTitleGap2 + data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap;
+    svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0); // Helper functions
+
+    function textHeight(fontSize) {
+      var dummyText = svgLegend.append('text').attr('opacity', 0).style('font-size', fontSize).text('Dummy');
+      var textHeight = dummyText.node().getBBox().height;
+      dummyText.remove();
+      return textHeight;
+    }
+  }
+
+  /** @module pie */
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
   /** 
@@ -272,13 +871,19 @@
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
    * @param {number} opts.radius - The desired radius of the chart in pixels.
-   * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie char. Specify a value for donut chart.
+   * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.
+   * If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.
+   * @param {number} opts.innerRadius2 - The desired inner radius of the second dataset in pixels, for a donut chart with two concentric donuts.
+   * Default of zero gives a pie char. Specify a value for donut chart.
    * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
    * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
    * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
    * @param {string} opts.labelFontSize - Specifies the size of label and legend text.
    * @param {string} opts.labelColour - Specifies the colour of label text.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
+   * @param {string} opts.legendTitle - Specifies text, if required, for a legend title.
+   * @param {string} opts.legendTitle2 - Specifies text, if required, for a legend title for second dataset (inner concentric donut).
+   * @param {string} opts.legendTitleFontSize - Font size (pixels) of legend title(s).
    * @param {string} opts.legendSwatchSize - Specifies the size of legend swatches.
    * @param {string} opts.legendSwatchGap - Specifies the size of gap between legend swatches.
    * @param {number} opts.legendWidth - The width of the legend in pixels.
@@ -296,6 +901,7 @@
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
+   * <li> <b>set</b> - a number to indicate to which 'dataset' this item belongs. Used when concentric donuts are requred.
    * <li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.
    * <li> <b>number</b> - a numeric value associated with the item.
    * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, 
@@ -316,6 +922,8 @@
         radius = _ref$radius === void 0 ? 180 : _ref$radius,
         _ref$innerRadius = _ref.innerRadius,
         innerRadius = _ref$innerRadius === void 0 ? 0 : _ref$innerRadius,
+        _ref$innerRadius2 = _ref.innerRadius2,
+        innerRadius2 = _ref$innerRadius2 === void 0 ? 0 : _ref$innerRadius2,
         _ref$sort = _ref.sort,
         sort = _ref$sort === void 0 ? '' : _ref$sort,
         _ref$label = _ref.label,
@@ -326,6 +934,12 @@
         labelColour = _ref$labelColour === void 0 ? 'white' : _ref$labelColour,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$legendTitle = _ref.legendTitle,
+        legendTitle = _ref$legendTitle === void 0 ? '' : _ref$legendTitle,
+        _ref$legendTitle2 = _ref.legendTitle2,
+        legendTitle2 = _ref$legendTitle2 === void 0 ? '' : _ref$legendTitle2,
+        _ref$legendTitleFontS = _ref.legendTitleFontSize,
+        legendTitleFontSize = _ref$legendTitleFontS === void 0 ? 16 : _ref$legendTitleFontS,
         _ref$legendSwatchSize = _ref.legendSwatchSize,
         legendSwatchSize = _ref$legendSwatchSize === void 0 ? 30 : _ref$legendSwatchSize,
         _ref$legendSwatchGap = _ref.legendSwatchGap,
@@ -368,7 +982,7 @@
     var svgChart = svg.append('svg').attr('class', 'mainChart');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(null, false);
+        highlightItem(svg, null, false, dataPrev, imageWidth);
       }
     });
     makeChart(data);
@@ -381,479 +995,13 @@
     positionMainElements(svg, expand);
 
     function makeChart(data) {
-      makePie(data);
-      makeLegend(data);
+      dataPrev = makePie(data, dataPrev, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize);
+      makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth);
       var svgPie = svgChart.select('.brc-chart-pie');
       var svgLegend = svgChart.select('.brc-chart-legend');
       svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
       svgChart.attr("width", Number(svgLegend.attr("width")) + legendSwatchGap + Number(svgPie.attr("width")));
       svgChart.attr("height", Math.max(Number(svgLegend.attr("height")), Number(svgPie.attr("height"))));
-    }
-
-    function makeLegend(data) {
-      var svgLegend;
-
-      if (svg.select('.brc-chart-legend').size()) {
-        svgLegend = svgChart.select('.brc-chart-legend');
-      } else {
-        svgLegend = svgChart.append('svg').classed('brc-chart-legend', true).attr('overflow', 'auto');
-      }
-
-      var uLegendSwatch = svgLegend.selectAll('.legendSwatch').data(data, function (d) {
-        return d.name;
-      });
-      var durationUpdate = uLegendSwatch.nodes().length ? duration : 0;
-      var durationExit = uLegendSwatch.exit().nodes().length ? duration : 0;
-      var eLegendSwatch = uLegendSwatch.enter().append('rect').attr('id', function (d) {
-        return "swatch-".concat(safeId(d.name));
-      }).classed('legendSwatch', true).attr('y', function (d, i) {
-        return i * (legendSwatchSize + legendSwatchGap);
-      }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
-        return d.colour;
-      }).attr('opacity', 0);
-      addEventHandlers(eLegendSwatch, false);
-      eLegendSwatch.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
-      uLegendSwatch.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
-        return i * (legendSwatchSize + legendSwatchGap);
-      }).attr('opacity', 1);
-      uLegendSwatch.exit().transition().duration(duration).attr('opacity', 0).remove();
-      var uLegendText = svgLegend.selectAll('.legendText').data(data, function (d) {
-        return d.name;
-      });
-      var dummyText = svgLegend.append('text').attr('opacity', 0).style('font-size', labelFontSize).text('Dummy');
-      var legendTextHeight = dummyText.node().getBBox().height;
-      dummyText.remove();
-      var eLegendText = uLegendText.enter().append('text').text(function (d) {
-        return d.name;
-      }).attr('alignment-baseline', 'middle').attr('id', function (d) {
-        return "legend-".concat(safeId(d.name));
-      }).classed('legendText', true).attr('x', function () {
-        return legendSwatchSize + legendSwatchGap;
-      }).attr('y', function (d, i) {
-        return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 3;
-      }).style('font-size', labelFontSize).attr('opacity', 0);
-      addEventHandlers(eLegendText, false);
-      eLegendText.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
-      uLegendText.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
-        return (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 4;
-      }).attr('opacity', 1);
-      uLegendText.exit().transition().duration(duration).attr('opacity', 0).remove(); //let legendTextWidth = d3.max(d3.selectAll('.legendText').nodes(), n => n.getBBox().width)
-      //svgLegend.attr("width", legendSwatchSize + legendSwatchGap + legendTextWidth)
-
-      svgLegend.attr("width", legendWidth);
-      var legendHeight = data.length * (legendSwatchSize + legendSwatchGap) - legendSwatchGap;
-      svgLegend.attr("height", legendHeight > 0 ? legendHeight : 0);
-    }
-
-    function makePie(data) {
-      //block = true
-      var dataDeleted, dataInserted, dataRetained;
-      var init = !dataPrev;
-      var dataNew = cloneData(data);
-
-      if (init) {
-        dataInserted = [];
-        dataDeleted = [];
-        dataRetained = [];
-        dataPrev = [];
-      } else {
-        var prevNames = dataPrev.map(function (d) {
-          return d.name;
-        });
-        var newNames = dataNew.map(function (d) {
-          return d.name;
-        });
-        dataDeleted = dataPrev.filter(function (d) {
-          return !newNames.includes(d.name);
-        });
-        dataDeleted = cloneData(dataDeleted);
-        dataInserted = dataNew.filter(function (d) {
-          return !prevNames.includes(d.name);
-        });
-        dataInserted = cloneData(dataInserted);
-        dataRetained = dataNew.filter(function (d) {
-          return prevNames.includes(d.name);
-        });
-        dataRetained = cloneData(dataRetained);
-      }
-
-      var fnSort;
-
-      if (sort === 'asc') {
-        fnSort = function fnSort(a, b) {
-          return b - a;
-        };
-      } else if (sort === 'desc') {
-        fnSort = function fnSort(a, b) {
-          return a - b;
-        };
-      } else {
-        fnSort = null;
-      }
-
-      var dataDeleted2 = dataDeleted.map(function (d) {
-        var nd = _objectSpread2({}, d);
-
-        nd.number = 0;
-        return nd;
-      });
-      var dataComb = cloneData([].concat(_toConsumableArray(dataNew), _toConsumableArray(dataDeleted2)));
-      var arcsPrev = d3.pie().value(function (d) {
-        return d.number;
-      }).sortValues(fnSort)(dataPrev);
-      var arcsComb = d3.pie().value(function (d) {
-        return d.number;
-      }).sortValues(fnSort)(dataComb);
-      arcsComb.forEach(function (arcComb) {
-        var prevArc = arcsPrev.find(function (arcPrev) {
-          return arcComb.data.name === arcPrev.data.name;
-        });
-
-        if (prevArc) {
-          arcComb.prevArc = prevArc;
-
-          if (dataDeleted.find(function (d) {
-            return d.name === arcComb.data.name;
-          })) {
-            arcComb.deleted = true;
-          }
-        }
-
-        if (dataInserted.find(function (d) {
-          return d.name === arcComb.data.name;
-        })) {
-          arcComb.inserted = true;
-        }
-      }); // Now data processing complete, reset dataPrev variable
-
-      dataPrev = data;
-      var arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(radius);
-      var arcGeneratorLables = d3.arc().innerRadius(innerRadius).outerRadius(radius); // Good stuff here: https://bl.ocks.org/mbostock/4341417
-      // and here https://bl.ocks.org/mbostock/1346410
-      // Store the displayed angles in _current.
-      // Then, interpolate from _current to the new angles.
-      // During the transition, _current is updated in-place by d3.interpolate.
-
-      function arcTween(arc, _this, trans) {
-        var i;
-        var iPrev = d3.interpolate(_this._current, arc.prevArc);
-        var iCurr = d3.interpolate(_this._current, arc);
-        var midRadius = innerRadius + (radius - innerRadius) / 2;
-        return function (t) {
-          if (trans === 1) {
-            if (init) {
-              i = iCurr;
-              arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t));
-              arcGenerator.innerRadius(innerRadius);
-            } else if (dataInserted.length) {
-              if (arc.deleted) {
-                // Previous arcs to be deleted
-                i = iPrev;
-
-                if (dataRetained.length) {
-                  arcGenerator.outerRadius(d3.interpolate(radius, midRadius)(t));
-                  arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
-                } else {
-                  arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t));
-                  arcGenerator.innerRadius(innerRadius);
-                }
-              } else if (arc.inserted) {
-                // New arcs to be inserted (invisibly)
-                i = iCurr;
-                arcGenerator.outerRadius(innerRadius);
-                arcGenerator.innerRadius(innerRadius);
-              } else {
-                // Existing arcs to be shrunk to outer ring
-                i = iPrev;
-                arcGenerator.outerRadius(radius);
-                arcGenerator.innerRadius(d3.interpolate(innerRadius, midRadius)(t));
-              }
-            } else if (dataDeleted.length) {
-              if (arc.deleted) {
-                // Previous arcs to be deleted
-                i = iPrev;
-                arcGenerator.outerRadius(d3.interpolate(radius, innerRadius)(t));
-                arcGenerator.innerRadius(innerRadius);
-              } else {
-                i = iPrev;
-                arcGenerator.outerRadius(radius);
-                arcGenerator.innerRadius(innerRadius);
-              }
-            } else {
-              i = iCurr;
-              arcGenerator.outerRadius(radius);
-              arcGenerator.innerRadius(innerRadius);
-            }
-          }
-
-          if (trans === 2) {
-            if (dataInserted.length) {
-              if (arc.inserted) {
-                i = iCurr;
-
-                if (dataRetained.length) {
-                  // Shown inserted arcs in inner ring
-                  arcGenerator.outerRadius(d3.interpolate(innerRadius, midRadius)(t));
-                  arcGenerator.innerRadius(innerRadius);
-                } else {
-                  arcGenerator.outerRadius(d3.interpolate(innerRadius, radius)(t));
-                  arcGenerator.innerRadius(innerRadius);
-                }
-              } else if (arc.deleted) {
-                i = iCurr;
-
-                if (dataRetained.length) {
-                  // Deleted arcs to be kept with inner & outer radius the same (invisible)
-                  arcGenerator.outerRadius(midRadius);
-                  arcGenerator.innerRadius(midRadius);
-                } else {
-                  arcGenerator.outerRadius(innerRadius);
-                  arcGenerator.innerRadius(innerRadius);
-                }
-              } else {
-                // Existing arcs to be shown in new positions in outer ring
-                i = iCurr;
-                arcGenerator.outerRadius(radius);
-                arcGenerator.innerRadius(midRadius);
-              }
-            } else {
-              if (arc.deleted) {
-                i = iCurr;
-                arcGenerator.outerRadius(innerRadius);
-                arcGenerator.innerRadius(innerRadius);
-              } else {
-                i = iCurr;
-                arcGenerator.outerRadius(radius);
-                arcGenerator.innerRadius(innerRadius);
-              }
-            }
-          }
-
-          if (trans === 3) {
-            if (arc.inserted) {
-              // Shown inserted arcs in inner ring
-              i = iCurr;
-              arcGenerator.outerRadius(d3.interpolate(midRadius, radius)(t));
-              arcGenerator.innerRadius(innerRadius);
-            } else if (!arc.deleted) {
-              // Existing arcs to be shown in new positions in outer ring
-              i = iCurr;
-              arcGenerator.outerRadius(radius);
-              arcGenerator.innerRadius(d3.interpolate(midRadius, innerRadius)(t));
-            } else {
-              // Deletions - do nothing
-              i = iCurr;
-            }
-          }
-
-          _this._current = i(0);
-          return arcGenerator(i(t));
-        };
-      }
-
-      function centroidTween(a) {
-        var i = d3.interpolate(this._current, a);
-        this._current = i(0);
-        return function (t) {
-          return "translate(".concat(arcGeneratorLables.centroid(i(t)), ")");
-        };
-      }
-
-      var svgPie, gPie;
-
-      if (svg.select('.brc-chart-pie').size()) {
-        svgPie = svgChart.select('.brc-chart-pie');
-        gPie = svgPie.select('g');
-      } else {
-        svgPie = svgChart.append('svg').classed('brc-chart-pie', true).attr('width', 2 * radius).attr('height', 2 * radius).style('overflow', 'visible');
-        gPie = svgPie.append('g').attr('transform', "translate(".concat(radius, " ").concat(radius, ")"));
-        gPie.append('image').classed('brc-item-image', true).classed('brc-item-image-hide', true).attr('width', imageWidth);
-      } // Remove those paths that have been 'deleted'
-      // This because in our transition, we never actually remove
-      // arcs. Best done here because of better handling of
-      // interrupted transitions
-
-
-      gPie.selectAll("path[data-deleted='true']").remove(); // map to data
-
-      var uPie = gPie.selectAll('path').data(arcsComb, function (d) {
-        return d.data.name;
-      });
-      var ePie = uPie.enter().append('path').attr('id', function (d) {
-        return "pie-".concat(safeId(d.data.name));
-      }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
-        return d.data.colour;
-      }).each(function (d) {
-        this._current = d;
-      });
-      addEventHandlers(ePie, true);
-      var mPie = ePie.merge(uPie); // Mark paths corresponding to deleted arcs as
-      // deleted so that they can be removed before next 
-      // transition
-
-      mPie.attr('data-deleted', function (arc) {
-        return arc.deleted;
-      });
-      var trans;
-      var transDuration = duration; // Transition 1
-
-      trans = mPie.transition().duration(duration).attrTween('d', function (arc) {
-        return arcTween(arc, this, 1);
-      }); // Transition 2 
-
-      if (dataDeleted.length || dataInserted.length) {
-        trans = trans.transition().duration(duration).attrTween('d', function (arc) {
-          return arcTween(arc, this, 2);
-        });
-        transDuration += duration;
-      } // Transition 3
-
-
-      if (dataInserted.length && dataRetained.length) {
-        trans = trans.transition().duration(duration).attrTween('d', function (arc) {
-          return arcTween(arc, this, 3);
-        });
-        transDuration += duration;
-      } // Because we always retain deleted items in order
-      // to make smooth transitions, the D3 exit selection
-      // is never populated. Instead we have to remove
-      // invisible deleted DOM items (SVG paths) ourselves after 
-      // the last transition to avoid messing up the transition
-      // next time the data changes.
-      //uPie.exit().remove()  // there is no exit selection 
-
-
-      trans.on("end", function () {// Be careful about doing anything in here in case transition interrupted
-        //if (arc.deleted) {
-        //d3.select(this).remove()
-        //}
-        //block = false
-      });
-
-      if (label) {
-        var arcsNew = d3.pie().value(function (d) {
-          return d.number;
-        }).sortValues(fnSort)(dataNew);
-        var uPieLabels = gPie.selectAll('.labelsPie').data(arcsNew, function (d) {
-          return d.data.name;
-        });
-        var total = dataNew.reduce(function (t, c) {
-          return t + c.number;
-        }, 0);
-        var ePieLabels = uPieLabels.enter().append('text').attr('id', function (d) {
-          return "label-".concat(safeId(d.data.name));
-        }).attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
-        addEventHandlers(ePieLabels, true);
-        ePieLabels.merge(uPieLabels).text(function (d) {
-          if (label === 'value') {
-            return d.data.number;
-          } else if (label === 'percent') {
-            if (Number.isNaN(d.data.number) || total === 0) {
-              return '';
-            } else {
-              console.log('lab', d.data.number);
-              var l = Math.round(d.data.number / total * 100);
-
-              if (l === 0) {
-                l = Math.ceil(d.data.number / total * 1000) / 10;
-              }
-
-              return "".concat(l, "%");
-            }
-          }
-        }).attr('opacity', 0).transition().duration(transDuration).attrTween('transform', centroidTween).transition().duration(0).attr('opacity', function (d) {
-          if (Math.round(d.data.number / total * 100) === 0) {
-            return 0;
-          } else {
-            return 1;
-          }
-        });
-        uPieLabels.exit().remove();
-      }
-    }
-
-    function addEventHandlers(sel, isArc) {
-      sel.on("mouseover", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(isArc ? d.data.name : d.name, true);
-        }
-      }).on("mouseout", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(isArc ? d.data.name : d.name, false);
-        }
-      }).on("click", function (d) {
-        if (interactivity === 'mouseclick') {
-          highlightItem(isArc ? d.data.name : d.name, true);
-          d3.event.stopPropagation();
-        }
-      });
-    }
-
-    function highlightItem(name, show) {
-      var i = safeId(name);
-      var imgSelected = svg.select('.brc-item-image');
-
-      if (show) {
-        svg.selectAll('path').classed('brc-lowlight', true);
-        svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
-        svg.selectAll('.legendText').classed('brc-lowlight', true);
-        svg.selectAll('.labelsPie').classed('brc-lowlight', true);
-        svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
-        svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
-        svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
-        svg.select("#label-".concat(i)).classed('brc-lowlight', false);
-        svg.selectAll('.labelsPie').classed('brc-highlight', false);
-        svg.select("#label-".concat(i)).classed('brc-highlight', true);
-
-        var _data = dataPrev.find(function (d) {
-          return name === d.name;
-        });
-
-        if (_data && _data.image) {
-          // Loading image into SVG and setting to specified width
-          // and then querying bbox returns zero height. So in order
-          // to get the height of the image (required for correct)
-          // positioning, it is necessary first to load the image and
-          // get the dimensions.
-          if (_data.imageHeight) {
-            if (imgSelected.attr('xlink:href') !== _data.image) {
-              // The loaded image is different from that of the
-              // highlighted item, so load.
-              loadImage(_data);
-            }
-
-            imgSelected.classed('brc-item-image-hide', false);
-          } else {
-            // console.log('data', data)
-            var img = new Image();
-
-            img.onload = function () {
-              _data.imageWidth = imageWidth;
-              _data.imageHeight = imageWidth * this.height / this.width;
-              loadImage(_data);
-            };
-
-            img.src = _data.image; //'images/Bumblebees.png'
-
-            imgSelected.classed('brc-item-image-hide', false);
-          }
-        } else {
-          imgSelected.classed('brc-item-image-hide', true);
-        }
-      } else {
-        svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
-        imgSelected.classed('brc-item-image-hide', true);
-        svg.selectAll('.labelsPie').classed('brc-highlight', false);
-      }
-    }
-
-    function loadImage(d) {
-      var imgSelected = svg.select('.brc-item-image');
-      imgSelected.attr('xlink:href', d.image);
-      imgSelected.attr('width', d.imageWidth);
-      imgSelected.attr('height', d.imageHeight);
-      imgSelected.attr("x", -d.imageWidth / 2);
-      imgSelected.attr("y", -d.imageHeight / 2);
     }
 
     function colourData(data) {
@@ -891,7 +1039,7 @@
 
     function setChartOpts(opts) {
       //if (!block) {
-      highlightItem(null, false);
+      highlightItem(svg, null, false, dataPrev, imageWidth);
 
       if ('title' in opts) {
         title = opts.title;
@@ -927,6 +1075,26 @@
 
       if ('footerAlign' in opts) {
         footerAlign = opts.footerAlign;
+      }
+
+      if ('radius' in opts) {
+        radius = opts.radius;
+      }
+
+      if ('innerRadius' in opts) {
+        innerRadius = opts.innerRadius;
+      }
+
+      if ('innerRadius2' in opts) {
+        innerRadius2 = opts.innerRadius2;
+      }
+
+      if ('legendTitle' in opts) {
+        legendTitle = opts.legendTitle;
+      }
+
+      if ('legendTitle2' in opts) {
+        legendTitle2 = opts.legendTitle2;
       }
 
       var textWidth = Number(svgChart.attr("width"));
@@ -977,23 +1145,23 @@
     };
   }
 
-  function addEventHandlers(sel, prop, interactivity, svgChart) {
+  function addEventHandlers$1(sel, prop, interactivity, svgChart) {
     sel.on("mouseover", function (d) {
       if (interactivity === 'mousemove') {
-        highlightItem(d[prop], true, svgChart);
+        highlightItem$1(d[prop], true, svgChart);
       }
     }).on("mouseout", function (d) {
       if (interactivity === 'mousemove') {
-        highlightItem(d[prop], false, svgChart);
+        highlightItem$1(d[prop], false, svgChart);
       }
     }).on("click", function (d) {
       if (interactivity === 'mouseclick') {
-        highlightItem(d[prop], true, svgChart);
+        highlightItem$1(d[prop], true, svgChart);
         d3.event.stopPropagation();
       }
     });
   }
-  function highlightItem(id, highlight, svgChart) {
+  function highlightItem$1(id, highlight, svgChart) {
     svgChart.selectAll('.phen-metric path').classed('lowlight', highlight);
     svgChart.selectAll(".phen-metric-".concat(safeId(id), " path")).classed('lowlight', false);
     svgChart.selectAll(".phen-metric path").classed('highlight', false);
@@ -1331,7 +1499,7 @@
     var egroups = agroups.enter().append("g").attr("opacity", 0).attr("class", function (d) {
       return "phen-metric-".concat(d.id, " phen-metric");
     });
-    addEventHandlers(egroups, 'id', interactivity, svgChart);
+    addEventHandlers$1(egroups, 'id', interactivity, svgChart);
     var mgroups = agroups.merge(egroups).classed("phen-metric-no-data", function (d) {
       return !d.hasData;
     });
@@ -1616,7 +1784,7 @@
     return metricsPlus;
   }
 
-  function makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) {
+  function makeLegend$1(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) {
     var swatchSize = 20;
     var swatchFact = 1.3; // Loop through all the legend elements and work out their
     // positions based on swatch size, item lable text size and
@@ -1672,8 +1840,8 @@
     }).attr('y', function (m) {
       return m.y + legendFontSize * 1;
     });
-    addEventHandlers(ls, 'label', interactivity, svgChart);
-    addEventHandlers(lt, 'label', interactivity, svgChart);
+    addEventHandlers$1(ls, 'label', interactivity, svgChart);
+    addEventHandlers$1(lt, 'label', interactivity, svgChart);
     return swatchSize * swatchFact * (rows + 1);
   }
 
@@ -1843,7 +2011,7 @@
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(null, false, svgChart);
+        highlightItem$1(null, false, svgChart);
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible');
@@ -1886,7 +2054,7 @@
 
       if (showLegend) {
         var legendWidth = perRow * (subChartWidth + subChartPad) - headPad;
-        legendHeight = makeLegend(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) + subChartPad;
+        legendHeight = makeLegend$1(legendWidth, metrics, svgChart, legendFontSize, headPad, interactivity, style) + subChartPad;
       }
 
       svgsTaxa.forEach(function (svgTaxon, i) {
@@ -14942,7 +15110,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.7.0";
+  var version = "0.8.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

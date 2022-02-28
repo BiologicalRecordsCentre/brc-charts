@@ -1,33 +1,38 @@
-.brc-chart-phen2 rect.highlight {
-    fill: black;
-    opacity: 1;
-}
-
-.brc-chart-phen2 rect.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen2 {
-    overflow: visible;
-}
-
-.brc-chart-phen2-top .brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen2-top .brc-legend-item-rect.highlight {
-    fill:black;
-}
-
-.brc-chart-phen2-top .brc-legend-item-icon.highlight {
-    fill:black;
-}
-
-#phen2-chart .mainChart {
-    overflow: visible;
-}
 .blah {
     background: red;
+}.brc-chart-pie {
+  width: 100%
+}
+
+.brc-chart-pie-legend {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie-chart {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie path.brc-lowlight, .brc-chart-pie .legendSwatch.brc-lowlight, .brc-chart-pie .legendText.brc-lowlight {
+  opacity: 0.3 !important;
+}
+
+.brc-chart-pie .brc-item-image-hide {
+  display: none;
+}
+
+.brc-chart-pie .labelsPie.brc-lowlight {
+  opacity: 0;
+}
+
+.brc-chart-pie .labelsPie.brc-highlight {
+  opacity: 1;
+  font-weight: bolder;
+  text-shadow: -1px 1px 2px #000,
+    1px 1px 2px #000,
+    1px -1px 0 #000,
+    -1px -1px 0 #000;
 }.brc-chart-accum path {
     fill: none;
 }
@@ -68,40 +73,66 @@
 
 .brc-chart-accum .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-pie {
-  width: 100%
+}.brc-chart-phen2 rect.highlight {
+    fill: black;
+    opacity: 1;
 }
 
-.brc-chart-pie-legend {
-  float:left;
-  overflow:hidden;
+.brc-chart-phen2 rect.lowlight {
+    opacity:0.3;
 }
 
-.brc-chart-pie-chart {
-  float:left;
-  overflow:hidden;
+.brc-chart-phen2 {
+    overflow: visible;
 }
 
-.brc-chart-pie path.brc-lowlight, .brc-chart-pie .legendSwatch.brc-lowlight, .brc-chart-pie .legendText.brc-lowlight {
-  opacity: 0.3 !important;
+.brc-chart-phen2-top .brc-legend-item.lowlight {
+    opacity:0.3;
 }
 
-.brc-chart-pie .brc-item-image-hide {
-  display: none;
+.brc-chart-phen2-top .brc-legend-item-rect.highlight {
+    fill:black;
 }
 
-.brc-chart-pie .labelsPie.brc-lowlight {
-  opacity: 0;
+.brc-chart-phen2-top .brc-legend-item-icon.highlight {
+    fill:black;
 }
 
-.brc-chart-pie .labelsPie.brc-highlight {
-  opacity: 1;
-  font-weight: bolder;
-  text-shadow: -1px 1px 2px #000,
-    1px 1px 2px #000,
-    1px -1px 0 #000,
-    -1px -1px 0 #000;
+#phen2-chart .mainChart {
+    overflow: visible;
 }
+/* .brc-chart-phen1 path {
+    fill: none;
+} */
+
+.brc-chart-phen1 path.highlight.phen-path-line {
+    stroke: black;
+    stroke-width: 3;
+    opacity: 1;
+}
+
+.brc-chart-phen1 path.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 rect.lowlight {
+    opacity:0.3;
+}
+
+.brc-chart-phen1 {
+    overflow: visible;
+}
+
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+/* .brc-chart-phen1  */
+.brc-chart-phen1-top .brc-legend-item-line.highlight {
+    fill:black;
+}
+
 .chart-overflow svg {
     overflow: visible;
 }
@@ -161,11 +192,20 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
-}.brc-chart-altlat .highlight {
+}.brc-chart-yearly path {
+    fill: none;
+}
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
     opacity: 1;
 }
 
-.brc-chart-altlat .lowlight {
+.brc-chart-yearly .lowlight {
     opacity: 0.1;
 }.brc-chart-trend path {
     fill: none;
@@ -182,50 +222,10 @@ svg circle.lowlighted {
 
 .brc-chart-trend .lowlight {
     opacity: 0.1;
-}/* .brc-chart-phen1 path {
-    fill: none;
-} */
-
-.brc-chart-phen1 path.highlight.phen-path-line {
-    stroke: black;
-    stroke-width: 3;
+}.brc-chart-altlat .highlight {
     opacity: 1;
 }
 
-.brc-chart-phen1 path.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 rect.lowlight {
-    opacity:0.3;
-}
-
-.brc-chart-phen1 {
-    overflow: visible;
-}
-
-/* .brc-chart-phen1  */
-.brc-chart-phen1-top .brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-/* .brc-chart-phen1  */
-.brc-chart-phen1-top .brc-legend-item-line.highlight {
-    fill:black;
-}
-.brc-chart-yearly path {
-    fill: none;
-}
-
-.brc-chart-yearly {
-    overflow: visible;
-}
-.brc-chart-yearly .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-yearly .lowlight {
+.brc-chart-altlat .lowlight {
     opacity: 0.1;
 }

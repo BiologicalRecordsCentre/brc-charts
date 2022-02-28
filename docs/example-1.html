@@ -167,6 +167,8 @@
     <button onclick="button2Click()">reduced 1</button>
     <button onclick="button3Click()">reduced 2</button>
     <button onclick="button4Click()">something completely different...</button>
+    <button onclick="button5Click()">concentric donuts</button>
+    <button onclick="button6Click()">concentric donuts 2</button>
 
     <p>
       The pie/donut chart has been implemented with transitions that engage the user's attention
@@ -348,19 +350,113 @@ function button4Click() {
         },
       ]
 
+      var armitage2 = [
+        {
+          name: 'The Last Hurrah',
+          number: 24
+        },
+        {
+          name: 'The Exuberance of Youth',
+          number: 9
+        },
+        {
+          name: 'The Call of the Wild',
+          number: 17
+        },
+        {
+          name: "She's Left Me/I'll Show Him",
+          number: 16
+        },
+        {
+          name: 'Bear Grylls/Ray Mears Box Set',
+          number: 9
+        },
+        {
+          set: 2,
+          name: 'Julia Bradbury',
+          number: 4 
+        },
+        {
+          set: 2,
+          name: 'Midlife Crisis',
+          number: 11
+        },
+        {
+          set: 2,
+          name: 'Finding Myself',
+          number: 2
+        },
+        {
+          set: 2,
+          name: 'Away with the Fairies',
+          number: 1
+        },
+        {
+          set: 2,
+          name: 'Unclassifiable',
+          number: 26
+        },
+      ]
+
+      var armitage3 = [
+        {
+          name: 'The Last Hurrah',
+          number: 24
+        },
+        {
+          name: 'The Exuberance of Youth',
+          number: 9
+        },
+        {
+          name: 'The Call of the Wild',
+          number: 17
+        },
+        {
+          name: "She's Left Me/I'll Show Him",
+          number: 16
+        },
+        {
+          name: 'Bear Grylls/Ray Mears Box Set',
+          number: 9
+        },
+        {
+          name: 'Julia Bradbury',
+          number: 4 
+        },
+        {
+          name: 'Midlife Crisis',
+          number: 11
+        },
+        {
+          set: 2,
+          name: 'Finding Myself',
+          number: 2
+        },
+        {
+          set: 2,
+          name: 'Away with the Fairies',
+          number: 1
+        },
+        {
+          set: 2,
+          name: 'Unclassifiable',
+          number: 26
+        },
+      ]
+
       //var chart = brccharts.pie({selector: '#chart1'})
       var chart = brccharts.pie({
         selector: '#chart1',
-        innerRadius: 100,
         radius: 200,
+        innerRadius: 100,
         title: 'FIT Counts: insects counted on hawthorn flowers \n 2017 to 2020',
         data: items
       })
 
       brccharts.pie({
         selector: '#chart2',
-        innerRadius: 100,
         radius: 200,
+        innerRadius: 100,
         title: 'Example 2',
         subtitle: 'Interactive on click only; sub-title text displayed; title and sub-title centred; footer text displayed',
         footer: 'The footer could be used to display information on copyright etc',
@@ -395,19 +491,59 @@ function button4Click() {
       })
 
       function button1Click() {
-        chart.setChartOpts({title: 'Original data', footer: '', data: items})
+        chart.setChartOpts({
+          title: 'Original data', 
+          footer: '', 
+          data: items,
+          legendTitle: '',
+          legendTitle2: ''
+        })
       }
       function button2Click() {
-        chart.setChartOpts({title: 'Original data reduce 1', footer: '', data: itemsDataReduced1})
+        chart.setChartOpts(
+          {title: 'Original data reduce 1', 
+          footer: '', 
+          data: itemsDataReduced1,
+          legendTitle: '',
+          legendTitle2: ''
+        })
       }
       function button3Click() {
-        chart.setChartOpts({title: 'Original data reduce 2', footer: '', data: itemsDataReduced2})
+        chart.setChartOpts({
+          title: 'Original data reduce 2', 
+          footer: '', 
+          data: itemsDataReduced2,
+          legendTitle: '',
+          legendTitle2: ''
+        })
       }
       function button4Click() {
         chart.setChartOpts({
           title: 'Typology of walkers on the Pennine Way', 
           footer: 'As classified by Simon Armitage in his book Walking Home - Travels with a Troubadour on The Pennine Way',
-          data: armitage
+          data: armitage,
+          legendTitle: '',
+          legendTitle2: ''
+        })
+      }
+      function button5Click() {
+        chart.setChartOpts({
+          title: 'Typology of walkers on the Pennine Way (split)', 
+          footer: 'As classified by Simon Armitage in his book Walking Home - Travels with a Troubadour on The Pennine Way. Split is artificial to demonstrate concentric donuts.',
+          data: armitage2,
+          innerRadius2: 50,
+          legendTitle: 'Group 1',
+          legendTitle2: 'Group 2'
+        })
+      }
+      function button6Click() {
+        chart.setChartOpts({
+          title: 'Typology of walkers on the Pennine Way (split)', 
+          footer: 'As classified by Simon Armitage in his book Walking Home - Travels with a Troubadour on The Pennine Way. Split is artificial to demonstrate concentric donuts.',
+          data: armitage3,
+          innerRadius2: 50,
+          legendTitle: 'Group 1',
+          legendTitle2: 'Group 2'
         })
       }
 
