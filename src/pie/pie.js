@@ -163,6 +163,13 @@ export function pie({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {number} opts.radius - The desired radius of the chart in pixels.
+  * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.
+  * If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.
+  * @param {number} opts.innerRadius2 - The desired inner radius of the second dataset in pixels, for a donut chart with two concentric donuts.
+  * Default of zero gives a pie char. Specify a value for donut chart.
+  * @param {string} opts.legendTitle - Specifies text, if requiredi, for a legend title.
+  * @param {string} opts.legendTitle2 - Specifies text, if required, for a legend title for second dataset (inner concentric donut).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
