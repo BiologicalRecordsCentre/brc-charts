@@ -290,12 +290,13 @@
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
       svg.selectAll('.legendText').classed('brc-lowlight', true);
       svg.selectAll('.labelsPie').classed('brc-lowlight', true);
+      svg.selectAll('.labelsPieHighlight').classed('brc-lowlight', true);
       svg.select("#swatch-".concat(i)).classed('brc-lowlight', false);
       svg.select("#legend-".concat(i)).classed('brc-lowlight', false);
       svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
-      svg.select("#label-".concat(i)).classed('brc-lowlight', false);
-      svg.selectAll('.labelsPie').classed('brc-highlight', false);
-      svg.select("#label-".concat(i)).classed('brc-highlight', true);
+      svg.select("#label-highlight-".concat(i)).classed('brc-lowlight', false);
+      svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false);
+      svg.select("#label-highlight-".concat(i)).classed('brc-highlight', true);
       var data = dataPrev.find(function (d) {
         return name === d.name;
       });
@@ -334,6 +335,8 @@
       svg.selectAll('.brc-lowlight').classed('brc-lowlight', false);
       imgSelected.classed('brc-item-image-hide', true);
       svg.selectAll('.labelsPie').classed('brc-highlight', false);
+      svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false);
+      svg.selectAll('.labelsPieHighlight').classed('brc-lowlight', true);
     }
   }
 
@@ -346,7 +349,7 @@
     imgSelected.attr("y", -d.imageHeight / 2);
   }
 
-  function makePie(data, dataPrevIn, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
+  function makePie(data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
     //block = true
     var dataDeleted, dataInserted, dataRetained;
     var init = !dataPrevIn;
@@ -404,8 +407,7 @@
     //const arcsComb = d3.pie().value(d => d.number).sortValues(fnSort)(dataComb) 
 
     var arcsPrev = getArcs(dataPrev);
-    var arcsComb = getArcs(dataComb);
-    console.log('dataComb', dataComb);
+    var arcsComb = getArcs(dataComb); //console.log('dataComb',dataComb)
 
     function getArcs(data) {
       var data1 = data.filter(function (d) {
@@ -585,7 +587,8 @@
       var i = d3.interpolate(this._current, a);
       this._current = i(0);
       return function (t) {
-        var gen = a.data.set && a.data.set === 2 ? arcGeneratorLables2 : arcGeneratorLables;
+        var gen = a.data.set && a.data.set === 2 ? arcGeneratorLables2 : arcGeneratorLables; //console.log(i(t))
+
         return "translate(".concat(gen.centroid(i(t)), ")");
       };
     }
@@ -612,7 +615,7 @@
     });
     var ePie = uPie.enter().append('path').attr('id', function (d) {
       return "pie-".concat(safeId(d.data.name));
-    }).attr('stroke', 'white').style('stroke-width', '2px').style('opacity', 1).attr('fill', function (d) {
+    }).attr('stroke', 'white').style('stroke-width', "".concat(strokeWidth, "px")).style('opacity', 1).attr('fill', function (d) {
       return d.data.colour;
     }).each(function (d) {
       this._current = d;
@@ -677,15 +680,15 @@
         return d.number;
       }).sortValues(fnSort)(data2);
       var arcsNew = [].concat(_toConsumableArray(arcs1), _toConsumableArray(arcs2));
-      var uPieLabels = gPie.selectAll('.labelsPie').data(arcsNew, function (d) {
-        return d.data.name;
-      });
       var total1 = data1.reduce(function (t, c) {
         return t + c.number;
       }, 0);
       var total2 = data2.reduce(function (t, c) {
         return t + c.number;
       }, 0);
+      var uPieLabels = gPie.selectAll('.labelsPie').data(arcsNew, function (d) {
+        return d.data.name;
+      });
       var ePieLabels = uPieLabels.enter().append('text').attr('id', function (d) {
         return "label-".concat(safeId(d.data.name));
       }).attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
@@ -726,6 +729,35 @@
         }
       });
       uPieLabels.exit().remove();
+      var uPieLabelsHighlight = gPie.selectAll('.labelsPieHighlight').data(arcsNew, function (d) {
+        return d.data.name;
+      });
+      var ePieLabelsHighlight = uPieLabelsHighlight.enter().append('text').attr('id', function (d) {
+        return "label-highlight-".concat(safeId(d.data.name));
+      }).classed('labelsPieHighlight', true).classed('brc-lowlight', true).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
+      addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth);
+      ePieLabelsHighlight.merge(uPieLabelsHighlight).text(function (d) {
+        if (label === 'value') {
+          return d.data.number;
+        } else if (label === 'percent') {
+          var total = total1;
+
+          if (d.data.set && d.data.set === 2) {
+            total = total2;
+          }
+
+          if (Number.isNaN(d.data.number) || total === 0) {
+            return '';
+          } else {
+            var l = Math.round(d.data.number / total * 1000) / 10;
+            return "".concat(l, "% (").concat(d.data.number, ")");
+          }
+        }
+      }).attr('transform', function (d) {
+        var gen = d.data.set && d.data.set === 2 ? arcGeneratorLables2 : arcGeneratorLables;
+        return "translate(".concat(gen.centroid(d), ")");
+      });
+      uPieLabelsHighlight.exit().remove();
     }
 
     return dataPrev;
@@ -870,6 +902,7 @@
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
+   * @param {number} opts.strokeWidth - The desired width of the line delineating chart segments in pixels.
    * @param {number} opts.radius - The desired radius of the chart in pixels.
    * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.
    * If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.
@@ -918,6 +951,8 @@
         selector = _ref$selector === void 0 ? 'body' : _ref$selector,
         _ref$elid = _ref.elid,
         elid = _ref$elid === void 0 ? 'piechart' : _ref$elid,
+        _ref$strokeWidth = _ref.strokeWidth,
+        strokeWidth = _ref$strokeWidth === void 0 ? 2 : _ref$strokeWidth,
         _ref$radius = _ref.radius,
         radius = _ref$radius === void 0 ? 180 : _ref$radius,
         _ref$innerRadius = _ref.innerRadius,
@@ -995,7 +1030,7 @@
     positionMainElements(svg, expand);
 
     function makeChart(data) {
-      dataPrev = makePie(data, dataPrev, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize);
+      dataPrev = makePie(data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize);
       makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth);
       var svgPie = svgChart.select('.brc-chart-pie');
       var svgLegend = svgChart.select('.brc-chart-legend');
@@ -1030,6 +1065,13 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {number} opts.radius - The desired radius of the chart in pixels.
+      * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.
+      * If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.
+      * @param {number} opts.innerRadius2 - The desired inner radius of the second dataset in pixels, for a donut chart with two concentric donuts.
+      * Default of zero gives a pie char. Specify a value for donut chart.
+      * @param {string} opts.legendTitle - Specifies text, if requiredi, for a legend title.
+      * @param {string} opts.legendTitle2 - Specifies text, if required, for a legend title for second dataset (inner concentric donut).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -15110,7 +15152,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.8.0";
+  var version = "0.8.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -15120,7 +15162,7 @@
   	lint: "npx eslint src",
   	test: "jest",
   	build: "rollup --config",
-  	docs: "jsdoc ./src/ -R README.md -d ./docs/api"
+  	docs: "jsdoc ./src/ --recurse -R README.md -d ./docs/api"
   };
   var author = "UKCEH Biological Records Centre";
   var license = "GPL-3.0-only";

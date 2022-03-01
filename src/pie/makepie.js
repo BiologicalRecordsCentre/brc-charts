@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 import * as gen from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
+export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
 
   //block = true
 
@@ -53,7 +53,7 @@ export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadiu
   const arcsPrev = getArcs(dataPrev)
   const arcsComb = getArcs(dataComb)
 
-  console.log('dataComb',dataComb)
+  //console.log('dataComb',dataComb)
 
   function getArcs(data){
     const data1 = data.filter((d) => !d.set || d.set===1)
@@ -218,6 +218,7 @@ export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadiu
     this._current = i(0)
     return function(t) {
       const gen = a.data.set && a.data.set===2 ? arcGeneratorLables2 : arcGeneratorLables
+      //console.log(i(t))
       return `translate(${gen.centroid(i(t))})`
     }
   }
@@ -254,7 +255,7 @@ export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadiu
     .append('path')
     .attr('id', (d) => `pie-${gen.safeId(d.data.name)}`)
     .attr('stroke', 'white')
-    .style('stroke-width', '2px')
+    .style('stroke-width', `${strokeWidth}px`)
     .style('opacity', 1)
     .attr('fill', d => d.data.colour)
     .each(function(d) { this._current = d })
@@ -322,12 +323,12 @@ export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadiu
     const arcs2 = d3.pie().value(d => d.number).sortValues(fnSort)(data2)
     const arcsNew = [...arcs1, ...arcs2]
 
-    const uPieLabels = gPie.selectAll('.labelsPie')
-      .data(arcsNew, d => d.data.name)
-      
     const total1 = data1.reduce((t, c) => {return t + c.number}, 0)
     const total2 = data2.reduce((t, c) => {return t + c.number}, 0)
 
+    const uPieLabels = gPie.selectAll('.labelsPie')
+      .data(arcsNew, d => d.data.name)
+      
     const ePieLabels = uPieLabels.enter()
       .append('text')
       .attr('id', (d) => `label-${gen.safeId(d.data.name)}`)
@@ -378,6 +379,46 @@ export function makePie (data, dataPrevIn, sort, radius, innerRadius, innerRadiu
         }
       })
     uPieLabels.exit()
+      .remove()
+
+    const uPieLabelsHighlight = gPie.selectAll('.labelsPieHighlight')
+      .data(arcsNew, d => d.data.name)
+      
+    const ePieLabelsHighlight = uPieLabelsHighlight.enter()
+      .append('text')
+      .attr('id', (d) => `label-highlight-${gen.safeId(d.data.name)}`)
+      .classed('labelsPieHighlight', true)
+      .classed('brc-lowlight', true)
+      .style('text-anchor', 'middle')
+      .style('font-size', labelFontSize)
+      .style('fill', labelColour)
+
+    addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth)
+
+    ePieLabelsHighlight.merge(uPieLabelsHighlight)
+      .text(d => {
+        if (label ==='value') {
+          return d.data.number
+        } else if (label ==='percent') {
+
+          let total = total1
+          if (d.data.set && d.data.set===2) {
+            total = total2
+          }
+
+          if (Number.isNaN(d.data.number) || total === 0) {
+              return ''
+          } else {
+            let l = Math.round(d.data.number / total * 1000)/10
+            return `${l}% (${d.data.number})`
+          }
+        }
+      })
+      .attr('transform', d => {
+        const gen = d.data.set && d.data.set===2 ? arcGeneratorLables2 : arcGeneratorLables
+        return `translate(${gen.centroid(d)})`
+      })
+    uPieLabelsHighlight.exit()
       .remove()
   }
 

@@ -24,7 +24,6 @@ export function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, image
 export function highlightItem (svg, name, show, dataPrev, imageWidth) {
   
   const i = gen.safeId(name)
-
   const imgSelected = svg.select('.brc-item-image')
 
   if (show) {
@@ -32,16 +31,17 @@ export function highlightItem (svg, name, show, dataPrev, imageWidth) {
     svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
     svg.selectAll('.legendText').classed('brc-lowlight', true)
     svg.selectAll('.labelsPie').classed('brc-lowlight', true)
+    svg.selectAll('.labelsPieHighlight').classed('brc-lowlight', true)
+
     svg.select(`#swatch-${i}`).classed('brc-lowlight', false)
     svg.select(`#legend-${i}`).classed('brc-lowlight', false)
     svg.select(`#pie-${i}`).classed('brc-lowlight', false)
-    svg.select(`#label-${i}`).classed('brc-lowlight', false)
-
-    svg.selectAll('.labelsPie').classed('brc-highlight', false)
-    svg.select(`#label-${i}`).classed('brc-highlight', true)
+    svg.select(`#label-highlight-${i}`).classed('brc-lowlight', false)
+    
+    svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false)
+    svg.select(`#label-highlight-${i}`).classed('brc-highlight', true)
 
     const data = dataPrev.find(d => name === d.name)
-
     if (data && data.image) {
       // Loading image into SVG and setting to specified width
       // and then querying bbox returns zero height. So in order
@@ -73,6 +73,9 @@ export function highlightItem (svg, name, show, dataPrev, imageWidth) {
     svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
     imgSelected.classed('brc-item-image-hide', true)
     svg.selectAll('.labelsPie').classed('brc-highlight', false)
+
+    svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false)
+    svg.selectAll('.labelsPieHighlight').classed('brc-lowlight', true)
   }
 }
 

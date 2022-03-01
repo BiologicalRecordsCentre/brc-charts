@@ -13,6 +13,7 @@ import { highlightItem} from './highlightitem'
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
+ * @param {number} opts.strokeWidth - The desired width of the line delineating chart segments in pixels.
  * @param {number} opts.radius - The desired radius of the chart in pixels.
  * @param {number} opts.innerRadius - The desired inner radius of the chart in pixels. Default of zero gives a pie chart. Specify a value for donut chart.
  * If your data specify more than one dataset (for concentric donuts), this value is also the out-radius of the second set.
@@ -59,6 +60,7 @@ export function pie({
   // Default options in here
   selector = 'body',
   elid = 'piechart',
+  strokeWidth = 2,
   radius = 180,
   innerRadius = 0,
   innerRadius2 = 0,
@@ -123,7 +125,7 @@ export function pie({
 
   function makeChart(data) {
 
-    dataPrev = makePie (data, dataPrev, sort, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize)
+    dataPrev = makePie (data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize)
     
     makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth)
     const svgPie = svgChart.select('.brc-chart-pie')
