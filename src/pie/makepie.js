@@ -343,7 +343,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
       .text(d => {
         if (label ==='value') {
           return d.data.number
-        } else if (label ==='percent') {
+        } else  {
 
           let total = total1
           if (d.data.set && d.data.set===2) {
@@ -354,9 +354,9 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
               return ''
           } else {
             let l = Math.round(d.data.number / total * 100)
-            if (l === 0) {
-              l = Math.ceil(d.data.number / total * 1000)/10
-            }
+            // if (l === 0) {
+            //   l = Math.ceil(d.data.number / total * 1000)/10
+            // }
             return `${l}%`
           }
         }
@@ -399,8 +399,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
       .text(d => {
         if (label ==='value') {
           return d.data.number
-        } else if (label ==='percent') {
-
+        } else {
           let total = total1
           if (d.data.set && d.data.set===2) {
             total = total2
@@ -410,7 +409,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
               return ''
           } else {
             let l = Math.round(d.data.number / total * 1000)/10
-            return `${l}% (${d.data.number})`
+            return label ==='pervalue' ? `${l}% (${d.data.number})` : `${l}%`
           }
         }
       })

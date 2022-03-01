@@ -1,6 +1,6 @@
 {
   "name": "brc-d3",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Javscript library for various D3 visualisations of biological record data.",
   "type": "module",
   "main": "dist/brccharts.umd.js",

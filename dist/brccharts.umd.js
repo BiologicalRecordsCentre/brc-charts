@@ -696,7 +696,7 @@
       ePieLabels.merge(uPieLabels).text(function (d) {
         if (label === 'value') {
           return d.data.number;
-        } else if (label === 'percent') {
+        } else {
           var total = total1;
 
           if (d.data.set && d.data.set === 2) {
@@ -706,11 +706,9 @@
           if (Number.isNaN(d.data.number) || total === 0) {
             return '';
           } else {
-            var l = Math.round(d.data.number / total * 100);
-
-            if (l === 0) {
-              l = Math.ceil(d.data.number / total * 1000) / 10;
-            }
+            var l = Math.round(d.data.number / total * 100); // if (l === 0) {
+            //   l = Math.ceil(d.data.number / total * 1000)/10
+            // }
 
             return "".concat(l, "%");
           }
@@ -739,7 +737,7 @@
       ePieLabelsHighlight.merge(uPieLabelsHighlight).text(function (d) {
         if (label === 'value') {
           return d.data.number;
-        } else if (label === 'percent') {
+        } else {
           var total = total1;
 
           if (d.data.set && d.data.set === 2) {
@@ -750,7 +748,7 @@
             return '';
           } else {
             var l = Math.round(d.data.number / total * 1000) / 10;
-            return "".concat(l, "% (").concat(d.data.number, ")");
+            return label === 'pervalue' ? "".concat(l, "% (").concat(d.data.number, ")") : "".concat(l, "%");
           }
         }
       }).attr('transform', function (d) {
@@ -910,7 +908,8 @@
    * Default of zero gives a pie char. Specify a value for donut chart.
    * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
    * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
-   * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
+   * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or
+   * 'pervalue' for percentage and count together.
    * @param {string} opts.labelFontSize - Specifies the size of label and legend text.
    * @param {string} opts.labelColour - Specifies the colour of label text.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
@@ -15152,7 +15151,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.8.1";
+  var version = "0.8.2";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

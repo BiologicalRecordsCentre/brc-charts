@@ -21,7 +21,8 @@ import { highlightItem} from './highlightitem'
  * Default of zero gives a pie char. Specify a value for donut chart.
  * @param {number} opts.imageWidth - The width of images in pixels. Images will be resized to this width.
  * @param {string} opts.sort - Sort function. Set to 'asc' for ascending, 'desc' for descending or '' for no sort.
- * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or '' for no sort.
+ * @param {string} opts.label - How to label sections. Set to 'value' for raw number, 'percent' for percentage or
+ * 'pervalue' for percentage and count together.
  * @param {string} opts.labelFontSize - Specifies the size of label and legend text.
  * @param {string} opts.labelColour - Specifies the colour of label text.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
