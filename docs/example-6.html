@@ -80,6 +80,7 @@
 </pre>
 
     <div id="chart1" style="margin-top: 1em"></div>
+    <!--<button onclick="test()">Test</button>-->
 
     <p>
       The <em>taxa</em> option specifies an array identifying the taxa in the dataset for which
@@ -118,7 +119,7 @@
 })</code></pre>
 
     <div id="chart2" style="margin-top: 1em"></div>
-
+    <!--<button onclick="test()">Test</button>-->
     <p>
       In the next graph, the main configuration option to change is <em>showCounts</em>
       which has been added and set to 'line' this changes the plot from a bar chart
@@ -146,6 +147,7 @@
 })</code></pre>
 
     <div id="chart2a" style="margin-top: 1em"></div>
+    <!--<button onclick="test()">Test</button>-->
 
     <p>
      In the next example, the plot style has been changed back to bars and the number
@@ -153,6 +155,7 @@
     </p>
 
     <div id="chart3" style="margin-top: 1em"></div>
+    <!--<button onclick="test()">Test</button>-->
 
     <p>
       The following example demonstrates some other configuration options
@@ -182,6 +185,7 @@
 })</code></pre>
 
   <div id="chart4" style="margin-top: 1em"></div>
+  <!--<button onclick="test()">Test</button>-->
 
   <P>
     The example below demonstrates the use of the <em>setTaxon</em> method on the API returned
@@ -201,6 +205,7 @@
     <button onclick="api.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
 
     <div id="chart5" style="margin-top: 1em"></div>
+    <!--<button onclick="test()">Test</button>-->
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -369,6 +374,7 @@
         showLegend: true,
         interactivity: 'mouseclick',
       }
+      var c1, c2, c3, c4, c5
       d3.csv('./data/ladybirds-ds.csv', function(d){
         for (p in d) {
           if (p !== 'taxon') {
@@ -378,23 +384,33 @@
         return d
       }).then(function(data){
         optsChart1.data = data
-        brccharts.yearly(optsChart1)
+        c1 = brccharts.yearly(optsChart1)
 
         optsChart2.data = data
-        brccharts.yearly(optsChart2)
+        c2 = blah = brccharts.yearly(optsChart2)
 
         optsChart2a.data = data
-        brccharts.yearly(optsChart2a)
+        c3 = brccharts.yearly(optsChart2a)
 
         optsChart3.data = data
-        brccharts.yearly(optsChart3)
+        c4 = brccharts.yearly(optsChart3)
 
         optsChart4.data = data
-        brccharts.yearly(optsChart4)
+        c5 = brccharts.yearly(optsChart4)
 
         optsChart5.data = data
         api = brccharts.yearly(optsChart5)
       })
+
+      function test() {
+        var apis = [c1, c2, c3, c4, c5, api]
+        apis.forEach(function(api) {
+          api.setChartOpts({
+            minYear: 2005,
+            maxYear: 2020
+          })
+        })
+      }
     </script>
   </div>
 </body>

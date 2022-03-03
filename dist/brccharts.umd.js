@@ -5163,6 +5163,7 @@
           chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
         }
       });
+      console.log('chartBars', chartBars);
       var t = svgYearly.transition().duration(duration);
       gYearly.selectAll("rect").data(chartBars, function (d) {
         return "props-".concat(d.year);
@@ -5186,9 +5187,11 @@
       // enter and update selections
       .attr('y', function (d) {
         return d.n;
+      }).attr('x', function (d) {
+        return xScaleBar(d.year);
       }).attr('height', function (d) {
         return height - d.n;
-      }).attr("fill", function (d) {
+      }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
         return d.colour;
       });
       gYearly.selectAll("path").data(chartLines, function (d) {
@@ -5289,10 +5292,19 @@
         // .classed('yearly-type-props',  axisRight !== 'tick')
         .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
         tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
-      } else if (taxa.length === 1) {
-        // Update taxon label
-        if (showTaxonLabel) {
-          svgYearly.select('.brc-chart-yearly-label').text(taxon);
+      } else {
+        if (taxa.length === 1) {
+          // Update taxon label
+          if (showTaxonLabel) {
+            svgYearly.select('.brc-chart-yearly-label').text(taxon);
+          }
+        } // Update the bottom axis if it exists. We do this because
+        // yearMin and/or yearMax may have changed.
+
+
+        if (axisBottom === 'on' || axisBottom === 'tick') {
+          svgYearly.select(".x.axis").selectAll('*').remove();
+          svgYearly.select(".x.axis").call(bAxis);
         }
       }
 
@@ -5376,7 +5388,6 @@
     function addEventHandlers(sel, prop) {
       sel.on("mouseover", function (d) {
         if (interactivity === 'mousemove') {
-          console.log(d);
           highlightItem(d[prop], true);
         }
       }).on("mouseout", function (d) {
@@ -5445,18 +5456,27 @@
         footerAlign = opts.footerAlign;
       }
 
+      if ('data' in opts) {
+        data = opts.data;
+      }
+
+      if ('minYear' in opts) {
+        minYear = opts.minYear;
+      }
+
+      if ('maxYear' in opts) {
+        maxYear = opts.maxYear;
+      }
+
       var textWidth = Number(svg.select('.mainChart').attr("width"));
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-      var remakeChart = false;
 
-      if ('data' in opts) {
-        data = opts.data;
-        remakeChart = true;
+      if ('data' in opts || 'minYear' in opts || 'maxYear' in opts) {
+        makeChart();
       }
 
-      if (remakeChart) makeChart();
       positionMainElements(svg, expand);
     }
     /** @function setTaxon
@@ -5497,7 +5517,7 @@
      * @typedef {Object} api
      * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:yearly~setChartOpts} setChartOpts - Sets text options for the chart. 
+     * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
      * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
      */
 

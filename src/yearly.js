@@ -297,6 +297,7 @@ export function yearly({
     let chartBars = []
 
     metricsPlus.forEach(m => {
+
       const dataDict = dataFiltered.reduce((a,d) => {
         a[d.year]=d[m.prop]
         return a
@@ -334,7 +335,6 @@ export function yearly({
       }
     })
 
-
     const t = svgYearly.transition()
         .duration(duration)
 
@@ -359,7 +359,9 @@ export function yearly({
         // The selection returned by the join function is the merged
         // enter and update selections
         .attr('y', d => d.n)
+        .attr('x', d => xScaleBar(d.year))
         .attr('height', d => height - d.n)
+        .attr('width', xScaleBar.bandwidth())
         .attr("fill", d => d.colour)
   
     gYearly.selectAll("path")
@@ -478,10 +480,19 @@ export function yearly({
         .text(axisRightLabel) 
       tYaxisRightLabel.attr("transform", rightYaxisLabelTrans)
 
-    } else if (taxa.length === 1) {
-      // Update taxon label
-      if (showTaxonLabel) {
-        svgYearly.select('.brc-chart-yearly-label').text(taxon)
+    } else {
+      if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgYearly.select('.brc-chart-yearly-label').text(taxon)
+        }
+      }
+
+      // Update the bottom axis if it exists. We do this because
+      // yearMin and/or yearMax may have changed.
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        svgYearly.select(".x.axis").selectAll('*').remove()
+        svgYearly.select(".x.axis").call(bAxis)
       }
     }
 
@@ -580,7 +591,6 @@ export function yearly({
     sel
       .on("mouseover", function(d) {
         if (interactivity === 'mousemove') {
-          console.log(d)
           highlightItem(d[prop], true)
         }
       })
@@ -642,20 +652,24 @@ export function yearly({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
+    if ('data' in opts) {
+      data = opts.data
+    }
+    if ('minYear' in opts) {
+      minYear = opts.minYear
+    }
+    if ('maxYear' in opts) {
+      maxYear = opts.maxYear
+    }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
-    let remakeChart = false
-
-    if ('data' in opts) {
-      data = opts.data
-      remakeChart = true
+    if ('data' in opts || 'minYear' in opts || 'maxYear' in opts) {
+      makeChart()
     }
-
-    if (remakeChart) makeChart()
     gen.positionMainElements(svg, expand)
   }
 
@@ -695,7 +709,7 @@ export function yearly({
    * @typedef {Object} api
    * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:yearly~setChartOpts} setChartOpts - Sets text options for the chart. 
+   * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
    * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
