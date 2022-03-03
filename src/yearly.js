@@ -618,6 +618,8 @@ export function yearly({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {number} opts.minYear Indicates the earliest year to use on the y axis.
+  * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -652,14 +654,14 @@ export function yearly({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-    if ('data' in opts) {
-      data = opts.data
-    }
     if ('minYear' in opts) {
       minYear = opts.minYear
     }
     if ('maxYear' in opts) {
       maxYear = opts.maxYear
+    }
+    if ('data' in opts) {
+      data = opts.data
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
@@ -687,7 +689,6 @@ export function yearly({
       makeChart()
     }
   }
-
 
 /** @function getChartWidth
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.

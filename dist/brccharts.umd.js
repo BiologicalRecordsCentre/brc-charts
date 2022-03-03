@@ -5163,7 +5163,6 @@
           chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
         }
       });
-      console.log('chartBars', chartBars);
       var t = svgYearly.transition().duration(duration);
       gYearly.selectAll("rect").data(chartBars, function (d) {
         return "props-".concat(d.year);

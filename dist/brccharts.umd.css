@@ -1,4 +1,6 @@
-.brc-chart-pie {
+.blah {
+    background: red;
+}.brc-chart-pie {
   width: 100%
 }
 
@@ -90,9 +92,7 @@
 #phen2-chart .mainChart {
     overflow: visible;
 }
-.blah {
-    background: red;
-}.brc-chart-accum path {
+.brc-chart-accum path {
     fill: none;
 }
 
