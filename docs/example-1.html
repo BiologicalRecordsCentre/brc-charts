@@ -467,6 +467,9 @@ function button4Click() {
         data: items,
         expand: true,
         interactivity: 'mouseclick',
+        callback: function(name){
+          console.log("Callback called with arg: ", name)
+        }
       })
 
       brccharts.pie({

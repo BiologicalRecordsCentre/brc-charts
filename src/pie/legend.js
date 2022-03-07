@@ -1,7 +1,7 @@
 import * as gen from '../general'
 import { addEventHandlers} from './highlightitem'
 
-export function makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth) {
+export function makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth, callback) {
 
   let svgLegend
   if (svg.select('.brc-chart-legend').size()) {
@@ -42,7 +42,7 @@ export function makeLegend (data, svg, svgChart, legendWidth, labelFontSize, leg
     .style('fill', d => d.colour)
     .attr('opacity', 0)
 
-  addEventHandlers(svg, eLegendSwatch, false, interactivity, dataPrev, imageWidth)
+  addEventHandlers(svg, eLegendSwatch, false, interactivity, dataPrev, imageWidth, callback)
 
   eLegendSwatch.transition()
     .delay(durationExit + durationUpdate)
@@ -95,7 +95,7 @@ export function makeLegend (data, svg, svgChart, legendWidth, labelFontSize, leg
     .style('font-size', labelFontSize)
     .attr('opacity', 0)
 
-  addEventHandlers(svg, eLegendText, false, dataPrev, imageWidth)
+  addEventHandlers(svg, eLegendText, false, dataPrev, imageWidth, callback)
 
   eLegendText.transition()
     .delay(durationExit + durationUpdate)

@@ -1,32 +1,37 @@
 import * as d3 from 'd3'
 import * as gen from '../general'
 
-export function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth) {
+export function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
   sel
     .on("mouseover", function(d) {
     if (interactivity === 'mousemove') {
-        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth)
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth, callback)
       }
     })
     .on("mouseout", function(d) {
       if (interactivity === 'mousemove') {
-        highlightItem(svg, isArc ? d.data.name : d.name, false, dataPrev, imageWidth)
+        highlightItem(svg, isArc ? d.data.name : d.name, false, dataPrev, imageWidth, callback)
       }
     })
     .on("click", function(d) {
       if (interactivity === 'mouseclick') {
-        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth)
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth, callback)
         d3.event.stopPropagation()
       }
     })
 }
 
-export function highlightItem (svg, name, show, dataPrev, imageWidth) {
+export function highlightItem (svg, name, show, dataPrev, imageWidth, callback) {
   
   const i = gen.safeId(name)
   const imgSelected = svg.select('.brc-item-image')
 
   if (show) {
+
+    // Callback
+    callback(name)
+
+    // Highlighting
     svg.selectAll('path').classed('brc-lowlight', true)
     svg.selectAll('.legendSwatch').classed('brc-lowlight', true)
     svg.selectAll('.legendText').classed('brc-lowlight', true)
@@ -41,6 +46,7 @@ export function highlightItem (svg, name, show, dataPrev, imageWidth) {
     svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false)
     svg.select(`#label-highlight-${i}`).classed('brc-highlight', true)
 
+    // Image display
     const data = dataPrev.find(d => name === d.name)
     if (data && data.image) {
       // Loading image into SVG and setting to specified width

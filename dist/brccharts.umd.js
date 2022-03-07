@@ -265,27 +265,30 @@
     }
   }
 
-  function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth) {
+  function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
     sel.on("mouseover", function (d) {
       if (interactivity === 'mousemove') {
-        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth);
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth, callback);
       }
     }).on("mouseout", function (d) {
       if (interactivity === 'mousemove') {
-        highlightItem(svg, isArc ? d.data.name : d.name, false, dataPrev, imageWidth);
+        highlightItem(svg, isArc ? d.data.name : d.name, false, dataPrev, imageWidth, callback);
       }
     }).on("click", function (d) {
       if (interactivity === 'mouseclick') {
-        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth);
+        highlightItem(svg, isArc ? d.data.name : d.name, true, dataPrev, imageWidth, callback);
         d3.event.stopPropagation();
       }
     });
   }
-  function highlightItem(svg, name, show, dataPrev, imageWidth) {
+  function highlightItem(svg, name, show, dataPrev, imageWidth, callback) {
     var i = safeId(name);
     var imgSelected = svg.select('.brc-item-image');
 
     if (show) {
+      // Callback
+      callback(name); // Highlighting
+
       svg.selectAll('path').classed('brc-lowlight', true);
       svg.selectAll('.legendSwatch').classed('brc-lowlight', true);
       svg.selectAll('.legendText').classed('brc-lowlight', true);
@@ -296,7 +299,8 @@
       svg.select("#pie-".concat(i)).classed('brc-lowlight', false);
       svg.select("#label-highlight-".concat(i)).classed('brc-lowlight', false);
       svg.selectAll('.labelsPieHighlight').classed('brc-highlight', false);
-      svg.select("#label-highlight-".concat(i)).classed('brc-highlight', true);
+      svg.select("#label-highlight-".concat(i)).classed('brc-highlight', true); // Image display
+
       var data = dataPrev.find(function (d) {
         return name === d.name;
       });
@@ -349,7 +353,7 @@
     imgSelected.attr("y", -d.imageHeight / 2);
   }
 
-  function makePie(data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
+  function makePie(data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize, callback) {
     //block = true
     var dataDeleted, dataInserted, dataRetained;
     var init = !dataPrevIn;
@@ -620,7 +624,7 @@
     }).each(function (d) {
       this._current = d;
     });
-    addEventHandlers(svg, ePie, true, interactivity, dataPrev, imageWidth);
+    addEventHandlers(svg, ePie, true, interactivity, dataPrev, imageWidth, callback);
     var mPie = ePie.merge(uPie); // Mark paths corresponding to deleted arcs as
     // deleted so that they can be removed before next 
     // transition
@@ -692,7 +696,7 @@
       var ePieLabels = uPieLabels.enter().append('text').attr('id', function (d) {
         return "label-".concat(safeId(d.data.name));
       }).attr("class", "labelsPie").style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
-      addEventHandlers(svg, ePieLabels, true, interactivity, dataPrev, imageWidth);
+      addEventHandlers(svg, ePieLabels, true, interactivity, dataPrev, imageWidth, callback);
       ePieLabels.merge(uPieLabels).text(function (d) {
         if (label === 'value') {
           return d.data.number;
@@ -733,7 +737,7 @@
       var ePieLabelsHighlight = uPieLabelsHighlight.enter().append('text').attr('id', function (d) {
         return "label-highlight-".concat(safeId(d.data.name));
       }).classed('labelsPieHighlight', true).classed('brc-lowlight', true).style('text-anchor', 'middle').style('font-size', labelFontSize).style('fill', labelColour);
-      addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth);
+      addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth, callback);
       ePieLabelsHighlight.merge(uPieLabelsHighlight).text(function (d) {
         if (label === 'value') {
           return d.data.number;
@@ -761,7 +765,7 @@
     return dataPrev;
   }
 
-  function makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth) {
+  function makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth, callback) {
     var svgLegend;
 
     if (svg.select('.brc-chart-legend').size()) {
@@ -796,7 +800,7 @@
     }).attr('width', legendSwatchSize).attr('height', legendSwatchSize).style('fill', function (d) {
       return d.colour;
     }).attr('opacity', 0);
-    addEventHandlers(svg, eLegendSwatch, false, interactivity, dataPrev, imageWidth);
+    addEventHandlers(svg, eLegendSwatch, false, interactivity, dataPrev, imageWidth, callback);
     eLegendSwatch.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
     uLegendSwatch.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
       var titleHeight;
@@ -832,7 +836,7 @@
 
       return titleHeight + (i + 1) * (legendSwatchSize + legendSwatchGap) - legendSwatchSize / 2 - legendTextHeight / 3;
     }).style('font-size', labelFontSize).attr('opacity', 0);
-    addEventHandlers(svg, eLegendText, false, dataPrev, imageWidth);
+    addEventHandlers(svg, eLegendText, false, dataPrev, imageWidth, callback);
     eLegendText.transition().delay(durationExit + durationUpdate).duration(duration).attr('opacity', 1);
     uLegendText.transition().delay(durationExit).duration(duration).attr('y', function (d, i) {
       var titleHeight;
@@ -1005,7 +1009,11 @@
         _ref$interactivity = _ref.interactivity,
         interactivity = _ref$interactivity === void 0 ? 'mousemove' : _ref$interactivity,
         _ref$data = _ref.data,
-        data = _ref$data === void 0 ? [] : _ref$data;
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$callback = _ref.callback,
+        callback = _ref$callback === void 0 ? function () {
+      return;
+    } : _ref$callback;
 
     var dataPrev; //let block = false
 
@@ -1016,7 +1024,7 @@
     var svgChart = svg.append('svg').attr('class', 'mainChart');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(svg, null, false, dataPrev, imageWidth);
+        highlightItem(svg, null, false, dataPrev, imageWidth, callback);
       }
     });
     makeChart(data);
@@ -1029,8 +1037,8 @@
     positionMainElements(svg, expand);
 
     function makeChart(data) {
-      dataPrev = makePie(data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize);
-      makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth);
+      dataPrev = makePie(data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize, callback);
+      makeLegend(data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth, callback);
       var svgPie = svgChart.select('.brc-chart-pie');
       var svgLegend = svgChart.select('.brc-chart-legend');
       svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap);
@@ -1080,7 +1088,7 @@
 
     function setChartOpts(opts) {
       //if (!block) {
-      highlightItem(svg, null, false, dataPrev, imageWidth);
+      highlightItem(svg, null, false, dataPrev, imageWidth, callback);
 
       if ('title' in opts) {
         title = opts.title;
@@ -5411,6 +5419,8 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {number} opts.minYear Indicates the earliest year to use on the y axis.
+      * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -5455,16 +5465,16 @@
         footerAlign = opts.footerAlign;
       }
 
-      if ('data' in opts) {
-        data = opts.data;
-      }
-
       if ('minYear' in opts) {
         minYear = opts.minYear;
       }
 
       if ('maxYear' in opts) {
         maxYear = opts.maxYear;
+      }
+
+      if ('data' in opts) {
+        data = opts.data;
       }
 
       var textWidth = Number(svg.select('.mainChart').attr("width"));

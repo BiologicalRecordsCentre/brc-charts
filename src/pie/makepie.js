@@ -3,7 +3,7 @@ import * as d3 from 'd3'
 import * as gen from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize) {
+export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize, callback) {
 
   //block = true
 
@@ -260,7 +260,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
     .attr('fill', d => d.data.colour)
     .each(function(d) { this._current = d })
 
-  addEventHandlers(svg, ePie, true, interactivity, dataPrev, imageWidth)
+  addEventHandlers(svg, ePie, true, interactivity, dataPrev, imageWidth, callback)
   const mPie = ePie.merge(uPie)
   // Mark paths corresponding to deleted arcs as
   // deleted so that they can be removed before next 
@@ -337,7 +337,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
       .style('font-size', labelFontSize)
       .style('fill', labelColour)
 
-    addEventHandlers(svg, ePieLabels, true, interactivity, dataPrev, imageWidth)
+    addEventHandlers(svg, ePieLabels, true, interactivity, dataPrev, imageWidth, callback)
 
     ePieLabels.merge(uPieLabels)
       .text(d => {
@@ -393,7 +393,7 @@ export function makePie (data, dataPrevIn, sort, strokeWidth, radius, innerRadiu
       .style('font-size', labelFontSize)
       .style('fill', labelColour)
 
-    addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth)
+    addEventHandlers(svg, ePieLabelsHighlight, true, interactivity, dataPrev, imageWidth, callback)
 
     ePieLabelsHighlight.merge(uPieLabelsHighlight)
       .text(d => {

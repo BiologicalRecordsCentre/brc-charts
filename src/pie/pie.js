@@ -88,7 +88,8 @@ export function pie({
   imageWidth = 150,
   duration = 1000,
   interactivity = 'mousemove',
-  data = []
+  data = [],
+  callback = function(){return}
 } = {}) {
 
   let dataPrev
@@ -111,7 +112,7 @@ export function pie({
 
   svg.on("click", function() {
     if (interactivity === 'mouseclick') {
-      highlightItem(svg, null, false, dataPrev, imageWidth)
+      highlightItem(svg, null, false, dataPrev, imageWidth, callback)
     }
   })
 
@@ -126,9 +127,9 @@ export function pie({
 
   function makeChart(data) {
 
-    dataPrev = makePie (data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize)
+    dataPrev = makePie (data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize, callback)
     
-    makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth)
+    makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth, callback)
     const svgPie = svgChart.select('.brc-chart-pie')
     const svgLegend = svgChart.select('.brc-chart-legend')
     svgPie.attr("x", Number(svgLegend.attr("width")) + legendSwatchGap)
@@ -182,7 +183,7 @@ export function pie({
 
     //if (!block) {
 
-      highlightItem(svg, null, false, dataPrev, imageWidth)
+      highlightItem(svg, null, false, dataPrev, imageWidth, callback)
 
       if ('title' in opts) {
         title = opts.title
