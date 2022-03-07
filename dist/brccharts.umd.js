@@ -945,6 +945,8 @@
    * <li> <b>image</b> - this optional property allows you to specify the url of an image file
    * which can be displayed when a user selects the associated item.
    * </ul>
+   * @param {function} opts.callback - A callback function executed when a pie segment is highlighted. Gets passed
+   * the name property of the highlighted data.
    * @returns {module:pie~api} api - Returns an API for the chart.
    */
 
