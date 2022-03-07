@@ -76,6 +76,8 @@ export function highlightItem (svg, name, show, dataPrev, imageWidth, callback) 
       imgSelected.classed('brc-item-image-hide', true)
     }
   } else {
+    callback('')
+
     svg.selectAll('.brc-lowlight').classed('brc-lowlight', false)
     imgSelected.classed('brc-item-image-hide', true)
     svg.selectAll('.labelsPie').classed('brc-highlight', false)
