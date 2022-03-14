@@ -620,6 +620,7 @@ export function yearly({
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {number} opts.minYear Indicates the earliest year to use on the y axis.
   * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
+  * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -660,6 +661,9 @@ export function yearly({
     if ('maxYear' in opts) {
       maxYear = opts.maxYear
     }
+    if ('metrics' in opts) {
+      metrics = opts.metrics
+    }
     if ('data' in opts) {
       data = opts.data
     }
@@ -669,7 +673,8 @@ export function yearly({
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
-    if ('data' in opts || 'minYear' in opts || 'maxYear' in opts) {
+    if ('data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
+      preProcessMetrics()
       makeChart()
     }
     gen.positionMainElements(svg, expand)

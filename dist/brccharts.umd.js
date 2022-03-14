@@ -5476,6 +5476,10 @@
         maxYear = opts.maxYear;
       }
 
+      if ('metrics' in opts) {
+        metrics = opts.metrics;
+      }
+
       if ('data' in opts) {
         data = opts.data;
       }
@@ -5485,7 +5489,8 @@
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
 
-      if ('data' in opts || 'minYear' in opts || 'maxYear' in opts) {
+      if ('data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
+        preProcessMetrics();
         makeChart();
       }
 
