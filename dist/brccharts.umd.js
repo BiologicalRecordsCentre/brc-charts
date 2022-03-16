@@ -5424,6 +5424,7 @@
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
       * @param {number} opts.minYear Indicates the earliest year to use on the y axis.
       * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
+      * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -15188,7 +15189,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.8.2";
+  var version = "0.8.3";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
