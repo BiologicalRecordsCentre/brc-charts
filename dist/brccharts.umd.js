@@ -4183,7 +4183,14 @@
         _ref$maxYear = _ref.maxYear,
         maxYear = _ref$maxYear === void 0 ? null : _ref$maxYear;
 
-    // Ensure style prop objects have the required properties.
+    // Store list of currently displayed taxa charts in case of taxa list
+    // being updated.
+    var currentTaxa = []; // If store explicitly set min and max year so that changes in setChartOpts
+    // can be dealt with properly. These can also be reset in setChartOpts.
+
+    var minYearExplicit = minYear;
+    var maxYearExplicit = maxYear; // Ensure style prop objects have the required properties.
+
     styleCounts.colour = styleCounts.colour ? styleCounts.colour : 'CornflowerBlue';
     styleCounts.opacity = styleCounts.opacity ? styleCounts.opacity : 1;
     styleCounts.strokeWidth = styleCounts.strokeWidth ? styleCounts.strokeWidth : 2;
@@ -4198,27 +4205,35 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-trend');
-    makeChart(); // Texts must come after chartbecause 
-    // the chart width is required
+    makeChart();
+    makeTexts();
 
-    var textWidth = Number(svg.select('.mainChart').attr("width"));
-    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
-    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
-    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionMainElements(svg, expand);
+    function makeTexts() {
+      // Texts must come after chartbecause 
+      // the chart width is required
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      positionMainElements(svg, expand);
+    }
 
     function makeChart() {
       // Set min and max year from data if not set
-      if (!minYear) {
+      if (!minYearExplicit) {
         minYear = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
           return d.year;
         })));
+      } else {
+        minYear = minYearExplicit;
       }
 
-      if (!maxYear) {
+      if (!maxYearExplicit) {
         maxYear = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
           return d.year;
         })));
+      } else {
+        maxYear = maxYearExplicit;
       } // If taxa for graphs not set, set to all in dataset
 
 
@@ -4250,12 +4265,38 @@
           yearTotals[d.year] = d.count;
         }
       });
-      var subChartPad = 10;
+      var subChartPad = 10; // Delete any existing charts which are not included in the new taxa
+      // list - unless there's only one in each
+
+      if (currentTaxa.length === 1 && currentTaxa[0] === '') {
+        // This is a dummy taxon to get empty graph displayed.
+        // Can't select by id as this is empty string. Select
+        // by class.
+        svgChart.select('.brc-chart-trend').remove();
+      } else if (!(taxa.length === 1 && currentTaxa.length === 1)) {
+        currentTaxa.forEach(function (t) {
+          if (taxa.indexOf(t) === -1) {
+            svgChart.select("#".concat(safeId(t))).remove();
+          }
+        });
+      } // Make charts and update array of current taxa
+
+
       var svgsTaxa = taxa.map(function (t) {
         return makeTrend(t, yearTotals);
       });
-      var subChartWidth = Number(svgsTaxa[0].attr("width"));
-      var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      currentTaxa = taxa;
+      var subChartWidth, subChartHeight;
+
+      if (svgsTaxa.length) {
+        subChartWidth = Number(svgsTaxa[0].attr("width"));
+        subChartHeight = Number(svgsTaxa[0].attr("height"));
+      } else {
+        // No taxa specified
+        subChartWidth = Number(width);
+        subChartHeight = Number(height);
+      }
+
       var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
@@ -4279,8 +4320,9 @@
 
       var yMaxProp = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
         return d.count / yearTotals[d.year];
-      })));
-      yMaxProp = yMaxProp < 0.005 ? 0.005 : yMaxProp; // Prevents tiny values
+      }))); //yMaxProp = yMaxProp < 0.005 ? 0.005 : yMaxProp // Prevents tiny values
+
+      yMaxProp = yMaxProp < 0.001 ? 0.001 : yMaxProp; // Prevents tiny values
 
       var yMaxCount = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
         return d.count;
@@ -4331,7 +4373,15 @@
             break;
 
           case 'percentages':
-            format = yMaxProp < 0.05 ? d3.format(".1%") : d3.format(".0%");
+            //format = yMaxProp < 0.01 ? d3.format(".2%") : d3.format(".0%")
+            if (yMaxProp < 0.01) {
+              format = d3.format(".2%");
+            } else if (yMaxProp < 0.05) {
+              format = d3.format(".1%");
+            } else {
+              format = d3.format(".0%");
+            }
+
             axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(format);
             break;
         }
@@ -4342,19 +4392,27 @@
       var lAxis = makeXaxis('left', axisLeft);
       var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
 
-      var init, svgTrend, gTrend;
+      var init, svgTrend, gTrend, gTrendRect, gTrendPath;
 
       if (taxa.length === 1 && svgChart.selectAll('.brc-chart-trend').size() === 1) {
         svgTrend = svgChart.select('.brc-chart-trend');
         gTrend = svgTrend.select('.brc-chart-trend-g');
+        gTrendPath = svgTrend.select('.brc-chart-trend-g-path');
+        gTrendRect = svgTrend.select('.brc-chart-trend-g-rect');
         init = false;
       } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
         svgTrend = svgChart.select("#".concat(safeId(taxon)));
         gTrend = svgTrend.select('.brc-chart-trend-g');
+        gTrendPath = svgTrend.select('.brc-chart-trend-g-path');
+        gTrendRect = svgTrend.select('.brc-chart-trend-g-rect');
         init = false;
       } else {
         svgTrend = svgChart.append('svg').classed('brc-chart-trend', true).attr('id', safeId(taxon)).style('overflow', 'visible');
-        gTrend = svgTrend.append('g').classed('brc-chart-trend-g', true);
+        gTrend = svgTrend.append('g').classed('brc-chart-trend-g', true); // Add these in correct order so that lines are
+        // always shown above bars
+
+        gTrendRect = gTrend.append('g').classed('brc-chart-trend-g-rect', true);
+        gTrendPath = gTrend.append('g').classed('brc-chart-trend-g-path', true);
         init = true;
       } // Line path generators
 
@@ -4439,7 +4497,7 @@
       }
 
       var t = svgTrend.transition().duration(duration);
-      gTrend.selectAll("rect").data(chartBars, function (d) {
+      gTrendRect.selectAll("rect").data(chartBars, function (d) {
         return "props-".concat(d.year);
       }).join(function (enter) {
         return enter.append("rect").attr("class", function (d) {
@@ -4461,12 +4519,14 @@
       // enter and update selections
       .attr('y', function (d) {
         return d.n;
-      }).attr('height', function (d) {
+      }).attr('x', function (d) {
+        return xScaleBar(d.year);
+      }).attr('width', xScaleBar.bandwidth()).attr('height', function (d) {
         return height - d.n;
       }).attr("fill", function (d) {
         return d.colour;
       });
-      gTrend.selectAll("path").data(chartLines, function (d) {
+      gTrendPath.selectAll("path").data(chartLines, function (d) {
         return d.type;
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
@@ -4537,7 +4597,7 @@
         }
 
         if (bAxis) {
-          var gBaxis = svgTrend.append("g").attr("class", "x axis").call(bAxis);
+          var gBaxis = svgTrend.append("g").attr("class", "x axis b-axis").call(bAxis);
           gBaxis.attr("transform", bottomXaxisTrans);
         }
 
@@ -4561,6 +4621,10 @@
         if (showTaxonLabel) {
           svgTrend.select('.brc-chart-trend-label').text(taxon);
         }
+      }
+
+      if (svgTrend.selectAll(".b-axis").size()) {
+        svgTrend.select(".b-axis").transition().duration(duration).call(bAxis);
       }
 
       if (svgTrend.selectAll(".l-axis").size()) {
@@ -4697,6 +4761,8 @@
       * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
       * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {string} opts.taxa - A list of taxa to create charts for.
+      * @param {string} opts.group - A list of taxa to used to calculate group totals for percentage of group records.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -4741,18 +4807,49 @@
         footerAlign = opts.footerAlign;
       }
 
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
       var textWidth = Number(svg.select('.mainChart').attr("width"));
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       var remakeChart = false;
+      var remakeTexts = false;
+
+      if ('minYear' in opts) {
+        minYearExplicit = opts.minYear;
+        remakeChart = true;
+      }
+
+      if ('maxYear' in opts) {
+        maxYearExplicit = opts.maxYear;
+        remakeChart = true;
+      }
 
       if ('data' in opts) {
         data = opts.data;
         remakeChart = true;
       }
 
-      if (remakeChart) makeChart();
+      if ('taxa' in opts) {
+        taxa = opts.taxa;
+        remakeChart = true;
+        remakeTexts = true;
+      }
+
+      if ('group' in opts) {
+        group = opts.group;
+        remakeChart = true;
+      }
+
+      if (remakeChart) {
+        highlightItem(null, false);
+        makeChart();
+      }
+
+      if (remakeTexts) makeTexts();
       positionMainElements(svg, expand);
     }
     /** @function setTaxon
@@ -4794,7 +4891,7 @@
      * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:trend~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
      */
 
 
@@ -15189,7 +15286,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.8.3";
+  var version = "0.9.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

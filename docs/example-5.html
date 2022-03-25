@@ -326,9 +326,9 @@
 &lt;button onclick="api.setTaxon('Anatis ocellata')"&gt;Anatis ocellata&lt;/button&gt;
 &lt;button onclick="api.setTaxon('Harmonia axyridis')"&gt;Harmonia axyridis&lt;/button&gt;</code></pre>
 
-    <button onclick="api.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
-    <button onclick="api.setTaxon('Anatis ocellata')">Anatis ocellata</button>
-    <button onclick="api.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
+    <button onclick="setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
+    <button onclick="setTaxon('Anatis ocellata')">Anatis ocellata</button>
+    <button onclick="setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
 
     <div id="chart6" style="margin-top: 1em"></div>
 
@@ -351,6 +351,14 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
+
+      var savedData
+      var api
+
+      function setTaxon(taxon) {
+        api.setChartOpts({data: savedData, minYear: 1990 + Math.floor(Math.random() * 5), maxYear: 2010 + Math.floor(Math.random() * 5)})
+        api.setTaxon(taxon)
+      }
 
       taxa = [
         'Adalia bipunctata',
@@ -513,10 +521,10 @@
         footer: 'Data derived from records downloaded from the NBN in March 2021 from these datasets: Ladybird Survey of the UK and UK Ladybird Survey data from iRecord.',
       }
 
-      var api
       var optsChart6 = {
         selector: '#chart6',
         taxa: ['Coccinella septempunctata'],
+        //taxa: [''],
         minYear: 1980,
         maxYear: 2020,
         width: 800,
@@ -540,6 +548,9 @@
         }
         return d
       }).then(function(data){
+
+        savedData = data
+
         optsChart1.data = data
         brccharts.trend(optsChart1)
 

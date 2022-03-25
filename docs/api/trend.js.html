@@ -144,6 +144,15 @@ export function trend({
   maxYear = null,
 } = {}) {
 
+  // Store list of currently displayed taxa charts in case of taxa list
+  // being updated.
+  let currentTaxa = []
+
+  // If store explicitly set min and max year so that changes in setChartOpts
+  // can be dealt with properly. These can also be reset in setChartOpts.
+  let minYearExplicit = minYear
+  let maxYearExplicit = maxYear
+
   // Ensure style prop objects have the required properties.
   styleCounts.colour = styleCounts.colour ? styleCounts.colour : 'CornflowerBlue'
   styleCounts.opacity = styleCounts.opacity ? styleCounts.opacity : 1
@@ -164,26 +173,32 @@ export function trend({
       highlightItem(null, false)
     }
   })
-
   const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-trend')
-  
   makeChart()
-  // Texts must come after chartbecause 
-  // the chart width is required
-  const textWidth = Number(svg.select('.mainChart').attr("width"))
-  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  gen.positionMainElements(svg, expand)
+  makeTexts()
+
+  function makeTexts() {
+    // Texts must come after chartbecause 
+    // the chart width is required
+    const textWidth = Number(svg.select('.mainChart').attr("width"))
+    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    gen.positionMainElements(svg, expand)
+  }
 
   function makeChart () {
 
     // Set min and max year from data if not set
-    if (!minYear) {
+    if (!minYearExplicit) {
       minYear = Math.min(...data.map(d => d.year))
+    } else {
+      minYear = minYearExplicit
     }
-    if (!maxYear) {
+    if (!maxYearExplicit) {
       maxYear = Math.max(...data.map(d => d.year))
+    } else {
+      maxYear = maxYearExplicit
     }
 
     // If taxa for graphs not set, set to all in dataset
@@ -209,10 +224,34 @@ export function trend({
       })
 
     const subChartPad = 10
-    const svgsTaxa = taxa.map(t => makeTrend(t, yearTotals))
 
-    const subChartWidth = Number(svgsTaxa[0].attr("width"))
-    const subChartHeight = Number(svgsTaxa[0].attr("height"))
+    // Delete any existing charts which are not included in the new taxa
+    // list - unless there's only one in each
+    if (currentTaxa.length === 1 &amp;&amp; currentTaxa[0] === '') {
+      // This is a dummy taxon to get empty graph displayed.
+      // Can't select by id as this is empty string. Select
+      // by class.
+      svgChart.select('.brc-chart-trend').remove()
+    } else if (!(taxa.length === 1 &amp;&amp; currentTaxa.length === 1)) {
+      currentTaxa.forEach(t => {
+        if (taxa.indexOf(t) === -1) {
+          svgChart.select( `#${gen.safeId(t)}`).remove()
+        }
+      })
+    }
+    // Make charts and update array of current taxa
+    const svgsTaxa = taxa.map(t => makeTrend(t, yearTotals))
+    currentTaxa = taxa
+
+    let subChartWidth, subChartHeight
+    if (svgsTaxa.length) {
+      subChartWidth = Number(svgsTaxa[0].attr("width"))
+      subChartHeight = Number(svgsTaxa[0].attr("height"))
+    } else {
+      // No taxa specified
+      subChartWidth =  Number(width)
+      subChartHeight = Number(height)
+    }
 
     const legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0
 
@@ -241,7 +280,8 @@ export function trend({
 
     // Set the maximum values for the y axis
     let yMaxProp = Math.max(...dataFiltered.map(d => d.count / yearTotals[d.year]))
-    yMaxProp = yMaxProp &lt; 0.005 ? 0.005 : yMaxProp // Prevents tiny values
+    //yMaxProp = yMaxProp &lt; 0.005 ? 0.005 : yMaxProp // Prevents tiny values
+    yMaxProp = yMaxProp &lt; 0.001 ? 0.001 : yMaxProp // Prevents tiny values
     let yMaxCount = Math.max(...dataFiltered.map(d => d.count))
     yMaxCount = yMaxCount &lt; 5 ? 5 : yMaxCount // Prevents tiny values
 
@@ -284,7 +324,14 @@ export function trend({
           axis = d3axis.scale(yScaleProps).ticks(5)
           break
         case 'percentages':
-          format = yMaxProp &lt; 0.05 ? d3.format(".1%") : d3.format(".0%")
+          //format = yMaxProp &lt; 0.01 ? d3.format(".2%") : d3.format(".0%")
+          if (yMaxProp &lt; 0.01) {
+            format = d3.format(".2%")
+          } else if (yMaxProp &lt; 0.05) {
+            format = d3.format(".1%")
+          } else {
+            format = d3.format(".0%")
+          }
           axis = d3axis.scale(yScaleProps).ticks(5).tickFormat(format)
           break
       }
@@ -294,14 +341,18 @@ export function trend({
     const rAxis = makeXaxis('right', axisRight)
 
     // Create or get the relevant chart svg
-    let init, svgTrend, gTrend
+    let init, svgTrend, gTrend, gTrendRect, gTrendPath
     if (taxa.length === 1 &amp;&amp; svgChart.selectAll('.brc-chart-trend').size() === 1) {
       svgTrend = svgChart.select('.brc-chart-trend')
       gTrend = svgTrend.select('.brc-chart-trend-g')
+      gTrendPath = svgTrend.select('.brc-chart-trend-g-path')
+      gTrendRect = svgTrend.select('.brc-chart-trend-g-rect')
       init = false
     } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
       svgTrend = svgChart.select(`#${gen.safeId(taxon)}`)
       gTrend = svgTrend.select('.brc-chart-trend-g')
+      gTrendPath = svgTrend.select('.brc-chart-trend-g-path')
+      gTrendRect = svgTrend.select('.brc-chart-trend-g-rect')
       init = false
     } else {
       svgTrend = svgChart.append('svg')
@@ -310,6 +361,10 @@ export function trend({
         .style('overflow', 'visible')
       gTrend = svgTrend.append('g')
         .classed('brc-chart-trend-g', true)
+      // Add these in correct order so that lines are
+      // always shown above bars
+      gTrendRect = gTrend.append('g').classed('brc-chart-trend-g-rect', true)
+      gTrendPath = gTrend.append('g').classed('brc-chart-trend-g-path', true)
       init = true
     }
 
@@ -390,7 +445,7 @@ export function trend({
     const t = svgTrend.transition()
         .duration(duration)
 
-    gTrend.selectAll("rect")
+    gTrendRect.selectAll("rect")
       .data(chartBars, d => `props-${d.year}`)
       .join(
         enter => enter.append("rect")
@@ -411,10 +466,12 @@ export function trend({
         // The selection returned by the join function is the merged
         // enter and update selections
         .attr('y', d => d.n)
+        .attr('x', d => xScaleBar(d.year))
+        .attr('width', xScaleBar.bandwidth())
         .attr('height', d => height - d.n)
         .attr("fill", d => d.colour)
   
-    gTrend.selectAll("path")
+    gTrendPath.selectAll("path")
       .data(chartLines, d => d.type)
       .join(
         enter => enter.append("path")
@@ -496,7 +553,7 @@ export function trend({
       }
       if (bAxis) {
         const gBaxis = svgTrend.append("g")
-          .attr("class", "x axis")
+          .attr("class", "x axis b-axis")
           .call(bAxis)
         gBaxis.attr("transform", bottomXaxisTrans)
       }
@@ -535,6 +592,13 @@ export function trend({
       if (showTaxonLabel) {
         svgTrend.select('.brc-chart-trend-label').text(taxon)
       }
+    }
+
+    if (svgTrend.selectAll(".b-axis").size()){
+      svgTrend.select(".b-axis")
+      .transition()
+      .duration(duration)
+      .call(bAxis)
     }
 
     if (svgTrend.selectAll(".l-axis").size()){
@@ -683,6 +747,8 @@ export function trend({
   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+  * @param {string} opts.taxa - A list of taxa to create charts for.
+  * @param {string} opts.group - A list of taxa to used to calculate group totals for percentage of group records.
   * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -717,20 +783,45 @@ export function trend({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-
+    if ('footerAlign' in opts) {
+      footerAlign = opts.footerAlign
+    }
+    
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
+    let remakeTexts = false
 
+    if ('minYear' in opts) {
+      minYearExplicit = opts.minYear
+      remakeChart = true
+    }
+    if ('maxYear' in opts) {
+      maxYearExplicit = opts.maxYear
+      remakeChart = true
+    }
     if ('data' in opts) {
       data = opts.data
       remakeChart = true
     }
+    if ('taxa' in opts) {
+      taxa = opts.taxa
+      remakeChart = true
+      remakeTexts = true
+    }
+    if ('group' in opts) {
+      group = opts.group
+      remakeChart = true
+    }
 
-    if (remakeChart) makeChart()
+    if (remakeChart) {
+      highlightItem(null, false)
+      makeChart()
+    }
+    if (remakeTexts) makeTexts()
     gen.positionMainElements(svg, expand)
   }
 
@@ -748,7 +839,6 @@ export function trend({
       makeChart()
     }
   }
-
 
 /** @function getChartWidth
   * @description &lt;b>This function is exposed as a method on the API returned from the trend function&lt;/b>.
@@ -771,7 +861,7 @@ export function trend({
    * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
    * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:trend~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
    */
   return {
     getChartHeight: getChartHeight,
@@ -796,7 +886,7 @@ export function trend({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed Mar 16 2022 16:19:03 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Fri Mar 25 2022 17:05:36 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>
