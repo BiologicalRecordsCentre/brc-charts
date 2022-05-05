@@ -237,6 +237,7 @@ brccharts.phen1(phen)</code></pre>
     </p>
 
     <div id="chart4" style="margin-top: 1em"></div>
+    <button onclick="chart4.saveImage(true, 'butterflies')">Download image</button>
 
     <p>
       The options used to generate the chart above are shown below. One of the interesting features if this is the empty
@@ -285,6 +286,7 @@ brccharts.phen1(phen)</code></pre>
     </p>
 
     <div id="chart5" style="margin-top: 1em"></div>
+    <button onclick="phenBand.saveImage(true, 'phen2')">Download image</button>
 
 <pre><code class="javascript">brccharts.phen2({
   selector: '#chart5',
@@ -504,7 +506,7 @@ brccharts.phen1(phen)</code></pre>
           footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
           footerAlign: 'right'
         }
-        brccharts.phen1(phen2)
+        chart4 = brccharts.phen1(phen2)
       })
 
       function button9Click() {

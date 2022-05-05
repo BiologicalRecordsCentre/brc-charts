@@ -263,17 +263,28 @@ export function pie({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
+/** @function saveImage
+  * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+  * @param {string} filename - Name of the file (without extension) to generate and download.
+  * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+  * Download the chart as an image file.
+  */
+  function saveImage(asSvg, filename){
+    gen.saveChartImage(svg, expand, asSvg, filename) 
+  }
+
   /**
    * @typedef {Object} api
    * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
    * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-
+   * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG. 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
     setChartOpts: setChartOpts,
+    saveImage: saveImage
   }
 
 }

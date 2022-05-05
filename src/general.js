@@ -218,3 +218,82 @@ export function positionMainElements(svg, expand, headPad) {
     }
 
 }
+
+export function saveChartImage(svg, expand, asSvg, filename) {
+
+  if (asSvg) {
+    download(serialize(svg), filename)
+  } else {
+    rasterize(svg).then(blob => {
+      download(blob, filename)
+    })
+  }
+
+  function download(data, filename) {
+    const dataUrl = URL.createObjectURL(data)
+    const file = asSvg ? `${filename}.svg` : `${filename}.png`
+    downloadLink(dataUrl, file)
+  }
+
+  function serialize(svg) {
+    const xmlns = "http://www.w3.org/2000/xmlns/"
+    const xlinkns = "http://www.w3.org/1999/xlink"
+    const svgns = "http://www.w3.org/2000/svg"
+  
+    const domSvg = svg.node()
+    const cloneSvg = domSvg.cloneNode(true)
+    const d3Clone = d3.select(cloneSvg)
+    // Explicitly change text in clone to required font
+    d3Clone.selectAll('text').style('font-family','Arial, Helvetica, sans-serif')
+  
+    cloneSvg.setAttributeNS(xmlns, "xmlns", svgns)
+    cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns)
+    const serializer = new window.XMLSerializer
+    const string = serializer.serializeToString(cloneSvg)
+    return new Blob([string], {type: "image/svg+xml"})
+  }
+  
+  function rasterize(svg) {
+    let resolve, reject
+    const domSvg = svg.node()
+    const promise = new Promise((y, n) => (resolve = y, reject = n))
+    const image = new Image
+    image.onerror = reject
+    image.onload = () => {
+      const rect = domSvg.getBoundingClientRect()
+      // Create a canvas element
+      let canvas = document.createElement('canvas')
+      canvas.width = rect.width
+      canvas.height = rect.height
+      let context = canvas.getContext('2d')
+      context.drawImage(image, 0, 0, rect.width, rect.height)
+      context.canvas.toBlob(resolve)
+    }
+    image.src = URL.createObjectURL(serialize(svg))
+    return promise
+  }
+
+  function downloadLink(dataUrl, file) {
+
+    // Create a link element
+    const link = document.createElement("a")
+    // Set link's href to point to the data URL
+    link.href = dataUrl
+    link.download = file
+
+    // Append link to the body
+    document.body.appendChild(link)
+
+    // Dispatch click event on the link
+    // This is necessary as link.click() does not work on the latest firefox
+    link.dispatchEvent(
+      new MouseEvent('click', { 
+        bubbles: true, 
+        cancelable: true, 
+        view: window 
+      })
+    )
+    // Remove link from body
+    document.body.removeChild(link)
+  }
+}

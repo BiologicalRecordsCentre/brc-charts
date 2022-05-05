@@ -685,6 +685,16 @@ export function altlat({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
+/** @function saveImage
+  * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+  * @param {string} filename - Name of the file (without extension) to generate and download.
+  * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
+  * Download the chart as an image file.
+  */
+  function saveImage(asSvg, filename){
+    gen.saveChartImage(svg, expand, asSvg, filename) 
+  }
+
   /**
    * @typedef {Object} api
    * @property {module:altlat~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
@@ -692,13 +702,15 @@ export function altlat({
    * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart. 
    * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
    * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references. 
+   * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG. 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
     setChartOpts: setChartOpts,
     setTaxon: setTaxon,
-    dataFromTetrads: dataFromTetrads
+    dataFromTetrads: dataFromTetrads,
+    saveImage: saveImage
   }
 
 }

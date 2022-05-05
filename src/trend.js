@@ -449,6 +449,7 @@ export function trend({
         enter => enter.append("path")
           .attr("class", d => `trend-type-${d.type}`)
           .attr("opacity", d => d.opacity)
+          .attr("fill", "none")
           .attr("stroke", d => d.colour)
           .attr("stroke-width", d => d.strokeWidth)
           .attr("d", d => {
@@ -828,18 +829,31 @@ export function trend({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
+/** @function saveImage
+  * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+  * @param {string} filename - Name of the file (without extension) to generate and download.
+  * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
+  * Download the chart as an image file.
+  */
+  function saveImage(asSvg, filename){
+    gen.saveChartImage(svg, expand, asSvg, filename) 
+  }
+
+
   /**
    * @typedef {Object} api
    * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
    * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
    * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG. 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
     setChartOpts: setChartOpts,
-    setTaxon: setTaxon
+    setTaxon: setTaxon,
+    saveImage: saveImage
   }
 
 }

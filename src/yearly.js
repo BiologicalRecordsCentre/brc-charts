@@ -370,6 +370,7 @@ export function yearly({
         enter => enter.append("path")
           .attr("class", d => `yearly-graphic yearly-${d.prop}`)
           .attr("opacity", d => d.opacity)
+          .attr("fill", "none")
           .attr("stroke", d => d.colour)
           .attr("stroke-width", d => d.strokeWidth)
           .attr("d", d => {
@@ -711,18 +712,31 @@ export function yearly({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
+/** @function saveImage
+  * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+  * @param {string} filename - Name of the file (without extension) to generate and download.
+  * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+  * Download the chart as an image file.
+  */
+  function saveImage(asSvg, filename){
+    gen.saveChartImage(svg, expand, asSvg, filename) 
+  }
+
+
   /**
    * @typedef {Object} api
    * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
    * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
    * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG. 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
     setChartOpts: setChartOpts,
-    setTaxon: setTaxon
+    setTaxon: setTaxon,
+    saveImage: saveImage
   }
 
 }

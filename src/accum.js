@@ -355,6 +355,7 @@ export function accum({
       .append("path")
       //.attr("class", d => `accum-path accum-path-${d.id}`)
       .attr("class", d => `accum-path accum-path-${d.key}`)
+      .style("fill", "none")
       .attr("d", d => {
         const lineGen = d.type === 'taxa' ? lineTaxa : lineCount
         return lineGen(d.points.map(p => {
@@ -707,17 +708,29 @@ export function accum({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
+/** @function saveImage
+  * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+  * @param {string} filename - Name of the file (without extension) to generate and download.
+  * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
+  * Download the chart as an image file.
+  */
+  function saveImage(asSvg, filename){
+    gen.saveChartImage(svg, expand, asSvg, filename) 
+  }
+
   /**
    * @typedef {Object} api
    * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
    * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
    * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+   * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG. 
    */
   return {
     getChartHeight: getChartHeight,
     getChartWidth: getChartWidth,
-    setChartOpts: setChartOpts
+    setChartOpts: setChartOpts,
+    saveImage: saveImage
   }
 
 }

@@ -264,6 +264,82 @@
       svg.attr("height", height);
     }
   }
+  function saveChartImage(svg, expand, asSvg, filename) {
+    if (asSvg) {
+      download(serialize(svg), filename);
+    } else {
+      rasterize(svg).then(function (blob) {
+        download(blob, filename);
+      });
+    }
+
+    function download(data, filename) {
+      var dataUrl = URL.createObjectURL(data);
+      var file = asSvg ? "".concat(filename, ".svg") : "".concat(filename, ".png");
+      downloadLink(dataUrl, file);
+    }
+
+    function serialize(svg) {
+      var xmlns = "http://www.w3.org/2000/xmlns/";
+      var xlinkns = "http://www.w3.org/1999/xlink";
+      var svgns = "http://www.w3.org/2000/svg";
+      var domSvg = svg.node();
+      var cloneSvg = domSvg.cloneNode(true);
+      var d3Clone = d3.select(cloneSvg); // Explicitly change text in clone to required font
+
+      d3Clone.selectAll('text').style('font-family', 'Arial, Helvetica, sans-serif');
+      cloneSvg.setAttributeNS(xmlns, "xmlns", svgns);
+      cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns);
+      var serializer = new window.XMLSerializer();
+      var string = serializer.serializeToString(cloneSvg);
+      return new Blob([string], {
+        type: "image/svg+xml"
+      });
+    }
+
+    function rasterize(svg) {
+      var resolve, reject;
+      var domSvg = svg.node();
+      var promise = new Promise(function (y, n) {
+        return resolve = y, reject = n;
+      });
+      var image = new Image();
+      image.onerror = reject;
+
+      image.onload = function () {
+        var rect = domSvg.getBoundingClientRect(); // Create a canvas element
+
+        var canvas = document.createElement('canvas');
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        var context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0, rect.width, rect.height);
+        context.canvas.toBlob(resolve);
+      };
+
+      image.src = URL.createObjectURL(serialize(svg));
+      return promise;
+    }
+
+    function downloadLink(dataUrl, file) {
+      // Create a link element
+      var link = document.createElement("a"); // Set link's href to point to the data URL
+
+      link.href = dataUrl;
+      link.download = file; // Append link to the body
+
+      document.body.appendChild(link); // Dispatch click event on the link
+      // This is necessary as link.click() does not work on the latest firefox
+
+      link.dispatchEvent(new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })); // Remove link from body
+
+      document.body.removeChild(link);
+    }
+  }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
     sel.on("mouseover", function (d) {
@@ -1182,18 +1258,31 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-       */
+     * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     */
 
 
     return {
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
-      setChartOpts: setChartOpts
+      setChartOpts: setChartOpts,
+      saveImage: saveImage
     };
   }
 
@@ -2238,12 +2327,24 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
@@ -2251,7 +2352,8 @@
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
       setChartOpts: setChartOpts,
-      setTaxon: setTaxon
+      setTaxon: setTaxon,
+      saveImage: saveImage
     };
   }
 
@@ -2808,12 +2910,24 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:phen2~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:phen2~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
@@ -2821,7 +2935,8 @@
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
       setChartOpts: setChartOpts,
-      setTaxon: setTaxon
+      setTaxon: setTaxon,
+      saveImage: saveImage
     };
   }
 
@@ -3209,7 +3324,7 @@
       var eLines = mlines.enter().append("path") //.attr("class", d => `accum-path accum-path-${d.id}`)
       .attr("class", function (d) {
         return "accum-path accum-path-".concat(d.key);
-      }).attr("d", function (d) {
+      }).style("fill", "none").attr("d", function (d) {
         var lineGen = d.type === 'taxa' ? lineTaxa : lineCount;
         return lineGen(d.points.map(function (p) {
           return {
@@ -3511,19 +3626,32 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
     return {
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
-      setChartOpts: setChartOpts
+      setChartOpts: setChartOpts,
+      saveImage: saveImage
     };
   }
 
@@ -4533,7 +4661,7 @@
           return "trend-type-".concat(d.type);
         }).attr("opacity", function (d) {
           return d.opacity;
-        }).attr("stroke", function (d) {
+        }).attr("fill", "none").attr("stroke", function (d) {
           return d.colour;
         }).attr("stroke-width", function (d) {
           return d.strokeWidth;
@@ -4886,12 +5014,24 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
@@ -4899,7 +5039,8 @@
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
       setChartOpts: setChartOpts,
-      setTaxon: setTaxon
+      setTaxon: setTaxon,
+      saveImage: saveImage
     };
   }
 
@@ -5308,7 +5449,7 @@
           return "yearly-graphic yearly-".concat(d.prop);
         }).attr("opacity", function (d) {
           return d.opacity;
-        }).attr("stroke", function (d) {
+        }).attr("fill", "none").attr("stroke", function (d) {
           return d.colour;
         }).attr("stroke-width", function (d) {
           return d.strokeWidth;
@@ -5628,12 +5769,24 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
      * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
      * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
@@ -5641,7 +5794,8 @@
       getChartHeight: getChartHeight,
       getChartWidth: getChartWidth,
       setChartOpts: setChartOpts,
-      setTaxon: setTaxon
+      setTaxon: setTaxon,
+      saveImage: saveImage
     };
   }
 
@@ -15266,6 +15420,17 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      saveChartImage(svg, expand, asSvg, filename);
+    }
     /**
      * @typedef {Object} api
      * @property {module:altlat~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
@@ -15273,6 +15438,7 @@
      * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart. 
      * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
      * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references. 
+     * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG. 
      */
 
 
@@ -15281,12 +15447,13 @@
       getChartWidth: getChartWidth,
       setChartOpts: setChartOpts,
       setTaxon: setTaxon,
-      dataFromTetrads: dataFromTetrads
+      dataFromTetrads: dataFromTetrads,
+      saveImage: saveImage
     };
   }
 
   var name = "brc-d3";
-  var version = "0.9.0";
+  var version = "0.10.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
