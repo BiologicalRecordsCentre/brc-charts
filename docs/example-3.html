@@ -79,6 +79,7 @@
     <button onclick="setYear(2019)">2019</button>
     <button onclick="setYear(2018)">2018</button>
     <button onclick="setYear(2017)">2017</button>
+    <button onclick="clearChart()">Clear</button>
     <br/><br/>
     <div id="chart6"></div>
     <button onclick="chart6.saveImage(true, 'accum')">Download image</button>
@@ -289,6 +290,13 @@
           }]
         }
         chart6.setChartOpts(opts)
+      }
+
+      function clearChart() {
+        // Theis clears chart including legend
+        chart6.setChartOpts({metrics: []})
+        // This clears the data but not legend
+        // chart6.setChartOpts({data: []})
       }
     </script>
   </div>

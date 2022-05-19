@@ -329,6 +329,7 @@
     <button onclick="setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
     <button onclick="setTaxon('Anatis ocellata')">Anatis ocellata</button>
     <button onclick="setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
+    <button onclick="clearChart()">Clear</button>
 
     <div id="chart6" style="margin-top: 1em"></div>
     <button onclick="api.saveImage(true, 'trend')">Download image</button>
@@ -360,6 +361,13 @@
       function setTaxon(taxon) {
         api.setChartOpts({data: savedData, minYear: 1990 + Math.floor(Math.random() * 5), maxYear: 2010 + Math.floor(Math.random() * 5)})
         api.setTaxon(taxon)
+      }
+
+      function clearChart() {
+        // The following clears chart but not the legend
+        // Would need to update to allow flag showing legend
+        // to be set in setChartOpts
+        api.setTaxon('')
       }
 
       taxa = [

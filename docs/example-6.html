@@ -203,6 +203,7 @@
     <button onclick="api.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
     <button onclick="api.setTaxon('Anatis ocellata')">Anatis ocellata</button>
     <button onclick="api.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
+    <button onclick="clearChart()">Clear</button>
 
     <div id="chart5" style="margin-top: 1em"></div>
     <button onclick="api.saveImage(true, 'yearly')">Download image</button>
@@ -402,6 +403,13 @@
         optsChart5.data = data
         api = brccharts.yearly(optsChart5)
       })
+
+      function clearChart() {
+        // The following clears chart but not the legend
+        // Would need to update to allow flag showing legend
+        // to be set in setChartOpts
+        api.setTaxon('')
+      }
 
       function test() {
         var apis = [c1, c2, c3, c4, c5, api]

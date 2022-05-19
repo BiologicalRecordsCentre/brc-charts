@@ -200,6 +200,7 @@ brccharts.phen1(phen)</code></pre>
 
     <button onclick="button1Click()">Aglais urticae</button>
     <button onclick="button2Click()">Vanessa cardui</button>
+    <button onclick="button2aClick()">Clear</button>
     <br/><br/>
     <button onclick="button6Click()">2020 only</button>
     <button onclick="button6aClick()">2020 and 2019</button>
@@ -287,7 +288,7 @@ brccharts.phen1(phen)</code></pre>
 
     <div id="chart5" style="margin-top: 1em"></div>
     <button onclick="phenBand.saveImage(true, 'phen2')">Download image</button>
-    <button onclick="phenBand.setChartOpts({data: []})">clear image</button>
+    <button onclick="phenBand.setChartOpts({data: []})">Clear image</button>
 
 <pre><code class="javascript">brccharts.phen2({
   selector: '#chart5',
@@ -414,6 +415,13 @@ brccharts.phen1(phen)</code></pre>
       }
       function button2Click() {
         chart2.setTaxon('Vanessa cardui')
+      }
+      function button2aClick() {
+        chart2.setTaxon('')
+        // Below also works for clearing chart
+        // but cannot then use other buttons without
+        // resetting data.
+        //chart2.setChartOpts({data: []})
       }
       function button3Click() {
         chart2.setChartOpts({ytype: 'count'})
