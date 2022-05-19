@@ -120,15 +120,16 @@ export function altlat({
   const xScale = d3.scaleLinear().domain([0, 1250]).range([0, width])
   const yScale = d3.scaleLinear().domain([0, 1200]).range([height, 0])
   
-  makeChart()
-  // Texts must come after chartbecause 
-  // the chart width is required
-  const textWidth = Number(svg.select('.mainChart').attr("width"))
-  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  gen.positionMainElements(svg, expand)
-
+  makeChart().then(() => {
+    // Texts must come after chartbecause 
+    // the chart width is required
+    const textWidth = Number(svg.select('.mainChart').attr("width"))
+    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    gen.positionMainElements(svg, expand)
+  })
+  
   function makeChart () {
 
     // If taxa for graphs not set, set to all in dataset
@@ -137,27 +138,29 @@ export function altlat({
     }
 
     const subChartPad = 10
-    const svgsTaxa = taxa.map(t => makeAltLat(t))
+    const pSvgsTaxa = taxa.map(t => makeAltLat(t))
 
-    const subChartWidth = Number(svgsTaxa[0].attr("width"))
-    const subChartHeight = Number(svgsTaxa[0].attr("height"))
+    return Promise.all(pSvgsTaxa).then(svgsTaxa => {
+      const subChartWidth = Number(svgsTaxa[0].attr("width"))
+      const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
-    svgsTaxa.forEach((svgTaxon, i) => {
-      
-      const col = i%perRow
-      const row = Math.floor(i/perRow)
+      svgsTaxa.forEach((svgTaxon, i) => {
+        
+        const col = i%perRow
+        const row = Math.floor(i/perRow)
 
-      svgTaxon.attr("x", col * (subChartWidth + subChartPad))
-      svgTaxon.attr("y", row * (subChartHeight + subChartPad))
+        svgTaxon.attr("x", col * (subChartWidth + subChartPad))
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad))
+      })
+
+      svgChart.attr("width", perRow * (subChartWidth + subChartPad))
+      svgChart.attr("height", Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
     })
-
-    svgChart.attr("width", perRow * (subChartWidth + subChartPad))
-    svgChart.attr("height", Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
   }
 
   function makeAltLat (taxon) {
 
-    // Fo;ter pit any empty rows
+    // Filter out any empty rows
     data = data.filter(d => d.metric !== 0)
 
     // Top axis
@@ -258,7 +261,7 @@ export function altlat({
     const t = svgAltLat.transition()
       .duration(duration)
 
-    gAltLat.selectAll(".brc-altlat-metric-circle")
+    const mainTrans = gAltLat.selectAll(".brc-altlat-metric-circle")
       .data(data, d => `${d.distance}-${d.altitude}`)
       .join(
         enter => enter.append("circle")
@@ -358,11 +361,24 @@ export function altlat({
     }
 
     // Make the legend
+    let pLegend
     if (showLegend) {
-       makeLegend(gAltLat)
+      pLegend = makeLegend(gAltLat)
+    } else {
+      pLegend = Promise.resolve()
     }
-  
-    return svgAltLat
+
+    // Return a promise which resolves to the svg when transitions complete
+    return new Promise((resolve) => {
+
+      const pArray = [pLegend]
+      addPromise(mainTrans, pArray)
+
+      Promise.all(pArray).then(() => {
+        resolve(svgAltLat)
+      })
+    })
+    //return svgAltLat
   }
 
   function makeLegend (gAltLat) {
@@ -395,7 +411,8 @@ export function altlat({
         update => update
       )
       .attr("class", i => `brc-altlat-legend-item-circle brc-altlat brc-altlat-${i.radius}`)
-    ls.transition(t)
+
+    const swatchTrans = ls.transition(t)
       .attr('r', i => i.radiusTrans)
       .attr('cx', xOffset)
       .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
@@ -415,13 +432,32 @@ export function altlat({
         update => update
       )
       .attr("class", i => `brc-altlat-legend-item-text brc-altlat brc-altlat-${i.radius}`)
-    lt.transition(t)
+
+    const textTrans = lt.transition(t)
       .attr('x', xOffset + maxRadius * 1.3)
       .attr('y', (i,j) => yOffset + maxRadius * 2.2 * j + maxRadius * 0.5)
       .style('opacity', 1)
 
     addEventHandlers(ls)
     addEventHandlers(lt)
+
+    const pArray = []
+    addPromise(swatchTrans, pArray)
+    addPromise(textTrans, pArray)
+    return Promise.all(pArray)
+  }
+
+  function addPromise(transition, pArray) {
+    // If the transition has any elements in selection, then
+    // create a promise that resolves when the transition of
+    // the last element completes. We do the check becaus it
+    // seems that with zero elements, the promise does not resolve
+    // (remains pending).
+    // The promise is created by
+    // using the 'end' method on the transition.
+    if (transition.size()) {
+      pArray.push(transition.end())
+    }
   }
 
   function getRadius (metric) {
@@ -595,6 +631,7 @@ export function altlat({
   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
@@ -649,14 +686,20 @@ export function altlat({
       remakeChart = true
     }
 
-    if (remakeChart) makeChart()
-    gen.positionMainElements(svg, expand)
+    if (remakeChart) {
+      return makeChart().then(() => {
+        gen.positionMainElements(svg, expand)
+      })
+    } else {
+      return Promise.resolve()
+    }
   }
 
 /** @function setTaxon
   * @param {string} taxon - The taxon to display.
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
-  * For single species charts, this allows you to change the taxon displayed.
+  * This allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
     if (taxa.length !== 1) {
@@ -664,7 +707,7 @@ export function altlat({
     } else {
       taxa = [taxon]
       highlightItem({}, false)
-      makeChart()
+      return makeChart()
     }
   }
 
@@ -688,11 +731,15 @@ export function altlat({
 /** @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
+  * If the filename is falsey (e.g. blank), it will not automatically download the
+  * file. (Allows caller to do something else with the data URL which is returned
+  * as the promise's resolved value.)
+  * @returns {Promise} promise object represents the data URL of the image.
   * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
   * Download the chart as an image file.
   */
   function saveImage(asSvg, filename){
-    gen.saveChartImage(svg, expand, asSvg, filename) 
+    return gen.saveChartImage(svg, expand, asSvg, filename) 
   }
 
   /**

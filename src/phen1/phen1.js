@@ -313,11 +313,15 @@ export function phen1({
 /** @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
+  * If the filename is falsey (e.g. blank), it will not automatically download the
+  * file. (Allows caller to do something else with the data URL which is returned
+  * as the promise's resolved value.)
+  * @returns {Promise} promise object represents the data URL of the image.
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * Download the chart as an image file.
   */
   function saveImage(asSvg, filename){
-    saveChartImage(svg, expand, asSvg, filename) 
+    return saveChartImage(svg, expand, asSvg, filename) 
   }
 
   /**

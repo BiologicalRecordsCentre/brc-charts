@@ -26,7 +26,13 @@
 .brc-chart-phen1-top .brc-legend-item-line.highlight {
     fill:black;
 }
-.brc-chart-pie {
+.blah {
+    background: red;
+}
+
+svg {
+    font-family: Arial, Helvetica, sans-serif;
+}.brc-chart-pie {
   width: 100%
 }
 
@@ -90,12 +96,66 @@
 #phen2-chart .mainChart {
     overflow: visible;
 }
-.blah {
-    background: red;
+
+.chart-overflow svg {
+    overflow: visible;
+}
+.mainChart {
+    background-color: plum;
+}
+svg line.display-link{
+    stroke-width: 1;
+    stroke: black;
+    opacity: 0.2;
+}
+svg line.select-link{
+    stroke-width: 4;
+    stroke: black;
+    opacity: 0;
+}
+svg line.highlighted {
+    stroke-width: 1;
+    stroke: black;
+    opacity: 1;
 }
 
-svg {
-    font-family: Arial, Helvetica, sans-serif;
+svg line.lowlighted {
+    opacity: 0.02;
+}
+
+svg circle {
+    stroke: "#fff";
+    stroke-width: 1.5;
+}
+
+svg circle.fixed {
+    /* stroke-width: 2; */
+    stroke: black;
+}
+svg circle.highlighted {
+    stroke: white;
+    fill: black;
+}
+
+svg circle.lowlighted {
+    opacity: 0.3;
+}
+
+.brc-chart-links-popup {
+    position: absolute;			
+    /* text-align: center;			 */
+    padding: 0.5em;				
+    font: 12px sans-serif;		
+    background: white;	
+    border: 0px;		
+    border-radius: 5px;			
+    pointer-events: none;		
+    border:  1px solid black;	
+}
+
+.brc-chart-links-popup ul {
+    padding-left: 0;
+    list-style-position: inside;
 }.brc-chart-accum path {
     fill: none;
 }
@@ -166,66 +226,6 @@ svg {
 
 .brc-chart-trend .lowlight {
     opacity: 0.1;
-}
-.chart-overflow svg {
-    overflow: visible;
-}
-.mainChart {
-    background-color: plum;
-}
-svg line.display-link{
-    stroke-width: 1;
-    stroke: black;
-    opacity: 0.2;
-}
-svg line.select-link{
-    stroke-width: 4;
-    stroke: black;
-    opacity: 0;
-}
-svg line.highlighted {
-    stroke-width: 1;
-    stroke: black;
-    opacity: 1;
-}
-
-svg line.lowlighted {
-    opacity: 0.02;
-}
-
-svg circle {
-    stroke: "#fff";
-    stroke-width: 1.5;
-}
-
-svg circle.fixed {
-    /* stroke-width: 2; */
-    stroke: black;
-}
-svg circle.highlighted {
-    stroke: white;
-    fill: black;
-}
-
-svg circle.lowlighted {
-    opacity: 0.3;
-}
-
-.brc-chart-links-popup {
-    position: absolute;			
-    /* text-align: center;			 */
-    padding: 0.5em;				
-    font: 12px sans-serif;		
-    background: white;	
-    border: 0px;		
-    border-radius: 5px;			
-    pointer-events: none;		
-    border:  1px solid black;	
-}
-
-.brc-chart-links-popup ul {
-    padding-left: 0;
-    list-style-position: inside;
 }.brc-chart-altlat .highlight {
     opacity: 1;
 }

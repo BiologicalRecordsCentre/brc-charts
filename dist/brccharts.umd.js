@@ -265,13 +265,25 @@
     }
   }
   function saveChartImage(svg, expand, asSvg, filename) {
-    if (asSvg) {
-      download(serialize(svg), filename);
-    } else {
-      rasterize(svg).then(function (blob) {
-        download(blob, filename);
-      });
-    }
+    return new Promise(function (resolve) {
+      if (asSvg) {
+        var blob1 = serialize(svg);
+
+        if (filename) {
+          download(blob1, filename);
+        }
+
+        resolve(blob1);
+      } else {
+        rasterize(svg).then(function (blob2) {
+          if (filename) {
+            download(blob2, filename);
+          }
+
+          resolve(blob2);
+        });
+      }
+    });
 
     function download(data, filename) {
       var dataUrl = URL.createObjectURL(data);
@@ -2330,13 +2342,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -2545,8 +2561,8 @@
         return {
           id: m.id,
           colour: m.colour,
-          start: dataFiltered[m.prop].start,
-          end: dataFiltered[m.prop].end
+          start: dataFiltered ? dataFiltered[m.prop].start : 0,
+          end: dataFiltered ? dataFiltered[m.prop].end : 0
         };
       }); // Value scale
       //const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
@@ -14888,14 +14904,15 @@
 
     var xScale = d3.scaleLinear().domain([0, 1250]).range([0, width]);
     var yScale = d3.scaleLinear().domain([0, 1200]).range([height, 0]);
-    makeChart(); // Texts must come after chartbecause 
-    // the chart width is required
-
-    var textWidth = Number(svg.select('.mainChart').attr("width"));
-    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
-    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
-    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
-    positionMainElements(svg, expand);
+    makeChart().then(function () {
+      // Texts must come after chartbecause 
+      // the chart width is required
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      positionMainElements(svg, expand);
+    });
 
     function makeChart() {
       // If taxa for graphs not set, set to all in dataset
@@ -14908,23 +14925,25 @@
       }
 
       var subChartPad = 10;
-      var svgsTaxa = taxa.map(function (t) {
+      var pSvgsTaxa = taxa.map(function (t) {
         return makeAltLat(t);
       });
-      var subChartWidth = Number(svgsTaxa[0].attr("width"));
-      var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      svgsTaxa.forEach(function (svgTaxon, i) {
-        var col = i % perRow;
-        var row = Math.floor(i / perRow);
-        svgTaxon.attr("x", col * (subChartWidth + subChartPad));
-        svgTaxon.attr("y", row * (subChartHeight + subChartPad));
+      return Promise.all(pSvgsTaxa).then(function (svgsTaxa) {
+        var subChartWidth = Number(svgsTaxa[0].attr("width"));
+        var subChartHeight = Number(svgsTaxa[0].attr("height"));
+        svgsTaxa.forEach(function (svgTaxon, i) {
+          var col = i % perRow;
+          var row = Math.floor(i / perRow);
+          svgTaxon.attr("x", col * (subChartWidth + subChartPad));
+          svgTaxon.attr("y", row * (subChartHeight + subChartPad));
+        });
+        svgChart.attr("width", perRow * (subChartWidth + subChartPad));
+        svgChart.attr("height", Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
       });
-      svgChart.attr("width", perRow * (subChartWidth + subChartPad));
-      svgChart.attr("height", Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
     }
 
     function makeAltLat(taxon) {
-      // Fo;ter pit any empty rows
+      // Filter out any empty rows
       data = data.filter(function (d) {
         return d.metric !== 0;
       }); // Top axis
@@ -15014,7 +15033,7 @@
       }); // Create the metric circles
 
       var t = svgAltLat.transition().duration(duration);
-      gAltLat.selectAll(".brc-altlat-metric-circle").data(data, function (d) {
+      var mainTrans = gAltLat.selectAll(".brc-altlat-metric-circle").data(data, function (d) {
         return "".concat(d.distance, "-").concat(d.altitude);
       }).join(function (enter) {
         return enter.append("circle").attr("r", 0).attr("cx", function (d) {
@@ -15094,11 +15113,22 @@
       } // Make the legend
 
 
-      if (showLegend) {
-        makeLegend(gAltLat);
-      }
+      var pLegend;
 
-      return svgAltLat;
+      if (showLegend) {
+        pLegend = makeLegend(gAltLat);
+      } else {
+        pLegend = Promise.resolve();
+      } // Return a promise which resolves to the svg when transitions complete
+
+
+      return new Promise(function (resolve) {
+        var pArray = [pLegend];
+        addPromise(mainTrans, pArray);
+        Promise.all(pArray).then(function () {
+          resolve(svgAltLat);
+        });
+      }); //return svgAltLat
     }
 
     function makeLegend(gAltLat) {
@@ -15127,7 +15157,7 @@
       }).attr("class", function (i) {
         return "brc-altlat-legend-item-circle brc-altlat brc-altlat-".concat(i.radius);
       });
-      ls.transition(t).attr('r', function (i) {
+      var swatchTrans = ls.transition(t).attr('r', function (i) {
         return i.radiusTrans;
       }).attr('cx', xOffset).attr('cy', function (i, j) {
         return yOffset + maxRadius * 2.2 * j;
@@ -15146,11 +15176,28 @@
       }).attr("class", function (i) {
         return "brc-altlat-legend-item-text brc-altlat brc-altlat-".concat(i.radius);
       });
-      lt.transition(t).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
+      var textTrans = lt.transition(t).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
         return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
       }).style('opacity', 1);
       addEventHandlers(ls);
       addEventHandlers(lt);
+      var pArray = [];
+      addPromise(swatchTrans, pArray);
+      addPromise(textTrans, pArray);
+      return Promise.all(pArray);
+    }
+
+    function addPromise(transition, pArray) {
+      // If the transition has any elements in selection, then
+      // create a promise that resolves when the transition of
+      // the last element completes. We do the check becaus it
+      // seems that with zero elements, the promise does not resolve
+      // (remains pending).
+      // The promise is created by
+      // using the 'end' method on the transition.
+      if (transition.size()) {
+        pArray.push(transition.end());
+      }
     }
 
     function getRadius(metric) {
@@ -15320,6 +15367,7 @@
       * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -15383,13 +15431,19 @@
         remakeChart = true;
       }
 
-      if (remakeChart) makeChart();
-      positionMainElements(svg, expand);
+      if (remakeChart) {
+        return makeChart().then(function () {
+          positionMainElements(svg, expand);
+        });
+      } else {
+        return Promise.resolve();
+      }
     }
     /** @function setTaxon
       * @param {string} taxon - The taxon to display.
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
-      * For single species charts, this allows you to change the taxon displayed.
+      * This allows you to change the taxon displayed.
       */
 
 
@@ -15399,7 +15453,7 @@
       } else {
         taxa = [taxon];
         highlightItem({}, false);
-        makeChart();
+        return makeChart();
       }
     }
     /** @function getChartWidth
@@ -15423,13 +15477,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api

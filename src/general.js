@@ -8,34 +8,6 @@ export function cloneData(data) {
   return data.map(d => { return {...d}})
 }
 
-export function xAxisMonthSafe(width, ticks) {
-  const xScaleTime = d3.scaleTime()
-    .domain([new Date(2000, 0, 1), new Date(2000, 11, 31)])
-    .range([0, width])
-  
-  const xAxis = d3.axisBottom()
-    .scale(xScaleTime)
-
-  if (ticks) {
-    xAxis.ticks(d3.timeMonth)
-      .tickSize(width >= 200 ? 13 : 5, 0)
-      .tickFormat(date => {
-        if (width >= 750) {
-          return d3.timeFormat('%B')(date)
-        } else if (width >= 330) {
-          return d3.timeFormat('%b')(date)
-        } else if (width >= 200) {
-          return date.toLocaleString('default', { month: 'short' }).substr(0,1)
-        } else {
-          return ''
-        }
-      })
-  } else {
-    xAxis.tickValues([]).tickSizeOuter(0)
-  }
-  return xAxis
-}
-
 export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
 
 export function xAxisMonth(width, ticks) {
@@ -221,13 +193,22 @@ export function positionMainElements(svg, expand, headPad) {
 
 export function saveChartImage(svg, expand, asSvg, filename) {
 
-  if (asSvg) {
-    download(serialize(svg), filename)
-  } else {
-    rasterize(svg).then(blob => {
-      download(blob, filename)
-    })
-  }
+  return new Promise((resolve) => {
+    if (asSvg) {
+      const blob1 =  serialize(svg)
+      if(filename) {
+        download(blob1, filename)
+      }
+      resolve(blob1)
+    } else {
+      rasterize(svg).then(blob2 => {
+        if(filename) {
+          download(blob2, filename)
+        }
+        resolve(blob2) 
+      })
+    }
+  })
 
   function download(data, filename) {
     const dataUrl = URL.createObjectURL(data)

@@ -170,8 +170,8 @@ export function phen2({
       return {
         id: m.id,
         colour: m.colour,
-        start: dataFiltered[m.prop].start,
-        end: dataFiltered[m.prop].end,
+        start: dataFiltered ? dataFiltered[m.prop].start : 0,
+        end:  dataFiltered ? dataFiltered[m.prop].end : 0,
       }
     })
     

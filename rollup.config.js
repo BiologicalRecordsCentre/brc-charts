@@ -27,14 +27,14 @@ export default [
   // Avoid bundling d3 or leaflet
   {
     external: ['d3'],
-    globals: {
-      'd3': 'd3',
-    },
 		input: 'index.js',
 		output: {
 			name: 'brccharts',
 			file: pkg.browser,
-			format: 'umd'
+			format: 'umd',
+      globals: {
+        'd3': 'd3',
+      },
 		},
 		plugins: [
       //eslint(),
@@ -46,14 +46,14 @@ export default [
   },
   {
     external: ['d3'],
-    globals: {
-      'd3': 'd3',
-    },
 		input: 'index.js',
 		output: {
 			name: 'brccharts',
 			file: pkg.browsermin,
-			format: 'umd'
+			format: 'umd',
+      globals: {
+        'd3': 'd3',
+      },
 		},
 		plugins: [
       //eslint(),
