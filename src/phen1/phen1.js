@@ -170,11 +170,13 @@ export function phen1({
     }
 
     const subChartPad = 10
+    const pTrans = []
+
     const svgsTaxa = taxa.map(t => {
       return makePhen (t, taxa, data, metrics, svgChart, width, height, 
         ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
         style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
-        axisLabelFontSize, axisLeftLabel, interactivity)
+        axisLabelFontSize, axisLeftLabel, interactivity, pTrans)
     })
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
@@ -197,6 +199,8 @@ export function phen1({
 
     svgChart.attr("width", perRow * (subChartWidth + subChartPad))
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
+
+    return Promise.all(pTrans)
   }
 
 /** @function setChartOpts
@@ -214,6 +218,7 @@ export function phen1({
   * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
@@ -275,24 +280,33 @@ export function phen1({
       remakeChart = true
     }
 
-    if (remakeChart) makeChart()
-    positionMainElements(svg, expand)
+    let pRet
+    if (remakeChart) {
+      pRet = makeChart()
+      positionMainElements(svg, expand)
+    } else {
+      pRet = Promise.resolve()
+    }
+    return pRet
   }
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
+    let pRet
     if (taxa.length !== 1) {
       console.log("You can only use the setTaxon method when your chart displays a single taxon.")
+      pRet = Promise.resolve()
     } else {
       taxa = [taxon]
-      makeChart()
+      pRet = makeChart()
     }
+    return pRet
   }
-
 
 /** @function getChartWidth
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.

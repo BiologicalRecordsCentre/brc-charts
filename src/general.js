@@ -278,3 +278,16 @@ export function saveChartImage(svg, expand, asSvg, filename) {
     document.body.removeChild(link)
   }
 }
+
+export function transPromise(transition, pArray) {
+  // If the transition has any elements in selection, then
+  // create a promise that resolves when the transition of
+  // the last element completes. We do the check because it
+  // seems that with zero elements, the promise does not resolve
+  // (remains pending).
+  // The promise is created by
+  // using the 'end' method on the transition.
+  if (transition.size()) {
+    pArray.push(transition.end())
+  }
+}

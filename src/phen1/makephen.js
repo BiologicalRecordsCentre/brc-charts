@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
-import { month2day, safeId, xAxisMonth } from '../general'
+import { month2day, safeId, xAxisMonth, transPromise } from '../general'
 import { addEventHandlers} from './highlightitem'
 
 export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height, 
   ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
   style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
-  axisLabelFontSize, axisLeftLabel, interactivity
+  axisLabelFontSize, axisLeftLabel, interactivity, pTrans
 ) {
 
   // Examine the first record to see if week or month is specified for period
@@ -301,16 +301,16 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
   const mgroups = agroups.merge(egroups)
     .classed(`phen-metric-no-data`, d => !d.hasData)
 
-  mgroups.transition()
-    .duration(duration)
+  const t = svgChart.transition().duration(duration)
+
+  transPromise(mgroups.transition(t)
     .attr('opacity', 1)
-    .attr("transform", (d,i) => `translate(0,-${(metricData.length-1-i + 0.5) * spreadHeight})`)
+    .attr("transform", (d,i) => `translate(0,-${(metricData.length-1-i + 0.5) * spreadHeight})`), pTrans)
 
   const xgroups = agroups.exit()
 
   if (style === 'bars') {
     
-    const t = svgChart.transition().duration(duration)
     mgroups.each(d => {
       const colour = d.colour
       const max = d.max
@@ -327,20 +327,19 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
               .attr("x", d => xScale(periodToDay(d.period))-1)
               .attr("y", height)
               .attr("width", d => periodToWidth(d.period))
-              .attr("height", 0)
-            .call(update => update.transition(t)
-              .attr("y", d => getBarY(d, max, total, stackOffsets))
-              .attr("height", d => getBarHeight(d, max, total))),
+              .attr("height", 0),
           update => update
-            .call(update => update.transition(t)
-              .attr("fill", colour)
-              .attr("y", d => getBarY(d, max, total, stackOffsets))
-              .attr("height", d => getBarHeight(d, max, total))),
+            // Use call for transitions to avoid breaking the
+            // method chain (https://observablehq.com/@d3/selection-join)
+            .call(update => transPromise(update.transition(t)
+              .attr("fill", colour), pTrans)),
           exit => exit
-            .call(exit => exit.transition(t)
+            .call(exit => transPromise(exit.transition(t)
               .attr("height", 0)
-              .remove())
-        )
+              .remove(), pTrans))
+        ).call(merge => transPromise(merge.transition(t)
+          .attr("y", d => getBarY(d, max, total, stackOffsets))
+          .attr("height", d => getBarHeight(d, max, total)), pTrans))
     })
   } else if (style === 'areas') {
     egroups.append("path")
@@ -364,45 +363,38 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
 
   // Important for correct data binding to use select - NOT selectAll
   // in sub-selections (https://bost.ocks.org/mike/selection/#non-grouping)
-  mgroups.select('.phen-path-line')
-    .transition()
-    .duration(duration)
+  transPromise(mgroups.select('.phen-path-line')
+    .transition(t)
     .attr("d", d => getPath(d, false))
     .attr("stroke", d => d.colour)
     .attr("stroke-width", d => d.strokeWidth)
-    .attr("fill", "none")
+    .attr("fill", "none"), pTrans)
 
-  mgroups.select('.phen-path-fill')
-    .transition()
-    .duration(duration)
+  transPromise(mgroups.select('.phen-path-fill')
+    .transition(t)
     .attr("d", d => getPath(d, true))
-    .attr("fill", d => d.fill)
+    .attr("fill", d => d.fill), pTrans)
 
-  mgroups.select('.phen-path-area')
-    .transition()
-    .duration(duration)
+  transPromise(mgroups.select('.phen-path-area')
+    .transition(t)
     .attr("d", d => getPath(d, true))
-    .attr("fill", d => d.colour)
+    .attr("fill", d => d.colour), pTrans)
 
-  xgroups.select('.phen-path-line')
-    .transition()
-    .duration(duration)
-    .attr("d", d => flatPath(d, false))
+  transPromise(xgroups.select('.phen-path-line')
+    .transition(t)
+    .attr("d", d => flatPath(d, false)), pTrans)
 
-  xgroups.select('.phen-path-fill')
-    .transition()
-    .duration(duration)
-    .attr("d", d => flatPath(d, true))
+  transPromise(xgroups.select('.phen-path-fill')
+    .transition(t)
+    .attr("d", d => flatPath(d, true)), pTrans)
 
-  xgroups.select('.phen-path-area')
-    .transition()
-    .duration(duration)
-    .attr("d", d => flatPath(d, true))
+  transPromise(xgroups.select('.phen-path-area')
+    .transition(t)
+    .attr("d", d => flatPath(d, true)), pTrans)
 
-  xgroups.transition()
-    .duration(duration)
+  transPromise(xgroups.transition(t)
     .attr("opacity", 0)
-    .remove()
+    .remove(), pTrans)
 
   // Path and bar generation helper functions
   function flatPath(d, poly) {
@@ -560,10 +552,10 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
   }
 
   if (yAxis) {
-    svgPhen1.select(".y-axis")
-      .transition()
-      .duration(duration)
-      .call(yAxis)
+    transPromise(svgPhen1.select(".y-axis")
+      .transition(t)
+      .call(yAxis), pTrans)
   }
+
   return svgPhen1
 }

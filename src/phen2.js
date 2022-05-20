@@ -1,7 +1,7 @@
 /** @module phen2 */
 
 import * as d3 from 'd3'
-import * as gen from './general'
+import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, cloneData, transPromise } from './general'
 
 /** 
  * @param {Object} opts - Initialisation options.
@@ -100,6 +100,7 @@ export function phen2({
 } = {}) {
 
   let metricsPlus
+  let pTrans
 
   const mainDiv = d3.select(`${selector}`)
     .append('div')
@@ -121,16 +122,18 @@ export function phen2({
   // Texts must come after chart because 
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
-  gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-  gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-  gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-  gen.positionMainElements(svg, expand, headPad)
-
+  makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+  makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+  makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+  positionMainElements(svg, expand, headPad)
+  
   function makeChart () {
+
+    pTrans = []
 
     metricsPlus = metrics.map(m => {
       return {
-        id:  gen.safeId(m.label),
+        id:  safeId(m.label),
         prop: m.prop,
         label: m.label,
         colour: m.colour,
@@ -161,6 +164,8 @@ export function phen2({
 
     svgChart.attr("width", perRow * (subChartWidth + subChartPad))
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
+
+    return Promise.all(pTrans)
   }
 
   function makePhen (taxon) {
@@ -184,7 +189,7 @@ export function phen2({
     // X (bottom) axis
     let xAxis
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      xAxis = gen.xAxisMonth(width, axisBottom === 'tick')
+      xAxis = xAxisMonth(width, axisBottom === 'tick')
     }
 
     // Top axis
@@ -220,14 +225,14 @@ export function phen2({
       svgPhen2 = svgChart.select('.brc-chart-phen2')
       gPhen2 = svgPhen2.select('.brc-chart-phen2-g')
       init = false
-    } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-      svgPhen2 = svgChart.select(`#${gen.safeId(taxon)}`)
+    } else if (svgChart.select(`#${safeId(taxon)}`).size()) {
+      svgPhen2 = svgChart.select(`#${safeId(taxon)}`)
       gPhen2 = svgPhen2.select('.brc-chart-phen2-g')
       init = false
     } else {
       svgPhen2 = svgChart.append('svg')
         .classed('brc-chart-phen2', true)
-        .attr('id', gen.safeId(taxon))
+        .attr('id', safeId(taxon))
         .style('overflow', 'visible')
       gPhen2 = svgPhen2.append('g')
         .classed('brc-chart-phen2-g', true)
@@ -247,17 +252,17 @@ export function phen2({
 
     addEventHandlers(erects, 'id')
 
-    mrects.merge(erects)
+    transPromise(mrects.merge(erects)
       .transition()
       .duration(duration)
       .attr("width", d => xScale(d.end) - xScale(d.start))
       .attr("x", d => xScale(d.start))
-      .attr("fill", d => d.colour)
+      .attr("fill", d => d.colour), pTrans)
     
-    mrects.exit()
+    transPromise(mrects.exit()
       .transition()
       .duration(duration)
-      .remove()
+      .remove(), pTrans)
 
     if (init) {
       // Constants for positioning
@@ -340,7 +345,7 @@ export function phen2({
     let rows = 0
     let lineWidth = -swatchSize
 
-    const metricsReversed = gen.cloneData(metricsPlus).reverse()
+    const metricsReversed = cloneData(metricsPlus).reverse()
 
     // Get the bbox of any SVG icons in metrics
     metricsReversed.filter(m => m.svg).forEach(m => {
@@ -410,7 +415,7 @@ export function phen2({
 
     // Text
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsReversed, m => gen.safeId(m.label))
+      .data(metricsReversed, m => safeId(m.label))
       .join(enter => {
           const text = enter.append("text")
             .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
@@ -465,17 +470,17 @@ export function phen2({
     sel
       .on("mouseover", function(d) {
       if (interactivity === 'mousemove') {
-          highlightItem(gen.safeId(d[prop]), true)
+          highlightItem(safeId(d[prop]), true)
         }
       })
       .on("mouseout", function(d) {
         if (interactivity === 'mousemove') {
-          highlightItem(gen.safeId(d[prop]), false)
+          highlightItem(safeId(d[prop]), false)
         }
       })
       .on("click", function(d) {
         if (interactivity === 'mouseclick') {
-          highlightItem(gen.safeId(d[prop]), true)
+          highlightItem(safeId(d[prop]), true)
           d3.event.stopPropagation()
         }
       })
@@ -494,6 +499,7 @@ export function phen2({
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
@@ -529,9 +535,9 @@ export function phen2({
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
-    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
 
@@ -545,22 +551,32 @@ export function phen2({
       remakeChart = true
     }
 
-    if (remakeChart) makeChart()
-    gen.positionMainElements(svg, expand)
+    let pRet
+    if (remakeChart) {
+      pRet = makeChart()
+      positionMainElements(svg, expand)
+    } else {
+      pRet = Promise.resolve()
+    }
+    return pRet
   }
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
+  * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
+    let pRet
     if (taxa.length !== 1) {
       console.log("You can only use the setTaxon method when your chart displays a single taxon.")
+      pRet = Promise.resolve()
     } else {
       taxa = [taxon]
-      makeChart()
+      pRet = makeChart()
     }
+    return pRet
   }
 
 
@@ -583,11 +599,15 @@ export function phen2({
 /** @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
+  * If the filename is falsey (e.g. blank), it will not automatically download the
+  * file. (Allows caller to do something else with the data URL which is returned
+  * as the promise's resolved value.)
+  * @returns {Promise} promise object represents the data URL of the image.
   * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Download the chart as an image file.
   */
   function saveImage(asSvg, filename){
-    gen.saveChartImage(svg, expand, asSvg, filename) 
+    return saveChartImage(svg, expand, asSvg, filename) 
   }
 
   /**

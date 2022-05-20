@@ -352,6 +352,18 @@
       document.body.removeChild(link);
     }
   }
+  function transPromise(transition, pArray) {
+    // If the transition has any elements in selection, then
+    // create a promise that resolves when the transition of
+    // the last element completes. We do the check because it
+    // seems that with zero elements, the promise does not resolve
+    // (remains pending).
+    // The promise is created by
+    // using the 'end' method on the transition.
+    if (transition.size()) {
+      pArray.push(transition.end());
+    }
+  }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
     sel.on("mouseover", function (d) {
@@ -1273,13 +1285,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -1344,7 +1360,7 @@
     }
   }
 
-  function makePhen(taxon, taxa, data, metricsin, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity) {
+  function makePhen(taxon, taxa, data, metricsin, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans) {
     // Examine the first record to see if week or month is specified for period
     var period;
 
@@ -1656,13 +1672,13 @@
     var mgroups = agroups.merge(egroups).classed("phen-metric-no-data", function (d) {
       return !d.hasData;
     });
-    mgroups.transition().duration(duration).attr('opacity', 1).attr("transform", function (d, i) {
+    var t = svgChart.transition().duration(duration);
+    transPromise(mgroups.transition(t).attr('opacity', 1).attr("transform", function (d, i) {
       return "translate(0,-".concat((metricData.length - 1 - i + 0.5) * spreadHeight, ")");
-    });
+    }), pTrans);
     var xgroups = agroups.exit();
 
     if (style === 'bars') {
-      var t = svgChart.transition().duration(duration);
       mgroups.each(function (d) {
         var colour = d.colour;
         var max = d.max;
@@ -1675,25 +1691,23 @@
             return xScale(periodToDay(d.period)) - 1;
           }).attr("y", height).attr("width", function (d) {
             return periodToWidth(d.period);
-          }).attr("height", 0).call(function (update) {
-            return update.transition(t).attr("y", function (d) {
-              return getBarY(d, max, total, stackOffsets);
-            }).attr("height", function (d) {
-              return getBarHeight(d, max, total);
-            });
-          });
+          }).attr("height", 0);
         }, function (update) {
-          return update.call(function (update) {
-            return update.transition(t).attr("fill", colour).attr("y", function (d) {
-              return getBarY(d, max, total, stackOffsets);
-            }).attr("height", function (d) {
-              return getBarHeight(d, max, total);
-            });
+          return update // Use call for transitions to avoid breaking the
+          // method chain (https://observablehq.com/@d3/selection-join)
+          .call(function (update) {
+            return transPromise(update.transition(t).attr("fill", colour), pTrans);
           });
         }, function (exit) {
           return exit.call(function (exit) {
-            return exit.transition(t).attr("height", 0).remove();
+            return transPromise(exit.transition(t).attr("height", 0).remove(), pTrans);
           });
+        }).call(function (merge) {
+          return transPromise(merge.transition(t).attr("y", function (d) {
+            return getBarY(d, max, total, stackOffsets);
+          }).attr("height", function (d) {
+            return getBarHeight(d, max, total);
+          }), pTrans);
         });
       });
     } else if (style === 'areas') {
@@ -1716,33 +1730,33 @@
     // in sub-selections (https://bost.ocks.org/mike/selection/#non-grouping)
 
 
-    mgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
+    transPromise(mgroups.select('.phen-path-line').transition(t).attr("d", function (d) {
       return getPath(d, false);
     }).attr("stroke", function (d) {
       return d.colour;
     }).attr("stroke-width", function (d) {
       return d.strokeWidth;
-    }).attr("fill", "none");
-    mgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
+    }).attr("fill", "none"), pTrans);
+    transPromise(mgroups.select('.phen-path-fill').transition(t).attr("d", function (d) {
       return getPath(d, true);
     }).attr("fill", function (d) {
       return d.fill;
-    });
-    mgroups.select('.phen-path-area').transition().duration(duration).attr("d", function (d) {
+    }), pTrans);
+    transPromise(mgroups.select('.phen-path-area').transition(t).attr("d", function (d) {
       return getPath(d, true);
     }).attr("fill", function (d) {
       return d.colour;
-    });
-    xgroups.select('.phen-path-line').transition().duration(duration).attr("d", function (d) {
+    }), pTrans);
+    transPromise(xgroups.select('.phen-path-line').transition(t).attr("d", function (d) {
       return flatPath(d, false);
-    });
-    xgroups.select('.phen-path-fill').transition().duration(duration).attr("d", function (d) {
+    }), pTrans);
+    transPromise(xgroups.select('.phen-path-fill').transition(t).attr("d", function (d) {
       return flatPath(d, true);
-    });
-    xgroups.select('.phen-path-area').transition().duration(duration).attr("d", function (d) {
+    }), pTrans);
+    transPromise(xgroups.select('.phen-path-area').transition(t).attr("d", function (d) {
       return flatPath(d, true);
-    });
-    xgroups.transition().duration(duration).attr("opacity", 0).remove(); // Path and bar generation helper functions
+    }), pTrans);
+    transPromise(xgroups.transition(t).attr("opacity", 0).remove(), pTrans); // Path and bar generation helper functions
 
     function flatPath(d, poly) {
       var lineFn = style === 'areas' ? lineNotCurved : lineCurved;
@@ -1899,7 +1913,7 @@
     }
 
     if (yAxis) {
-      svgPhen1.select(".y-axis").transition().duration(duration).call(yAxis);
+      transPromise(svgPhen1.select(".y-axis").transition(t).call(yAxis), pTrans);
     }
 
     return svgPhen1;
@@ -2198,8 +2212,9 @@
       }
 
       var subChartPad = 10;
+      var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
-        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity);
+        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -2218,6 +2233,7 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+      return Promise.all(pTrans);
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -2234,6 +2250,7 @@
       * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -2303,23 +2320,37 @@
         remakeChart = true;
       }
 
-      if (remakeChart) makeChart();
-      positionMainElements(svg, expand);
+      var pRet;
+
+      if (remakeChart) {
+        pRet = makeChart();
+        positionMainElements(svg, expand);
+      } else {
+        pRet = Promise.resolve();
+      }
+
+      return pRet;
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * For single species charts, this allows you to change the taxon displayed.
       */
 
 
     function setTaxon(taxon) {
+      var pRet;
+
       if (taxa.length !== 1) {
         console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+        pRet = Promise.resolve();
       } else {
         taxa = [taxon];
-        makeChart();
+        pRet = makeChart();
       }
+
+      return pRet;
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
@@ -2499,6 +2530,7 @@
         metrics = _ref$metrics === void 0 ? [] : _ref$metrics;
 
     var metricsPlus;
+    var pTrans;
     var mainDiv = d3.select("".concat(selector)).append('div').classed('brc-chart-phen2-top', true).attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
@@ -2517,6 +2549,7 @@
     positionMainElements(svg, expand, headPad);
 
     function makeChart() {
+      pTrans = [];
       metricsPlus = metrics.map(function (m) {
         return {
           id: safeId(m.label),
@@ -2550,6 +2583,7 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+      return Promise.all(pTrans);
     }
 
     function makePhen(taxon) {
@@ -2624,14 +2658,14 @@
         return xScale(d.start + (d.end - d.start) / 2);
       });
       addEventHandlers(erects, 'id');
-      mrects.merge(erects).transition().duration(duration).attr("width", function (d) {
+      transPromise(mrects.merge(erects).transition().duration(duration).attr("width", function (d) {
         return xScale(d.end) - xScale(d.start);
       }).attr("x", function (d) {
         return xScale(d.start);
       }).attr("fill", function (d) {
         return d.colour;
-      });
-      mrects.exit().transition().duration(duration).remove();
+      }), pTrans);
+      transPromise(mrects.exit().transition().duration(duration).remove(), pTrans);
 
       if (init) {
         // Constants for positioning
@@ -2831,6 +2865,7 @@
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -2890,23 +2925,37 @@
         remakeChart = true;
       }
 
-      if (remakeChart) makeChart();
-      positionMainElements(svg, expand);
+      var pRet;
+
+      if (remakeChart) {
+        pRet = makeChart();
+        positionMainElements(svg, expand);
+      } else {
+        pRet = Promise.resolve();
+      }
+
+      return pRet;
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
+      * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
       * For single species charts, this allows you to change the taxon displayed.
       */
 
 
     function setTaxon(taxon) {
+      var pRet;
+
       if (taxa.length !== 1) {
         console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+        pRet = Promise.resolve();
       } else {
         taxa = [taxon];
-        makeChart();
+        pRet = makeChart();
       }
+
+      return pRet;
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
@@ -2929,13 +2978,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -3645,13 +3698,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -5033,13 +5090,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -5788,13 +5849,17 @@
     /** @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Download the chart as an image file.
       */
 
 
     function saveImage(asSvg, filename) {
-      saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename);
     }
     /**
      * @typedef {Object} api
@@ -15123,9 +15188,9 @@
 
 
       return new Promise(function (resolve) {
-        var pArray = [pLegend];
-        addPromise(mainTrans, pArray);
-        Promise.all(pArray).then(function () {
+        var pTrans = [pLegend];
+        transPromise(mainTrans, pTrans);
+        Promise.all(pTrans).then(function () {
           resolve(svgAltLat);
         });
       }); //return svgAltLat
@@ -15181,23 +15246,10 @@
       }).style('opacity', 1);
       addEventHandlers(ls);
       addEventHandlers(lt);
-      var pArray = [];
-      addPromise(swatchTrans, pArray);
-      addPromise(textTrans, pArray);
-      return Promise.all(pArray);
-    }
-
-    function addPromise(transition, pArray) {
-      // If the transition has any elements in selection, then
-      // create a promise that resolves when the transition of
-      // the last element completes. We do the check becaus it
-      // seems that with zero elements, the promise does not resolve
-      // (remains pending).
-      // The promise is created by
-      // using the 'end' method on the transition.
-      if (transition.size()) {
-        pArray.push(transition.end());
-      }
+      var pTrans = [];
+      transPromise(swatchTrans, pTrans);
+      transPromise(textTrans, pTrans);
+      return Promise.all(pTrans);
     }
 
     function getRadius(metric) {
@@ -15511,7 +15563,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.10.0";
+  var version = "0.11.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

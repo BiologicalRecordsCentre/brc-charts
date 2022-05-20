@@ -1,7 +1,7 @@
 /** @module altlat */
 
 import * as d3 from 'd3'
-import * as gen from './general'
+import { makeText, positionMainElements, safeId, saveChartImage, transPromise } from './general'
 import { getCentroid } from 'brc-atlas-bigr'
 import { constants } from './constants.js'
 import backData from './altlat.json'
@@ -124,10 +124,10 @@ export function altlat({
     // Texts must come after chartbecause 
     // the chart width is required
     const textWidth = Number(svg.select('.mainChart').attr("width"))
-    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
-    gen.positionMainElements(svg, expand)
+    makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    positionMainElements(svg, expand)
   })
   
   function makeChart () {
@@ -209,14 +209,14 @@ export function altlat({
       svgAltLat = svgChart.select('.brc-chart-altlat')
       gAltLat = svgAltLat.select('.brc-chart-altlat-g')
       init = false
-    } else if (svgChart.select(`#${gen.safeId(taxon)}`).size()) {
-      svgAltLat = svgChart.select(`#${gen.safeId(taxon)}`)
+    } else if (svgChart.select(`#${safeId(taxon)}`).size()) {
+      svgAltLat = svgChart.select(`#${safeId(taxon)}`)
       gAltLat = svgAltLat.select('.brc-chart-altlat-g')
       init = false
     } else {
       svgAltLat = svgChart.append('svg')
         .classed('brc-chart-altlat', true)
-        .attr('id', gen.safeId(taxon))
+        .attr('id', safeId(taxon))
         .style('overflow', 'visible')
       gAltLat = svgAltLat.append('g')
         .classed('brc-chart-altlat-g', true)
@@ -371,10 +371,10 @@ export function altlat({
     // Return a promise which resolves to the svg when transitions complete
     return new Promise((resolve) => {
 
-      const pArray = [pLegend]
-      addPromise(mainTrans, pArray)
+      const pTrans = [pLegend]
+      transPromise(mainTrans, pTrans)
 
-      Promise.all(pArray).then(() => {
+      Promise.all(pTrans).then(() => {
         resolve(svgAltLat)
       })
     })
@@ -399,7 +399,7 @@ export function altlat({
       .duration(duration)
 
     const ls = gAltLat.selectAll('.brc-altlat-legend-item-circle')
-      .data(items, i => gen.safeId(i.text))
+      .data(items, i => safeId(i.text))
       .join(
         enter => {
           const swatches = enter.append("circle")
@@ -418,7 +418,7 @@ export function altlat({
       .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
 
     const lt = gAltLat.selectAll('.brc-altlat-legend-item-text')
-      .data(items, i => gen.safeId(i.text))
+      .data(items, i => safeId(i.text))
       .join(
         enter => {
           const text = enter.append("text")
@@ -441,23 +441,10 @@ export function altlat({
     addEventHandlers(ls)
     addEventHandlers(lt)
 
-    const pArray = []
-    addPromise(swatchTrans, pArray)
-    addPromise(textTrans, pArray)
-    return Promise.all(pArray)
-  }
-
-  function addPromise(transition, pArray) {
-    // If the transition has any elements in selection, then
-    // create a promise that resolves when the transition of
-    // the last element completes. We do the check becaus it
-    // seems that with zero elements, the promise does not resolve
-    // (remains pending).
-    // The promise is created by
-    // using the 'end' method on the transition.
-    if (transition.size()) {
-      pArray.push(transition.end())
-    }
+    const pTrans = []
+    transPromise(swatchTrans, pTrans)
+    transPromise(textTrans, pTrans)
+    return Promise.all(pTrans)
   }
 
   function getRadius (metric) {
@@ -670,9 +657,9 @@ export function altlat({
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
-    gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
-    gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
-    gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
+    makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
+    makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
+    makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let remakeChart = false
 
@@ -688,7 +675,7 @@ export function altlat({
 
     if (remakeChart) {
       return makeChart().then(() => {
-        gen.positionMainElements(svg, expand)
+        positionMainElements(svg, expand)
       })
     } else {
       return Promise.resolve()
@@ -739,7 +726,7 @@ export function altlat({
   * Download the chart as an image file.
   */
   function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+    return saveChartImage(svg, expand, asSvg, filename) 
   }
 
   /**
