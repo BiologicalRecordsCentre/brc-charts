@@ -51,6 +51,7 @@ export default [
 			name: 'brccharts',
 			file: pkg.browsermin,
 			format: 'umd',
+      sourcemap: true,
       globals: {
         'd3': 'd3',
       },
