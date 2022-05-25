@@ -2782,7 +2782,7 @@
       // the code is called. Important because the bbox stuff only works if gui is visible and
       // the first time this code is called, it may not be visible.
       .attr('transform', function (m) {
-        if (m.svg) {
+        if (m.svg && m.svgbbox && m.svgbbox.width) {
           var iScale = swatchSize / m.svgbbox.width;
           var xAdj = m.svgbbox.x * iScale;
           var yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale) / 2;

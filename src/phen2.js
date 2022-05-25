@@ -402,7 +402,7 @@ export function phen2({
       // the code is called. Important because the bbox stuff only works if gui is visible and
       // the first time this code is called, it may not be visible.
       .attr('transform', m => {
-        if (m.svg) {
+        if (m.svg && m.svgbbox &&  m.svgbbox.width) {
           const iScale = swatchSize / m.svgbbox.width
           const xAdj =  m.svgbbox.x * iScale
           const yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale)/2
