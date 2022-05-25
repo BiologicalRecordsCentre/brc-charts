@@ -42,7 +42,8 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
  * <li> <b>label</b> - a label for this property.
  * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
- * <li> <b>svg</b> - Optinal string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+ * <li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
+ * <li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -137,6 +138,7 @@ export function phen2({
         prop: m.prop,
         label: m.label,
         colour: m.colour,
+        opacity: m.opacity ? m.opacity : 1,
         svg: m.svg,
       }
     })
@@ -175,6 +177,7 @@ export function phen2({
       return {
         id: m.id,
         colour: m.colour,
+        opacity: m.opacity,
         start: dataFiltered ? dataFiltered[m.prop].start : 0,
         end:  dataFiltered ? dataFiltered[m.prop].end : 0,
       }
@@ -257,6 +260,7 @@ export function phen2({
       .duration(duration)
       .attr("width", d => xScale(d.end) - xScale(d.start))
       .attr("x", d => xScale(d.start))
+      .attr("opacity", d => d.opacity)
       .attr("fill", d => d.colour), pTrans)
     
     transPromise(mrects.exit()
@@ -388,6 +392,7 @@ export function phen2({
       })
       .attr('x', m => m.x)
       .attr('y', m => m.y + swatchSize/3)
+      .attr("opacity", d => d.opacity)
       .attr('fill', m => m.colour)
 
     // SVG icon
@@ -412,6 +417,7 @@ export function phen2({
         }
       })
       .attr('fill', m => m.colour)
+      .attr('opacity', m => m.opacity)
 
     // Text
     const lt = svgChart.selectAll('.brc-legend-item-text')

@@ -2450,7 +2450,8 @@
    * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
    * <li> <b>label</b> - a label for this property.
    * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
-   * <li> <b>svg</b> - Optinal string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+   * <li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
+   * <li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
    * </ul>
    * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
    * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -2562,6 +2563,7 @@
           prop: m.prop,
           label: m.label,
           colour: m.colour,
+          opacity: m.opacity ? m.opacity : 1,
           svg: m.svg
         };
       });
@@ -2601,6 +2603,7 @@
         return {
           id: m.id,
           colour: m.colour,
+          opacity: m.opacity,
           start: dataFiltered ? dataFiltered[m.prop].start : 0,
           end: dataFiltered ? dataFiltered[m.prop].end : 0
         };
@@ -2668,6 +2671,8 @@
         return xScale(d.end) - xScale(d.start);
       }).attr("x", function (d) {
         return xScale(d.start);
+      }).attr("opacity", function (d) {
+        return d.opacity;
       }).attr("fill", function (d) {
         return d.colour;
       }), pTrans);
@@ -2772,6 +2777,8 @@
         return m.x;
       }).attr('y', function (m) {
         return m.y + swatchSize / 3;
+      }).attr("opacity", function (d) {
+        return d.opacity;
       }).attr('fill', function (m) {
         return m.colour;
       }); // SVG icon
@@ -2798,6 +2805,8 @@
         }
       }).attr('fill', function (m) {
         return m.colour;
+      }).attr('opacity', function (m) {
+        return m.opacity;
       }); // Text
 
       var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
