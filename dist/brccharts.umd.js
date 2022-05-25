@@ -360,8 +360,14 @@
     // (remains pending).
     // The promise is created by
     // using the 'end' method on the transition.
+    // The promise rejects if a transition is interrupted
+    // so need to handle that. (https://www.npmjs.com/package/d3-transition)
     if (transition.size()) {
-      pArray.push(transition.end());
+      var p = transition.end();
+      p["catch"](function () {
+        return null;
+      });
+      pArray.push(p);
     }
   }
 
@@ -2233,7 +2239,7 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
-      return Promise.all(pTrans);
+      return Promise.allSettled(pTrans);
     }
     /** @function setChartOpts
       * @param {Object} opts - text options.
@@ -2583,7 +2589,7 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
-      return Promise.all(pTrans);
+      return Promise.allSettled(pTrans);
     }
 
     function makePhen(taxon) {
@@ -15190,10 +15196,10 @@
       return new Promise(function (resolve) {
         var pTrans = [pLegend];
         transPromise(mainTrans, pTrans);
-        Promise.all(pTrans).then(function () {
+        Promise.allSettled(pTrans).then(function () {
           resolve(svgAltLat);
-        });
-      }); //return svgAltLat
+        }); //.catch(e => console.log(e))
+      });
     }
 
     function makeLegend(gAltLat) {
@@ -15249,7 +15255,7 @@
       var pTrans = [];
       transPromise(swatchTrans, pTrans);
       transPromise(textTrans, pTrans);
-      return Promise.all(pTrans);
+      return Promise.allSettled(pTrans);
     }
 
     function getRadius(metric) {

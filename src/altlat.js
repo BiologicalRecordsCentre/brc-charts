@@ -374,11 +374,10 @@ export function altlat({
       const pTrans = [pLegend]
       transPromise(mainTrans, pTrans)
 
-      Promise.all(pTrans).then(() => {
+      Promise.allSettled(pTrans).then(() => {
         resolve(svgAltLat)
-      })
+      })//.catch(e => console.log(e))
     })
-    //return svgAltLat
   }
 
   function makeLegend (gAltLat) {
@@ -444,7 +443,7 @@ export function altlat({
     const pTrans = []
     transPromise(swatchTrans, pTrans)
     transPromise(textTrans, pTrans)
-    return Promise.all(pTrans)
+    return Promise.allSettled(pTrans)
   }
 
   function getRadius (metric) {

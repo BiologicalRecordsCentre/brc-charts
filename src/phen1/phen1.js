@@ -200,7 +200,7 @@ export function phen1({
     svgChart.attr("width", perRow * (subChartWidth + subChartPad))
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
 
-    return Promise.all(pTrans)
+    return Promise.allSettled(pTrans)
   }
 
 /** @function setChartOpts

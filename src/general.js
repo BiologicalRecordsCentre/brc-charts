@@ -287,7 +287,11 @@ export function transPromise(transition, pArray) {
   // (remains pending).
   // The promise is created by
   // using the 'end' method on the transition.
+  // The promise rejects if a transition is interrupted
+  // so need to handle that. (https://www.npmjs.com/package/d3-transition)
   if (transition.size()) {
-    pArray.push(transition.end())
+    const p = transition.end()
+    p.catch(() => null)
+    pArray.push(p)
   }
 }
