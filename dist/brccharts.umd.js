@@ -1506,7 +1506,7 @@
       yMax = Math.max.apply(Math, _toConsumableArray(metricData.map(function (d) {
         return d.max;
       })));
-      if (yMax < 5 && !spread) yMax = 5;
+      if (yMax < 5 && !spread && axisLeft === 'tick') yMax = 5;
     } // Calculate spread metrics
 
 

@@ -119,7 +119,7 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
     yMax = Math.max(...stackOffsets.filter(d => d))
   } else {
     yMax = Math.max(...metricData.map(d => d.max))
-    if (yMax < 5 && !spread) yMax = 5
+    if (yMax < 5 && !spread && axisLeft === 'tick') yMax = 5
   }
   
   // Calculate spread metrics
