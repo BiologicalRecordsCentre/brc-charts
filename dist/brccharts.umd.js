@@ -2607,7 +2607,10 @@
           start: dataFiltered ? dataFiltered[m.prop].start : 0,
           end: dataFiltered ? dataFiltered[m.prop].end : 0
         };
-      });
+      }); // Got through rect data and see if there are any where
+      // end day is less than start day - i.e. runs over year
+      // end - and if so split into two rectangles.
+
       var rectData = [];
       rectDataA.forEach(function (d) {
         if (d.start < d.end) {
@@ -15599,7 +15602,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.11.0";
+  var version = "0.11.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
