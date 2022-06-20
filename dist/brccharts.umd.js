@@ -2599,7 +2599,7 @@
       var dataFiltered = data.find(function (d) {
         return d.taxon === taxon;
       });
-      var rectData = metricsPlus.map(function (m) {
+      var rectDataA = metricsPlus.map(function (m) {
         return {
           id: m.id,
           colour: m.colour,
@@ -2607,6 +2607,27 @@
           start: dataFiltered ? dataFiltered[m.prop].start : 0,
           end: dataFiltered ? dataFiltered[m.prop].end : 0
         };
+      });
+      var rectData = [];
+      rectDataA.forEach(function (d) {
+        if (d.start < d.end) {
+          rectData.push(d);
+        } else {
+          rectData.push({
+            id: d.id,
+            colour: d.colour,
+            opacity: d.opacity,
+            start: d.start,
+            end: 365
+          });
+          rectData.push({
+            id: "".concat(d.id, "-part2"),
+            colour: d.colour,
+            opacity: d.opacity,
+            start: 1,
+            end: d.end
+          });
+        }
       }); // Value scale
       //const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
 

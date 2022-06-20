@@ -173,13 +173,38 @@ export function phen2({
   function makePhen (taxon) {
     // Get data for named taxon
     const dataFiltered = data.find(d => d.taxon === taxon)
-    const rectData = metricsPlus.map(m => {
+    const rectDataA = metricsPlus.map(m => {
       return {
         id: m.id,
         colour: m.colour,
         opacity: m.opacity,
         start: dataFiltered ? dataFiltered[m.prop].start : 0,
         end:  dataFiltered ? dataFiltered[m.prop].end : 0,
+      }
+    })
+
+    // Got through rect data and see if there are any where
+    // end day is less than start day - i.e. runs over year
+    // end - and if so split into two rectangles.
+    const rectData = []
+    rectDataA.forEach(d => {
+      if (d.start < d.end) {
+        rectData.push(d)
+      } else {
+         rectData.push({
+          id: d.id,
+          colour: d.colour,
+          opacity: d.opacity,
+          start: d.start,
+          end:  365,
+        })
+        rectData.push({
+          id: `${d.id}-part2`,
+          colour: d.colour,
+          opacity: d.opacity,
+          start: 1,
+          end:  d.end,
+        })
       }
     })
     
