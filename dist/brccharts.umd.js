@@ -2557,14 +2557,17 @@
 
     function makeChart() {
       pTrans = [];
-      metricsPlus = metrics.map(function (m) {
+      metricsPlus = metrics.map(function (m, i) {
         return {
           id: safeId(m.label),
           prop: m.prop,
           label: m.label,
           colour: m.colour,
           opacity: m.opacity ? m.opacity : 1,
-          svg: m.svg
+          svg: m.svg,
+          // By default legend order is reversed
+          legendOrder: m.legendOrder ? m.legendOrder : metrics.length - i,
+          svgScale: m.svgScale ? m.svgScale : 1
         };
       });
 
@@ -2760,17 +2763,20 @@
       // legend width.
 
       var rows = 0;
-      var lineWidth = -swatchSize;
-      var metricsReversed = cloneData(metricsPlus).reverse(); // Get the bbox of any SVG icons in metrics
+      var lineWidth = -swatchSize; //const metricsSorted = cloneData(metricsPlus).reverse()
 
-      metricsReversed.filter(function (m) {
+      var metricsSorted = cloneData(metricsPlus).sort(function (a, b) {
+        return a.legendOrder > b.legendOrder ? 1 : -1;
+      }); // Get the bbox of any SVG icons in metrics
+
+      metricsSorted.filter(function (m) {
         return m.svg;
       }).forEach(function (m) {
         var path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden');
         m.svgbbox = path.node().getBBox();
         path.remove();
       });
-      metricsReversed.forEach(function (m) {
+      metricsSorted.forEach(function (m) {
         var tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label).style('font-size', legendFontSize);
         var widthText = tmpText.node().getBBox().width;
@@ -2788,7 +2794,7 @@
       // https://observablehq.com/@d3/selection-join
       // Swatch
 
-      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsSorted, function (m) {
         return m.id;
       }).join(function (enter) {
         var rect = enter.append("rect").attr("class", function (m) {
@@ -2807,7 +2813,7 @@
         return m.colour;
       }); // SVG icon
 
-      var li = svgChart.selectAll('.brc-legend-item-icon').data(metricsReversed, function (m) {
+      var li = svgChart.selectAll('.brc-legend-item-icon').data(metricsSorted, function (m) {
         return m.id;
       }).join(function (enter) {
         return enter.append("path").attr("class", function (m) {
@@ -2818,9 +2824,11 @@
       }) // The transform has to come outside the enter selection so that it is executed whenever
       // the code is called. Important because the bbox stuff only works if gui is visible and
       // the first time this code is called, it may not be visible.
+      // The svg is also scaled by a factor passed in the metrics (svgScale) which
+      // defaults to 1.
       .attr('transform', function (m) {
         if (m.svg && m.svgbbox && m.svgbbox.width) {
-          var iScale = swatchSize / m.svgbbox.width;
+          var iScale = swatchSize / m.svgbbox.width * m.svgScale;
           var xAdj = m.svgbbox.x * iScale;
           var yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale) / 2;
           return "translate(".concat(m.x - xAdj, " ").concat(m.y - yAdj, ") scale(").concat(iScale, " ").concat(iScale, ")");
@@ -2833,7 +2841,7 @@
         return m.opacity;
       }); // Text
 
-      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsSorted, function (m) {
         return safeId(m.label);
       }).join(function (enter) {
         var text = enter.append("text").attr("class", function (m) {
@@ -2843,7 +2851,7 @@
         }).style('font-size', legendFontSize);
         return text;
       }).attr('x', function (m) {
-        return m.x + swatchSize * swatchFact;
+        return m.x + swatchSize * swatchFact * m.svgScale;
       }).attr('y', function (m) {
         return m.y + legendFontSize * 1;
       });

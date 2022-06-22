@@ -70,7 +70,12 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * &lt;li> &lt;b>prop&lt;/b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
  * &lt;li> &lt;b>label&lt;/b> - a label for this property.
  * &lt;li> &lt;b>colour&lt;/b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
- * &lt;li> &lt;b>svg&lt;/b> - Optinal string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+ * &lt;li> &lt;b>opacity&lt;/b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
+ * &lt;li> &lt;b>svg&lt;/b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+ * &lt;li> &lt;b>svgScale&lt;/b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
+ * &lt;li> &lt;b>legendOrder&lt;/b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
+ * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reves the
+ * order (for backwards compatibility).
  * &lt;/ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -159,13 +164,17 @@ export function phen2({
 
     pTrans = []
 
-    metricsPlus = metrics.map(m => {
+    metricsPlus = metrics.map((m,i) => {
       return {
         id:  safeId(m.label),
         prop: m.prop,
         label: m.label,
         colour: m.colour,
+        opacity: m.opacity ? m.opacity : 1,
         svg: m.svg,
+        // By default legend order is reversed
+        legendOrder: m.legendOrder ?  m.legendOrder : metrics.length - i,
+        svgScale: m.svgScale ? m.svgScale : 1
       }
     })
 
@@ -193,18 +202,44 @@ export function phen2({
     svgChart.attr("width", perRow * (subChartWidth + subChartPad))
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
 
-    return Promise.all(pTrans)
+    return Promise.allSettled(pTrans)
   }
 
   function makePhen (taxon) {
     // Get data for named taxon
     const dataFiltered = data.find(d => d.taxon === taxon)
-    const rectData = metricsPlus.map(m => {
+    const rectDataA = metricsPlus.map(m => {
       return {
         id: m.id,
         colour: m.colour,
+        opacity: m.opacity,
         start: dataFiltered ? dataFiltered[m.prop].start : 0,
-        end:  dataFiltered ? dataFiltered[m.prop].end : 0,
+        end:  dataFiltered ? dataFiltered[m.prop].end : 0
+      }
+    })
+
+    // Got through rect data and see if there are any where
+    // end day is less than start day - i.e. runs over year
+    // end - and if so split into two rectangles.
+    const rectData = []
+    rectDataA.forEach(d => {
+      if (d.start &lt; d.end) {
+        rectData.push(d)
+      } else {
+         rectData.push({
+          id: d.id,
+          colour: d.colour,
+          opacity: d.opacity,
+          start: d.start,
+          end:  365,
+        })
+        rectData.push({
+          id: `${d.id}-part2`,
+          colour: d.colour,
+          opacity: d.opacity,
+          start: 1,
+          end:  d.end,
+        })
       }
     })
     
@@ -285,6 +320,7 @@ export function phen2({
       .duration(duration)
       .attr("width", d => xScale(d.end) - xScale(d.start))
       .attr("x", d => xScale(d.start))
+      .attr("opacity", d => d.opacity)
       .attr("fill", d => d.colour), pTrans)
     
     transPromise(mrects.exit()
@@ -373,16 +409,17 @@ export function phen2({
     let rows = 0
     let lineWidth = -swatchSize
 
-    const metricsReversed = cloneData(metricsPlus).reverse()
+    //const metricsSorted = cloneData(metricsPlus).reverse()
+    const metricsSorted = cloneData(metricsPlus).sort((a,b) => a.legendOrder > b.legendOrder ? 1 : -1)
 
     // Get the bbox of any SVG icons in metrics
-    metricsReversed.filter(m => m.svg).forEach(m => {
+    metricsSorted.filter(m => m.svg).forEach(m => {
       const path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden')
       m.svgbbox = path.node().getBBox()
       path.remove()
     })
 
-    metricsReversed.forEach(m => {
+    metricsSorted.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
         .style('font-size', legendFontSize)
@@ -405,7 +442,7 @@ export function phen2({
 
     // Swatch
     const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(metricsReversed, m => m.id)
+      .data(metricsSorted, m => m.id)
       .join(enter => {
           const rect = enter.append("rect")
             .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
@@ -416,11 +453,12 @@ export function phen2({
       })
       .attr('x', m => m.x)
       .attr('y', m => m.y + swatchSize/3)
+      .attr("opacity", d => d.opacity)
       .attr('fill', m => m.colour)
 
     // SVG icon
     const li = svgChart.selectAll('.brc-legend-item-icon')
-      .data(metricsReversed, m => m.id)
+      .data(metricsSorted, m => m.id)
       .join(enter => enter
         .append("path")
         .attr("class", m=> `brc-legend-item brc-legend-item-icon brc-legend-item-${m.id}`)
@@ -429,9 +467,11 @@ export function phen2({
       // The transform has to come outside the enter selection so that it is executed whenever
       // the code is called. Important because the bbox stuff only works if gui is visible and
       // the first time this code is called, it may not be visible.
+      // The svg is also scaled by a factor passed in the metrics (svgScale) which
+      // defaults to 1.
       .attr('transform', m => {
-        if (m.svg) {
-          const iScale = swatchSize / m.svgbbox.width
+        if (m.svg &amp;&amp; m.svgbbox &amp;&amp;  m.svgbbox.width) {
+          const iScale = swatchSize / m.svgbbox.width * m.svgScale
           const xAdj =  m.svgbbox.x * iScale
           const yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale)/2
           return `translate(${m.x - xAdj} ${m.y - yAdj}) scale(${iScale} ${iScale})`
@@ -440,10 +480,11 @@ export function phen2({
         }
       })
       .attr('fill', m => m.colour)
+      .attr('opacity', m => m.opacity)
 
     // Text
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsReversed, m => safeId(m.label))
+      .data(metricsSorted, m => safeId(m.label))
       .join(enter => {
           const text = enter.append("text")
             .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
@@ -451,7 +492,7 @@ export function phen2({
             .style('font-size', legendFontSize)
           return text
       })
-      .attr('x', m => m.x + swatchSize * swatchFact)
+      .attr('x', m => m.x + swatchSize * swatchFact *  m.svgScale)
       .attr('y', m => m.y + legendFontSize * 1)
 
     addEventHandlers(ls, 'label')
@@ -670,7 +711,7 @@ export function phen2({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Fri May 20 2022 16:50:52 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed Jun 22 2022 12:37:46 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

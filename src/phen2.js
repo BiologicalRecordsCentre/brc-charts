@@ -44,6 +44,10 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
  * <li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
  * <li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+ * <li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
+ * <li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
+ * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reves the
+ * order (for backwards compatibility).
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -132,7 +136,7 @@ export function phen2({
 
     pTrans = []
 
-    metricsPlus = metrics.map(m => {
+    metricsPlus = metrics.map((m,i) => {
       return {
         id:  safeId(m.label),
         prop: m.prop,
@@ -140,6 +144,9 @@ export function phen2({
         colour: m.colour,
         opacity: m.opacity ? m.opacity : 1,
         svg: m.svg,
+        // By default legend order is reversed
+        legendOrder: m.legendOrder ?  m.legendOrder : metrics.length - i,
+        svgScale: m.svgScale ? m.svgScale : 1
       }
     })
 
@@ -179,7 +186,7 @@ export function phen2({
         colour: m.colour,
         opacity: m.opacity,
         start: dataFiltered ? dataFiltered[m.prop].start : 0,
-        end:  dataFiltered ? dataFiltered[m.prop].end : 0,
+        end:  dataFiltered ? dataFiltered[m.prop].end : 0
       }
     })
 
@@ -374,16 +381,17 @@ export function phen2({
     let rows = 0
     let lineWidth = -swatchSize
 
-    const metricsReversed = cloneData(metricsPlus).reverse()
+    //const metricsSorted = cloneData(metricsPlus).reverse()
+    const metricsSorted = cloneData(metricsPlus).sort((a,b) => a.legendOrder > b.legendOrder ? 1 : -1)
 
     // Get the bbox of any SVG icons in metrics
-    metricsReversed.filter(m => m.svg).forEach(m => {
+    metricsSorted.filter(m => m.svg).forEach(m => {
       const path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden')
       m.svgbbox = path.node().getBBox()
       path.remove()
     })
 
-    metricsReversed.forEach(m => {
+    metricsSorted.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
         .style('font-size', legendFontSize)
@@ -406,7 +414,7 @@ export function phen2({
 
     // Swatch
     const ls = svgChart.selectAll('.brc-legend-item-rect')
-      .data(metricsReversed, m => m.id)
+      .data(metricsSorted, m => m.id)
       .join(enter => {
           const rect = enter.append("rect")
             .attr("class", m => `brc-legend-item brc-legend-item-rect brc-legend-item-${m.id}`)
@@ -422,7 +430,7 @@ export function phen2({
 
     // SVG icon
     const li = svgChart.selectAll('.brc-legend-item-icon')
-      .data(metricsReversed, m => m.id)
+      .data(metricsSorted, m => m.id)
       .join(enter => enter
         .append("path")
         .attr("class", m=> `brc-legend-item brc-legend-item-icon brc-legend-item-${m.id}`)
@@ -431,9 +439,11 @@ export function phen2({
       // The transform has to come outside the enter selection so that it is executed whenever
       // the code is called. Important because the bbox stuff only works if gui is visible and
       // the first time this code is called, it may not be visible.
+      // The svg is also scaled by a factor passed in the metrics (svgScale) which
+      // defaults to 1.
       .attr('transform', m => {
         if (m.svg && m.svgbbox &&  m.svgbbox.width) {
-          const iScale = swatchSize / m.svgbbox.width
+          const iScale = swatchSize / m.svgbbox.width * m.svgScale
           const xAdj =  m.svgbbox.x * iScale
           const yAdj = m.svgbbox.y * iScale - (swatchSize - m.svgbbox.height * iScale)/2
           return `translate(${m.x - xAdj} ${m.y - yAdj}) scale(${iScale} ${iScale})`
@@ -446,7 +456,7 @@ export function phen2({
 
     // Text
     const lt = svgChart.selectAll('.brc-legend-item-text')
-      .data(metricsReversed, m => safeId(m.label))
+      .data(metricsSorted, m => safeId(m.label))
       .join(enter => {
           const text = enter.append("text")
             .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
@@ -454,7 +464,7 @@ export function phen2({
             .style('font-size', legendFontSize)
           return text
       })
-      .attr('x', m => m.x + swatchSize * swatchFact)
+      .attr('x', m => m.x + swatchSize * swatchFact *  m.svgScale)
       .attr('y', m => m.y + legendFontSize * 1)
 
     addEventHandlers(ls, 'label')
