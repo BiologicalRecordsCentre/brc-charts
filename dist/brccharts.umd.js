@@ -2452,10 +2452,15 @@
    * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
    * <li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
    * <li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+   * <li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
+   * <li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
+   * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reves the
+   * order (for backwards compatibility).
    * </ul>
    * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
    * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
-   * come last. Because this will generally be the most important, the order is reversed for the chart legend.
+   * come last. Because this will generally be the most important, the order is reversed for the chart legend
+   * unless the order is explicitly specified with the legendOrder metric property.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. 
    * There should only be one object per taxon. (The order is not important.)
@@ -15610,7 +15615,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.11.1";
+  var version = "0.11.3";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
