@@ -51,7 +51,8 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
- * come last. Because this will generally be the most important, the order is reversed for the chart legend.
+ * come last. Because this will generally be the most important, the order is reversed for the chart legend
+ * unless the order is explicitly specified with the legendOrder metric property.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. 
  * There should only be one object per taxon. (The order is not important.)
