@@ -32,34 +32,6 @@ svg {
 .brc-chart-phen1-top .brc-legend-item-line.highlight {
     fill:black;
 }
-.brc-chart-phen2 rect.highlight {
-    /* fill: black; */
-    opacity: 1;
-}
-
-.brc-chart-phen2 rect.lowlight {
-    opacity:0;
-}
-
-.brc-chart-phen2 {
-    overflow: visible;
-}
-
-.brc-chart-phen2-top .brc-legend-item.lowlight {
-    opacity:0.3;
-}
-
-/* .brc-chart-phen2-top .brc-legend-item-rect.highlight {
-    fill:black;
-}
-
-.brc-chart-phen2-top .brc-legend-item-icon.highlight {
-    fill:black;
-} */
-
-#phen2-chart .mainChart {
-    overflow: visible;
-}
 .brc-chart-pie {
   width: 100%
 }
@@ -96,6 +68,34 @@ svg {
 }
 
 
+.brc-chart-phen2 rect.highlight {
+    /* fill: black; */
+    opacity: 1;
+}
+
+.brc-chart-phen2 rect.lowlight {
+    opacity:0;
+}
+
+.brc-chart-phen2 {
+    overflow: visible;
+}
+
+.brc-chart-phen2-top .brc-legend-item.lowlight {
+    opacity:0.3;
+}
+
+/* .brc-chart-phen2-top .brc-legend-item-rect.highlight {
+    fill:black;
+}
+
+.brc-chart-phen2-top .brc-legend-item-icon.highlight {
+    fill:black;
+} */
+
+#phen2-chart .mainChart {
+    overflow: visible;
+}
 .brc-chart-accum path {
     fill: none;
 }
@@ -136,20 +136,20 @@ svg {
 
 .brc-chart-accum .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-yearly path {
+}.brc-chart-trend path {
     fill: none;
 }
 
-.brc-chart-yearly {
+.brc-chart-trend {
     overflow: visible;
 }
-.brc-chart-yearly .highlight {
+.brc-chart-trend .highlight {
     /* stroke: black;
     stroke-width: 3; */
     opacity: 1;
 }
 
-.brc-chart-yearly .lowlight {
+.brc-chart-trend .lowlight {
     opacity: 0.1;
 }
 .chart-overflow svg {
@@ -211,20 +211,20 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
-}.brc-chart-trend path {
+}.brc-chart-yearly path {
     fill: none;
 }
 
-.brc-chart-trend {
+.brc-chart-yearly {
     overflow: visible;
 }
-.brc-chart-trend .highlight {
+.brc-chart-yearly .highlight {
     /* stroke: black;
     stroke-width: 3; */
     opacity: 1;
 }
 
-.brc-chart-trend .lowlight {
+.brc-chart-yearly .lowlight {
     opacity: 0.1;
 }.brc-chart-altlat .highlight {
     opacity: 1;
