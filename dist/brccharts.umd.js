@@ -2417,6 +2417,7 @@
    * @param {string} opts.elid - The id for the dom object created.
    * @param {number} opts.width - The width of each sub-chart area in pixels.
    * @param {number} opts.height - The height of the each sub-chart area in pixels.
+   * @param {number} opts.split - Set to true to split bands over seperate lines - defalt is false.
    * @param {number} opts.perRow - The number of sub-charts per row.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
@@ -2455,11 +2456,12 @@
    * <li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
    * <li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
    * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.
+   * Numbering should start at one and increase in increments of 1. For split bands it is also used to position the bands
+   * from top to bottom
    * </ul>
    * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
-   * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
-   * come last. Because this will generally be the most important, the order is reversed for the chart legend
-   * unless the order is explicitly specified with the legendOrder metric property.
+   * drawn over the previous so for overlapping properties (split = false), the one you want to draw on top should
+   * come last. 
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. 
    * There should only be one object per taxon. (The order is not important.)
@@ -2487,6 +2489,8 @@
         width = _ref$width === void 0 ? 300 : _ref$width,
         _ref$height = _ref.height,
         height = _ref$height === void 0 ? 30 : _ref$height,
+        _ref$split = _ref.split,
+        split = _ref$split === void 0 ? false : _ref$split,
         _ref$perRow = _ref.perRow,
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
         _ref$expand = _ref.expand,
@@ -2609,10 +2613,11 @@
       var rectData = [];
 
       if (dataFiltered) {
-        metricsPlus.forEach(function (m) {
+        metricsPlus.forEach(function (m, im) {
           dataFiltered[m.prop].forEach(function (d, i) {
             rectData.push({
               id: "".concat(m.id, "-").concat(i),
+              iMetric: m.legendOrder ? m.legendOrder - 1 : im,
               "class": m.id,
               colour: m.colour,
               opacity: m.opacity,
@@ -2677,20 +2682,22 @@
       });
       var erects = mrects.enter().append("rect").attr("class", function (d) {
         return "phen-rect-".concat(d["class"], " phen-rect");
-      }).attr("height", height).attr("width", 0).attr("x", function (d) {
+      }).attr("width", 0).attr("height", 0).attr("x", function (d) {
         return xScale(d.start + (d.end - d.start) / 2);
       });
       addEventHandlers(erects, 'class');
       transPromise(mrects.merge(erects).transition().duration(duration).attr("width", function (d) {
         return xScale(d.end) - xScale(d.start);
-      }).attr("x", function (d) {
+      }).attr("height", split ? height / metricsPlus.length : height).attr("x", function (d) {
         return xScale(d.start);
+      }).attr("y", function (d) {
+        return split ? d.iMetric * height / metricsPlus.length : 0;
       }).attr("opacity", function (d) {
         return d.opacity;
       }).attr("fill", function (d) {
         return d.colour;
       }), pTrans);
-      transPromise(mrects.exit().transition().duration(duration).remove(), pTrans);
+      transPromise(mrects.exit().transition().duration(duration).attr("width", 0).attr("height", 0).remove(), pTrans);
 
       if (init) {
         // Constants for positioning
@@ -15597,7 +15604,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.12.0";
+  var version = "0.13.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

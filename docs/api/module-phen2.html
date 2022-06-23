@@ -238,6 +238,29 @@
 
         <tr>
             
+                <td class="name"><code>split</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Set to true to split bands over seperate lines - defalt is false.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>perRow</code></td>
             
 
@@ -829,7 +852,7 @@
 
             
 
-            <td class="description last">An array of objects, each describing a property in the inputdata for which a band should be generated on the chart.Each of the objects in the metrics array must be sepecified with the properties shown below.<ul><li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).<li> <b>label</b> - a label for this property.<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.<li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, itshould be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.</ul>The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each isdrawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top shouldcome last. Because this will generally be the most important, the order is reversed for the chart legendunless the order is explicitly specified with the legendOrder metric property.</td>
+            <td class="description last">An array of objects, each describing a property in the inputdata for which a band should be generated on the chart.Each of the objects in the metrics array must be sepecified with the properties shown below.<ul><li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).<li> <b>label</b> - a label for this property.<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.<li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, itshould be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.Numbering should start at one and increase in increments of 1. For split bands it is also used to position the bandsfrom top to bottom</ul>The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each isdrawn over the previous so for overlapping properties (split = false), the one you want to draw on top shouldcome last.</td>
         </tr>
 
     
@@ -900,7 +923,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line72">line 72</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -1010,7 +1033,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line611">line 611</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line619">line 619</a>
     </li></ul></dd>
     
 
@@ -1098,7 +1121,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line603">line 603</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line611">line 611</a>
     </li></ul></dd>
     
 
@@ -1258,7 +1281,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line619">line 619</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line627">line 627</a>
     </li></ul></dd>
     
 
@@ -1696,7 +1719,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line509">line 509</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line517">line 517</a>
     </li></ul></dd>
     
 
@@ -1855,7 +1878,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line584">line 584</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line592">line 592</a>
     </li></ul></dd>
     
 
@@ -2109,7 +2132,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line633">line 633</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line641">line 641</a>
     </li></ul></dd>
     
 
@@ -2145,7 +2168,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 23 2022 12:03:46 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 23 2022 14:42:37 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

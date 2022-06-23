@@ -9,6 +9,7 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * @param {string} opts.elid - The id for the dom object created.
  * @param {number} opts.width - The width of each sub-chart area in pixels.
  * @param {number} opts.height - The height of the each sub-chart area in pixels.
+ * @param {number} opts.split - Set to true to split bands over seperate lines - defalt is false.
  * @param {number} opts.perRow - The number of sub-charts per row.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
@@ -47,11 +48,12 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * <li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
  * <li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
  * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.
+ * Numbering should start at one and increase in increments of 1. For split bands it is also used to position the bands
+ * from top to bottom
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
- * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
- * come last. Because this will generally be the most important, the order is reversed for the chart legend
- * unless the order is explicitly specified with the legendOrder metric property.
+ * drawn over the previous so for overlapping properties (split = false), the one you want to draw on top should
+ * come last. 
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. 
  * There should only be one object per taxon. (The order is not important.)
@@ -75,6 +77,7 @@ export function phen2({
   elid = 'phen2-chart',
   width = 300,
   height = 30,
+  split = false,
   perRow = 2,
   expand = false,
   title = '',
@@ -182,10 +185,11 @@ export function phen2({
     const dataFiltered = data.find(d => d.taxon === taxon)
     const rectData = []
     if (dataFiltered) {
-      metricsPlus.forEach(m => {
+      metricsPlus.forEach((m, im) => {
         dataFiltered[m.prop].forEach((d,i) => {
           rectData.push({
             id: `${m.id}-${i}`,
+            iMetric: m.legendOrder ? m.legendOrder - 1 : im,
             class: m.id,
             colour: m.colour,
             opacity: m.opacity,
@@ -260,8 +264,8 @@ export function phen2({
     const erects = mrects.enter()
       .append("rect")
       .attr("class", d => `phen-rect-${d.class} phen-rect`)
-      .attr("height",  height)
       .attr("width", 0)
+      .attr("height", 0)
       .attr("x", d => xScale(d.start+(d.end-d.start)/2))
 
     addEventHandlers(erects, 'class')
@@ -270,13 +274,17 @@ export function phen2({
       .transition()
       .duration(duration)
       .attr("width", d => xScale(d.end) - xScale(d.start))
+      .attr("height",  split ? height/metricsPlus.length : height)
       .attr("x", d => xScale(d.start))
+      .attr("y", d => split ? d.iMetric * height/metricsPlus.length : 0)
       .attr("opacity", d => d.opacity)
       .attr("fill", d => d.colour), pTrans)
     
     transPromise(mrects.exit()
       .transition()
       .duration(duration)
+      .attr("width", 0)
+      .attr("height", 0)
       .remove(), pTrans)
 
     if (init) {
