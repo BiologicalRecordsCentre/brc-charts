@@ -322,7 +322,7 @@ brccharts.phen1(phen)</code></pre>
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
     <!--BRC Charts library JS and CSS-->
-    <script src="./../dist/brccharts.umd.js"></script>
+    <script src="./../dist/brccharts.min.umd.js"></script>
     <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
     <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
@@ -543,14 +543,14 @@ brccharts.phen1(phen)</code></pre>
         taxa: ['taxon'],
         data: [{
           taxon: 'taxon',
-          flower: {start: 100, end: 200},
-          leaf: {start: 150, end: 250},
-          both: {start: 150, end: 200},
+          flower: [{start: 50, end: 180}],
+          leaf: [{start: 70, end:365}, {start: 1, end:20}],
+          both: [{start: 70, end:180}],
         }],
         metrics: [
-          { prop: 'flower', label: 'Flowering' , colour: '#ff990080', svg: svgFlower, legendOrder: 2},
-          { prop: 'leaf', label: 'In leaf' , colour: '#3399ff80', svg: svgLeaf, legendOrder: 1},
-          { prop: 'both', label: 'Both' , colour: 'red', svg: svgBoth, svgScale: 1.4, legendOrder: 3}
+          { prop: 'flower', label: 'Flowering' , colour: '#fc8d62', svg: svgFlower, legendOrder: 2},
+          { prop: 'leaf', label: 'In leaf' , colour: '#66c2a5', svg: svgLeaf, legendOrder: 1},
+          { prop: 'both', label: 'Both' , colour: '#8da0cb', svg: svgBoth, svgScale: 1.4, legendOrder: 3}
         ],
         width: 400,
         height: 25,
@@ -560,19 +560,69 @@ brccharts.phen1(phen)</code></pre>
 
       function randomPhen() {
         const fs = Math.random() * 365
-        const fe = fs + (365-fs) * Math.random()
+        const fe =  Math.random() * 365 
         const ls = Math.random() * 365
-        const le = ls + (365-ls) * Math.random()
+        const le =  Math.random() * 365
+
+        // const fs = 119
+        // const fe = 55
+        // const ls = 47
+        // const le =  39
+
+
+        let flowerRange, leafRange
+        let overlapRange = []
+        if (fs > fe) {
+          flowerRange = [[fs, 365], [1, fe]]
+        } else {
+          flowerRange = [[fs, fe]]
+        }
+        if (ls > le) {
+          leafRange = [[ls, 365], [1, le]]
+        } else {
+          leafRange = [[ls, le]]
+        }
+        flowerRange.forEach(fr => {
+          const fs = fr[0]
+          const fe = fr[1]
+          leafRange.forEach(lr => {
+            const ls = lr[0]
+            const le = lr[1]
+            let os, oe
+            if (fs <= ls && fe >= le) {
+              os = ls
+              oe = le
+            }
+            if (fs > ls && fs < le) {
+              os = fs
+            }
+            if (fe > ls && fe < le) {
+              oe = fe
+            }
+            if (os && !oe) {
+              oe = le
+            }
+            if (oe && !os) {
+              os = ls
+            }
+            if (os) {
+              overlapRange.push([os, oe])
+            }
+          })
+        })
+        
+        console.log('flowerRange', flowerRange)
+        console.log('leafRange', leafRange)
+        console.log('overlapRange', overlapRange)
 
         const data = [{
           taxon: 'taxon',
-          flower: {start: fs, end: fe},
-          leaf: {start: ls, end: le},
+          flower: flowerRange.map(r => {return {start: r[0], end: r[1]}}),
+          leaf: leafRange.map(r => {return {start: r[0], end: r[1]}}),
+          both: overlapRange.map(r => {return {start: r[0], end: r[1]}}),
         }]
         phenBand.setChartOpts({data: data}).then(() => console.log('transition end'))
       }
-      
-
     </script>
   </div>
 </body>

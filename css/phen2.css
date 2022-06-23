@@ -1,10 +1,10 @@
 .brc-chart-phen2 rect.highlight {
-    fill: black;
+    /* fill: black; */
     opacity: 1;
 }
 
 .brc-chart-phen2 rect.lowlight {
-    opacity:0.3;
+    opacity:0;
 }
 
 .brc-chart-phen2 {
@@ -15,13 +15,13 @@
     opacity:0.3;
 }
 
-.brc-chart-phen2-top .brc-legend-item-rect.highlight {
+/* .brc-chart-phen2-top .brc-legend-item-rect.highlight {
     fill:black;
 }
 
 .brc-chart-phen2-top .brc-legend-item-icon.highlight {
     fill:black;
-}
+} */
 
 #phen2-chart .mainChart {
     overflow: visible;

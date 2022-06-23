@@ -829,7 +829,7 @@
 
             
 
-            <td class="description last">An array of objects, each describing a property in the inputdata for which a band should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below.<ul><li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).<li> <b>label</b> - a label for this property.<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.<li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, itshould be supplied for all metrics items otherwise results undefined. If not defined, default is to reves theorder (for backwards compatibility).</ul>The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each isdrawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top shouldcome last. Because this will generally be the most important, the order is reversed for the chart legendunless the order is explicitly specified with the legendOrder metric property.</td>
+            <td class="description last">An array of objects, each describing a property in the inputdata for which a band should be generated on the chart.Each of the objects in the metrics array must be sepecified with the properties shown below.<ul><li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).<li> <b>label</b> - a label for this property.<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.<li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, itshould be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.</ul>The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each isdrawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top shouldcome last. Because this will generally be the most important, the order is reversed for the chart legendunless the order is explicitly specified with the legendOrder metric property.</td>
         </tr>
 
     
@@ -852,7 +852,7 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. There should only be one object per taxon. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>p1</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).<li> <b>p2</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).... - there must be at leas one property column, but there can be any number of them.</ul>The date band objects have the following structure:<ul><li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.<li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends. </ul></td>
+            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. There should only be one object per taxon. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>p1</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).<li> <b>p2</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).... - there must be at leas one property column, but there can be any number of them.</ul>The objects in each data band array have the following structure:<ul><li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.<li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends. </ul></td>
         </tr>
 
     
@@ -900,7 +900,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line73">line 73</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -1010,7 +1010,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line633">line 633</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line611">line 611</a>
     </li></ul></dd>
     
 
@@ -1098,7 +1098,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line625">line 625</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line603">line 603</a>
     </li></ul></dd>
     
 
@@ -1258,7 +1258,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line641">line 641</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line619">line 619</a>
     </li></ul></dd>
     
 
@@ -1696,7 +1696,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line531">line 531</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line509">line 509</a>
     </li></ul></dd>
     
 
@@ -1855,7 +1855,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line606">line 606</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line584">line 584</a>
     </li></ul></dd>
     
 
@@ -2109,7 +2109,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line655">line 655</a>
+        <a href="phen2.js.html">phen2.js</a>, <a href="phen2.js.html#line633">line 633</a>
     </li></ul></dd>
     
 
@@ -2145,7 +2145,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Wed Jun 22 2022 12:50:30 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 23 2022 12:03:46 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -37,17 +37,16 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
  * data for which a band should be generated on the chart.
- * Each of the objects in the data array must be sepecified with the properties shown below.
+ * Each of the objects in the metrics array must be sepecified with the properties shown below.
  * <ul>
  * <li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
  * <li> <b>label</b> - a label for this property.
  * <li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
- * <li> <b>opacity</b> - opacity to give the band for this property. A value between 0 and 1 - default is 1.
+ * <li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.
  * <li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
  * <li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
  * <li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
- * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reves the
- * order (for backwards compatibility).
+ * should be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so if you are likely to have overlapping properties, the one you want to draw on top should
@@ -58,11 +57,11 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * There should only be one object per taxon. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
- * <li> <b>p1</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
- * <li> <b>p2</b> - a date band object (see below), indicating start and end weeks for the property (can have any name).
+ * <li> <b>p1</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).
+ * <li> <b>p2</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).
  * ... - there must be at leas one property column, but there can be any number of them.
  * </ul>
- * The date band objects have the following structure:
+ * The objects in each data band array have the following structure:
  * <ul>
  * <li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.
  * <li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends.
@@ -181,45 +180,24 @@ export function phen2({
   function makePhen (taxon) {
     // Get data for named taxon
     const dataFiltered = data.find(d => d.taxon === taxon)
-    const rectDataA = metricsPlus.map(m => {
-      return {
-        id: m.id,
-        colour: m.colour,
-        opacity: m.opacity,
-        start: dataFiltered ? dataFiltered[m.prop].start : 0,
-        end:  dataFiltered ? dataFiltered[m.prop].end : 0
-      }
-    })
-
-    // Got through rect data and see if there are any where
-    // end day is less than start day - i.e. runs over year
-    // end - and if so split into two rectangles.
     const rectData = []
-    rectDataA.forEach(d => {
-      if (d.start < d.end) {
-        rectData.push(d)
-      } else {
-         rectData.push({
-          id: d.id,
-          colour: d.colour,
-          opacity: d.opacity,
-          start: d.start,
-          end:  365,
+    if (dataFiltered) {
+      metricsPlus.forEach(m => {
+        dataFiltered[m.prop].forEach((d,i) => {
+          rectData.push({
+            id: `${m.id}-${i}`,
+            class: m.id,
+            colour: m.colour,
+            opacity: m.opacity,
+            start: d.start,
+            end:  d.end
+          })
         })
-        rectData.push({
-          id: `${d.id}-part2`,
-          colour: d.colour,
-          opacity: d.opacity,
-          start: 1,
-          end:  d.end,
-        })
-      }
-    })
-    
-    // Value scale
-    //const xScale = d3.scaleLinear().domain([1, 53]).range([0, width])
-    const xScale = d3.scaleLinear().domain([1, 365]).range([0, width])
+      })
+    }
 
+    // Value scale
+    const xScale = d3.scaleLinear().domain([1, 365]).range([0, width])
     const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0])
 
     // X (bottom) axis
@@ -281,12 +259,12 @@ export function phen2({
 
     const erects = mrects.enter()
       .append("rect")
-      .attr("class", d => `phen-rect-${d.id} phen-rect`)
+      .attr("class", d => `phen-rect-${d.class} phen-rect`)
       .attr("height",  height)
       .attr("width", 0)
       .attr("x", d => xScale(d.start+(d.end-d.start)/2))
 
-    addEventHandlers(erects, 'id')
+    addEventHandlers(erects, 'class')
 
     transPromise(mrects.merge(erects)
       .transition()
@@ -475,32 +453,32 @@ export function phen2({
     return swatchSize * swatchFact * (rows + 1)
   }
 
-  function highlightItem(id, highlight) {
+  function highlightItem(cls, highlight) {
 
     svgChart.selectAll('.phen-rect')
       .classed('lowlight', highlight)
 
-    svgChart.selectAll(`.phen-rect-${id}`)
+    svgChart.selectAll(`.phen-rect-${cls}`)
       .classed('lowlight', false)
   
     svgChart.selectAll(`.phen-rect`)
       .classed('highlight', false)
 
-    if (id) {
-      svgChart.selectAll(`.phen-rect-${id}`)
+    if (cls) {
+      svgChart.selectAll(`.phen-rect-${cls}`)
         .classed('highlight', highlight)
     }
     
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
 
-    if (id) {
-      svgChart.selectAll(`.brc-legend-item-${id}`)
+    if (cls) {
+      svgChart.selectAll(`.brc-legend-item-${cls}`)
         .classed('lowlight', false)
     }
 
-    if (id) {
-      svgChart.selectAll(`.brc-legend-item-${id}`)
+    if (cls) {
+      svgChart.selectAll(`.brc-legend-item-${cls}`)
         .classed('highlight', highlight)
     } else {
       svgChart.selectAll(`.brc-legend-item`)
