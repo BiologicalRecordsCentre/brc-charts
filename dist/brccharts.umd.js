@@ -5194,12 +5194,13 @@
         _ref$axisLeftLabel = _ref.axisLeftLabel,
         axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
         _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$means = _ref.means,
         means = _ref$means === void 0 ? [] : _ref$means;
 
-    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize);
+    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
     return {
       updateChart: updateChart
     };
@@ -5237,7 +5238,7 @@
     return Math.max(dMin, mMin);
   }
 
-  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize) {
+  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5252,76 +5253,40 @@
 
 
     if (axisLeftLabel) {
-      var axisLeftLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)");
-      svgTrend.append("text").attr("transform", axisLeftLabelTrans).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
-    } // Data
-
-
-    var dataWork = data.sort(function (a, b) {
-      return a.year > b.year ? 1 : -1;
-    });
-    var yearMin = minYear(dataWork);
-    var yearMax = maxYear(dataWork);
-    var yMin = minY(dataWork, means);
-    var yMax = maxY(dataWork, means); // Value scales
-
-    var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
-    var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Axes
-
-    var tAxis;
-
-    if (axisTop === 'on') {
-      tAxis = d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
-      .tickValues([]).tickSizeOuter(0);
-    }
-
-    var bAxis;
-
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = xAxisYear(width, axisBottom === 'tick', yearMin, yearMax, false);
-    }
-
-    var lAxis;
-
-    if (axisLeft === 'on' || axisLeft === 'tick') {
-      lAxis = d3.axisLeft().scale(yScale).ticks(5);
-    }
-
-    var rAxis;
-
-    if (axisRight === 'on') {
-      rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
+      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
     } // Create axes and position within SVG
 
 
-    var axisLeftTrans = "translate(".concat(margin.left, ",").concat(margin.top, ")");
-    var axisRightTrans = "translate(".concat(margin.left + width, ", ").concat(margin.top, ")");
-    var axisTopTrans = "translate(".concat(margin.left, ",").concat(margin.top, ")");
-    var axisBottomTrans = "translate(".concat(margin.left, ",").concat(margin.top + height, ")"); // Create axes and position within SVG
+    var tAxis, bAxis, lAxis, rAxis;
 
-    if (lAxis) {
-      svgTrend.append("g").attr("transform", axisLeftTrans).call(lAxis);
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     }
 
-    if (bAxis) {
-      svgTrend.append("g").attr("transform", axisBottomTrans).call(bAxis);
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
     }
 
-    if (tAxis) {
-      svgTrend.append("g").attr("transform", axisTopTrans).call(tAxis);
+    if (axisTop === 'on') {
+      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     }
 
-    if (rAxis) {
-      svgTrend.append("g").attr("transform", axisRightTrans).call(rAxis);
-    } // Create the API function
+    if (axisRight === 'on') {
+      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
+    } // Create g element for chart elements
 
 
-    var updateChart = makeUpdateChart(svgTrend, width, height);
+    var gChart = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+
+    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+
+    updateChart(data, means); // Return the api
+
     return updateChart;
   }
 
-  function makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis) {
-    var fn = function fn(data, means) {
+  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
+    return function (data, means) {
       // Data
       var dataWork = data.sort(function (a, b) {
         return a.year > b.year ? 1 : -1;
@@ -5332,10 +5297,53 @@
       var yMax = maxY(dataWork, means); // Value scales
 
       var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
-    };
+      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
 
-    return fn;
+      if (tAxis) {
+        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0));
+      }
+
+      if (bAxis) {
+        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMin, yearMax, false));
+      }
+
+      if (lAxis) {
+        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+      }
+
+      if (rAxis) {
+        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
+      } // Line path generator
+
+
+      var linePath = d3.line() //.curve(d3.curveMonotoneX)
+      .x(function (d) {
+        return xScale(d.y);
+      }).y(function (d) {
+        return yScale(d.v);
+      }); // Main data line
+
+      gChart.selectAll('.valueLine').data([data]).join(function (enter) {
+        return enter.append('path').attr("d", function (d) {
+          return linePath(d.map(function (p) {
+            return {
+              y: p.year,
+              v: yMin
+            };
+          }));
+        }).attr('class', 'valueLine').style('fill', 'none').style('stroke', 'black').style('stroke-width', 2);
+      }, function (update) {
+        return update;
+      }).transition().duration(duration).attr("d", function (d) {
+        return linePath(d.map(function (p) {
+          return {
+            y: p.year,
+            v: p.value
+          };
+        }));
+      });
+    };
   }
 
   /** 
