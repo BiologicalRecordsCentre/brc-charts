@@ -5162,6 +5162,182 @@
     };
   }
 
+  function trend2() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'trend2-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 35,
+      right: 0,
+      top: 20,
+      bottom: 5
+    } : _ref$margin,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$duration = _ref.duration,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$means = _ref.means,
+        means = _ref$means === void 0 ? [] : _ref$means;
+
+    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize);
+    return {
+      updateChart: updateChart
+    };
+  }
+
+  function maxYear(data) {
+    return Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+      return d.year;
+    })));
+  }
+
+  function minYear(data) {
+    return Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
+      return d.year;
+    })));
+  }
+
+  function maxY(data, means) {
+    var dMax = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+      return d.upper ? d.upper : d.value;
+    })));
+    var mMax = Math.max.apply(Math, _toConsumableArray(means.map(function (d) {
+      return d.mean + d.sd;
+    })));
+    return Math.max(dMax, mMax);
+  }
+
+  function minY(data, means) {
+    var dMin = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
+      return d.lower ? d.lower : d.value;
+    })));
+    var mMin = Math.min.apply(Math, _toConsumableArray(means.map(function (d) {
+      return d.mean - d.sd;
+    })));
+    return Math.max(dMin, mMin);
+  }
+
+  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize) {
+    var svgWidth = width + margin.left + margin.right;
+    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
+
+    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+
+    if (expand) {
+      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
+    } else {
+      svgTrend.attr("width", svgWidth);
+      svgTrend.attr("height", svgHeight);
+    } // Axis labels
+
+
+    if (axisLeftLabel) {
+      var axisLeftLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)");
+      svgTrend.append("text").attr("transform", axisLeftLabelTrans).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+    } // Data
+
+
+    var dataWork = data.sort(function (a, b) {
+      return a.year > b.year ? 1 : -1;
+    });
+    var yearMin = minYear(dataWork);
+    var yearMax = maxYear(dataWork);
+    var yMin = minY(dataWork, means);
+    var yMax = maxY(dataWork, means); // Value scales
+
+    var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Axes
+
+    var tAxis;
+
+    if (axisTop === 'on') {
+      tAxis = d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
+      .tickValues([]).tickSizeOuter(0);
+    }
+
+    var bAxis;
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = xAxisYear(width, axisBottom === 'tick', yearMin, yearMax, false);
+    }
+
+    var lAxis;
+
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      lAxis = d3.axisLeft().scale(yScale).ticks(5);
+    }
+
+    var rAxis;
+
+    if (axisRight === 'on') {
+      rAxis = d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0);
+    } // Create axes and position within SVG
+
+
+    var axisLeftTrans = "translate(".concat(margin.left, ",").concat(margin.top, ")");
+    var axisRightTrans = "translate(".concat(margin.left + width, ", ").concat(margin.top, ")");
+    var axisTopTrans = "translate(".concat(margin.left, ",").concat(margin.top, ")");
+    var axisBottomTrans = "translate(".concat(margin.left, ",").concat(margin.top + height, ")"); // Create axes and position within SVG
+
+    if (lAxis) {
+      svgTrend.append("g").attr("transform", axisLeftTrans).call(lAxis);
+    }
+
+    if (bAxis) {
+      svgTrend.append("g").attr("transform", axisBottomTrans).call(bAxis);
+    }
+
+    if (tAxis) {
+      svgTrend.append("g").attr("transform", axisTopTrans).call(tAxis);
+    }
+
+    if (rAxis) {
+      svgTrend.append("g").attr("transform", axisRightTrans).call(rAxis);
+    } // Create the API function
+
+
+    var updateChart = makeUpdateChart(svgTrend, width, height);
+    return updateChart;
+  }
+
+  function makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis) {
+    var fn = function fn(data, means) {
+      // Data
+      var dataWork = data.sort(function (a, b) {
+        return a.year > b.year ? 1 : -1;
+      });
+      var yearMin = minYear(dataWork);
+      var yearMax = maxYear(dataWork);
+      var yMin = minY(dataWork, means);
+      var yMax = maxY(dataWork, means); // Value scales
+
+      var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]);
+    };
+
+    return fn;
+  }
+
   /** 
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
@@ -15672,6 +15848,7 @@
   exports.phen2 = phen2;
   exports.pie = pie;
   exports.trend = trend;
+  exports.trend2 = trend2;
   exports.yearly = yearly;
 
   Object.defineProperty(exports, '__esModule', { value: true });

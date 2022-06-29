@@ -4,6 +4,7 @@ import { phen2 } from './src/phen2'
 import { accum } from './src/accum'
 import { links } from './src/links'
 import { trend } from './src/trend'
+import { trend2 } from './src/trend2/trend2'
 import { yearly } from './src/yearly'
 import { altlat } from './src/altlat'
 import pkg from './package.json'
@@ -19,6 +20,7 @@ export {
   accum,
   links,
   trend,
+  trend2,
   yearly,
   altlat
 } 
