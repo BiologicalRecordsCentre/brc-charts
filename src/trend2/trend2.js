@@ -17,10 +17,22 @@ export function trend2({
   axisLeftLabel = '',
   duration = 1000,
   data = [],
-  means = []
+  means = [],
+  style = {}
 } = {}) {
 
-  const updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration)
+  // Ensure default style properties are present
+  style.vStroke = style.vStroke ? style.vStroke : 'black'
+  style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2
+  style.cStroke = style.cStroke ? style.cStroke : 'black'
+  style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1
+  style.cFill = style.cFill ? style.cFill : 'silver'
+  style.mFill = style.mFill ? style.mFill : 'black'
+  style.mRad = style.mRad ? style.mRad : 2
+  style.sdStroke = style.sdStroke ? style.sdStroke : 'black'
+  style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1
+
+  const updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style)
 
   return {
     updateChart: updateChart
@@ -41,10 +53,10 @@ function maxY(data, means) {
 function minY(data, means) {
   const dMin = Math.min(...data.map(d => d.lower ? d.lower : d.value))
   const mMin = Math.min(...means.map(d => d.mean - d.sd))
-  return Math.max(dMin, mMin)
+  return Math.min(dMin, mMin)
 }
 
-function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
 
   const svgWidth = width + margin.left + margin.right
   const svgHeight = height + margin.top + margin.bottom
@@ -91,11 +103,13 @@ function makeChart(data, means, selector, elid, width, height, margin, expand, a
   }
 
   // Create g element for chart elements
-  const gChart = svgTrend.append("g")
+  const gChart1 = svgTrend.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`)
+  const gChart2 = svgTrend.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
   // Create the API function for updating chart
-  const updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart)
+  const updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style)
   
   // Update the chart with current data
   updateChart(data, means)
@@ -114,15 +128,22 @@ function makeUpdateChart(
   rAxis,
   axisBottom,
   duration,
-  gChart
+  gChart1,
+  gChart2,
+  style
 ) {
   return (data, means) => {
     // Data
     const dataWork = data.sort((a, b) => (a.year > b.year) ? 1 : -1)
-    const yearMin = minYear(dataWork)
-    const yearMax = maxYear(dataWork)
-    const yMin = minY(dataWork, means)
-    const yMax = maxY(dataWork, means)
+    let yearMin = minYear(dataWork)
+    let yearMax = maxYear(dataWork)
+    let yMin = minY(dataWork, means)
+    let yMax = maxY(dataWork, means)
+    // Add a margin to min/max values
+    yMin = yMin - (yMax - yMin) / 20
+    yMax = yMax + (yMax - yMin) / 20
+    yearMin = Math.floor(yearMin - (yearMax - yearMin) / 20)
+    yearMax = Math.floor(yearMax + (yearMax - yearMin) / 20)
 
     // Value scales
     const xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width])
@@ -161,32 +182,97 @@ function makeUpdateChart(
       .y(d => yScale(d.v))
 
     // Main data line
-    gChart.selectAll('.valueLine')
+    const vData = data.map(p => {return {y: p.year, v: p.value}})
+    d3Line(gChart2, linePath, yMin, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none')
+
+    // Upper confidence line
+    const uData = data.map(p => {return {y: p.year, v: p.upper}})
+    d3Line(gChart2, linePath, yMin, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none')
+
+    // Upper confidence line
+    const lData = data.map(p => {return {y: p.year, v: p.lower}})
+    d3Line(gChart2, linePath, yMin, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none')
+
+    // Confidence polygon
+    lData.sort((a,b) => b.y - a.y) // Reverse order of lData
+    const pData = [...uData, ...lData]
+    d3Line(gChart1, linePath, yMin, duration, pData, 'confidence', 'none', 0, style.cFill)
+
+    // Mean and SDs
+    const tMeans = means.map(p => {
+      return {
+        x: xScale(p.year),
+        y: yScale(p.mean),
+        bar: linePath([{y: p.year, v: p.mean-p.sd}, {y: p.year, v: p.mean+p.sd}]),
+        barStart: linePath([{y: p.year, v: yMin}, {y: p.year, v: yMin}])
+      }
+    })
+    d3MeanSd(gChart2, linePath, yScale(yMin), duration, tMeans, style)
+  }
+}
+
+function d3Line(gChart, linePath, yMin, duration, data, lClass, stroke, strokeWidth, fill) {
+
+    gChart.selectAll(`.${lClass}`)
       .data([data])
       .join(
         enter => enter.append('path')
           .attr("d", d => {
             return linePath(d.map(p => {
               return {
-                y: p.year,
+                y: p.y,
                 v: yMin
               }
             }))
           })
-          .attr('class', 'valueLine')
-          .style('fill', 'none')
-          .style('stroke', 'black')
-          .style('stroke-width', 2),
-        update => update
+          .attr('class', lClass)
+          .style('fill', fill)
+          .style('stroke', stroke)
+          .style('stroke-width', strokeWidth),
+        update => update,
+        exit => exit.remove()
       )
+      // Join returns merged enter and update selection
           .transition().duration(duration)
-          .attr("d", d => {
-            return linePath(d.map(p => {
-              return {
-                y: p.year,
-                v: p.value
-              }
-            }))
-          })
-  }
+          .attr("d", d => linePath(d))
+}
+
+function d3MeanSd(gChart, linePath, yMin, duration, means, style) {
+
+    console.log(means)
+    console.log(style)
+
+    // Means
+    gChart.selectAll('.means')
+      .data(means)
+      .join(
+        enter => enter.append('circle')
+          .attr('cx', d => d.x)
+          .attr('cy', yMin)
+          .attr('r', style.mRad)
+          .attr('class', 'means')
+          .style('fill', style.mFill),
+        update => update,
+        exit => exit.remove()
+      )
+      // Join returns merged enter and update selection
+           .transition().duration(duration)
+           .attr('cx', d => d.x)
+           .attr('cy', d => d.y)
+
+    // SDs
+    gChart.selectAll('.sds')
+      .data(means)
+      .join(
+        enter => enter.append('path')
+          .attr('d', d => d.barStart)
+          .attr('class', 'sds')
+          .style('stroke', style.sdStroke)
+          .style('stroke-width', style.sdStrokeWidth),
+        update => update,
+        exit => exit.remove()
+      )
+      // Join returns merged enter and update selection
+          .transition().duration(duration)
+          .attr('d', d => d.bar)
 }

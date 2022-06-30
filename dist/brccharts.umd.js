@@ -5198,9 +5198,21 @@
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$means = _ref.means,
-        means = _ref$means === void 0 ? [] : _ref$means;
+        means = _ref$means === void 0 ? [] : _ref$means,
+        _ref$style = _ref.style,
+        style = _ref$style === void 0 ? {} : _ref$style;
 
-    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    // Ensure default style properties are present
+    style.vStroke = style.vStroke ? style.vStroke : 'black';
+    style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2;
+    style.cStroke = style.cStroke ? style.cStroke : 'black';
+    style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1;
+    style.cFill = style.cFill ? style.cFill : 'silver';
+    style.mFill = style.mFill ? style.mFill : 'black';
+    style.mRad = style.mRad ? style.mRad : 2;
+    style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
+    style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
+    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
     return {
       updateChart: updateChart
     };
@@ -5235,10 +5247,10 @@
     var mMin = Math.min.apply(Math, _toConsumableArray(means.map(function (d) {
       return d.mean - d.sd;
     })));
-    return Math.max(dMin, mMin);
+    return Math.min(dMin, mMin);
   }
 
-  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5276,16 +5288,17 @@
     } // Create g element for chart elements
 
 
-    var gChart = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+    var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
 
     updateChart(data, means); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
+  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
     return function (data, means) {
       // Data
       var dataWork = data.sort(function (a, b) {
@@ -5294,7 +5307,12 @@
       var yearMin = minYear(dataWork);
       var yearMax = maxYear(dataWork);
       var yMin = minY(dataWork, means);
-      var yMax = maxY(dataWork, means); // Value scales
+      var yMax = maxY(dataWork, means); // Add a margin to min/max values
+
+      yMin = yMin - (yMax - yMin) / 20;
+      yMax = yMax + (yMax - yMin) / 20;
+      yearMin = Math.floor(yearMin - (yearMax - yearMin) / 20);
+      yearMax = Math.floor(yearMax + (yearMax - yearMin) / 20); // Value scales
 
       var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
       var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
@@ -5324,26 +5342,112 @@
         return yScale(d.v);
       }); // Main data line
 
-      gChart.selectAll('.valueLine').data([data]).join(function (enter) {
-        return enter.append('path').attr("d", function (d) {
-          return linePath(d.map(function (p) {
-            return {
-              y: p.year,
-              v: yMin
-            };
-          }));
-        }).attr('class', 'valueLine').style('fill', 'none').style('stroke', 'black').style('stroke-width', 2);
-      }, function (update) {
-        return update;
-      }).transition().duration(duration).attr("d", function (d) {
+      var vData = data.map(function (p) {
+        return {
+          y: p.year,
+          v: p.value
+        };
+      });
+      d3Line(gChart2, linePath, yMin, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none'); // Upper confidence line
+
+      var uData = data.map(function (p) {
+        return {
+          y: p.year,
+          v: p.upper
+        };
+      });
+      d3Line(gChart2, linePath, yMin, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none'); // Upper confidence line
+
+      var lData = data.map(function (p) {
+        return {
+          y: p.year,
+          v: p.lower
+        };
+      });
+      d3Line(gChart2, linePath, yMin, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none'); // Confidence polygon
+
+      lData.sort(function (a, b) {
+        return b.y - a.y;
+      }); // Reverse order of lData
+
+      var pData = [].concat(_toConsumableArray(uData), _toConsumableArray(lData));
+      d3Line(gChart1, linePath, yMin, duration, pData, 'confidence', 'none', 0, style.cFill); // Mean and SDs
+
+      var tMeans = means.map(function (p) {
+        return {
+          x: xScale(p.year),
+          y: yScale(p.mean),
+          bar: linePath([{
+            y: p.year,
+            v: p.mean - p.sd
+          }, {
+            y: p.year,
+            v: p.mean + p.sd
+          }]),
+          barStart: linePath([{
+            y: p.year,
+            v: yMin
+          }, {
+            y: p.year,
+            v: yMin
+          }])
+        };
+      });
+      d3MeanSd(gChart2, linePath, yScale(yMin), duration, tMeans, style);
+    };
+  }
+
+  function d3Line(gChart, linePath, yMin, duration, data, lClass, stroke, strokeWidth, fill) {
+    gChart.selectAll(".".concat(lClass)).data([data]).join(function (enter) {
+      return enter.append('path').attr("d", function (d) {
         return linePath(d.map(function (p) {
           return {
-            y: p.year,
-            v: p.value
+            y: p.y,
+            v: yMin
           };
         }));
-      });
-    };
+      }).attr('class', lClass).style('fill', fill).style('stroke', stroke).style('stroke-width', strokeWidth);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr("d", function (d) {
+      return linePath(d);
+    });
+  }
+
+  function d3MeanSd(gChart, linePath, yMin, duration, means, style) {
+    console.log(means);
+    console.log(style); // Means
+
+    gChart.selectAll('.means').data(means).join(function (enter) {
+      return enter.append('circle').attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', yMin).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }); // SDs
+
+    gChart.selectAll('.sds').data(means).join(function (enter) {
+      return enter.append('path').attr('d', function (d) {
+        return d.barStart;
+      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr('d', function (d) {
+      return d.bar;
+    });
   }
 
   /** 
