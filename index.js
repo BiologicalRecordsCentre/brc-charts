@@ -5,6 +5,7 @@ import { accum } from './src/accum'
 import { links } from './src/links'
 import { trend } from './src/trend'
 import { trend2 } from './src/trend2/trend2'
+import { trend3 } from './src/trend3/trend3'
 import { yearly } from './src/yearly'
 import { altlat } from './src/altlat'
 import pkg from './package.json'
@@ -21,6 +22,7 @@ export {
   links,
   trend,
   trend2,
+  trend3,
   yearly,
   altlat
 } 

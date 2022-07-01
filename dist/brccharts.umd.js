@@ -5195,6 +5195,10 @@
         axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$yearMin = _ref.yearMin,
+        yearMin = _ref$yearMin === void 0 ? null : _ref$yearMin,
+        _ref$yearMax = _ref.yearMax,
+        yearMax = _ref$yearMax === void 0 ? null : _ref$yearMax,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$means = _ref.means,
@@ -5208,11 +5212,13 @@
     style.cStroke = style.cStroke ? style.cStroke : 'black';
     style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1;
     style.cFill = style.cFill ? style.cFill : 'silver';
-    style.mFill = style.mFill ? style.mFill : 'black';
+    style.mFill = style.mFill ? style.mFill : 'white';
     style.mRad = style.mRad ? style.mRad : 2;
+    style.mStroke = style.mStroke ? style.mStroke : 'black';
+    style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
     style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
     style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
-    var updateChart = makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
+    var updateChart = makeChart(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
     return {
       updateChart: updateChart
     };
@@ -5250,7 +5256,7 @@
     return Math.min(dMin, mMin);
   }
 
-  function makeChart(data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+  function makeChart(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5291,30 +5297,42 @@
     var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
+    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
 
     updateChart(data, means); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
+  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
     return function (data, means) {
       // Data
       var dataWork = data.sort(function (a, b) {
         return a.year > b.year ? 1 : -1;
       });
-      var yearMin = minYear(dataWork);
-      var yearMax = maxYear(dataWork);
+      var yearMinData = minYear(dataWork);
+      var yearMaxData = maxYear(dataWork);
       var yMin = minY(dataWork, means);
       var yMax = maxY(dataWork, means); // Add a margin to min/max values
 
-      yMin = yMin - (yMax - yMin) / 20;
-      yMax = yMax + (yMax - yMin) / 20;
-      yearMin = Math.floor(yearMin - (yearMax - yearMin) / 20);
-      yearMax = Math.floor(yearMax + (yearMax - yearMin) / 20); // Value scales
+      yMin = yMin - (yMax - yMin) / 50;
+      yMax = yMax + (yMax - yMin) / 50;
+      var yearMinBuff, yearMaxBuff;
 
-      var xScale = d3.scaleLinear().domain([yearMin, yearMax]).range([0, width]);
+      if (yearMin) {
+        yearMinBuff = yearMin;
+      } else {
+        yearMinBuff = Math.floor(yearMinData - (yearMaxData - yearMinData) / 50);
+      }
+
+      if (yearMax) {
+        yearMaxBuff = yearMax;
+      } else {
+        yearMaxBuff = Math.floor(yearMaxData + (yearMaxData - yearMinData) / 50);
+      } // Value scales
+
+
+      var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
       var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
 
       if (tAxis) {
@@ -5323,7 +5341,7 @@
       }
 
       if (bAxis) {
-        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMin, yearMax, false));
+        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMinBuff, yearMaxBuff, false));
       }
 
       if (lAxis) {
@@ -5398,56 +5416,322 @@
   }
 
   function d3Line(gChart, linePath, yMin, duration, data, lClass, stroke, strokeWidth, fill) {
-    gChart.selectAll(".".concat(lClass)).data([data]).join(function (enter) {
-      return enter.append('path').attr("d", function (d) {
-        return linePath(d.map(function (p) {
-          return {
-            y: p.y,
-            v: yMin
-          };
-        }));
-      }).attr('class', lClass).style('fill', fill).style('stroke', stroke).style('stroke-width', strokeWidth);
+    var aData;
+
+    if (data.length === 0) {
+      aData = data;
+    } else {
+      aData = [data];
+    }
+
+    gChart.selectAll(".".concat(lClass)).data(aData).join(function (enter) {
+      return enter.append('path') //.attr("d", d => {linePath(d.map(p => {return {y: p.y,v: yMin}}))})
+      .attr("d", function (d) {
+        return linePath(d);
+      }).attr('class', lClass).style('fill', fill).style('stroke', stroke).style('stroke-width', strokeWidth).attr("opacity", 0);
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.remove();
+      return exit.transition().duration(duration).style("opacity", 0).remove();
     }) // Join returns merged enter and update selection
     .transition().duration(duration).attr("d", function (d) {
       return linePath(d);
-    });
+    }).attr("opacity", 1);
   }
 
   function d3MeanSd(gChart, linePath, yMin, duration, means, style) {
-    console.log(means);
-    console.log(style); // Means
+    //console.log(means)
+    //console.log(style)
+    // SDs
+    gChart.selectAll('.sds').data(means).join(function (enter) {
+      return enter.append('path').attr('d', function (d) {
+        return d.bar;
+      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr('d', function (d) {
+      return d.bar;
+    }).style('opacity', 1); // Means
 
     gChart.selectAll('.means').data(means).join(function (enter) {
       return enter.append('circle').attr('cx', function (d) {
         return d.x;
-      }).attr('cy', yMin).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill);
+      }).attr('cy', function (d) {
+        return d.y;
+      }).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill).style('stroke', style.mStroke).style('stroke-width', style.mStrokeWidth).style('opacity', 0);
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.remove();
+      return exit.transition().duration(duration).style("opacity", 0).remove();
     }) // Join returns merged enter and update selection
     .transition().duration(duration).attr('cx', function (d) {
       return d.x;
     }).attr('cy', function (d) {
       return d.y;
-    }); // SDs
+    }).style('opacity', 1);
+  }
 
-    gChart.selectAll('.sds').data(means).join(function (enter) {
-      return enter.append('path').attr('d', function (d) {
-        return d.barStart;
-      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth);
+  function trend3() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'trend3-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 35,
+      right: 0,
+      top: 20,
+      bottom: 5
+    } : _ref$margin,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$yearMin = _ref.yearMin,
+        yearMin = _ref$yearMin === void 0 ? 1949 : _ref$yearMin,
+        _ref$yearMax = _ref.yearMax,
+        yearMax = _ref$yearMax === void 0 ? 2019 : _ref$yearMax,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$means = _ref.means,
+        means = _ref$means === void 0 ? [] : _ref$means,
+        _ref$style = _ref.style,
+        style = _ref$style === void 0 ? {} : _ref$style;
+
+    // Ensure default style properties are present
+    style.vStroke = style.vStroke ? style.vStroke : 'black';
+    style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2;
+    style.vOpacity = style.vOpacity ? style.vOpacity : 0.1;
+    style.mFill = style.mFill ? style.mFill : 'white';
+    style.mRad = style.mRad ? style.mRad : 2;
+    style.mStroke = style.mStroke ? style.mStroke : 'black';
+    style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
+    style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
+    style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
+    var updateChart = makeChart$1(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
+    return {
+      updateChart: updateChart
+    };
+  }
+
+  function maxY$1(data, means) {
+    var dMax = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+      return Math.max(d[0].v, d[1].v);
+    })));
+    var mMax = Math.max.apply(Math, _toConsumableArray(means.map(function (d) {
+      return d.mean + d.sd;
+    })));
+    return Math.max(dMax, mMax);
+  }
+
+  function minY$1(data, means) {
+    var dMin = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
+      return Math.min(d[0].v, d[1].v);
+    })));
+    var mMin = Math.min.apply(Math, _toConsumableArray(means.map(function (d) {
+      return d.mean - d.sd;
+    })));
+    return Math.min(dMin, mMin);
+  }
+
+  function makeChart$1(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+    var svgWidth = width + margin.left + margin.right;
+    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
+
+    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+
+    if (expand) {
+      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
+    } else {
+      svgTrend.attr("width", svgWidth);
+      svgTrend.attr("height", svgHeight);
+    } // Axis labels
+
+
+    if (axisLeftLabel) {
+      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+    } // Create axes and position within SVG
+
+
+    var tAxis, bAxis, lAxis, rAxis;
+
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
+    }
+
+    if (axisTop === 'on') {
+      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisRight === 'on') {
+      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
+    } // Create g element for chart elements
+
+
+    var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+
+    var updateChart = makeUpdateChart$1(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
+
+    updateChart(data, means); // Return the api
+
+    return updateChart;
+  }
+
+  function makeUpdateChart$1(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
+    return function (data, means) {
+      //console.log('means', means)
+      //console.log('data', data)
+      // Convert data from an array of gradients and intercepts to an array 
+      // of arrays of two point lines
+      var dataWork = data.map(function (d) {
+        var yStart = d.gradient * yearMin + d.intercept;
+        var yEnd = d.gradient * yearMax + d.intercept;
+        return [{
+          y: yearMin,
+          v: yStart
+        }, {
+          y: yearMax,
+          v: yEnd
+        }];
+      }); //console.log('dataWork', dataWork)
+      // Data
+
+      var yMin = minY$1(dataWork, means);
+      var yMax = maxY$1(dataWork, means); //console.log('min,max', yMin, yMax)
+      // Add a margin to min/max values
+
+      yMin = yMin - (yMax - yMin) / 20;
+      yMax = yMax + (yMax - yMin) / 20; //const yearMinBuff = Math.floor(yearMin - (yearMax - yearMin) / 20)
+      //const yearMaxBuff = Math.floor(yearMax + (yearMax - yearMin) / 20)
+
+      var yearMinBuff = yearMin;
+      var yearMaxBuff = yearMax; // Value scales
+
+      var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
+
+      if (tAxis) {
+        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0));
+      }
+
+      if (bAxis) {
+        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMinBuff, yearMaxBuff, false));
+      }
+
+      if (lAxis) {
+        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+      }
+
+      if (rAxis) {
+        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
+      } // Line path generator
+
+
+      var linePath = d3.line() //.curve(d3.curveMonotoneX)
+      .x(function (d) {
+        return xScale(d.y);
+      }).y(function (d) {
+        return yScale(d.v);
+      }); // Main data line
+
+      d3Line$1(gChart2, linePath, duration, dataWork, style); // Mean and SDs
+
+      var tMeans = means.map(function (p) {
+        return {
+          x: xScale(p.year),
+          y: yScale(p.mean),
+          bar: linePath([{
+            y: p.year,
+            v: p.mean - p.sd
+          }, {
+            y: p.year,
+            v: p.mean + p.sd
+          }]),
+          barStart: linePath([{
+            y: p.year,
+            v: yMin
+          }, {
+            y: p.year,
+            v: yMin
+          }])
+        };
+      });
+      d3MeanSd$1(gChart2, linePath, yScale(yMin), duration, tMeans, style);
+    };
+  }
+
+  function d3Line$1(gChart, linePath, duration, data, style) {
+    gChart.selectAll('.trend-line').data(data).join(function (enter) {
+      return enter.append('path').attr("d", function (d) {
+        return linePath(d);
+      }).attr('class', 'trend-line').style('stroke', style.vStroke).style('stroke-width', style.vStrokeWidth).attr("opacity", 0);
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.remove();
+      return exit.transition().duration(duration).style("opacity", 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr("d", function (d) {
+      return linePath(d);
+    }).attr("opacity", style.vOpacity);
+  }
+
+  function d3MeanSd$1(gChart, linePath, yMin, duration, means, style) {
+    // SDs
+    gChart.selectAll('.sds').data(means).join(function (enter) {
+      return enter.append('path').attr('d', function (d) {
+        return d.bar;
+      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).remove();
     }) // Join returns merged enter and update selection
     .transition().duration(duration).attr('d', function (d) {
       return d.bar;
-    });
+    }).style('opacity', 1); // Means
+
+    gChart.selectAll('.means').data(means).join(function (enter) {
+      return enter.append('circle').attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill).style('stroke', style.mStroke).style('stroke-width', style.mStrokeWidth).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }).style('opacity', 1);
   }
 
   /** 
@@ -15892,7 +16176,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.13.0";
+  var version = "0.14.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -15961,6 +16245,7 @@
   exports.pie = pie;
   exports.trend = trend;
   exports.trend2 = trend2;
+  exports.trend3 = trend3;
   exports.yearly = yearly;
 
   Object.defineProperty(exports, '__esModule', { value: true });
