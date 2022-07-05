@@ -21,6 +21,7 @@ export function trend3({
   yMin = null,
   yMax = null,
   adjust = false,
+  ylines = [],
   data = [],
   means = [],
   style = {}
@@ -37,7 +38,7 @@ export function trend3({
   style.sdStroke = style.sdStroke ? style.sdStroke : 'black'
   style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1
 
-  const updateChart = makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style)
+  const updateChart = makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style)
 
   return {
     updateChart: updateChart
@@ -55,7 +56,7 @@ function minY(data, means) {
   return Math.min(dMin, mMin)
 }
 
-function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
 
   const svgWidth = width + margin.left + margin.right
   const svgHeight = height + margin.top + margin.bottom
@@ -111,7 +112,7 @@ function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, 
   const updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax)
   
   // Update the chart with current data
-  updateChart(data, means, yMin, yMax, adjust)
+  updateChart(data, means, yMin, yMax, adjust, ylines)
 
   // Return the api
   return updateChart
@@ -133,7 +134,12 @@ function makeUpdateChart(
   yearMin, 
   yearMax
 ) {
-  return (data, means, yMin, yMax, adjust) => {
+  return (data, means, yMin, yMax, adjust, ylines) => {
+
+    // Set ylines to empty array if not set
+    if (!ylines) {
+      ylines = []
+    }
 
     // Convert data from an array of gradients and intercepts to an array 
     // of arrays of two point lines
@@ -214,6 +220,12 @@ function makeUpdateChart(
       }
     })
     d3MeanSd(gChart2, linePath, yScale(yMinBuff), duration, tMeans, style)
+
+    // Add path to ylines and generate
+    ylines.forEach(l => {
+      l.path = linePath([{y: yearMinBuff, v: l.y}, {y: yearMaxBuff, v: l.y}])
+    })
+    d3Yline(gChart1, ylines, duration)
   }
 }
 
@@ -287,4 +299,28 @@ function d3MeanSd(gChart, linePath, yMinBuff, duration, means, style) {
            .attr('cx', d => d.x)
            .attr('cy', d => d.y)
            .style('opacity', 1)
+}
+
+function d3Yline(gChart, ylines, duration) {
+
+    // Horizontal y lines
+    gChart.selectAll('.ylines')
+      .data(ylines)
+      .join(
+        enter => enter.append('path')
+          .attr('d', d => d.path)
+          .attr('class', 'ylines')
+          .style('stroke', d => d.stroke)
+          .style('stroke-width', d => d.strokeWidth)
+          .style('opacity', 0),
+        update => update,
+        exit => exit
+          .transition().duration(duration)
+          .style("opacity", 0)
+          .remove()
+      )
+      // Join returns merged enter and update selection
+          .transition().duration(duration)
+          .attr('d', d => d.path)
+          .style('opacity', 1)
 }
