@@ -1,10 +1,10 @@
 import * as d3 from 'd3'
 import { xAxisYear } from '../general'
 
-export function trend2({
+export function trend3({
   // Default options in here
   selector = 'body',
-  elid = 'trend2-chart',
+  elid = 'trend3-chart',
   width = 300,
   height = 200,
   margin = {left: 35, right: 0, top: 20, bottom: 5},
@@ -16,11 +16,11 @@ export function trend2({
   axisTop = '',
   axisLeftLabel = '',
   duration = 1000,
-  yearMin = null,
-  yearMax = null,
+  yearMin = 1949,
+  yearMax = 2019,
   yMin = null,
   yMax = null,
-  adjust = true,
+  adjust = false,
   data = [],
   means = [],
   style = {}
@@ -29,9 +29,7 @@ export function trend2({
   // Ensure default style properties are present
   style.vStroke = style.vStroke ? style.vStroke : 'black'
   style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2
-  style.cStroke = style.cStroke ? style.cStroke : 'black'
-  style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1
-  style.cFill = style.cFill ? style.cFill : 'silver'
+  style.vOpacity = style.vOpacity ? style.vOpacity : 0.1
   style.mFill = style.mFill ? style.mFill : 'white'
   style.mRad = style.mRad ? style.mRad : 2
   style.mStroke = style.mStroke ? style.mStroke : 'black'
@@ -46,19 +44,13 @@ export function trend2({
   }
 }
 
-function maxYear(data) {
-  return Math.max(...data.map(d => d.year))
-}
-function minYear(data) {
-  return Math.min(...data.map(d => d.year))
-}
 function maxY(data, means) {
-  const dMax = Math.max(...data.map(d => d.upper ? d.upper : d.value))
+  const dMax = Math.max(...data.map(d =>  Math.max(d[0].v, d[1].v)))
   const mMax = Math.max(...means.map(d => d.mean + d.sd))
   return Math.max(dMax, mMax)
 }
 function minY(data, means) {
-  const dMin = Math.min(...data.map(d => d.lower ? d.lower : d.value))
+  const dMin = Math.min(...data.map(d => Math.min(d[0].v, d[1].v)))
   const mMin = Math.min(...means.map(d => d.mean - d.sd))
   return Math.min(dMin, mMin)
 }
@@ -142,8 +134,14 @@ function makeUpdateChart(
   yearMax
 ) {
   return (data, means, yMin, yMax, adjust) => {
-    // Data
-    const dataWork = data.sort((a, b) => (a.year > b.year) ? 1 : -1)
+
+    // Convert data from an array of gradients and intercepts to an array 
+    // of arrays of two point lines
+    const dataWork = data.map(d => {
+      const yStart = d.gradient * yearMin + d.intercept
+      const yEnd = d.gradient * yearMax + d.intercept
+      return [{y: yearMin, v: yStart}, {y: yearMax, v: yEnd}]
+    })
 
     // Adjustments
     let yMinBuff, yMaxBuff
@@ -157,7 +155,6 @@ function makeUpdateChart(
         yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50
         yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50
       }
-
     } else {
       yMinBuff = minY(dataWork, means)
       yMaxBuff = maxY(dataWork, means)
@@ -165,20 +162,8 @@ function makeUpdateChart(
       yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50
       yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50
     }
-
-    const yearMinData = minYear(dataWork)
-    const yearMaxData = maxYear(dataWork)
-    let yearMinBuff, yearMaxBuff
-    if (yearMin) {
-      yearMinBuff = yearMin
-    } else {
-      yearMinBuff = Math.floor(yearMinData - (yearMaxData - yearMinData) / 50)
-    }
-    if (yearMax) {
-      yearMaxBuff = yearMax
-    } else {
-      yearMaxBuff = Math.floor(yearMaxData + (yearMaxData - yearMinData) / 50)
-    }
+    const yearMinBuff = yearMin
+    const yearMaxBuff = yearMax
 
     // Value scales
     const xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width])
@@ -217,21 +202,7 @@ function makeUpdateChart(
       .y(d => yScale(d.v))
 
     // Main data line
-    const vData = data.map(p => {return {y: p.year, v: p.value}})
-    d3Line(gChart2, linePath, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none')
-
-    // Upper confidence line
-    const uData = data.map(p => {return {y: p.year, v: p.upper}})
-    d3Line(gChart2, linePath, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none')
-
-    // Upper confidence line
-    const lData = data.map(p => {return {y: p.year, v: p.lower}})
-    d3Line(gChart2, linePath, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none')
-
-    // Confidence polygon
-    lData.sort((a,b) => b.y - a.y) // Reverse order of lData
-    const pData = [...uData, ...lData]
-    d3Line(gChart1, linePath, duration, pData, 'confidence', 'none', 0, style.cFill)
+    d3Line(gChart2, linePath, duration, dataWork, style)
 
     // Mean and SDs
     const tMeans = means.map(p => {
@@ -242,28 +213,20 @@ function makeUpdateChart(
         barStart: linePath([{y: p.year, v: yMinBuff}, {y: p.year, v: yMinBuff}])
       }
     })
-    d3MeanSd(gChart2, linePath, duration, tMeans, style)
+    d3MeanSd(gChart2, linePath, yScale(yMinBuff), duration, tMeans, style)
   }
 }
 
-function d3Line(gChart, linePath, duration, data, lClass, stroke, strokeWidth, fill) {
+function d3Line(gChart, linePath, duration, data, style) {
 
-    let aData
-    if (data.length === 0) {
-      aData = data
-    } else {
-      aData = [data]
-    }
-
-    gChart.selectAll(`.${lClass}`)
-      .data(aData)
+    gChart.selectAll('.trend-line')
+      .data(data)
       .join(
         enter => enter.append('path')
           .attr("d", d => linePath(d))
-          .attr('class', lClass)
-          .style('fill', fill)
-          .style('stroke', stroke)
-          .style('stroke-width', strokeWidth)
+          .attr('class', 'trend-line')
+          .style('stroke', style.vStroke)
+          .style('stroke-width', style.vStrokeWidth)
           .attr("opacity", 0),
         update => update,
         exit => exit
@@ -274,13 +237,10 @@ function d3Line(gChart, linePath, duration, data, lClass, stroke, strokeWidth, f
       // Join returns merged enter and update selection
           .transition().duration(duration)
           .attr("d", d => linePath(d))
-          .attr("opacity", 1)
+          .attr("opacity", style.vOpacity)
 }
 
-function d3MeanSd(gChart, linePath, duration, means, style) {
-
-    //console.log(means)
-    //console.log(style)
+function d3MeanSd(gChart, linePath, yMinBuff, duration, means, style) {
 
      // SDs
     gChart.selectAll('.sds')

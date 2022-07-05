@@ -5199,6 +5199,12 @@
         yearMin = _ref$yearMin === void 0 ? null : _ref$yearMin,
         _ref$yearMax = _ref.yearMax,
         yearMax = _ref$yearMax === void 0 ? null : _ref$yearMax,
+        _ref$yMin = _ref.yMin,
+        yMin = _ref$yMin === void 0 ? null : _ref$yMin,
+        _ref$yMax = _ref.yMax,
+        yMax = _ref$yMax === void 0 ? null : _ref$yMax,
+        _ref$adjust = _ref.adjust,
+        adjust = _ref$adjust === void 0 ? true : _ref$adjust,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$means = _ref.means,
@@ -5218,7 +5224,7 @@
     style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
     style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
     style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
-    var updateChart = makeChart(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
+    var updateChart = makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
     return {
       updateChart: updateChart
     };
@@ -5256,7 +5262,7 @@
     return Math.min(dMin, mMin);
   }
 
-  function makeChart(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+  function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5299,24 +5305,41 @@
 
     var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
 
-    updateChart(data, means); // Return the api
+    updateChart(data, means, yMin, yMax, adjust); // Return the api
 
     return updateChart;
   }
 
   function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
-    return function (data, means) {
+    return function (data, means, yMin, yMax, adjust) {
       // Data
       var dataWork = data.sort(function (a, b) {
         return a.year > b.year ? 1 : -1;
-      });
+      }); // Adjustments
+
+      var yMinBuff, yMaxBuff;
+
+      if (yMin !== null && yMax !== null && typeof yMin !== 'undefined' && typeof yMax !== 'undefined') {
+        yMinBuff = yMin;
+        yMaxBuff = yMax;
+
+        if (adjust) {
+          if (minY(dataWork, means) < yMinBuff) yMinBuff = minY(dataWork, means);
+          if (maxY(dataWork, means) > yMaxBuff) yMaxBuff = maxY(dataWork, means); // Add a margin to min/max values
+
+          yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
+          yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
+        }
+      } else {
+        yMinBuff = minY(dataWork, means);
+        yMaxBuff = maxY(dataWork, means); // Add a margin to min/max values
+
+        yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
+        yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
+      }
+
       var yearMinData = minYear(dataWork);
       var yearMaxData = maxYear(dataWork);
-      var yMin = minY(dataWork, means);
-      var yMax = maxY(dataWork, means); // Add a margin to min/max values
-
-      yMin = yMin - (yMax - yMin) / 50;
-      yMax = yMax + (yMax - yMin) / 50;
       var yearMinBuff, yearMaxBuff;
 
       if (yearMin) {
@@ -5333,7 +5356,7 @@
 
 
       var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
+      var yScale = d3.scaleLinear().domain([yMinBuff, yMaxBuff]).range([height, 0]); // Generate axes
 
       if (tAxis) {
         tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
@@ -5366,7 +5389,7 @@
           v: p.value
         };
       });
-      d3Line(gChart2, linePath, yMin, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none'); // Upper confidence line
+      d3Line(gChart2, linePath, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none'); // Upper confidence line
 
       var uData = data.map(function (p) {
         return {
@@ -5374,7 +5397,7 @@
           v: p.upper
         };
       });
-      d3Line(gChart2, linePath, yMin, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none'); // Upper confidence line
+      d3Line(gChart2, linePath, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none'); // Upper confidence line
 
       var lData = data.map(function (p) {
         return {
@@ -5382,14 +5405,14 @@
           v: p.lower
         };
       });
-      d3Line(gChart2, linePath, yMin, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none'); // Confidence polygon
+      d3Line(gChart2, linePath, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none'); // Confidence polygon
 
       lData.sort(function (a, b) {
         return b.y - a.y;
       }); // Reverse order of lData
 
       var pData = [].concat(_toConsumableArray(uData), _toConsumableArray(lData));
-      d3Line(gChart1, linePath, yMin, duration, pData, 'confidence', 'none', 0, style.cFill); // Mean and SDs
+      d3Line(gChart1, linePath, duration, pData, 'confidence', 'none', 0, style.cFill); // Mean and SDs
 
       var tMeans = means.map(function (p) {
         return {
@@ -5404,18 +5427,18 @@
           }]),
           barStart: linePath([{
             y: p.year,
-            v: yMin
+            v: yMinBuff
           }, {
             y: p.year,
-            v: yMin
+            v: yMinBuff
           }])
         };
       });
-      d3MeanSd(gChart2, linePath, yScale(yMin), duration, tMeans, style);
+      d3MeanSd(gChart2, linePath, duration, tMeans, style);
     };
   }
 
-  function d3Line(gChart, linePath, yMin, duration, data, lClass, stroke, strokeWidth, fill) {
+  function d3Line(gChart, linePath, duration, data, lClass, stroke, strokeWidth, fill) {
     var aData;
 
     if (data.length === 0) {
@@ -5425,8 +5448,7 @@
     }
 
     gChart.selectAll(".".concat(lClass)).data(aData).join(function (enter) {
-      return enter.append('path') //.attr("d", d => {linePath(d.map(p => {return {y: p.y,v: yMin}}))})
-      .attr("d", function (d) {
+      return enter.append('path').attr("d", function (d) {
         return linePath(d);
       }).attr('class', lClass).style('fill', fill).style('stroke', stroke).style('stroke-width', strokeWidth).attr("opacity", 0);
     }, function (update) {
@@ -5439,7 +5461,7 @@
     }).attr("opacity", 1);
   }
 
-  function d3MeanSd(gChart, linePath, yMin, duration, means, style) {
+  function d3MeanSd(gChart, linePath, duration, means, style) {
     //console.log(means)
     //console.log(style)
     // SDs
@@ -5511,6 +5533,12 @@
         yearMin = _ref$yearMin === void 0 ? 1949 : _ref$yearMin,
         _ref$yearMax = _ref.yearMax,
         yearMax = _ref$yearMax === void 0 ? 2019 : _ref$yearMax,
+        _ref$yMin = _ref.yMin,
+        yMin = _ref$yMin === void 0 ? null : _ref$yMin,
+        _ref$yMax = _ref.yMax,
+        yMax = _ref$yMax === void 0 ? null : _ref$yMax,
+        _ref$adjust = _ref.adjust,
+        adjust = _ref$adjust === void 0 ? false : _ref$adjust,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$means = _ref.means,
@@ -5528,7 +5556,7 @@
     style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
     style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
     style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
-    var updateChart = makeChart$1(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
+    var updateChart = makeChart$1(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
     return {
       updateChart: updateChart
     };
@@ -5554,7 +5582,7 @@
     return Math.min(dMin, mMin);
   }
 
-  function makeChart$1(yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+  function makeChart$1(yMin, yMax, adjust, yearMin, yearMax, data, means, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5597,15 +5625,13 @@
 
     var updateChart = makeUpdateChart$1(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
 
-    updateChart(data, means); // Return the api
+    updateChart(data, means, yMin, yMax, adjust); // Return the api
 
     return updateChart;
   }
 
   function makeUpdateChart$1(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
-    return function (data, means) {
-      //console.log('means', means)
-      //console.log('data', data)
+    return function (data, means, yMin, yMax, adjust) {
       // Convert data from an array of gradients and intercepts to an array 
       // of arrays of two point lines
       var dataWork = data.map(function (d) {
@@ -5618,22 +5644,34 @@
           y: yearMax,
           v: yEnd
         }];
-      }); //console.log('dataWork', dataWork)
-      // Data
+      }); // Adjustments
 
-      var yMin = minY$1(dataWork, means);
-      var yMax = maxY$1(dataWork, means); //console.log('min,max', yMin, yMax)
-      // Add a margin to min/max values
+      var yMinBuff, yMaxBuff;
 
-      yMin = yMin - (yMax - yMin) / 20;
-      yMax = yMax + (yMax - yMin) / 20; //const yearMinBuff = Math.floor(yearMin - (yearMax - yearMin) / 20)
-      //const yearMaxBuff = Math.floor(yearMax + (yearMax - yearMin) / 20)
+      if (yMin !== null && yMax !== null && typeof yMin !== 'undefined' && typeof yMax !== 'undefined') {
+        yMinBuff = yMin;
+        yMaxBuff = yMax;
+
+        if (adjust) {
+          if (minY$1(dataWork, means) < yMinBuff) yMinBuff = minY$1(dataWork, means);
+          if (maxY$1(dataWork, means) > yMaxBuff) yMaxBuff = maxY$1(dataWork, means); // Add a margin to min/max values
+
+          yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
+          yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
+        }
+      } else {
+        yMinBuff = minY$1(dataWork, means);
+        yMaxBuff = maxY$1(dataWork, means); // Add a margin to min/max values
+
+        yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
+        yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
+      }
 
       var yearMinBuff = yearMin;
       var yearMaxBuff = yearMax; // Value scales
 
       var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([yMin, yMax]).range([height, 0]); // Generate axes
+      var yScale = d3.scaleLinear().domain([yMinBuff, yMaxBuff]).range([height, 0]); // Generate axes
 
       if (tAxis) {
         tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
@@ -5675,14 +5713,14 @@
           }]),
           barStart: linePath([{
             y: p.year,
-            v: yMin
+            v: yMinBuff
           }, {
             y: p.year,
-            v: yMin
+            v: yMinBuff
           }])
         };
       });
-      d3MeanSd$1(gChart2, linePath, yScale(yMin), duration, tMeans, style);
+      d3MeanSd$1(gChart2, linePath, yScale(yMinBuff), duration, tMeans, style);
     };
   }
 
@@ -5701,7 +5739,7 @@
     }).attr("opacity", style.vOpacity);
   }
 
-  function d3MeanSd$1(gChart, linePath, yMin, duration, means, style) {
+  function d3MeanSd$1(gChart, linePath, yMinBuff, duration, means, style) {
     // SDs
     gChart.selectAll('.sds').data(means).join(function (enter) {
       return enter.append('path').attr('d', function (d) {
