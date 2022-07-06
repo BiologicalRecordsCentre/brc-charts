@@ -5445,7 +5445,10 @@
           v: l.y
         }]);
       });
-      d3Yline(gChart1, ylines, duration);
+      var tYlines = ylines.filter(function (l) {
+        return l.y >= yMinBuff && l.y <= yMaxBuff;
+      });
+      d3Yline(gChart1, tYlines, duration);
     };
   }
 
@@ -5769,7 +5772,10 @@
           v: l.y
         }]);
       });
-      d3Yline$1(gChart1, ylines, duration);
+      var tYlines = ylines.filter(function (l) {
+        return l.y >= yMinBuff && l.y <= yMaxBuff;
+      });
+      d3Yline$1(gChart1, tYlines, duration);
     };
   }
 
@@ -5839,6 +5845,205 @@
     .transition().duration(duration).attr('d', function (d) {
       return d.path;
     }).style('opacity', 1);
+  }
+
+  function bar() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'bar-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$padding = _ref.padding,
+        padding = _ref$padding === void 0 ? 0 : _ref$padding,
+        _ref$barHeightOnZero = _ref.barHeightOnZero,
+        barHeightOnZero = _ref$barHeightOnZero === void 0 ? 0 : _ref$barHeightOnZero,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 35,
+      right: 0,
+      top: 20,
+      bottom: 5
+    } : _ref$margin,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$labelPosition = _ref.labelPosition,
+        labelPosition = _ref$labelPosition === void 0 ? {} : _ref$labelPosition;
+
+    var updateChart = makeChart$2(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    return {
+      updateChart: updateChart
+    };
+  }
+
+  function makeChart$2(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+    var svgWidth = width + margin.left + margin.right;
+    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
+
+    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+
+    if (expand) {
+      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
+    } else {
+      svgTrend.attr("width", svgWidth);
+      svgTrend.attr("height", svgHeight);
+    } // Axis labels
+
+
+    if (axisLeftLabel) {
+      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+    } // Create axes and position within SVG
+
+
+    var tAxis, bAxis, lAxis, rAxis;
+
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
+    }
+
+    if (axisTop === 'on') {
+      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisRight === 'on') {
+      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
+    } // Create g element for chart elements
+
+
+    var gChart = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+
+    var updateChart = makeUpdateChart$2(labelPosition, svgTrend, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+
+    updateChart(data); // Return the api
+
+    return updateChart;
+  }
+
+  function makeUpdateChart$2(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
+    return function (data) {
+      // Value scales
+      var yMaxBuff = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+        return d.value;
+      })));
+      var xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([yMaxBuff, 0]).range([0, height]);
+      var xScaleBottom = d3.scaleBand().domain(data.map(function (d) {
+        return d.label;
+      })).range([0, width]).padding([padding]); // Generate axes
+
+      if (tAxis) {
+        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0));
+      }
+
+      if (bAxis && axisBottom === 'tick') {
+        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScaleBottom).tickSizeOuter(0));
+        var labels = bAxis.selectAll("text");
+        if (labelPosition["text-anchor"]) labels.style("text-anchor", labelPosition["text-anchor"]);
+        if (labelPosition["dx"]) labels.attr("dx", labelPosition["dx"]);
+        if (labelPosition["dy"]) labels.attr("dy", labelPosition["dy"]);
+        if (labelPosition["transform"]) labels.attr("transform", labelPosition["transform"]);
+      }
+
+      if (bAxis && axisBottom === 'on') {
+        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0));
+      }
+
+      if (lAxis) {
+        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+      }
+
+      if (rAxis) {
+        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
+      } // Bar data
+
+
+      data.forEach(function (d) {
+        d.x = xScaleBottom(d.label);
+        d.y = yScale(d.value);
+        d.ye = height;
+        d.width = xScaleBottom.bandwidth();
+        d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero;
+      });
+      d3Bars(data, gChart, duration);
+    };
+  }
+
+  function d3Bars(data, gChart, duration) {
+    gChart.selectAll(".bar").data(data).join(function (enter) {
+      return enter.append('rect').attr('class', 'bar').style('fill', function (d) {
+        return d.fill;
+      }).style('stroke', function (d) {
+        return d.stroke;
+      }).style('stroke-width', function (d) {
+        return d.strokeWidth;
+      }).style('opacity', 0).attr('x', function (d) {
+        return d.x;
+      }).attr('y', function (d) {
+        return d.ye;
+      }).attr('width', function (d) {
+        return d.width;
+      }).attr('height', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style('opacity', 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).style('opacity', 1).attr('x', function (d) {
+      return d.x;
+    }).attr('y', function (d) {
+      return d.y;
+    }).attr('width', function (d) {
+      return d.width;
+    }).attr('height', function (d) {
+      return d.height;
+    });
+    gChart.selectAll(".barLabel").data(data).join(function (enter) {
+      return enter.append('text').attr('class', 'barLabel').style('opacity', 0).attr('x', function (d) {
+        return d.x;
+      }).attr('y', function (d) {
+        return d.ye;
+      }).attr('width', function (d) {
+        return d.width;
+      }).attr('height', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style('opacity', 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).style('opacity', 1).attr('x', function (d) {
+      return d.x;
+    }).attr('y', function (d) {
+      return d.y;
+    }).attr('width', function (d) {
+      return d.width;
+    }).attr('height', function (d) {
+      return d.height;
+    });
   }
 
   /** 
@@ -16346,6 +16551,7 @@
 
   exports.accum = accum;
   exports.altlat = altlat;
+  exports.bar = bar;
   exports.links = links;
   exports.phen1 = phen1;
   exports.phen2 = phen2;

@@ -254,7 +254,8 @@ function makeUpdateChart(
     ylines.forEach(l => {
       l.path = linePath([{y: yearMinBuff, v: l.y}, {y: yearMaxBuff, v: l.y}])
     })
-    d3Yline(gChart1, ylines, duration)
+    const tYlines = ylines.filter(l => l.y >= yMinBuff && l.y <= yMaxBuff)
+    d3Yline(gChart1, tYlines, duration)
   }
 }
 
