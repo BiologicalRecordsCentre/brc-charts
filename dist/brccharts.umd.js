@@ -5847,6 +5847,245 @@
     }).style('opacity', 1);
   }
 
+  function density() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'density-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 35,
+      right: 0,
+      top: 20,
+      bottom: 5
+    } : _ref$margin,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$xMin = _ref.xMin,
+        xMin = _ref$xMin === void 0 ? null : _ref$xMin,
+        _ref$xMax = _ref.xMax,
+        xMax = _ref$xMax === void 0 ? null : _ref$xMax,
+        _ref$ylines = _ref.ylines,
+        ylines = _ref$ylines === void 0 ? [] : _ref$ylines,
+        _ref$xlines = _ref.xlines,
+        xlines = _ref$xlines === void 0 ? [] : _ref$xlines,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$style = _ref.style,
+        style = _ref$style === void 0 ? {} : _ref$style;
+
+    // Ensure default style properties are present
+    style.cStroke = style.cStroke ? style.cStroke : 'black';
+    style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1;
+    style.cFill = style.cFill ? style.cFill : 'silver';
+    var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    return {
+      updateChart: updateChart
+    };
+  }
+
+  function maxX(data) {
+    return Math.max.apply(Math, _toConsumableArray(data.map(function (ds) {
+      return Math.max.apply(Math, _toConsumableArray(ds.map(function (d) {
+        return d.slope;
+      })));
+    })));
+  }
+
+  function minX(data) {
+    return Math.min.apply(Math, _toConsumableArray(data.map(function (ds) {
+      return Math.min.apply(Math, _toConsumableArray(ds.map(function (d) {
+        return d.slope;
+      })));
+    })));
+  }
+
+  function makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+    var svgWidth = width + margin.left + margin.right;
+    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
+
+    var svgDensity = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+
+    if (expand) {
+      svgDensity.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
+    } else {
+      svgDensity.attr("width", svgWidth);
+      svgDensity.attr("height", svgHeight);
+    } // Axis labels
+
+
+    if (axisLeftLabel) {
+      svgDensity.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+    } // Create axes and position within SVG
+
+
+    var tAxis, bAxis, lAxis, rAxis;
+
+    if (axisLeft === 'on' || axisLeft === 'tick') {
+      lAxis = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
+    }
+
+    if (axisTop === 'on') {
+      tAxis = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    }
+
+    if (axisRight === 'on') {
+      rAxis = svgDensity.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
+    } // Create g element for chart elements
+
+
+    var gChart1 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+    var gChart2 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+
+    var updateChart = makeUpdateChart$2(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1); // Update the chart with current data
+
+    updateChart(data, xMin, xMax, xlines, ylines); // Return the api
+
+    return updateChart;
+  }
+
+  function makeUpdateChart$2(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
+    return function (data, xMin, xMax, xlines, ylines) {
+
+      var dataWork = data; // Adjustments - do any min/max adjustments here
+
+      var xMinBuff, xMaxBuff;
+
+      if (xMin !== null && xMax !== null && typeof xMin !== 'undefined' && typeof xMax !== 'undefined') {
+        xMinBuff = xMin;
+        xMaxBuff = xMax; // if (adjust) {
+        //   if (minX(dataWork) < xMinBuff) xMinBuff = minX(dataWork)
+        //   if (maxX(dataWork) > xMaxBuff) xMaxBuff = maxX(dataWork)
+        //   // Add a margin to min/max values
+        //   xMinBuff = xMinBuff - (xMaxBuff - xMinBuff) / 50
+        //   xMaxBuff = xMaxBuff + (xMaxBuff - xMinBuff) / 50
+        // }
+      } else {
+        xMinBuff = minX(dataWork);
+        xMaxBuff = maxX(dataWork); // Add a margin to min/max values
+
+        xMinBuff = xMinBuff - (xMaxBuff - xMinBuff) / 50;
+        xMaxBuff = xMaxBuff + (xMaxBuff - xMinBuff) / 50;
+      } // Value scales
+
+
+      var xScale = d3.scaleLinear().domain([xMinBuff, xMaxBuff]).range([0, width]);
+      var yScale = d3.scaleLinear().domain([0, 70]).range([height, 0]); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // Compute kernel density estimation
+
+      var kde = kernelDensityEstimator(kernelEpanechnikov(0.01), xScale.ticks(100));
+      var densities = dataWork.map(function (ds) {
+        return kde(ds.map(function (d) {
+          return d.slope;
+        }));
+      }); // Generate axes
+
+      if (tAxis) {
+        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0));
+      }
+
+      if (bAxis) {
+        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScale).ticks(5));
+      }
+
+      if (lAxis) {
+        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+      }
+
+      if (rAxis) {
+        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
+      } // Line path generator
+      // const linePath = d3.line()
+      //   //.curve(d3.curveMonotoneX)
+      //   .x(d => xScale(d.y))
+      //   .y(d => yScale(d.v))
+
+
+      var linePath = d3.line().curve(d3.curveMonotoneX).x(function (d) {
+        return xScale(d[0]);
+      }).y(function (d) {
+        return yScale(d[1]);
+      });
+
+      if (dataWork.length) {
+        console.log('dataWork', dataWork[0]);
+        console.log('densities', densities[0]);
+        console.log('linepath', linePath(densities[0]));
+      }
+
+      console.log(densities.length);
+      d3Test(gChart1, duration, densities, linePath); // // Main data line
+      // const vData = data.map(p => {return {y: p.year, v: p.value}})
+      // d3Line(gChart2, linePath, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none')
+      // // Confidence polygon
+      // lData.sort((a,b) => b.y - a.y) // Reverse order of lData
+      // const pData = [...uData, ...lData]
+      // d3Line(gChart1, linePath, duration, pData, 'confidence', 'none', 0, style.cFill)
+      // // Add path to ylines and generate
+      // ylines.forEach(l => {
+      //   l.path = linePath([{y: yearMinBuff, v: l.y}, {y: yearMaxBuff, v: l.y}])
+      // })
+      // const tYlines = ylines.filter(l => l.y >= yMinBuff && l.y <= yMaxBuff)
+      // d3Yline(gChart1, tYlines, duration)
+    };
+  }
+
+  function d3Test(gChart, duration, data, linePath) {
+    gChart.selectAll(".test-line").data(data).join(function (enter) {
+      return enter.append('path').attr("opacity", 0).attr("d", function (d) {
+        return linePath(d);
+      }).attr("class", "test-line").style('fill', 'red').style('stroke', 'black').style('stroke-width', 1);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr("opacity", 1).attr("d", function (d) {
+      return linePath(d);
+    });
+  }
+
+
+  function kernelDensityEstimator(kernel, X) {
+    return function (V) {
+      return X.map(function (x) {
+        return [x, d3.mean(V, function (v) {
+          return kernel(x - v);
+        })];
+      });
+    };
+  }
+
+  function kernelEpanechnikov(k) {
+    return function (v) {
+      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    };
+  }
+
   function bar() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         _ref$selector = _ref.selector,
@@ -5889,13 +6128,13 @@
         _ref$labelPosition = _ref.labelPosition,
         labelPosition = _ref$labelPosition === void 0 ? {} : _ref$labelPosition;
 
-    var updateChart = makeChart$2(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
     return {
       updateChart: updateChart
     };
   }
 
-  function makeChart$2(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+  function makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5935,14 +6174,14 @@
 
     var gChart = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$2(labelPosition, svgTrend, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+    var updateChart = makeUpdateChart$3(labelPosition, svgTrend, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
 
     updateChart(data); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$2(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
+  function makeUpdateChart$3(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
     return function (data) {
       // Value scales
       var yMaxBuff = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
@@ -16552,6 +16791,7 @@
   exports.accum = accum;
   exports.altlat = altlat;
   exports.bar = bar;
+  exports.density = density;
   exports.links = links;
   exports.phen1 = phen1;
   exports.phen2 = phen2;

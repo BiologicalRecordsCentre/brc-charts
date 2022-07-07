@@ -6,6 +6,7 @@ import { links } from './src/links'
 import { trend } from './src/trend'
 import { trend2 } from './src/trend2/trend2'
 import { trend3 } from './src/trend3/trend3'
+import { density } from './src/density/density'
 import { bar } from './src/bar/bar'
 import { yearly } from './src/yearly'
 import { altlat } from './src/altlat'
@@ -24,6 +25,7 @@ export {
   trend,
   trend2,
   trend3,
+  density,
   bar,
   yearly,
   altlat
