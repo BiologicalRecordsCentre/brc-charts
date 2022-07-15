@@ -1,3 +1,9 @@
+// README (updated 15/07/2022)
+// This chart is designed to display a bar chart.
+// Although initiallly created to facilitate the BSBI altas website,
+// it has been generalised and can be used in other contexts
+// It is currently undocumented.
+
 import * as d3 from 'd3'
 
 export function bar({

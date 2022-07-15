@@ -1,3 +1,10 @@
+// README (updated 15/07/2022)
+// This chart is designed to show a trend line with a confidence band (data)
+// and, optionally, mean points with confidence bars (means).
+// Although many features of it have been generalised, it was
+// initially constructed to facilitate the BSBI atlas website and is
+// currently undocumented.
+
 import * as d3 from 'd3'
 import { xAxisYear } from '../general'
 
@@ -117,10 +124,10 @@ function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, se
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
   // Create the API function for updating chart
-  const updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax)
+  const updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style)
   
   // Update the chart with current data
-  updateChart(data, means, yMin, yMax, adjust, ylines)
+  updateChart(data, means, yearMin, yearMax, yMin, yMax, adjust, ylines)
 
   // Return the api
   return updateChart
@@ -138,11 +145,9 @@ function makeUpdateChart(
   duration,
   gChart1,
   gChart2,
-  style,
-  yearMin, 
-  yearMax
+  style
 ) {
-  return (data, means, yMin, yMax, adjust, ylines) => {
+  return (data, means, yearMin, yearMax, yMin, yMax, adjust, ylines) => {
 
     // Set ylines to empty array if not set
     if (!ylines) {

@@ -5305,15 +5305,15 @@
     var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
+    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
 
-    updateChart(data, means, yMin, yMax, adjust, ylines); // Return the api
+    updateChart(data, means, yearMin, yearMax, yMin, yMax, adjust, ylines); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
-    return function (data, means, yMin, yMax, adjust, ylines) {
+  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
+    return function (data, means, yearMin, yearMax, yMin, yMax, adjust, ylines) {
       // Set ylines to empty array if not set
       if (!ylines) {
         ylines = [];
@@ -5659,15 +5659,15 @@
     var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$1(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax); // Update the chart with current data
+    var updateChart = makeUpdateChart$1(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
 
-    updateChart(data, means, yMin, yMax, adjust, ylines); // Return the api
+    updateChart(data, means, yearMin, yearMax, yMin, yMax, adjust, ylines); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$1(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style, yearMin, yearMax) {
-    return function (data, means, yMin, yMax, adjust, ylines) {
+  function makeUpdateChart$1(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
+    return function (data, means, yearMin, yearMax, yMin, yMax, adjust, ylines) {
       // Set ylines to empty array if not set
       if (!ylines) {
         ylines = [];
@@ -5878,6 +5878,8 @@
         axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
         _ref$axisLeftLabel = _ref.axisLeftLabel,
         axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$axisBottomLabel = _ref.axisBottomLabel,
+        axisBottomLabel = _ref$axisBottomLabel === void 0 ? '' : _ref$axisBottomLabel,
         _ref$duration = _ref.duration,
         duration = _ref$duration === void 0 ? 1000 : _ref$duration,
         _ref$xMin = _ref.xMin,
@@ -5890,14 +5892,12 @@
         xlines = _ref$xlines === void 0 ? [] : _ref$xlines,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
-        _ref$style = _ref.style,
-        style = _ref$style === void 0 ? {} : _ref$style;
+        _ref$styles = _ref.styles,
+        styles = _ref$styles === void 0 ? [] : _ref$styles,
+        _ref$scaleHeight = _ref.scaleHeight,
+        scaleHeight = _ref$scaleHeight === void 0 ? false : _ref$scaleHeight;
 
-    // Ensure default style properties are present
-    style.cStroke = style.cStroke ? style.cStroke : 'black';
-    style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1;
-    style.cFill = style.cFill ? style.cFill : 'silver';
-    var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight);
     return {
       updateChart: updateChart
     };
@@ -5919,7 +5919,7 @@
     })));
   }
 
-  function makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
+  function makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -5935,6 +5935,10 @@
 
     if (axisLeftLabel) {
       svgDensity.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+    }
+
+    if (axisBottomLabel) {
+      svgDensity.append("text").attr("transform", "translate(".concat(margin.left + width / 2, ",").concat(margin.top + height + margin.bottom - axisLabelFontSize, ")")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisBottomLabel);
     } // Create axes and position within SVG
 
 
@@ -5960,15 +5964,18 @@
     var gChart1 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     var gChart2 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$2(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1); // Update the chart with current data
+    var updateChart = makeUpdateChart$2(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles); // Update the chart with current data
 
-    updateChart(data, xMin, xMax, xlines, ylines); // Return the api
+    updateChart(data, xMin, xMax, xlines, ylines, scaleHeight); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$2(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
-    return function (data, xMin, xMax, xlines, ylines) {
+  function makeUpdateChart$2(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles) {
+    return function (data, xMin, xMax, xlines, ylines, scaleHeight) {
+      // Set ylines and xlines to empty array if not set
+      if (!xlines) xlines = [];
+      if (!ylines) ylines = []; // Data - do any data pre-processing here
 
       var dataWork = data; // Adjustments - do any min/max adjustments here
 
@@ -5976,36 +5983,68 @@
 
       if (xMin !== null && xMax !== null && typeof xMin !== 'undefined' && typeof xMax !== 'undefined') {
         xMinBuff = xMin;
-        xMaxBuff = xMax; // if (adjust) {
-        //   if (minX(dataWork) < xMinBuff) xMinBuff = minX(dataWork)
-        //   if (maxX(dataWork) > xMaxBuff) xMaxBuff = maxX(dataWork)
-        //   // Add a margin to min/max values
-        //   xMinBuff = xMinBuff - (xMaxBuff - xMinBuff) / 50
-        //   xMaxBuff = xMaxBuff + (xMaxBuff - xMinBuff) / 50
-        // }
+        xMaxBuff = xMax;
       } else {
         xMinBuff = minX(dataWork);
         xMaxBuff = maxX(dataWork); // Add a margin to min/max values
 
         xMinBuff = xMinBuff - (xMaxBuff - xMinBuff) / 50;
         xMaxBuff = xMaxBuff + (xMaxBuff - xMinBuff) / 50;
-      } // Value scales
+      } // X value scale
 
 
-      var xScale = d3.scaleLinear().domain([xMinBuff, xMaxBuff]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([0, 70]).range([height, 0]); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // Compute kernel density estimation
+      var xScale = d3.scaleLinear().domain([xMinBuff, xMaxBuff]).range([0, width]); // !!!!!!!!!!!!!!!! Non-general custom scale required for BSBI atlas
 
-      var kde = kernelDensityEstimator(kernelEpanechnikov(0.01), xScale.ticks(100));
-      var densities = dataWork.map(function (ds) {
+      var custScale = d3.scaleOrdinal().domain(['', '- -', '-', '0', '+', '+ +', '']).range([xScale(xMinBuff), xScale(-0.004 - (-0.004 - xMinBuff) / 2), xScale(-0.0025), xScale(0), xScale(0.0025), xScale(0.004 + (xMaxBuff - 0.004) / 2), xScale(xMaxBuff)]); // Compute kernel density estimation
+
+      var bandwidths = dataWork.map(function (ds) {
+        var dataMin = Math.min.apply(Math, _toConsumableArray(ds.map(function (d) {
+          return d.slope;
+        })));
+        var dataMax = Math.max.apply(Math, _toConsumableArray(ds.map(function (d) {
+          return d.slope;
+        })));
+        var workMin = xMin === null ? dataMin : dataMin < xMin ? xMin : dataMin;
+        var workMax = xMax === null ? dataMax : dataMax > xMax ? xMax : dataMax;
+        return (workMax - workMin) / 8;
+      }); //console.log('bandwidths', bandwidths)
+
+      var densities = dataWork.map(function (ds, i) {
+        //const ticks =  xScale.ticks(100)
+        var incr = (xMaxBuff - xMinBuff) / 99;
+        var ticks = d3.range(xMinBuff, xMaxBuff + incr, incr); // For transitions need consistent number of ticks
+
+        var kde = kernelDensityEstimator(kernelEpanechnikov(bandwidths[i]), ticks);
         return kde(ds.map(function (d) {
           return d.slope;
         }));
+      }); // Y value scales must be done on the density values
+      // Add a buffer of 1/50 range so y value doesn't go to top of chart
+      // Create an overall scale.
+
+      var maxDensity = Math.max.apply(Math, _toConsumableArray(densities.map(function (ds) {
+        return Math.max.apply(Math, _toConsumableArray(ds.map(function (d) {
+          return d[1];
+        })));
+      })));
+      var yScale = d3.scaleLinear().domain([0, maxDensity * 1.02]).range([height, 0]); // Create a Y scale for each density curve. If the value of scaleHeight is set to false,
+      // these scales will all be identical, but if set to true then they will differ so that
+      // maximum value of each curve achieves the same height.
+
+      var yScales = densities.map(function (ds) {
+        if (scaleHeight) {
+          var _maxDensity = Math.max.apply(Math, _toConsumableArray(ds.map(function (d) {
+            return d[1];
+          })));
+
+          return d3.scaleLinear().domain([0, _maxDensity * 1.02]).range([height, 0]);
+        } else {
+          return yScale;
+        }
       }); // Generate axes
 
       if (tAxis) {
-        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
-        .tickValues([]).tickSizeOuter(0));
+        tAxis.transition().duration(duration).call(d3.axisTop().scale(data.length ? custScale : xScale).tickSize([0]).ticks(5).tickSizeOuter(0));
       }
 
       if (bAxis) {
@@ -6013,16 +6052,12 @@
       }
 
       if (lAxis) {
-        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).tickValues([])); //.ticks(5))
       }
 
       if (rAxis) {
         rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
       } // Line path generator
-      // const linePath = d3.line()
-      //   //.curve(d3.curveMonotoneX)
-      //   .x(d => xScale(d.y))
-      //   .y(d => yScale(d.v))
 
 
       var linePath = d3.line().curve(d3.curveMonotoneX).x(function (d) {
@@ -6030,44 +6065,71 @@
       }).y(function (d) {
         return yScale(d[1]);
       });
+      var linePaths = yScales.map(function (s) {
+        return d3.line().curve(d3.curveMonotoneX).x(function (d) {
+          return xScale(d[0]);
+        }).y(function (d) {
+          return s(d[1]);
+        });
+      });
 
-      if (dataWork.length) {
-        console.log('dataWork', dataWork[0]);
-        console.log('densities', densities[0]);
-        console.log('linepath', linePath(densities[0]));
-      }
+      if (dataWork.length) ; // Generate density lines
 
-      console.log(densities.length);
-      d3Test(gChart1, duration, densities, linePath); // // Main data line
-      // const vData = data.map(p => {return {y: p.year, v: p.value}})
-      // d3Line(gChart2, linePath, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none')
-      // // Confidence polygon
-      // lData.sort((a,b) => b.y - a.y) // Reverse order of lData
-      // const pData = [...uData, ...lData]
-      // d3Line(gChart1, linePath, duration, pData, 'confidence', 'none', 0, style.cFill)
-      // // Add path to ylines and generate
-      // ylines.forEach(l => {
-      //   l.path = linePath([{y: yearMinBuff, v: l.y}, {y: yearMaxBuff, v: l.y}])
-      // })
-      // const tYlines = ylines.filter(l => l.y >= yMinBuff && l.y <= yMaxBuff)
-      // d3Yline(gChart1, tYlines, duration)
+
+      d3Density(gChart1, duration, densities, linePaths, styles); // Add path to ylines and generate
+
+      ylines.forEach(function (l) {
+        l.path = linePath([[xMinBuff, l.y], [xMaxBuff, l.y]]);
+      });
+      d3Line$2(gChart1, ylines, 'ylines', duration); // Add path to xlines and generate
+
+      xlines.forEach(function (l) {
+        l.path = linePath([[l.x, 0], [l.x, maxDensity * 1.02]]);
+      });
+      d3Line$2(gChart1, xlines, 'xlines', duration);
     };
   }
 
-  function d3Test(gChart, duration, data, linePath) {
-    gChart.selectAll(".test-line").data(data).join(function (enter) {
-      return enter.append('path').attr("opacity", 0).attr("d", function (d) {
-        return linePath(d);
-      }).attr("class", "test-line").style('fill', 'red').style('stroke', 'black').style('stroke-width', 1);
+  function d3Density(gChart, duration, data, linePaths, styles) {
+    gChart.selectAll(".density-line").data(data).join(function (enter) {
+      return enter.append('path').attr("opacity", 0).attr("d", function (d, i) {
+        return linePaths[i](d);
+      }).attr("class", "density-line").style('fill', 'none').style('stroke', function (d, i) {
+        return getStyle(styles, i).stroke;
+      }).style('stroke-width', function (d, i) {
+        return getStyle(styles, i).strokeWidth;
+      });
     }, function (update) {
       return update;
     }, function (exit) {
       return exit.transition().duration(duration).style("opacity", 0).remove();
     }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr("opacity", 1).attr("d", function (d) {
-      return linePath(d);
+    .transition().duration(duration).attr("opacity", 1).attr("d", function (d, i) {
+      return linePaths[i](d);
     });
   }
+
+  function d3Line$2(gChart, lines, lineClass, duration) {
+    // Horizontal y lines
+    gChart.selectAll(".".concat(lineClass)).data(lines).join(function (enter) {
+      return enter.append('path').attr('d', function (d) {
+        return d.path;
+      }).attr('class', lineClass).style('stroke', function (d) {
+        return d.stroke;
+      }).style('stroke-width', function (d) {
+        return d.strokeWidth;
+      }).style('stroke-dasharray', function (d) {
+        return d.strokeDasharray;
+      }).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).remove();
+    }) // Join returns merged enter and update selection
+    .transition().duration(duration).attr('d', function (d) {
+      return d.path;
+    }).style('opacity', 1);
+  } // Function to compute density
 
 
   function kernelDensityEstimator(kernel, X) {
@@ -6084,6 +6146,22 @@
     return function (v) {
       return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
     };
+  }
+
+  function getStyle(styles, i) {
+    var style;
+
+    if (styles[i]) {
+      style = styles[i];
+    } else {
+      style = {};
+    } // Default styles
+
+
+    style.stroke = style.stroke ? style.stroke : 'black';
+    style.strokeWidth = style.strokeWidth ? style.strokeWidth : 1;
+    style.strokeDasharray = style.strokeDasharray ? style.strokeDasharray : '1';
+    return style;
   }
 
   function bar() {
@@ -16727,7 +16805,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.15.0";
+  var version = "0.15.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
