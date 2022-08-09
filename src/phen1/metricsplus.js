@@ -8,9 +8,9 @@ export function preProcessMetrics (metrics) {
     let iFade, strokeWidth
     if (m.colour === 'fading') {
       iFade = ++iFading
-    strokeWidth = 1
+      strokeWidth = 1
     } else {
-      strokeWidth = 2
+      strokeWidth = m.strokeWidth
     }
     return {
       prop: m.prop,

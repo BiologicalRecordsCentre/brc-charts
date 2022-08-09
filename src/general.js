@@ -9,8 +9,13 @@ export function cloneData(data) {
 }
 
 export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
+const monthMid2day = [1]
+for (let i=0; i<month2day.length-1; i++) {
+  monthMid2day.push((month2day[i] + (month2day[i+1]-month2day[i])/2))
+}
+monthMid2day.push(367)
 
-export function xAxisMonth(width, ticks) {
+export function xAxisMonth(width, ticks, fontSize, font) {
 
   const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const ysRange = month2day.map(d => (d-1)/366 * width)
@@ -19,15 +24,103 @@ export function xAxisMonth(width, ticks) {
   const xAxis = d3.axisBottom()
     .scale(xScaleTime)
 
+  // Work out the max text widths of the three styles
+  // of month representation
+  const svg = d3.select('body').append('svg')
+  const getMaxTextWidth = (aText) => {
+    return Math.max(...aText.map(m => {
+      const tmpText = svg.append('text')
+        .text(m)
+      if (font) tmpText.style('font-family', font)
+      if (fontSize) tmpText.style('font-size', fontSize)
+      const textWidth =  tmpText.node().getBBox().width
+      tmpText.remove()
+      return textWidth
+    }))
+  }
+  const maxFullMonth = getMaxTextWidth(ysDomain)
+  const maxMedMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,3)))
+  const maxMinMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,1)))
+  svg.remove()
+
   if (ticks) {
     xAxis.ticks(ysDomain)
       .tickSize(width >= 200 ? 13 : 5, 0)
       .tickFormat(month => {
-        if (width >= 750) {
+        //if (width >= 750) {
+        if (width / 12 > maxFullMonth + 4) {
           return month
-        } else if (width >= 330) {
+        //} else if (width >= 330) {
+        } else if (width / 12 >= maxMedMonth + 4) {
           return month.substr(0,3)
-        } else if (width >= 200) {
+        //} else if (width >= 200) {
+        } else if (width /12 >= maxMinMonth + 4) {
+          return month.substr(0,1)
+        } else {
+          return ''
+        }
+      })
+  } else {
+    xAxis.tickValues([]).tickSizeOuter(0)
+  }
+  return xAxis
+}
+
+export function xAxisMonthNoText(width) {
+
+  const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const ysRange = month2day.map(d => (d-1)/366 * width)
+  const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+
+  const xAxis = d3.axisBottom()
+    .scale(xScaleTime)
+
+  xAxis.ticks(ysDomain)
+    .tickSize(width >= 200 ? 13 : 5, 0)
+    .tickFormat(() => '')
+ 
+  return xAxis
+}
+
+export function xAxisMonthText(width, ticks, fontSize, font) {
+
+  const ysDomain = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const ysRange = monthMid2day.map(d => (d-1)/366 * width)
+  const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+
+  const xAxis = d3.axisBottom()
+    .scale(xScaleTime)
+
+  // Work out the max text widths of the three styles
+  // of month representation
+  const svg = d3.select('body').append('svg')
+  const getMaxTextWidth = (aText) => {
+    return Math.max(...aText.map(m => {
+      const tmpText = svg.append('text')
+        .text(m)
+      if (font) tmpText.style('font-family', font)
+      if (fontSize) tmpText.style('font-size', fontSize)
+      const textWidth =  tmpText.node().getBBox().width
+      tmpText.remove()
+      return textWidth
+    }))
+  }
+  const maxFullMonth = getMaxTextWidth(ysDomain)
+  const maxMedMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,3)))
+  const maxMinMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,1)))
+  svg.remove()
+
+  if (ticks) {
+    xAxis.ticks(ysDomain)
+      .tickSize(0)
+      .tickFormat(month => { 
+        if (month === '') {
+          return ''
+        } else if (width / 12 > maxFullMonth + 4) {
+          return month
+        } else if (width / 12 >= maxMedMonth + 4) {
+          return month.substr(0,3)
+        } else if (width /12 >= maxMinMonth + 4) {
           return month.substr(0,1)
         } else {
           return ''
@@ -191,11 +284,11 @@ export function positionMainElements(svg, expand, headPad) {
 
 }
 
-export function saveChartImage(svg, expand, asSvg, filename) {
+export function saveChartImage(svg, expand, asSvg, filename, font) {
 
   return new Promise((resolve) => {
     if (asSvg) {
-      const blob1 =  serialize(svg)
+      const blob1 =  serialize(svg, font)
       if(filename) {
         download(blob1, filename)
       }
@@ -216,7 +309,7 @@ export function saveChartImage(svg, expand, asSvg, filename) {
     downloadLink(dataUrl, file)
   }
 
-  function serialize(svg) {
+  function serialize(svg, font) {
     const xmlns = "http://www.w3.org/2000/xmlns/"
     const xlinkns = "http://www.w3.org/1999/xlink"
     const svgns = "http://www.w3.org/2000/svg"
@@ -225,7 +318,8 @@ export function saveChartImage(svg, expand, asSvg, filename) {
     const cloneSvg = domSvg.cloneNode(true)
     const d3Clone = d3.select(cloneSvg)
     // Explicitly change text in clone to required font
-    d3Clone.selectAll('text').style('font-family','Arial, Helvetica, sans-serif')
+    const fontOut = font ? font  : 'Arial, Helvetica, sans-serif'
+    d3Clone.selectAll('text').style(fontOut)
   
     cloneSvg.setAttributeNS(xmlns, "xmlns", svgns)
     cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns)
@@ -234,7 +328,7 @@ export function saveChartImage(svg, expand, asSvg, filename) {
     return new Blob([string], {type: "image/svg+xml"})
   }
   
-  function rasterize(svg) {
+  function rasterize(svg, font) {
     let resolve, reject
     const domSvg = svg.node()
     const promise = new Promise((y, n) => (resolve = y, reject = n))
@@ -250,7 +344,7 @@ export function saveChartImage(svg, expand, asSvg, filename) {
       context.drawImage(image, 0, 0, rect.width, rect.height)
       context.canvas.toBlob(resolve)
     }
-    image.src = URL.createObjectURL(serialize(svg))
+    image.src = URL.createObjectURL(serialize(svg, font))
     return promise
   }
 

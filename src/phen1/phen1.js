@@ -39,9 +39,11 @@ import { makeLegend } from './legend'
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
+ * @param {string | number} opts.monthFontSize - Font size for month labels. Can be specified in any permitted SVG units. (Default - 12.)
+ * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
  * @param {boolean} opts.showLegend - Whether or not to show the legend.
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+ * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)* @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
@@ -104,6 +106,9 @@ export function phen1({
   footerFontSize = 10,
   legendFontSize = 16,
   axisLabelFontSize = 10,
+  monthFontSize = 12,
+  lineWidth = 1,
+  font = 'sans-serif',
   showLegend = true,
   titleAlign = 'left',
   subtitleAlign = 'left',
@@ -153,6 +158,9 @@ export function phen1({
   makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
   positionMainElements(svg, expand, headPad)
 
+  svg.selectAll('text').style('font-family', font)
+  svg.selectAll('line, path').style('stroke-width', lineWidth)
+
   function makeChart () {
 
     // Give warning and return if invalid option combinations are used
@@ -176,7 +184,7 @@ export function phen1({
       return makePhen (t, taxa, data, metrics, svgChart, width, height, 
         ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
         style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
-        axisLabelFontSize, axisLeftLabel, interactivity, pTrans)
+        axisLabelFontSize, axisLeftLabel, interactivity, pTrans, monthFontSize, font)
     })
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))

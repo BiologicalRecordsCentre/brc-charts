@@ -1,11 +1,11 @@
 import * as d3 from 'd3'
-import { month2day, safeId, xAxisMonth, transPromise } from '../general'
+import { month2day, safeId, xAxisMonthNoText, xAxisMonthText, transPromise } from '../general'
 import { addEventHandlers} from './highlightitem'
 
 export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height, 
   ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
   style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
-  axisLabelFontSize, axisLeftLabel, interactivity, pTrans
+  axisLabelFontSize, axisLeftLabel, interactivity, pTrans,  monthFontSize, font
 ) {
 
   // Examine the first record to see if week or month is specified for period
@@ -200,9 +200,11 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
   }
 
   // X (bottom) axis
-  let xAxis
+  let xAxis1, xAxis2
   if (axisBottom === 'on' || axisBottom === 'tick') {
-    xAxis = xAxisMonth(width, axisBottom === 'tick')
+    //xAxis = xAxisMonth(width, axisBottom === 'tick')
+    xAxis1 = xAxisMonthNoText(width)
+    xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font)
   }
 
   // Right axis
@@ -506,7 +508,7 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
     const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
     const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${axisTopPadY})`
     const topXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
-    const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
+    //const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
     const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
     
     // Create axes and position within SVG
@@ -515,17 +517,33 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
         .attr("class", "y-axis")
       gYaxis.attr("transform", leftYaxisTrans)
     }
-    if (xAxis) {
-      const gXaxis = svgPhen1.append("g")
+    if (xAxis1 && xAxis2) {
+      // const gXaxis = svgPhen1.append("g")
+      //   .attr("class", "x axis")
+      //   .call(xAxis)
+
+      const gXaxis1 = svgPhen1.append("g")
         .attr("class", "x axis")
-        .call(xAxis)
+        .style('font-size', monthFontSize)
+        .call(xAxis1)
 
-      gXaxis.selectAll(".tick text")
-        .style("text-anchor", "start")
-        .attr("x", 6)
-        .attr("y", 6)
+      const gXaxis2 = svgPhen1.append("g")
+        .attr("class", "x axis")
+        .style('font-size', monthFontSize)
+        .call(xAxis2)
 
-      gXaxis.attr("transform", bottomXaxisTrans)
+      // gXaxis.selectAll(".tick text")
+      //   .style("text-anchor", "start")
+      //   .attr("x", 6)
+      //   .attr("y", 6)
+
+      // gXaxis.attr("transform", bottomXaxisTrans)
+
+      gXaxis2.selectAll(".tick text")
+        .style("text-anchor", "middle")
+
+      gXaxis1.attr("transform", `translate(${axisLeftPadX},${height + axisTopPadY})`)
+      gXaxis2.attr("transform", `translate(${axisLeftPadX},${height + axisTopPadY})`)
     }
     if (tAxis) {
       const gTaxis = svgPhen1.append("g")

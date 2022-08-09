@@ -19,6 +19,7 @@ import backData from './altlat.json'
  * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
  * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+ * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
  * @param {string} opts.title - Title for the chart. (Default - ''.)
  * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
  * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -33,13 +34,19 @@ import backData from './altlat.json'
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label. (Default - 10.)
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.(Default - true.)
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text. (Default - 10.)
- * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - 'Altitude (m)'.)
+ * @param {number | null} opts.legendSpacing - A value (pixels) the separate the centres of the legend cirles. If not set, calcualted automatically. (Default - null.)
+ * @param {string} opts.legendBaseline - Allows the 'dominant-baseline' CSS property to be set on legend text. (Default - 'central'.)
+ * @param {number} opts.legendXoffset - Allows the legend to be positioned precisely. This is the x value in pixels. (Default - 1050.)
+ * @param {number} opts.legendYoffset - Allows the legend to be positioned precisely. This is the y value in pixels. (Default - 1150.)* @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - 'Altitude (m)'.)
  * @param {string} opts.axisBottomLabel - Value for labelling bottom axis. (Default - 'Distance north (km)'.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
  * @param {string} opts.axisLeft -  If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
  * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn without ticks. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+ * @param {string | number | null} opts.axisTickFontSize - Sets the font size of the axis values. Will accept any valid SVG font-size units. If not set, uses D3 default. (Default - null.)
+ * @param {boolean} opts.yAxisLabelToTop - If set to true the y-axis label is moved to the top of the axis and not rotated. (Default - false.)
+ * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
@@ -76,14 +83,22 @@ export function altlat({
   title = '',
   subtitle = '',
   footer = '',
+  font = 'sans-serif',
+  lineWidth = 1,
   titleFontSize = 24,
   subtitleFontSize = 16,
   footerFontSize = 10,
   legendFontSize = 10,
   showLegend = true,
+  legendSpacing = null,
   axisLeftLabel = 'Altitude (m)',
   axisBottomLabel = 'Distance north (km)',
   axisLabelFontSize = 10,
+  axisTickFontSize = null,
+  yAxisLabelToTop = false,
+  legendBaseline = 'central',
+  legendXoffset = 1050,
+  legendYoffset = 1150,
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
@@ -128,6 +143,8 @@ export function altlat({
     makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
     positionMainElements(svg, expand)
+
+    svg.selectAll('rect, path, line').style('stroke-width', lineWidth)
   })
   
   function makeChart () {
@@ -296,6 +313,7 @@ export function altlat({
           .append('text')
           .classed('brc-chart-altlat-label', true)
           .text(taxon)
+          .style('font-family', font)
           .style('font-size', taxonLabelFontSize)
           .style('font-style', taxonLabelItalics ? 'italic' : '')
 
@@ -313,7 +331,13 @@ export function altlat({
       
       // Create axes and position within SVG
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
-      const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
+      //const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
+      let leftYaxisLabelTrans
+      if (yAxisLabelToTop) {
+        leftYaxisLabelTrans = `translate(0,0)`
+      } else {
+        leftYaxisLabelTrans = `translate(0,${axisTopPadY + height/2}) rotate(270)`
+      }
       const rightYaxisTrans = `translate(${axisLeftPadX + width}, ${axisTopPadY})`
       const topXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
       const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
@@ -322,34 +346,45 @@ export function altlat({
       // Create axes and position within SVG
       if (lAxis) {
         const gLaxis = svgAltLat.append("g")
+          .style('font-family', font)
+          .style('font-size', axisTickFontSize)
           .call(lAxis)
         gLaxis.attr("transform", leftYaxisTrans)
       }
       if (bAxis) {
         const gBaxis = svgAltLat.append("g")
+          .style('font-family', font)
+          .style('font-size', axisTickFontSize)
           .call(bAxis)
         gBaxis.attr("transform", bottomXaxisTrans)
       }
       if (tAxis) {
         const gTaxis = svgAltLat.append("g")
+          .style('font-family', font)
+          .style('font-size', axisTickFontSize)
           .call(tAxis)
         gTaxis.attr("transform", topXaxisTrans)
       }
       if (rAxis) {
         const gRaxis = svgAltLat.append("g")
+          .style('font-family', font)
+          .style('font-size', axisTickFontSize)
           .call(rAxis)
         gRaxis.attr("transform", rightYaxisTrans)
       }
 
       const tYaxisLabel = svgAltLat.append("text")
-        .style("text-anchor", "middle")
+        .style("text-anchor", yAxisLabelToTop ? "left" : "middle")
         .style('font-size', axisLabelFontSize)
+        .style('font-family', font)
+        .style('dominant-baseline', 'hanging')
         .text(axisLeftLabel) 
       tYaxisLabel.attr("transform", leftYaxisLabelTrans)
 
       const tXaxisLabel = svgAltLat.append("text")
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
+        .style('font-family', font)
         .text(axisBottomLabel) 
       tXaxisLabel.attr("transform", bottomXaxisLabelTrans)
 
@@ -391,11 +426,36 @@ export function altlat({
     })
 
     const maxRadius = Math.max(...items.map(i => i.radiusTrans))
-    const xOffset = xScale(1050)
-    const yOffset = yScale(1150)
+    let spacing
+    if (legendSpacing) {
+      spacing = legendSpacing
+    } else {
+      spacing = maxRadius * 2.2
+    }
+
+    const xOffset = xScale(legendXoffset)
+    const yOffset = yScale(legendYoffset)
 
     const t = gAltLat.transition()
       .duration(duration)
+
+    const lt = gAltLat.selectAll('.brc-altlat-legend-item-text')
+      .data(items, i => safeId(i.text))
+      .join(
+        enter => {
+          const text = enter.append("text")
+            .text(i => i.text)
+            .style('font-family', font)
+            .style('font-size', legendFontSize)
+            .style('dominant-baseline', legendBaseline)
+            .attr('x', xOffset + maxRadius * 1.3)
+            .attr('y', (i,j) => yOffset + spacing * j)
+            .style('opacity', 0)
+          return text
+        },
+        update => update
+      )
+      .attr("class", i => `brc-altlat-legend-item-text brc-altlat brc-altlat-${i.radius}`)
 
     const ls = gAltLat.selectAll('.brc-altlat-legend-item-circle')
       .data(items, i => safeId(i.text))
@@ -404,38 +464,22 @@ export function altlat({
           const swatches = enter.append("circle")
             .attr('r', 0)
             .attr('cx', xOffset)
-            .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
+            .attr('cy', (i,j) => yOffset + spacing * j)
           return swatches
         },
         update => update
       )
       .attr("class", i => `brc-altlat-legend-item-circle brc-altlat brc-altlat-${i.radius}`)
 
+    const textTrans = lt.transition(t)
+      .attr('x', xOffset + maxRadius * 1.3)
+      .attr('y', (i,j) => yOffset + spacing * j)
+      .style('opacity', 1)
+
     const swatchTrans = ls.transition(t)
       .attr('r', i => i.radiusTrans)
       .attr('cx', xOffset)
-      .attr('cy', (i,j) => yOffset + maxRadius * 2.2 * j)
-
-    const lt = gAltLat.selectAll('.brc-altlat-legend-item-text')
-      .data(items, i => safeId(i.text))
-      .join(
-        enter => {
-          const text = enter.append("text")
-            .text(i => i.text)
-            .style('font-size', legendFontSize)
-            .attr('x', xOffset + maxRadius * 1.3)
-            .attr('y', (i,j) => yOffset + maxRadius * 2.2 * j + maxRadius * 0.5)
-            .style('opacity', 0)
-          return text
-        },
-        update => update
-      )
-      .attr("class", i => `brc-altlat-legend-item-text brc-altlat brc-altlat-${i.radius}`)
-
-    const textTrans = lt.transition(t)
-      .attr('x', xOffset + maxRadius * 1.3)
-      .attr('y', (i,j) => yOffset + maxRadius * 2.2 * j + maxRadius * 0.5)
-      .style('opacity', 1)
+      .attr('cy', (i,j) => yOffset + spacing * j)
 
     addEventHandlers(ls)
     addEventHandlers(lt)
@@ -745,5 +789,4 @@ export function altlat({
     dataFromTetrads: dataFromTetrads,
     saveImage: saveImage
   }
-
 }

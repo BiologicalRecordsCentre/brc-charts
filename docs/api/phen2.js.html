@@ -29,7 +29,7 @@
             <pre class="prettyprint source linenums"><code>/** @module phen2 */
 
 import * as d3 from 'd3'
-import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, cloneData, transPromise } from './general'
+import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonthNoText, xAxisMonthText, cloneData, transPromise } from './general'
 
 /** 
  * @param {Object} opts - Initialisation options.
@@ -46,13 +46,17 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonth, clo
  * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
  * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
  * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
+ * @param {string | number} opts.monthFontSize - Font size for month labels. Can be specified in any permitted SVG units. (Default - 12.)
+ * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
  * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
  * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
  * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
  * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
  * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
  * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+ * @param {boolean} opts.displayLegend - Indicates whether or not to display a legend. (Default - true.)
  * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
+ * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
  * @param {string} opts.axisLeft - If set to 'on' line is drawn otherwise not.
  * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
@@ -111,10 +115,13 @@ export function phen2({
   title = '',
   subtitle = '',
   footer = '',
+  font = 'sans-serif',
   titleFontSize = 24,
   subtitleFontSize = 16,
   footerFontSize = 10,
   legendFontSize = 16,
+  displayLegend = true,
+  monthFontSize = 12,
   titleAlign = 'left',
   subtitleAlign = 'left',
   footerAlign = 'left',
@@ -125,6 +132,7 @@ export function phen2({
   axisTop = 'on',
   axisLeft = 'on',
   axisRight = 'on',
+  lineWidth = 1,
   headPad = 0,
   chartPad = 0,
   duration = 1000,
@@ -162,7 +170,10 @@ export function phen2({
   makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
   makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
   positionMainElements(svg, expand, headPad)
-  
+
+  svg.selectAll('line, path').style('stroke-width', lineWidth)
+  svg.selectAll('text').style('font-family', font)
+
   function makeChart () {
 
     pTrans = []
@@ -191,8 +202,11 @@ export function phen2({
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
     const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
-    const legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
-
+    let legendHeight = 0
+    if (displayLegend) {
+      legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
+    }
+ 
     svgsTaxa.forEach((svgTaxon, i) => {
       
       const col = i%perRow
@@ -233,9 +247,11 @@ export function phen2({
     const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0])
 
     // X (bottom) axis
-    let xAxis
+    let xAxis1, xAxis2
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      xAxis = xAxisMonth(width, axisBottom === 'tick')
+      //xAxis = xAxisMonth(width, axisBottom === 'tick', monthFontSize, font)
+      xAxis1 = xAxisMonthNoText(width)
+      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font)
     }
 
     // Top axis
@@ -327,6 +343,7 @@ export function phen2({
           .append('text')
           .classed('brc-chart-phen2-label', true)
           .text(taxon)
+          //.style('font-family', font)
           .style('font-size', taxonLabelFontSize)
           .style('font-style', taxonLabelItalics ? 'italic' : '')
 
@@ -346,17 +363,34 @@ export function phen2({
       gPhen2.attr("transform", `translate(${axisPadX},${labelPadY})`)
       
       // Create axes and position within SVG
-      if (xAxis) {
-        const gXaxis = svgPhen2.append("g")
+      if (xAxis1 &amp;&amp; xAxis2) {
+        // const gXaxis = svgPhen2.append("g")
+        //   .attr("class", "x axis")
+        //   .style('font-size', monthFontSize)
+        //   .call(xAxis)
+
+        const gXaxis1 = svgPhen2.append("g")
           .attr("class", "x axis")
-          .call(xAxis)
+          .style('font-size', monthFontSize)
+          .call(xAxis1)
 
-        gXaxis.selectAll(".tick text")
-          .style("text-anchor", "start")
-          .attr("x", 6)
-          .attr("y", 6)
+        const gXaxis2 = svgPhen2.append("g")
+          .attr("class", "x axis")
+          .style('font-size', monthFontSize)
+          .call(xAxis2)
 
-        gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+        // gXaxis.selectAll(".tick text")
+        //   .style("text-anchor", "start")
+        //   .attr("x", 6)
+        //   .attr("y", 6)
+
+        gXaxis2.selectAll(".tick text")
+          .style("text-anchor", "middle")
+
+        gXaxis1.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+        gXaxis2.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
+
+        //gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
       }
 
       if (yAxis) {
@@ -397,8 +431,10 @@ export function phen2({
     let lineWidth = -swatchSize
 
     //const metricsSorted = cloneData(metricsPlus).reverse()
-    const metricsSorted = cloneData(metricsPlus).sort((a,b) => a.legendOrder > b.legendOrder ? 1 : -1)
-
+    const metricsSorted = cloneData(metricsPlus)
+      .filter(m => m.label)
+      .sort((a,b) => a.legendOrder > b.legendOrder ? 1 : -1)
+  
     // Get the bbox of any SVG icons in metrics
     metricsSorted.filter(m => m.svg).forEach(m => {
       const path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden')
@@ -409,6 +445,7 @@ export function phen2({
     metricsSorted.forEach(m => {
       const tmpText = svgChart.append('text') //.style('display', 'none')
         .text(m.label)
+        //.style('font-family', font)
         .style('font-size', legendFontSize)
 
       const widthText = tmpText.node().getBBox().width
@@ -476,6 +513,7 @@ export function phen2({
           const text = enter.append("text")
             .attr("class", m=> `brc-legend-item brc-legend-item-text brc-legend-item-${m.id}`)
             .text(m => m.label)
+            //.style('font-family', font)
             .style('font-size', legendFontSize)
           return text
       })
@@ -663,7 +701,7 @@ export function phen2({
   * Download the chart as an image file.
   */
   function saveImage(asSvg, filename){
-    return saveChartImage(svg, expand, asSvg, filename) 
+    return saveChartImage(svg, expand, asSvg, filename, font) 
   }
 
   /**
@@ -698,7 +736,7 @@ export function phen2({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Jun 23 2022 14:42:37 GMT+0100 (British Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Tue Aug 09 2022 11:25:35 GMT+0100 (British Summer Time)
 </footer>
 
 <script> prettyPrint(); </script>

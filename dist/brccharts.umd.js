@@ -111,21 +111,115 @@
     });
   }
   var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367];
-  function xAxisMonth(width, ticks) {
+  var monthMid2day = [1];
+
+  for (var i = 0; i < month2day.length - 1; i++) {
+    monthMid2day.push(month2day[i] + (month2day[i + 1] - month2day[i]) / 2);
+  }
+
+  monthMid2day.push(367);
+  function xAxisMonth(width, ticks, fontSize, font) {
+    var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var ysRange = month2day.map(function (d) {
+      return (d - 1) / 366 * width;
+    });
+    var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
+    var xAxis = d3.axisBottom().scale(xScaleTime); // Work out the max text widths of the three styles
+    // of month representation
+
+    var svg = d3.select('body').append('svg');
+
+    var getMaxTextWidth = function getMaxTextWidth(aText) {
+      return Math.max.apply(Math, _toConsumableArray(aText.map(function (m) {
+        var tmpText = svg.append('text').text(m);
+        if (font) tmpText.style('font-family', font);
+        if (fontSize) tmpText.style('font-size', fontSize);
+        var textWidth = tmpText.node().getBBox().width;
+        tmpText.remove();
+        return textWidth;
+      })));
+    };
+
+    var maxFullMonth = getMaxTextWidth(ysDomain);
+    var maxMedMonth = getMaxTextWidth(ysDomain.map(function (m) {
+      return m.substr(0, 3);
+    }));
+    var maxMinMonth = getMaxTextWidth(ysDomain.map(function (m) {
+      return m.substr(0, 1);
+    }));
+    svg.remove();
+
+    if (ticks) {
+      xAxis.ticks(ysDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (month) {
+        //if (width >= 750) {
+        if (width / 12 > maxFullMonth + 4) {
+          return month; //} else if (width >= 330) {
+        } else if (width / 12 >= maxMedMonth + 4) {
+          return month.substr(0, 3); //} else if (width >= 200) {
+        } else if (width / 12 >= maxMinMonth + 4) {
+          return month.substr(0, 1);
+        } else {
+          return '';
+        }
+      });
+    } else {
+      xAxis.tickValues([]).tickSizeOuter(0);
+    }
+
+    return xAxis;
+  }
+  function xAxisMonthNoText(width) {
     var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var ysRange = month2day.map(function (d) {
       return (d - 1) / 366 * width;
     });
     var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
     var xAxis = d3.axisBottom().scale(xScaleTime);
+    xAxis.ticks(ysDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function () {
+      return '';
+    });
+    return xAxis;
+  }
+  function xAxisMonthText(width, ticks, fontSize, font) {
+    var ysDomain = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var ysRange = monthMid2day.map(function (d) {
+      return (d - 1) / 366 * width;
+    });
+    var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
+    var xAxis = d3.axisBottom().scale(xScaleTime); // Work out the max text widths of the three styles
+    // of month representation
+
+    var svg = d3.select('body').append('svg');
+
+    var getMaxTextWidth = function getMaxTextWidth(aText) {
+      return Math.max.apply(Math, _toConsumableArray(aText.map(function (m) {
+        var tmpText = svg.append('text').text(m);
+        if (font) tmpText.style('font-family', font);
+        if (fontSize) tmpText.style('font-size', fontSize);
+        var textWidth = tmpText.node().getBBox().width;
+        tmpText.remove();
+        return textWidth;
+      })));
+    };
+
+    var maxFullMonth = getMaxTextWidth(ysDomain);
+    var maxMedMonth = getMaxTextWidth(ysDomain.map(function (m) {
+      return m.substr(0, 3);
+    }));
+    var maxMinMonth = getMaxTextWidth(ysDomain.map(function (m) {
+      return m.substr(0, 1);
+    }));
+    svg.remove();
 
     if (ticks) {
-      xAxis.ticks(ysDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function (month) {
-        if (width >= 750) {
+      xAxis.ticks(ysDomain).tickSize(0).tickFormat(function (month) {
+        if (month === '') {
+          return '';
+        } else if (width / 12 > maxFullMonth + 4) {
           return month;
-        } else if (width >= 330) {
+        } else if (width / 12 >= maxMedMonth + 4) {
           return month.substr(0, 3);
-        } else if (width >= 200) {
+        } else if (width / 12 >= maxMinMonth + 4) {
           return month.substr(0, 1);
         } else {
           return '';
@@ -185,19 +279,19 @@
     var lines = [''];
     var line = 0;
 
-    for (var i = 0; i < textSplit.length; i++) {
-      if (textSplit[i] === '\n') {
+    for (var _i = 0; _i < textSplit.length; _i++) {
+      if (textSplit[_i] === '\n') {
         line++;
         lines[line] = '';
       } else {
-        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
+        var workingText = "".concat(lines[line], " ").concat(textSplit[_i]);
         workingText = workingText.trim();
         var txt = svg.append('text').text(workingText).style('font-size', fontSize);
         var width = txt.node().getBBox().width;
 
         if (width > maxWidth) {
           line++;
-          lines[line] = textSplit[i];
+          lines[line] = textSplit[_i];
         } else {
           lines[line] = workingText;
         }
@@ -264,10 +358,10 @@
       svg.attr("height", height);
     }
   }
-  function saveChartImage(svg, expand, asSvg, filename) {
+  function saveChartImage(svg, expand, asSvg, filename, font) {
     return new Promise(function (resolve) {
       if (asSvg) {
-        var blob1 = serialize(svg);
+        var blob1 = serialize(svg, font);
 
         if (filename) {
           download(blob1, filename);
@@ -291,7 +385,7 @@
       downloadLink(dataUrl, file);
     }
 
-    function serialize(svg) {
+    function serialize(svg, font) {
       var xmlns = "http://www.w3.org/2000/xmlns/";
       var xlinkns = "http://www.w3.org/1999/xlink";
       var svgns = "http://www.w3.org/2000/svg";
@@ -299,7 +393,8 @@
       var cloneSvg = domSvg.cloneNode(true);
       var d3Clone = d3.select(cloneSvg); // Explicitly change text in clone to required font
 
-      d3Clone.selectAll('text').style('font-family', 'Arial, Helvetica, sans-serif');
+      var fontOut = font ? font : 'Arial, Helvetica, sans-serif';
+      d3Clone.selectAll('text').style(fontOut);
       cloneSvg.setAttributeNS(xmlns, "xmlns", svgns);
       cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns);
       var serializer = new window.XMLSerializer();
@@ -309,7 +404,7 @@
       });
     }
 
-    function rasterize(svg) {
+    function rasterize(svg, font) {
       var resolve, reject;
       var domSvg = svg.node();
       var promise = new Promise(function (y, n) {
@@ -329,7 +424,7 @@
         context.canvas.toBlob(resolve);
       };
 
-      image.src = URL.createObjectURL(serialize(svg));
+      image.src = URL.createObjectURL(serialize(svg, font));
       return promise;
     }
 
@@ -1366,7 +1461,7 @@
     }
   }
 
-  function makePhen(taxon, taxa, data, metricsin, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans) {
+  function makePhen(taxon, taxa, data, metricsin, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans, monthFontSize, font) {
     // Examine the first record to see if week or month is specified for period
     var period;
 
@@ -1591,10 +1686,12 @@
     } // X (bottom) axis
 
 
-    var xAxis;
+    var xAxis1, xAxis2;
 
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      xAxis = xAxisMonth(width, axisBottom === 'tick');
+      //xAxis = xAxisMonth(width, axisBottom === 'tick')
+      xAxis1 = xAxisMonthNoText(width);
+      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font);
     } // Right axis
 
 
@@ -1884,8 +1981,8 @@
 
       var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
       var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
-      var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-      var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")");
+      var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")"); //const bottomXaxisTrans = `translate(${axisLeftPadX},${axisTopPadY + height})`
+
       var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)"); // Create axes and position within SVG
 
       if (yAxis) {
@@ -1893,10 +1990,20 @@
         gYaxis.attr("transform", leftYaxisTrans);
       }
 
-      if (xAxis) {
-        var gXaxis = svgPhen1.append("g").attr("class", "x axis").call(xAxis);
-        gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-        gXaxis.attr("transform", bottomXaxisTrans);
+      if (xAxis1 && xAxis2) {
+        // const gXaxis = svgPhen1.append("g")
+        //   .attr("class", "x axis")
+        //   .call(xAxis)
+        var gXaxis1 = svgPhen1.append("g").attr("class", "x axis").style('font-size', monthFontSize).call(xAxis1);
+        var gXaxis2 = svgPhen1.append("g").attr("class", "x axis").style('font-size', monthFontSize).call(xAxis2); // gXaxis.selectAll(".tick text")
+        //   .style("text-anchor", "start")
+        //   .attr("x", 6)
+        //   .attr("y", 6)
+        // gXaxis.attr("transform", bottomXaxisTrans)
+
+        gXaxis2.selectAll(".tick text").style("text-anchor", "middle");
+        gXaxis1.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(height + axisTopPadY, ")"));
+        gXaxis2.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(height + axisTopPadY, ")"));
       }
 
       if (tAxis) {
@@ -1936,7 +2043,7 @@
         iFade = ++iFading;
         strokeWidth = 1;
       } else {
-        strokeWidth = 2;
+        strokeWidth = m.strokeWidth;
       }
 
       return {
@@ -2050,9 +2157,11 @@
    * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
    * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
    * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
+   * @param {string | number} opts.monthFontSize - Font size for month labels. Can be specified in any permitted SVG units. (Default - 12.)
+   * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
    * @param {boolean} opts.showLegend - Whether or not to show the legend.
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
-   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
+   * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)* @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not.
@@ -2142,6 +2251,12 @@
         legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
         _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
         axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$monthFontSize = _ref.monthFontSize,
+        monthFontSize = _ref$monthFontSize === void 0 ? 12 : _ref$monthFontSize,
+        _ref$lineWidth = _ref.lineWidth,
+        lineWidth = _ref$lineWidth === void 0 ? 1 : _ref$lineWidth,
+        _ref$font = _ref.font,
+        font = _ref$font === void 0 ? 'sans-serif' : _ref$font,
         _ref$showLegend = _ref.showLegend,
         showLegend = _ref$showLegend === void 0 ? true : _ref$showLegend,
         _ref$titleAlign = _ref.titleAlign,
@@ -2196,6 +2311,8 @@
     makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
     makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
     positionMainElements(svg, expand, headPad);
+    svg.selectAll('text').style('font-family', font);
+    svg.selectAll('line, path').style('stroke-width', lineWidth);
 
     function makeChart() {
       // Give warning and return if invalid option combinations are used
@@ -2220,7 +2337,7 @@
       var subChartPad = 10;
       var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
-        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans);
+        return makePhen(t, taxa, data, metrics, svgChart, width, height, ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines, style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, interactivity, pTrans, monthFontSize, font);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -2426,13 +2543,17 @@
    * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
    * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
    * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
+   * @param {string | number} opts.monthFontSize - Font size for month labels. Can be specified in any permitted SVG units. (Default - 12.)
+   * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
    * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
    * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
    * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
    * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph.
    * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label.
    * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.
+   * @param {boolean} opts.displayLegend - Indicates whether or not to display a legend. (Default - true.)
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text.
+   * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.
    * @param {string} opts.axisLeft - If set to 'on' line is drawn otherwise not.
    * @param {string} opts.axisRight - If set to 'on' line is drawn otherwise not.
@@ -2501,6 +2622,8 @@
         subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
         _ref$footer = _ref.footer,
         footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$font = _ref.font,
+        font = _ref$font === void 0 ? 'sans-serif' : _ref$font,
         _ref$titleFontSize = _ref.titleFontSize,
         titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
         _ref$subtitleFontSize = _ref.subtitleFontSize,
@@ -2509,6 +2632,10 @@
         footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
         _ref$legendFontSize = _ref.legendFontSize,
         legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
+        _ref$displayLegend = _ref.displayLegend,
+        displayLegend = _ref$displayLegend === void 0 ? true : _ref$displayLegend,
+        _ref$monthFontSize = _ref.monthFontSize,
+        monthFontSize = _ref$monthFontSize === void 0 ? 12 : _ref$monthFontSize,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
@@ -2529,6 +2656,8 @@
         axisLeft = _ref$axisLeft === void 0 ? 'on' : _ref$axisLeft,
         _ref$axisRight = _ref.axisRight,
         axisRight = _ref$axisRight === void 0 ? 'on' : _ref$axisRight,
+        _ref$lineWidth = _ref.lineWidth,
+        lineWidth = _ref$lineWidth === void 0 ? 1 : _ref$lineWidth,
         _ref$headPad = _ref.headPad,
         headPad = _ref$headPad === void 0 ? 0 : _ref$headPad,
         _ref$chartPad = _ref.chartPad,
@@ -2562,6 +2691,8 @@
     makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
     makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
     positionMainElements(svg, expand, headPad);
+    svg.selectAll('line, path').style('stroke-width', lineWidth);
+    svg.selectAll('text').style('font-family', font);
 
     function makeChart() {
       pTrans = [];
@@ -2593,7 +2724,12 @@
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      var legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad;
+      var legendHeight = 0;
+
+      if (displayLegend) {
+        legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad;
+      }
+
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -2632,10 +2768,12 @@
       var xScale = d3.scaleLinear().domain([1, 365]).range([0, width]);
       var yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]); // X (bottom) axis
 
-      var xAxis;
+      var xAxis1, xAxis2;
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        xAxis = xAxisMonth(width, axisBottom === 'tick');
+        //xAxis = xAxisMonth(width, axisBottom === 'tick', monthFontSize, font)
+        xAxis1 = xAxisMonthNoText(width);
+        xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font);
       } // Top axis
 
 
@@ -2706,7 +2844,8 @@
         var labelPadY; // Taxon title
 
         if (showTaxonLabel) {
-          var taxonLabel = svgPhen2.append('text').classed('brc-chart-phen2-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var taxonLabel = svgPhen2.append('text').classed('brc-chart-phen2-label', true).text(taxon) //.style('font-family', font)
+          .style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
           var labelHeight = taxonLabel.node().getBBox().height;
           taxonLabel.attr("transform", "translate(".concat(axisPadX, ", ").concat(labelHeight, ")"));
           labelPadY = labelHeight * 1.5;
@@ -2719,10 +2858,20 @@
 
         gPhen2.attr("transform", "translate(".concat(axisPadX, ",").concat(labelPadY, ")")); // Create axes and position within SVG
 
-        if (xAxis) {
-          var gXaxis = svgPhen2.append("g").attr("class", "x axis").call(xAxis);
-          gXaxis.selectAll(".tick text").style("text-anchor", "start").attr("x", 6).attr("y", 6);
-          gXaxis.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+        if (xAxis1 && xAxis2) {
+          // const gXaxis = svgPhen2.append("g")
+          //   .attr("class", "x axis")
+          //   .style('font-size', monthFontSize)
+          //   .call(xAxis)
+          var gXaxis1 = svgPhen2.append("g").attr("class", "x axis").style('font-size', monthFontSize).call(xAxis1);
+          var gXaxis2 = svgPhen2.append("g").attr("class", "x axis").style('font-size', monthFontSize).call(xAxis2); // gXaxis.selectAll(".tick text")
+          //   .style("text-anchor", "start")
+          //   .attr("x", 6)
+          //   .attr("y", 6)
+
+          gXaxis2.selectAll(".tick text").style("text-anchor", "middle");
+          gXaxis1.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")"));
+          gXaxis2.attr("transform", "translate(".concat(axisPadX, ",").concat(height + labelPadY, ")")); //gXaxis.attr("transform", `translate(${axisPadX},${height + labelPadY})`)
         }
 
         if (yAxis) {
@@ -2759,7 +2908,9 @@
       var rows = 0;
       var lineWidth = -swatchSize; //const metricsSorted = cloneData(metricsPlus).reverse()
 
-      var metricsSorted = cloneData(metricsPlus).sort(function (a, b) {
+      var metricsSorted = cloneData(metricsPlus).filter(function (m) {
+        return m.label;
+      }).sort(function (a, b) {
         return a.legendOrder > b.legendOrder ? 1 : -1;
       }); // Get the bbox of any SVG icons in metrics
 
@@ -2772,7 +2923,8 @@
       });
       metricsSorted.forEach(function (m) {
         var tmpText = svgChart.append('text') //.style('display', 'none')
-        .text(m.label).style('font-size', legendFontSize);
+        .text(m.label) //.style('font-family', font)
+        .style('font-size', legendFontSize);
         var widthText = tmpText.node().getBBox().width;
         tmpText.remove();
 
@@ -2842,7 +2994,8 @@
           return "brc-legend-item brc-legend-item-text brc-legend-item-".concat(m.id);
         }).text(function (m) {
           return m.label;
-        }).style('font-size', legendFontSize);
+        }) //.style('font-family', font)
+        .style('font-size', legendFontSize);
         return text;
       }).attr('x', function (m) {
         return m.x + swatchSize * swatchFact * m.svgScale;
@@ -3029,7 +3182,7 @@
 
 
     function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+      return saveChartImage(svg, expand, asSvg, filename, font);
     }
     /**
      * @typedef {Object} api
@@ -6018,6 +6171,13 @@
         return kde(ds.map(function (d) {
           return d.slope;
         }));
+      }); // For some reason which I don't understand, x values can occassionally overshoot
+      // xMaxBuff - so correct.
+
+      densities.forEach(function (ds) {
+        ds.forEach(function (d) {
+          if (d[0] > xMaxBuff) d[0] = xMaxBuff;
+        });
       }); // Y value scales must be done on the density values
       // Add a buffer of 1/50 range so y value doesn't go to top of chart
       // Create an overall scale.
@@ -16081,6 +16241,7 @@
    * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
    * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+   * @param {string } opts.font - Font to use for chart. (Default - sans-serif.)
    * @param {string} opts.title - Title for the chart. (Default - ''.)
    * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
    * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -16095,13 +16256,19 @@
    * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label. (Default - 10.)
    * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.(Default - true.)
    * @param {string} opts.legendFontSize - Font size (pixels) of legend item text. (Default - 10.)
-   * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - 'Altitude (m)'.)
+   * @param {number | null} opts.legendSpacing - A value (pixels) the separate the centres of the legend cirles. If not set, calcualted automatically. (Default - null.)
+   * @param {string} opts.legendBaseline - Allows the 'dominant-baseline' CSS property to be set on legend text. (Default - 'central'.)
+   * @param {number} opts.legendXoffset - Allows the legend to be positioned precisely. This is the x value in pixels. (Default - 1050.)
+   * @param {number} opts.legendYoffset - Allows the legend to be positioned precisely. This is the y value in pixels. (Default - 1150.)* @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - 'Altitude (m)'.)
    * @param {string} opts.axisBottomLabel - Value for labelling bottom axis. (Default - 'Distance north (km)'.)
    * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
    * @param {string} opts.axisLeft -  If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
    * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn without ticks. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {string | number | null} opts.axisTickFontSize - Sets the font size of the axis values. Will accept any valid SVG font-size units. If not set, uses D3 default. (Default - null.)
+   * @param {boolean} opts.yAxisLabelToTop - If set to true the y-axis label is moved to the top of the axis and not rotated. (Default - false.)
+   * @param {string | number} opts.lineWidth - Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick', 'toggle' or 'none'. (Default - 'none'.)
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
@@ -16153,6 +16320,10 @@
         subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
         _ref$footer = _ref.footer,
         footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$font = _ref.font,
+        font = _ref$font === void 0 ? 'sans-serif' : _ref$font,
+        _ref$lineWidth = _ref.lineWidth,
+        lineWidth = _ref$lineWidth === void 0 ? 1 : _ref$lineWidth,
         _ref$titleFontSize = _ref.titleFontSize,
         titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
         _ref$subtitleFontSize = _ref.subtitleFontSize,
@@ -16163,12 +16334,24 @@
         legendFontSize = _ref$legendFontSize === void 0 ? 10 : _ref$legendFontSize,
         _ref$showLegend = _ref.showLegend,
         showLegend = _ref$showLegend === void 0 ? true : _ref$showLegend,
+        _ref$legendSpacing = _ref.legendSpacing,
+        legendSpacing = _ref$legendSpacing === void 0 ? null : _ref$legendSpacing,
         _ref$axisLeftLabel = _ref.axisLeftLabel,
         axisLeftLabel = _ref$axisLeftLabel === void 0 ? 'Altitude (m)' : _ref$axisLeftLabel,
         _ref$axisBottomLabel = _ref.axisBottomLabel,
         axisBottomLabel = _ref$axisBottomLabel === void 0 ? 'Distance north (km)' : _ref$axisBottomLabel,
         _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
         axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$axisTickFontSize = _ref.axisTickFontSize,
+        axisTickFontSize = _ref$axisTickFontSize === void 0 ? null : _ref$axisTickFontSize,
+        _ref$yAxisLabelToTop = _ref.yAxisLabelToTop,
+        yAxisLabelToTop = _ref$yAxisLabelToTop === void 0 ? false : _ref$yAxisLabelToTop,
+        _ref$legendBaseline = _ref.legendBaseline,
+        legendBaseline = _ref$legendBaseline === void 0 ? 'central' : _ref$legendBaseline,
+        _ref$legendXoffset = _ref.legendXoffset,
+        legendXoffset = _ref$legendXoffset === void 0 ? 1050 : _ref$legendXoffset,
+        _ref$legendYoffset = _ref.legendYoffset,
+        legendYoffset = _ref$legendYoffset === void 0 ? 1150 : _ref$legendYoffset,
         _ref$titleAlign = _ref.titleAlign,
         titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
         _ref$subtitleAlign = _ref.subtitleAlign,
@@ -16219,6 +16402,7 @@
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       positionMainElements(svg, expand);
+      svg.selectAll('rect, path, line').style('stroke-width', lineWidth);
     });
 
     function makeChart() {
@@ -16371,7 +16555,7 @@
         var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
 
         if (showTaxonLabel) {
-          var taxonLabel = svgAltLat.append('text').classed('brc-chart-altlat-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+          var taxonLabel = svgAltLat.append('text').classed('brc-chart-altlat-label', true).text(taxon).style('font-family', font).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
           var labelHeight = taxonLabel.node().getBBox().height;
           taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
         } // Size SVG
@@ -16381,36 +16565,44 @@
 
         gAltLat.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
 
-        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
+        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")"); //const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
+
+        var leftYaxisLabelTrans;
+
+        if (yAxisLabelToTop) {
+          leftYaxisLabelTrans = "translate(0,0)";
+        } else {
+          leftYaxisLabelTrans = "translate(0,".concat(axisTopPadY + height / 2, ") rotate(270)");
+        }
+
         var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
         var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
         var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")");
         var bottomXaxisLabelTrans = "translate(".concat(axisLeftPadX + width / 2, ",  ").concat(height + axisTopPadY + axisBottomPadY, ")"); // Create axes and position within SVG
 
         if (lAxis) {
-          var gLaxis = svgAltLat.append("g").call(lAxis);
+          var gLaxis = svgAltLat.append("g").style('font-family', font).style('font-size', axisTickFontSize).call(lAxis);
           gLaxis.attr("transform", leftYaxisTrans);
         }
 
         if (bAxis) {
-          var gBaxis = svgAltLat.append("g").call(bAxis);
+          var gBaxis = svgAltLat.append("g").style('font-family', font).style('font-size', axisTickFontSize).call(bAxis);
           gBaxis.attr("transform", bottomXaxisTrans);
         }
 
         if (tAxis) {
-          var gTaxis = svgAltLat.append("g").call(tAxis);
+          var gTaxis = svgAltLat.append("g").style('font-family', font).style('font-size', axisTickFontSize).call(tAxis);
           gTaxis.attr("transform", topXaxisTrans);
         }
 
         if (rAxis) {
-          var gRaxis = svgAltLat.append("g").call(rAxis);
+          var gRaxis = svgAltLat.append("g").style('font-family', font).style('font-size', axisTickFontSize).call(rAxis);
           gRaxis.attr("transform", rightYaxisTrans);
         }
 
-        var tYaxisLabel = svgAltLat.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+        var tYaxisLabel = svgAltLat.append("text").style("text-anchor", yAxisLabelToTop ? "left" : "middle").style('font-size', axisLabelFontSize).style('font-family', font).style('dominant-baseline', 'hanging').text(axisLeftLabel);
         tYaxisLabel.attr("transform", leftYaxisLabelTrans);
-        var tXaxisLabel = svgAltLat.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisBottomLabel);
+        var tXaxisLabel = svgAltLat.append("text").style("text-anchor", "middle").style('font-size', axisLabelFontSize).style('font-family', font).text(axisBottomLabel);
         tXaxisLabel.attr("transform", bottomXaxisLabelTrans);
       } else if (taxa.length === 1) {
         // Update taxon label
@@ -16449,33 +16641,24 @@
       var maxRadius = Math.max.apply(Math, _toConsumableArray(items.map(function (i) {
         return i.radiusTrans;
       })));
-      var xOffset = xScale(1050);
-      var yOffset = yScale(1150);
+      var spacing;
+
+      if (legendSpacing) {
+        spacing = legendSpacing;
+      } else {
+        spacing = maxRadius * 2.2;
+      }
+
+      var xOffset = xScale(legendXoffset);
+      var yOffset = yScale(legendYoffset);
       var t = gAltLat.transition().duration(duration);
-      var ls = gAltLat.selectAll('.brc-altlat-legend-item-circle').data(items, function (i) {
-        return safeId(i.text);
-      }).join(function (enter) {
-        var swatches = enter.append("circle").attr('r', 0).attr('cx', xOffset).attr('cy', function (i, j) {
-          return yOffset + maxRadius * 2.2 * j;
-        });
-        return swatches;
-      }, function (update) {
-        return update;
-      }).attr("class", function (i) {
-        return "brc-altlat-legend-item-circle brc-altlat brc-altlat-".concat(i.radius);
-      });
-      var swatchTrans = ls.transition(t).attr('r', function (i) {
-        return i.radiusTrans;
-      }).attr('cx', xOffset).attr('cy', function (i, j) {
-        return yOffset + maxRadius * 2.2 * j;
-      });
       var lt = gAltLat.selectAll('.brc-altlat-legend-item-text').data(items, function (i) {
         return safeId(i.text);
       }).join(function (enter) {
         var text = enter.append("text").text(function (i) {
           return i.text;
-        }).style('font-size', legendFontSize).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
-          return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
+        }).style('font-family', font).style('font-size', legendFontSize).style('dominant-baseline', legendBaseline).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
+          return yOffset + spacing * j;
         }).style('opacity', 0);
         return text;
       }, function (update) {
@@ -16483,9 +16666,26 @@
       }).attr("class", function (i) {
         return "brc-altlat-legend-item-text brc-altlat brc-altlat-".concat(i.radius);
       });
+      var ls = gAltLat.selectAll('.brc-altlat-legend-item-circle').data(items, function (i) {
+        return safeId(i.text);
+      }).join(function (enter) {
+        var swatches = enter.append("circle").attr('r', 0).attr('cx', xOffset).attr('cy', function (i, j) {
+          return yOffset + spacing * j;
+        });
+        return swatches;
+      }, function (update) {
+        return update;
+      }).attr("class", function (i) {
+        return "brc-altlat-legend-item-circle brc-altlat brc-altlat-".concat(i.radius);
+      });
       var textTrans = lt.transition(t).attr('x', xOffset + maxRadius * 1.3).attr('y', function (i, j) {
-        return yOffset + maxRadius * 2.2 * j + maxRadius * 0.5;
+        return yOffset + spacing * j;
       }).style('opacity', 1);
+      var swatchTrans = ls.transition(t).attr('r', function (i) {
+        return i.radiusTrans;
+      }).attr('cx', xOffset).attr('cy', function (i, j) {
+        return yOffset + spacing * j;
+      });
       addEventHandlers(ls);
       addEventHandlers(lt);
       var pTrans = [];
@@ -16805,7 +17005,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.15.1";
+  var version = "0.16.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

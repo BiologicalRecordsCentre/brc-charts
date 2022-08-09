@@ -178,6 +178,14 @@ function makeUpdateChart(
       return kde(ds.map(d => d.slope))
     })
 
+    // For some reason which I don't understand, x values can occassionally overshoot
+    // xMaxBuff - so correct.
+    densities.forEach(ds => {
+      ds.forEach(d => {
+        if (d[0] > xMaxBuff) d[0] = xMaxBuff
+      })
+    })
+
     // Y value scales must be done on the density values
     // Add a buffer of 1/50 range so y value doesn't go to top of chart
     // Create an overall scale.

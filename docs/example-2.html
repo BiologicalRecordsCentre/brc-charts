@@ -4,6 +4,18 @@
   <meta charset="utf-8">
   <title>BRC Charts Library example 2</title>
   <style>
+    @font-face {
+    font-family: 'Minion Pro';
+      src: url('MinionPro-Regular.eot');
+      src: url('fonts/MinionPro-Regular.eot?#iefix') format('embedded-opentype'),
+          url('fonts/MinionPro-Regular.woff2') format('woff2'),
+          url('fonts/MinionPro-Regular.woff') format('woff'),
+          url('fonts/MinionPro-Regular.ttf') format('truetype'),
+          url('fonts/MinionPro-Regular.svg#MinionPro-Regular') format('svg');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
     .divfl {
       float: left;
       overflow: hidden;
@@ -344,7 +356,7 @@ brccharts.phen1(phen)</code></pre>
           taxa: ['Vanessa cardui', 'Aglais urticae'],
           monthLineWidth: 1,
           metrics: [
-            { prop: '2020', label: '2020', colour: 'red' },
+            { prop: '2020', label: '2020', colour: 'red',  strokeWidth: '2' },
             { prop: '2019', label: '2019', colour: '#4188A3' },
             { prop: '2018', label: '2018', colour: 'fading' },
             { prop: '2017', label: '2017', colour: 'fading' },
@@ -356,7 +368,9 @@ brccharts.phen1(phen)</code></pre>
           perRow: 2,
           margin: {left: 48, right: 0, top: 20, bottom: 5},
           expand: true,
-          axisLeftLabel: 'Number of records per week'
+          axisLeftLabel: 'Number of records per week',
+          //lineWidth: 4
+          //font: 'Times New Roman'
         }
         brccharts.phen1(phen)
       })
@@ -515,7 +529,7 @@ brccharts.phen1(phen)</code></pre>
           title: 'Phenology of butterflies recorded in the UK between 2016 and 2020',
           subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',
           footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
-          footerAlign: 'right'
+          footerAlign: 'right',
         }
         chart4 = brccharts.phen1(phen2)
       })
@@ -557,6 +571,11 @@ brccharts.phen1(phen)</code></pre>
         height: 25,
         perRow: 1,
         showTaxonLabel: false,
+        // monthFontSize: '17.6pt',
+        // displayLegend: false,
+        // lineWidth: 1,
+        // font: 'Minion Pro',
+        // font: 'Times New Roman'
       }
       var phenBand = brccharts.phen2(phenOpts)
       phenOpts.selector = '#chart6'
