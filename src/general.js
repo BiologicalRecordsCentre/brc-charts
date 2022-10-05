@@ -1,7 +1,8 @@
 import * as d3 from 'd3'
 
 export function safeId(text) {
-  return text ? text.replace(/\W/g,'_') : null
+  // Ensure selector starts with a letter. Replace white space with underscores.
+  return text ? `id_${text.replace(/\W/g,'_')}` : null
 }
 
 export function cloneData(data) {

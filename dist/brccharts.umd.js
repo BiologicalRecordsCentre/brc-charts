@@ -103,7 +103,8 @@
   }
 
   function safeId(text) {
-    return text ? text.replace(/\W/g, '_') : null;
+    // Ensure selector starts with a letter. Replace white space with underscores.
+    return text ? "id_".concat(text.replace(/\W/g, '_')) : null;
   }
   function cloneData(data) {
     return data.map(function (d) {
@@ -6523,6 +6524,635 @@
     });
   }
 
+  function addEventHandlers$2(sel, prop, svgChart, interactivity) {
+    sel.on("mouseover", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem$2(d[prop], true, svgChart);
+      }
+    }).on("mouseout", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem$2(d[prop], false, svgChart);
+      }
+    }).on("click", function (d) {
+      if (interactivity === 'mouseclick') {
+        highlightItem$2(d[prop], true, svgChart);
+        d3.event.stopPropagation();
+      }
+    });
+  }
+  function highlightItem$2(id, highlight, svgChart) {
+    svgChart.selectAll('.yearly-graphic').classed('lowlight', false);
+
+    if (highlight) {
+      svgChart.selectAll('.yearly-graphic').classed('lowlight', true);
+      svgChart.selectAll(".yearly-".concat(id)).classed('lowlight', false);
+    }
+  }
+
+  function makeYearly(svgChart, taxon, taxa, data, minYear, maxYear, minYearTrans, maxYearTrans, paddingYear, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel) {
+    // Pre-process data.
+    // Filter to named taxon and to min and max year and sort in year order
+    // Add max value to each.
+    var dataFiltered = data.filter(function (d) {
+      return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
+    }).sort(function (a, b) {
+      return a.year > b.year ? 1 : -1;
+    }); // Set the min and maximum values for the y axis
+
+    var maxCounts = metricsPlus.map(function (m) {
+      return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandUpper];
+      }).map(function (d) {
+        return d[m.bandUpper];
+      }))));
+    });
+    var minCounts = metricsPlus.map(function (m) {
+      return Math.min.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandLower];
+      }).map(function (d) {
+        return d[m.bandLower];
+      }))));
+    });
+    var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxCounts));
+
+    if (yAxisOpts.minMax !== null) {
+      if (yMaxCount < yAxisOpts.minMax) {
+        yMaxCount = yAxisOpts.minMax;
+      }
+    }
+
+    var yMinCount = Math.min.apply(Math, _toConsumableArray(minCounts));
+
+    if (yAxisOpts.fixedMin !== null) {
+      yMinCount = yAxisOpts.fixedMin;
+    } // Value scales
+
+
+    var years = [];
+
+    for (var i = minYear; i <= maxYear; i++) {
+      years.push(i);
+    }
+
+    var xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1);
+    var xScaleLine = d3.scaleLinear().domain([minYear - paddingYear, maxYear + paddingYear]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([yMinCount, yMaxCount]).range([height, 0]); // Top axis
+
+    var tAxis;
+
+    if (axisTop === 'on') {
+      tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
+      .tickValues([]).tickSizeOuter(0);
+    } // Bottom axis
+
+
+    var bAxis;
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      bAxis = xAxisYear(width, axisBottom === 'tick', minYear - paddingYear, maxYear + paddingYear, showCounts === 'bar');
+    } // Left and right axes
+
+
+    var makeXaxis = function makeXaxis(leftRight, axisOpt) {
+      var axis;
+      var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
+
+      switch (axisOpt) {
+        case 'on':
+          axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0);
+          break;
+
+        case 'tick':
+          axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
+          break;
+      }
+
+      return axis;
+    };
+
+    var lAxis = makeXaxis('left', axisLeft);
+    var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
+
+    var init, svgYearly, gYearly;
+
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-yearly').size() === 1) {
+      svgYearly = svgChart.select('.brc-chart-yearly');
+      gYearly = svgYearly.select('.brc-chart-yearly-g');
+      init = false;
+    } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+      svgYearly = svgChart.select("#".concat(safeId(taxon)));
+      gYearly = svgYearly.select('.brc-chart-yearly-g');
+      init = false;
+    } else {
+      svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon)).style('overflow', 'visible');
+      gYearly = svgYearly.append('g').classed('brc-chart-yearly-g', true);
+      init = true;
+    } // Line path generator
+
+
+    var lineCounts = d3.line() //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
+    // because resulting number of points in path is not constant.
+    .x(function (d) {
+      return xScaleLine(d.year);
+    }).y(function (d) {
+      return yScale(d.n);
+    });
+    var chartLines = [];
+    var chartBars = [];
+    var chartBands = [];
+    var chartPoints = [];
+    var chartErrorBars = [];
+    metricsPlus.forEach(function (m) {
+      // Create a collection of the years in the dataset.
+      var dataDict = dataFiltered.reduce(function (a, d) {
+        a[d.year] = d[m.prop];
+        return a;
+      }, {}); // Construct data structure for line charts.
+
+      if (showCounts === 'line') {
+        chartLines.push({
+          colour: m.colour,
+          opacity: m.opacity,
+          strokeWidth: m.strokeWidth,
+          type: 'counts',
+          prop: m.prop,
+          points: adjustForTrans(years.map(function (y) {
+            // Note below that if the year is not in the datasets, we create a
+            // point with the value of zero.
+            // TODO - this needs revisiting if we account for 'broken' lines
+            // where gaps should be shown. So this will need parameterising 
+            // somehow.
+            return {
+              year: y,
+              n: dataDict[y] ? dataDict[y] : 0
+            };
+          }))
+        });
+      } // Construct data structure for condidence band on line charts.
+
+
+      if (showCounts === 'line' && m.bandUpper && m.bandLower) {
+        var ddUpper = dataFiltered.reduce(function (a, d) {
+          a[d.year] = d[m.bandUpper];
+          return a;
+        }, {});
+        var ddLower = dataFiltered.reduce(function (a, d) {
+          a[d.year] = d[m.bandLower];
+          return a;
+        }, {});
+        var upperLine = years.map(function (y) {
+          return {
+            year: y,
+            n: ddUpper[y] ? ddUpper[y] : 0
+          };
+        });
+        var lowerLine = [].concat(years).map(function (y) {
+          return {
+            year: y,
+            n: ddLower[y] ? ddLower[y] : 0
+          };
+        });
+        chartBands.push({
+          fill: m.bandFill ? m.bandFill : 'silver',
+          stroke: m.bandStroke ? m.bandStroke : 'grey',
+          fillOpacity: m.bandOpacity ? m.bandOpacity : 0.5,
+          strokeOpacity: m.bandStrokeOpacity ? m.bandStrokeOpacity : 1,
+          strokeWidth: m.bandStrokeWidth ? m.bandStrokeWidth : 1,
+          type: 'counts',
+          prop: m.prop,
+          pointsLines: [adjustForTrans(lowerLine), adjustForTrans(upperLine)],
+          pointsBand: [].concat(_toConsumableArray(adjustForTrans(lowerLine)), _toConsumableArray(adjustForTrans(upperLine).reverse()))
+        });
+      } // Construct data structure for bar charts.
+
+
+      if (showCounts === 'bar') {
+        var bars = dataFiltered.map(function (d) {
+          return {
+            colour: m.colour,
+            opacity: m.opacity,
+            type: 'counts',
+            prop: m.prop,
+            year: d.year,
+            n: yScale(d[m.prop])
+          };
+        });
+        chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
+      } // Construct data structure for points.
+      // TODO - if at some point we parameterise display styles
+      // for points bars, then it must be specified in here.
+
+
+      if (m.points) {
+        var points = dataFiltered.filter(function (d) {
+          return d[m.prop];
+        }).map(function (d) {
+          var x;
+
+          if (showCounts === 'bar') {
+            x = xScaleBar(d.year) + xScaleBar.bandwidth() / 2;
+          } else {
+            x = xScaleLine(d.year);
+          }
+
+          return {
+            x: x,
+            y: yScale(d[m.prop]),
+            year: d.year,
+            prop: m.prop
+          };
+        });
+        chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
+      } // Construct data structure for error bars.
+      // TODO - if at some point we parameterise display styles
+      // for error bars, then it must be specified in here.
+
+
+      if (m.errorBarUpper && m.errorBarLower) {
+        var errorBars = dataFiltered.map(function (d) {
+          var x;
+
+          if (showCounts === 'bar') {
+            x = xScaleBar(d.year) + xScaleBar.bandwidth() / 2;
+          } else {
+            x = xScaleLine(d.year);
+          }
+
+          return {
+            year: d.year,
+            pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
+            path: "M ".concat(x, " ").concat(yScale(d[m.errorBarLower]), " L ").concat(x, " ").concat(yScale(d[m.errorBarUpper])),
+            prop: m.prop
+          };
+        });
+        chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(errorBars));
+      }
+    }); // d3 transition object
+
+    var t = svgYearly.transition().duration(duration); // Bars
+
+    gYearly.selectAll(".yearly-bar").data(chartBars, function (d) {
+      return "bars-".concat(d.prop, "-").concat(d.year);
+    }).join(function (enter) {
+      return enter.append("rect").attr("class", function (d) {
+        return "yearly-bar yearly-graphic yearly-".concat(d.prop);
+      }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
+        return d.colour;
+      }).attr('opacity', function (d) {
+        return d.opacity;
+      }).attr('y', height).attr('x', function (d) {
+        return xScaleBar(d.year);
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return exit.transition(t).attr('height', 0).attr('y', height).remove();
+      });
+    }).transition(t) // The selection returned by the join function is the merged
+    // enter and update selections
+    .attr('y', function (d) {
+      return d.n;
+    }).attr('x', function (d) {
+      return xScaleBar(d.year);
+    }).attr('height', function (d) {
+      return height - d.n;
+    }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
+      return d.colour;
+    }); // Bands
+
+    gYearly.selectAll(".yearly-band").data(chartBands, function (d) {
+      return "band-".concat(d.prop);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "yearly-band yearly-graphic yearly-".concat(d.prop);
+      }).attr("opacity", function (d) {
+        return d.fillOpacity;
+      }).attr("fill", function (d) {
+        return d.fill;
+      }).attr("stroke", "none").attr("d", function (d) {
+        return lineCounts(d.pointsBand.map(function (p) {
+          return {
+            n: yMinCount,
+            year: p.year
+          };
+        }));
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return exit.transition(t).attr("d", function (d) {
+          return lineCounts(d.pointsBand.map(function (p) {
+            return {
+              n: yMinCount,
+              year: p.year
+            };
+          }));
+        }).remove();
+      });
+    }).transition(t) // The selection returned by the join function is the merged
+    // enter and update selections
+    .attr("d", function (d) {
+      return lineCounts(d.pointsBand);
+    }); // Band lines
+
+    var _loop = function _loop(iLine) {
+      gYearly.selectAll(".yearly-band-border-".concat(iLine)).data(chartBands, function (d) {
+        return "band-line-".concat(d.prop, "-").concat(iLine);
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (d) {
+          return "yearly-band-border-".concat(iLine, " yearly-graphic yearly-").concat(d.prop);
+        }).attr("opacity", function (d) {
+          return d.strokeOpacity;
+        }).attr("fill", "none").attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }).attr("d", function (d) {
+          return lineCounts(d.pointsLines[iLine].map(function (p) {
+            return {
+              n: yMinCount,
+              year: p.year
+            };
+          }));
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return exit.transition(t).attr("d", function (d) {
+            return lineCounts(d.pointsLines[iLine].map(function (p) {
+              return {
+                n: yMinCount,
+                year: p.year
+              };
+            }));
+          }).remove();
+        });
+      }).transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return lineCounts(d.pointsLines[iLine]);
+      });
+    };
+
+    for (var iLine = 0; iLine < 2; iLine++) {
+      _loop(iLine);
+    } // Main lines
+
+
+    gYearly.selectAll(".yearly-line").data(chartLines, function (d) {
+      return "line-".concat(d.prop);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "yearly-line yearly-graphic yearly-".concat(d.prop);
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).attr("fill", "none").attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }).attr("d", function (d) {
+        return lineCounts(d.points.map(function (p) {
+          return {
+            n: yMinCount,
+            year: p.year
+          };
+        }));
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return exit.transition(t).attr("d", function (d) {
+          return lineCounts(d.points.map(function (p) {
+            return {
+              n: yMinCount,
+              year: p.year
+            };
+          }));
+        }).remove();
+      });
+    }).transition(t) // The selection returned by the join function is the merged
+    // enter and update selections
+    .attr("d", function (d) {
+      return lineCounts(d.points);
+    }); // Error bars
+
+    gYearly.selectAll('.yearly-error-bars').data(chartErrorBars, function (d) {
+      return "error-bars-".concat(d.prop, "-").concat(d.year);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", function (d) {
+        return "yearly-error-bars yearly-graphic yearly-".concat(d.prop);
+      }).attr("d", function (d) {
+        return d.pathEnter;
+      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).attr("d", function (d) {
+        return d.pathEnter;
+      }).remove();
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .transition().duration(duration).attr("d", function (d) {
+      return d.path;
+    }).style('opacity', 1); // Points
+
+    gYearly.selectAll('.yearly-point').data(chartPoints, function (d) {
+      return "point-".concat(d.prop, "-").concat(d.year);
+    }).join(function (enter) {
+      return enter.append('circle').attr("class", function (d) {
+        return "yearly-point yearly-graphic yearly-".concat(d.prop);
+      }).attr('cx', function (d) {
+        return d.x;
+      }) //.attr('cy', d => d.y)
+      .attr('cy', height).attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition().duration(duration).style("opacity", 0).attr('cy', height).remove();
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .transition().duration(duration).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }).style('opacity', 1);
+    addEventHandlers$2(gYearly.selectAll("path"), 'prop', svgChart, interactivity);
+    addEventHandlers$2(gYearly.selectAll(".yearly-bar"), 'prop', svgChart, interactivity);
+    addEventHandlers$2(gYearly.selectAll("circle"), 'prop', svgChart, interactivity);
+
+    if (init) {
+      // Constants for positioning
+      var axisLeftPadX = margin.left ? margin.left : 0;
+      var axisRightPadX = margin.right ? margin.right : 0;
+      var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+      var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
+
+      if (showTaxonLabel) {
+        var taxonLabel = svgYearly.append('text').classed('brc-chart-yearly-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+        var labelHeight = taxonLabel.node().getBBox().height;
+        taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
+      } // Size SVG
+
+
+      svgYearly.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
+
+      gYearly.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
+
+      var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
+      var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+      var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(axisTopPadY + height / 2, ") rotate(90)");
+      var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
+
+      if (lAxis) {
+        var gLaxis = svgYearly.append("g").attr("class", "l-axis"); // .classed('yearly-type-counts',  axisLeft === 'tick')
+        // .classed('yearly-type-props',  axisLeft !== 'tick')
+
+        gLaxis.attr("transform", leftYaxisTrans);
+      }
+
+      if (bAxis) {
+        var gBaxis = svgYearly.append("g").attr("class", "x axis").call(bAxis);
+        gBaxis.attr("transform", bottomXaxisTrans);
+      }
+
+      if (tAxis) {
+        var gTaxis = svgYearly.append("g").call(tAxis);
+        gTaxis.attr("transform", topXaxisTrans);
+      }
+
+      if (rAxis) {
+        var gRaxis = svgYearly.append("g") //.call(rAxis)
+        .attr("class", "r-axis"); // .classed('yearly-type-counts',  axisRight === 'tick')
+        // .classed('yearly-type-props',  axisRight !== 'tick')
+
+        gRaxis.attr("transform", rightYaxisTrans);
+      }
+
+      var tYaxisLeftLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisLeft === 'tick')
+      // .classed('yearly-type-props',  axisLeft !== 'tick')
+      .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+      tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+      var tYaxisRightLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisRight === 'tick')
+      // .classed('yearly-type-props',  axisRight !== 'tick')
+      .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+      tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
+    } else {
+      if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgYearly.select('.brc-chart-yearly-label').text(taxon);
+        }
+      } // Update the bottom axis if it exists. We do this because
+      // yearMin and/or yearMax may have changed.
+
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        svgYearly.select(".x.axis").transition().duration(duration).call(bAxis);
+      }
+    }
+
+    if (svgYearly.selectAll(".l-axis").size()) {
+      svgYearly.select(".l-axis").transition().duration(duration).call(lAxis);
+    }
+
+    if (svgYearly.selectAll(".r-axis").size()) {
+      svgYearly.select(".r-axis").transition().duration(duration).call(rAxis);
+    }
+
+    return svgYearly;
+
+    function adjustForTrans(pnts) {
+      var ret = _toConsumableArray(pnts);
+
+      if (minYearTrans) {
+        for (var _i = minYearTrans; _i <= pnts[0].year; _i++) {
+          ret.unshift({
+            n: pnts[0].n,
+            year: pnts[0].year
+          });
+        }
+      }
+
+      if (maxYearTrans) {
+        for (var _i2 = pnts[pnts.length - 1].year + 1; _i2 <= maxYearTrans; _i2++) {
+          ret.push({
+            n: pnts[pnts.length - 1].n,
+            year: pnts[pnts.length - 1].year
+          });
+        }
+      }
+
+      return ret;
+    }
+  }
+
+  function makeLegend$2(svgChart, metricsPlus, legendWidth, legendFontSize, headPad, showCounts, interactivity) {
+    var swatchSize = 15;
+    var swatchFact = 1.3; // Loop through all the legend elements and work out their
+    // positions based on swatch size, item label text size and
+    // legend width.
+
+    var metricsReversed = cloneData(metricsPlus).reverse();
+    var rows = 0;
+    var lineWidth = -swatchSize;
+    metricsReversed.forEach(function (m) {
+      var tmpText = svgChart.append('text') //.style('display', 'none')
+      .text(m.label).style('font-size', legendFontSize);
+      var widthText = tmpText.node().getBBox().width;
+      tmpText.remove();
+
+      if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+        ++rows;
+        lineWidth = -swatchSize;
+      }
+
+      m.x = lineWidth + swatchSize + headPad;
+      m.y = rows * swatchSize * swatchFact;
+      lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+    });
+    var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var rect = enter.append("rect").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-rect yearly-graphic yearly-".concat(m.prop);
+      }).attr('width', swatchSize).attr('height', showCounts === 'bar' ? swatchSize : 2);
+      return rect;
+    }).attr('x', function (m) {
+      return m.x;
+    }).attr('y', function (m) {
+      return showCounts === 'bar' ? m.y + swatchSize / 5 : m.y + swatchSize / 2;
+    }).attr('fill', function (m) {
+      return m.colour;
+    });
+    var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var text = enter.append("text").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-text yearly-graphic yearly-".concat(m.prop);
+      }).text(function (m) {
+        return m.label;
+      }).style('font-size', legendFontSize);
+      return text;
+    }).attr('x', function (m) {
+      return m.x + swatchSize * swatchFact;
+    }).attr('y', function (m) {
+      return m.y + legendFontSize * 1;
+    });
+    addEventHandlers$2(ls, 'prop', svgChart, interactivity);
+    addEventHandlers$2(lt, 'prop', svgChart, interactivity);
+    return swatchSize * swatchFact * (rows + 1);
+  }
+
   /** 
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
@@ -6559,6 +7189,11 @@
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+   * @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
+   * @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
+   * @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
+   * @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
    * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
    * @param {string} opts.showCounts - The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
@@ -6567,7 +7202,7 @@
    * data for which graphics should be generated on the chart.
    * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
    * <ul>
-   * <li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+   * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
    * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
    * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
@@ -6576,21 +7211,47 @@
    * (Optional - default is 0.5.)
    * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
    * (Optional - default is 1.)
+   * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
+   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
+   * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
+   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
+   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
+   * specifying web colours can be used. 
+   * (Optional - default is 'silver'.)
+   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
+   * specifying web colours can be used. 
+   * (Optional - default is 'grey'.)
+   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+   * (Optional - default is 0.5.)
+   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+   * (Optional - default is 1.)
+   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+   * (Optional - default is 1.)
+   * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
+   * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
+   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+  * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
+   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>year</b> - a four digit number indicating a year.
-   * <li> <b>c1</b> - a count for a given time year (can have any name). 
-   * <li> <b>c2</b> - a count for a given time year (can have any name).
-   * ... - there must be at leas one count column, but there can be any number of them.
+   * <li> <b>c1</b> - a metric for a given year (can have any name). 
+   * <li> <b>c2</b> - a metric for a given year (can have any name).
+   * ... - there must be at least one metric column, but there can be any number of them.
    * </ul>
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
 
    * @param {number} opts.minYear Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
    * @param {number} opts.maxYear Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+   * @param {number} opts.minYearTrans If set, this indicates the lowest possible year. It is only useful if transitioning between datasets with different
+   * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+   * @param {number} opts.maxYearTrans If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
+   * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+   * @param {number} opts.paddingYear Padding to add, in number of years, either side of min and max year value. Can only be used on line charts. (Default - 0.)
    * @returns {module:yearly~api} api - Returns an API for the chart.
    */
 
@@ -6651,6 +7312,13 @@
         taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
         _ref$axisLeft = _ref.axisLeft,
         axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$yAxisOpts = _ref.yAxisOpts,
+        yAxisOpts = _ref$yAxisOpts === void 0 ? {
+      numFormat: 'd',
+      minMax: 5,
+      fixedMin: 0,
+      padding: 0
+    } : _ref$yAxisOpts,
         _ref$axisBottom = _ref.axisBottom,
         axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
         _ref$axisRight = _ref.axisRight,
@@ -6674,14 +7342,25 @@
         _ref$minYear = _ref.minYear,
         minYear = _ref$minYear === void 0 ? null : _ref$minYear,
         _ref$maxYear = _ref.maxYear,
-        maxYear = _ref$maxYear === void 0 ? null : _ref$maxYear;
+        maxYear = _ref$maxYear === void 0 ? null : _ref$maxYear,
+        _ref$minYearTrans = _ref.minYearTrans,
+        minYearTrans = _ref$minYearTrans === void 0 ? null : _ref$minYearTrans,
+        _ref$maxYearTrans = _ref.maxYearTrans,
+        maxYearTrans = _ref$maxYearTrans === void 0 ? null : _ref$maxYearTrans,
+        _ref$paddingYear = _ref.paddingYear,
+        paddingYear = _ref$paddingYear === void 0 ? 0 : _ref$paddingYear;
+
+    // paddingYear can not be used with charts of bar type.
+    if (showCounts === 'bar') {
+      paddingYear = 0;
+    }
 
     var metricsPlus;
     var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
     var svg = mainDiv.append('svg');
     svg.on("click", function () {
       if (interactivity === 'mouseclick') {
-        highlightItem(null, false);
+        highlightItem$2(null, false, svgChart);
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly');
@@ -6720,11 +7399,11 @@
 
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
-        return makeYearly(t);
+        return makeYearly(svgChart, t, taxa, data, minYear, maxYear, minYearTrans, maxYearTrans, paddingYear, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
-      var legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad : 0;
+      var legendHeight = showLegend ? makeLegend$2(svgChart, metricsPlus, perRow * (subChartWidth + subChartPad) - headPad, legendFontSize, headPad, showCounts, interactivity) + subChartPad : 0;
       svgsTaxa.forEach(function (svgTaxon, i) {
         var col = i % perRow;
         var row = Math.floor(i / perRow);
@@ -6755,376 +7434,23 @@
           opacity: m.opacity ? m.opacity : 0.5,
           colour: m.colour ? m.colour : 'blue',
           fading: iFade,
-          strokeWidth: strokeWidth
+          strokeWidth: strokeWidth,
+          bandUpper: m.bandUpper,
+          bandLower: m.bandLower,
+          bandFill: m.bandFill,
+          bandOpacity: m.bandOpacity,
+          bandStroke: m.bandStroke,
+          bandStrokeWidth: m.bandStrokeWidth,
+          bandStrokeOpacity: m.bandStrokeOpacity,
+          points: m.points,
+          errorBarUpper: m.errorBarUpper,
+          errorBarLower: m.errorBarLower
         };
       }).reverse();
       var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
       metricsPlus.forEach(function (m) {
         if (m.fading) {
           m.colour = grey(m.fading);
-        }
-      });
-    }
-
-    function makeYearly(taxon) {
-      // Pre-process data.
-      // Filter to named taxon and to min and max year and sort in year order
-      // Add max value to each.
-      var dataFiltered = data.filter(function (d) {
-        return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
-      }).sort(function (a, b) {
-        return a.year > b.year ? 1 : -1;
-      }); // Set the maximum values for the y axis
-
-      var maxCounts = metricsPlus.map(function (m) {
-        return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-          return d[m.prop];
-        })));
-      });
-      var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxCounts));
-      yMaxCount = yMaxCount < 5 ? 5 : yMaxCount; // Prevents tiny values
-      // Value scales
-
-      var years = [];
-
-      for (var i = minYear; i <= maxYear; i++) {
-        years.push(i);
-      }
-
-      var xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1);
-      var xScaleLine = d3.scaleLinear().domain([minYear, maxYear]).range([0, width]);
-      var yScaleCount = d3.scaleLinear().domain([0, yMaxCount]).range([height, 0]); // Top axis
-
-      var tAxis;
-
-      if (axisTop === 'on') {
-        tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
-        .tickValues([]).tickSizeOuter(0);
-      } // Bottom axis
-
-
-      var bAxis;
-
-      if (axisBottom === 'on' || axisBottom === 'tick') {
-        bAxis = xAxisYear(width, axisBottom === 'tick', minYear, maxYear, showCounts === 'bar');
-      }
-
-      var makeXaxis = function makeXaxis(leftRight, axisOpt) {
-        var axis;
-        var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
-
-        switch (axisOpt) {
-          case 'on':
-            axis = d3axis.scale(yScaleCount).tickValues([]).tickSizeOuter(0);
-            break;
-
-          case 'tick':
-            axis = d3axis.scale(yScaleCount).ticks(5).tickFormat(d3.format("d"));
-            break;
-        }
-
-        return axis;
-      };
-
-      var lAxis = makeXaxis('left', axisLeft);
-      var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
-
-      var init, svgYearly, gYearly;
-
-      if (taxa.length === 1 && svgChart.selectAll('.brc-chart-yearly').size() === 1) {
-        svgYearly = svgChart.select('.brc-chart-yearly');
-        gYearly = svgYearly.select('.brc-chart-yearly-g');
-        init = false;
-      } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
-        svgYearly = svgChart.select("#".concat(safeId(taxon)));
-        gYearly = svgYearly.select('.brc-chart-yearly-g');
-        init = false;
-      } else {
-        svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon)).style('overflow', 'visible');
-        gYearly = svgYearly.append('g').classed('brc-chart-yearly-g', true);
-        init = true;
-      } // Line path generators
-
-
-      var lineCounts = d3.line().curve(d3.curveMonotoneX).x(function (d) {
-        return xScaleLine(d.year);
-      }).y(function (d) {
-        return yScaleCount(d.n);
-      });
-      var chartLines = [];
-      var chartBars = [];
-      metricsPlus.forEach(function (m) {
-        var dataDict = dataFiltered.reduce(function (a, d) {
-          a[d.year] = d[m.prop];
-          return a;
-        }, {});
-
-        if (showCounts === 'line') {
-          chartLines.push({
-            lineGen: lineCounts,
-            colour: m.colour,
-            opacity: m.opacity,
-            strokeWidth: m.strokeWidth,
-            type: 'counts',
-            prop: m.prop,
-            points: years.map(function (y) {
-              return {
-                year: y,
-                n: dataDict[y] ? dataDict[y] : 0
-              };
-            })
-          });
-        }
-
-        if (showCounts === 'bar') {
-          var bars = dataFiltered.map(function (d) {
-            return {
-              yScale: yScaleCount,
-              colour: m.colour,
-              opacity: m.opacity,
-              type: 'counts',
-              prop: m.prop,
-              year: d.year,
-              n: yScaleCount(d[m.prop])
-            };
-          });
-          chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
-        }
-      });
-      var t = svgYearly.transition().duration(duration);
-      gYearly.selectAll("rect").data(chartBars, function (d) {
-        return "props-".concat(d.year);
-      }).join(function (enter) {
-        return enter.append("rect").attr("class", function (d) {
-          return "yearly-graphic yearly-".concat(d.prop);
-        }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
-          return d.colour;
-        }).attr('opacity', function (d) {
-          return d.opacity;
-        }).attr('y', height).attr('x', function (d) {
-          return xScaleBar(d.year);
-        });
-      }, function (update) {
-        return update;
-      }, function (exit) {
-        return exit.call(function (exit) {
-          return exit.transition(t).attr('height', 0).attr('y', height).remove();
-        });
-      }).transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr('y', function (d) {
-        return d.n;
-      }).attr('x', function (d) {
-        return xScaleBar(d.year);
-      }).attr('height', function (d) {
-        return height - d.n;
-      }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
-        return d.colour;
-      });
-      gYearly.selectAll("path").data(chartLines, function (d) {
-        return d.type;
-      }).join(function (enter) {
-        return enter.append("path").attr("class", function (d) {
-          return "yearly-graphic yearly-".concat(d.prop);
-        }).attr("opacity", function (d) {
-          return d.opacity;
-        }).attr("fill", "none").attr("stroke", function (d) {
-          return d.colour;
-        }).attr("stroke-width", function (d) {
-          return d.strokeWidth;
-        }).attr("d", function (d) {
-          return d.lineGen(d.points.map(function (p) {
-            return {
-              n: 0,
-              year: p.year
-            };
-          }));
-        });
-      }, function (update) {
-        return update;
-      }, function (exit) {
-        return exit.call(function (exit) {
-          return exit.transition(t).attr("d", function (d) {
-            return d.lineGen(d.points.map(function (p) {
-              return {
-                n: 0,
-                year: p.year
-              };
-            }));
-          }).remove();
-        });
-      }).transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", function (d) {
-        return d.lineGen(d.points);
-      });
-      addEventHandlers(gYearly.selectAll("path"), 'prop');
-      addEventHandlers(gYearly.selectAll("rect"), 'prop');
-
-      if (init) {
-        // Constants for positioning
-        var axisLeftPadX = margin.left ? margin.left : 0;
-        var axisRightPadX = margin.right ? margin.right : 0;
-        var axisBottomPadY = margin.bottom ? margin.bottom : 0;
-        var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
-
-        if (showTaxonLabel) {
-          var taxonLabel = svgYearly.append('text').classed('brc-chart-yearly-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
-          var labelHeight = taxonLabel.node().getBBox().height;
-          taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
-        } // Size SVG
-
-
-        svgYearly.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
-
-        gYearly.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
-
-        var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-        var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
-        var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
-        var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(axisTopPadY + height / 2, ") rotate(90)");
-        var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
-        var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
-
-        if (lAxis) {
-          var gLaxis = svgYearly.append("g").attr("class", "l-axis"); // .classed('yearly-type-counts',  axisLeft === 'tick')
-          // .classed('yearly-type-props',  axisLeft !== 'tick')
-
-          gLaxis.attr("transform", leftYaxisTrans);
-        }
-
-        if (bAxis) {
-          var gBaxis = svgYearly.append("g").attr("class", "x axis").call(bAxis);
-          gBaxis.attr("transform", bottomXaxisTrans);
-        }
-
-        if (tAxis) {
-          var gTaxis = svgYearly.append("g").call(tAxis);
-          gTaxis.attr("transform", topXaxisTrans);
-        }
-
-        if (rAxis) {
-          var gRaxis = svgYearly.append("g") //.call(rAxis)
-          .attr("class", "r-axis"); // .classed('yearly-type-counts',  axisRight === 'tick')
-          // .classed('yearly-type-props',  axisRight !== 'tick')
-
-          gRaxis.attr("transform", rightYaxisTrans);
-        }
-
-        var tYaxisLeftLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisLeft === 'tick')
-        // .classed('yearly-type-props',  axisLeft !== 'tick')
-        .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
-        tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
-        var tYaxisRightLabel = svgYearly.append("text") // .classed('yearly-type-counts',  axisRight === 'tick')
-        // .classed('yearly-type-props',  axisRight !== 'tick')
-        .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
-        tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
-      } else {
-        if (taxa.length === 1) {
-          // Update taxon label
-          if (showTaxonLabel) {
-            svgYearly.select('.brc-chart-yearly-label').text(taxon);
-          }
-        } // Update the bottom axis if it exists. We do this because
-        // yearMin and/or yearMax may have changed.
-
-
-        if (axisBottom === 'on' || axisBottom === 'tick') {
-          svgYearly.select(".x.axis").selectAll('*').remove();
-          svgYearly.select(".x.axis").call(bAxis);
-        }
-      }
-
-      if (svgYearly.selectAll(".l-axis").size()) {
-        svgYearly.select(".l-axis").transition().duration(duration).call(lAxis);
-      }
-
-      if (svgYearly.selectAll(".r-axis").size()) {
-        svgYearly.select(".r-axis").transition().duration(duration).call(rAxis);
-      }
-
-      return svgYearly;
-    }
-
-    function makeLegend(legendWidth) {
-      var swatchSize = 15;
-      var swatchFact = 1.3; // Loop through all the legend elements and work out their
-      // positions based on swatch size, item label text size and
-      // legend width.
-
-      var metricsReversed = cloneData(metricsPlus).reverse();
-      var rows = 0;
-      var lineWidth = -swatchSize;
-      metricsReversed.forEach(function (m) {
-        var tmpText = svgChart.append('text') //.style('display', 'none')
-        .text(m.label).style('font-size', legendFontSize);
-        var widthText = tmpText.node().getBBox().width;
-        tmpText.remove();
-
-        if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
-          ++rows;
-          lineWidth = -swatchSize;
-        }
-
-        m.x = lineWidth + swatchSize + headPad;
-        m.y = rows * swatchSize * swatchFact;
-        lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
-      });
-      var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
-        return safeId(m.label);
-      }).join(function (enter) {
-        var rect = enter.append("rect").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-rect yearly-graphic yearly-".concat(m.prop);
-        }).attr('width', swatchSize).attr('height', showCounts === 'bar' ? swatchSize : 2);
-        return rect;
-      }).attr('x', function (m) {
-        return m.x;
-      }).attr('y', function (m) {
-        return showCounts === 'bar' ? m.y + swatchSize / 5 : m.y + swatchSize / 2;
-      }).attr('fill', function (m) {
-        return m.colour;
-      });
-      var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
-        return safeId(m.label);
-      }).join(function (enter) {
-        var text = enter.append("text").attr("class", function (m) {
-          return "brc-legend-item brc-legend-item-text yearly-graphic yearly-".concat(m.prop);
-        }).text(function (m) {
-          return m.label;
-        }).style('font-size', legendFontSize);
-        return text;
-      }).attr('x', function (m) {
-        return m.x + swatchSize * swatchFact;
-      }).attr('y', function (m) {
-        return m.y + legendFontSize * 1;
-      });
-      addEventHandlers(ls, 'prop');
-      addEventHandlers(lt, 'prop');
-      return swatchSize * swatchFact * (rows + 1);
-    }
-
-    function highlightItem(id, highlight) {
-      svgChart.selectAll('.yearly-graphic').classed('lowlight', false);
-
-      if (highlight) {
-        svgChart.selectAll('.yearly-graphic').classed('lowlight', true);
-        svgChart.selectAll(".yearly-".concat(id)).classed('lowlight', false);
-      }
-    }
-
-    function addEventHandlers(sel, prop) {
-      sel.on("mouseover", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(d[prop], true);
-        }
-      }).on("mouseout", function (d) {
-        if (interactivity === 'mousemove') {
-          highlightItem(d[prop], false);
-        }
-      }).on("click", function (d) {
-        if (interactivity === 'mouseclick') {
-          highlightItem(d[prop], true);
-          d3.event.stopPropagation();
         }
       });
     }
@@ -7202,12 +7528,17 @@
         data = opts.data;
       }
 
+      if ('taxa' in opts) {
+        taxa = opts.taxa;
+        highlightItem$2(null, false, svgChart);
+      }
+
       var textWidth = Number(svg.select('.mainChart').attr("width"));
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
 
-      if ('data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
+      if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
         preProcessMetrics();
         makeChart();
       }
@@ -7226,7 +7557,7 @@
         console.log("You can only use the setTaxon method when your chart displays a single taxon.");
       } else {
         taxa = [taxon];
-        highlightItem(null, false);
+        highlightItem$2(null, false, svgChart);
         makeChart();
       }
     }

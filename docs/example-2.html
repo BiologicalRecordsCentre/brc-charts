@@ -645,7 +645,13 @@ brccharts.phen1(phen)</code></pre>
           leaf: leafRange.map(r => {return {start: r[0], end: r[1]}}),
           both: overlapRange.map(r => {return {start: r[0], end: r[1]}}),
         }]
-        phenBand.setChartOpts({data: data}).then(() => console.log('transition end'))
+        phenBand.setChartOpts({data: data}).then(() => {
+          console.log('transition end')
+
+          //d3.selectAll('#chart6 g.axis g.tick line').style('stroke', 'red')
+          d3.selectAll('#chart6 g.axis g.tick line').style('transform', 'translate(0, 0.1pt')
+          d3.selectAll('#chart6 .phen-rect').style('transform', 'translate(0, 0.1pt')
+        })
         phenBand2.setChartOpts({data: data}).then(() => console.log('transition end'))
       }
     </script>

@@ -25,6 +25,11 @@
 &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
 </pre>
 
+    <!-- <div id="enhanced1"></div>
+    <button onclick="enhanced1('cornish')">Cornish</button>
+    <button onclick="enhanced1('dorset')">Dorset</button>
+    <button onclick="enhanced1('both')">Both</button> -->
+
     <p>
       All the examples on this page use data derived from records downloaded from the NBN in March 2021 from these datasets:
       <i><a href="https://registry.nbnatlas.org/public/showDataResource/dr695">Ladybird Survey of the UK</a></i> and 
@@ -305,7 +310,7 @@
         selector: '#chart2a',
         taxa: ['Anatis ocellata', 'Harmonia axyridis'],
         metrics: [
-          { prop: 'dr736', label: 'iRecord ', colour: 'red' },
+          { prop: 'dr736', label: 'iRecord ', colour: 'red'},
           { prop: 'dr695', label: 'Ladybird survey of UK', colour: '#4188A3' }
         ],
         minYear: 1980,
@@ -419,6 +424,168 @@
             maxYear: 2020
           })
         })
+      }
+
+      // Enhanced examples
+      var optsE1 = {
+        selector: '#enhanced1',
+        taxa: ['2cd4p9h.x66'],
+        yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
+        axisRight: 'on',
+        axisTop: 'on',
+        metrics: [
+          { 
+            prop: 'x50', 
+            colour: 'blue', 
+            opacity: 1,
+            lineWidth: 2,
+            bandUpper: 'x95', 
+            bandLower: 'x5', 
+            bandFill: 'silver', 
+            bandStroke: 'rgb(200,200,200)',
+            bandOpacity: 0.3,
+            bandStrokeOpacity: 1,
+            bandStrokeWidth: 1,
+            //points: 'x50',
+            errorBarUpper: 'x95',
+            errorBarLower: 'x5'
+          },
+        ],
+        showLegend: true,
+        interactivity: 'mousemove', 
+        showTaxonLabel: false,
+        showCounts: 'bar',
+        axisLeftLabel: 'Relative frequency',
+        margin: {left: 50, right: 50, bottom: 20, top: 20},
+        paddingYear: 1.5,
+        minYearTrans: 1950,
+        maxYearTrans: 2000,
+        //minYear: 2000
+      }
+
+      const pMeans = d3.csv(`./data/trends/cornish-heath-gb-mean-sd.csv`, function(d){
+          return {
+            year: Number(d.year),
+            mean: Number(d.mean),
+            sd: Number(d.std),
+          }
+        })
+
+      const pTrend = d3.csv('./data/2cd4p9h_x66_trend.csv', function(d){
+        for (p in d) {
+          if (p !== 'ddbid') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+        }
+        return {
+          taxon: d.ddbid,
+          year: d.year,
+          x5: d.x5,
+          x50: d.x50,
+          x95: d.x95
+        }
+      })
+      
+      let en1
+      Promise.all([pMeans, pTrend]).then(function(data){
+        //console.log(data[0])
+        //console.log(data[1])
+        optsE1.data = data[1]
+        //en1 = brccharts.yearly(optsE1)
+      })
+
+      function formatData(d) {
+        for (p in d) {
+          if (p !== 'ddbid') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+        }
+        return {
+          taxon: d.ddbid,
+          year: d.year,
+          x5: d.x5,
+          x50: d.x50,
+          x95: d.x95
+        }
+      }
+
+      function enhanced1(file) {
+
+        let pCornish, pDorset
+        if (file === 'cornish' || file === 'both') {
+          pCornish = d3.csv('./data/trends/cornish-heath-gb-gam.csv', formatData)
+        }
+        if (file === 'dorset' || file === 'both') {
+          pDorset = d3.csv('./data/trends/dorset-heath-gb-gam.csv', formatData)
+        }
+
+        if (file === 'cornish') {
+          pCornish.then(data => {
+            if (optsE1.metrics.length === 2) {
+              optsE1.metrics = [optsE1.metrics[0]]
+            }
+            optsE1.data = data
+            optsE1.taxa = ['2cd4p9h.xvy'],
+            optsE1.minYear = 2000,
+            optsE1.minYear = 2015,
+            en1.setChartOpts(optsE1)
+          })
+        }
+
+        if (file === 'dorset') {
+          pDorset.then(data => {
+            if (optsE1.metrics.length === 2) {
+              optsE1.metrics = [optsE1.metrics[0]]
+            }
+            optsE1.data = data
+            optsE1.taxa = ['2cd4p9h.vf6'],
+            optsE1.minYear = 1950,
+            en1.setChartOpts(optsE1)
+          })
+        }
+
+        if (file === 'both') {
+          Promise.all([pCornish, pDorset]).then(data => {
+
+            optsE1.data  = data[0].map(d => {
+              const d1 = data[1].find(d1 => d1.year === d.year)
+              return {
+                taxon: 'dummy',
+                year: d.year,
+                x5: d.x5,
+                x50: d.x50,
+                x95: d.x95,
+                y5: d1.x5,
+                y50: d1.x50,
+                y95: d1.x95
+              }
+            })
+
+            if (optsE1.metrics.length === 1) {
+              optsE1.metrics.push(
+                { 
+                  prop: 'y50', 
+                  colour: 'red', 
+                  opacity: 1,
+                  lineWidth: 2,
+                  bandUpper: 'y95', 
+                  bandLower: 'y5', 
+                  bandFill: 'silver', 
+                  bandStroke: 'rgb(200,200,200)',
+                  bandOpacity: 0.3,
+                  bandStrokeOpacity: 1,
+                  bandStrokeWidth: 1,
+                  points: 'y50',
+                  pointsUpper: 'y95',
+                  pointsLower: 'y5'
+                }
+              )
+            }
+
+            optsE1.taxa = ['dummy'],
+            en1.setChartOpts(optsE1)
+          })
+        }
       }
     </script>
   </div>
