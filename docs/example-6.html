@@ -25,10 +25,12 @@
 &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
 </pre>
 
-    <!-- <div id="enhanced1"></div>
+    <div id="enhanced1"></div>
+    <div id="enhanced2"></div>
     <button onclick="enhanced1('cornish')">Cornish</button>
     <button onclick="enhanced1('dorset')">Dorset</button>
-    <button onclick="enhanced1('both')">Both</button> -->
+    <button onclick="enhanced1('both')">Both</button>
+    <button onclick="clearEnhanced('both')">clear</button>
 
     <p>
       All the examples on this page use data derived from records downloaded from the NBN in March 2021 from these datasets:
@@ -427,72 +429,35 @@
       }
 
       // Enhanced examples
-      var optsE1 = {
+      var optsE = {
         selector: '#enhanced1',
-        taxa: ['2cd4p9h.x66'],
+        //taxa: ['2cd4p9h.x66'],
+        taxa: ['dummy'], // A value is needed here even for blank charts
         yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
         axisRight: 'on',
         axisTop: 'on',
-        metrics: [
-          { 
-            prop: 'x50', 
-            colour: 'blue', 
-            opacity: 1,
-            lineWidth: 2,
-            bandUpper: 'x95', 
-            bandLower: 'x5', 
-            bandFill: 'silver', 
-            bandStroke: 'rgb(200,200,200)',
-            bandOpacity: 0.3,
-            bandStrokeOpacity: 1,
-            bandStrokeWidth: 1,
-            //points: 'x50',
-            errorBarUpper: 'x95',
-            errorBarLower: 'x5'
-          },
-        ],
-        showLegend: true,
+        metrics: [],
+        showLegend: false,
         interactivity: 'mousemove', 
         showTaxonLabel: false,
-        showCounts: 'bar',
+        showCounts: 'line',
         axisLeftLabel: 'Relative frequency',
         margin: {left: 50, right: 50, bottom: 20, top: 20},
-        paddingYear: 1.5,
-        minYearTrans: 1950,
-        maxYearTrans: 2000,
-        //minYear: 2000
+        xPadPercent: 0.03,
+        yPadPercent: 0.03,
+        minYearTrans: 1940,
+        maxYearTrans: 2030,
+        minYear: 1949,
+        maxYear: 2019
       }
 
-      const pMeans = d3.csv(`./data/trends/cornish-heath-gb-mean-sd.csv`, function(d){
-          return {
-            year: Number(d.year),
-            mean: Number(d.mean),
-            sd: Number(d.std),
-          }
-        })
+      const en1 = brccharts.yearly(optsE)
+      const en2 = brccharts.yearly(optsE)
 
-      const pTrend = d3.csv('./data/2cd4p9h_x66_trend.csv', function(d){
-        for (p in d) {
-          if (p !== 'ddbid') {
-            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
-          }
-        }
-        return {
-          taxon: d.ddbid,
-          year: d.year,
-          x5: d.x5,
-          x50: d.x50,
-          x95: d.x95
-        }
-      })
-      
-      let en1
-      Promise.all([pMeans, pTrend]).then(function(data){
-        //console.log(data[0])
-        //console.log(data[1])
-        optsE1.data = data[1]
-        //en1 = brccharts.yearly(optsE1)
-      })
+      function clearEnhanced() {
+        en1.setTaxon('')
+        en2.setTaxon('')
+      }
 
       function formatData(d) {
         for (p in d) {
@@ -509,42 +474,162 @@
         }
       }
 
+      function formatDataMeanSd(d) {
+        for (p in d) {
+          if (p !== 'ddbid') {
+            d[p] = Number(d[p]) 
+          }
+        }
+        return {
+          taxon: d.ddbid,
+          year: d.year,
+          y: d.mean,
+          upper: d.mean + d.std,
+          lower:d.mean - d.std
+        }
+      }
+
+      function formatDataLinmod(d) {
+        for (p in d) {
+          if (p !== 'ddbid') {
+            d[p] = Number(d[p]) 
+          }
+        }
+        return {
+          taxon: d.ddbid,
+          intercept: d.intercept,
+          gradient: d.gradient,
+          colour: 'blue',
+          width: 2,
+          opacity: 0.03
+        }
+      }
+
+      const metric1 = { 
+        prop: 'x50', 
+        colour: 'blue', 
+        opacity: 1,
+        lineWidth: 2,
+        bandUpper: 'x95', 
+        bandLower: 'x5', 
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: 0.3,
+        bandStrokeOpacity: 1,
+        bandStrokeWidth: 1,
+        //points: 'x50',
+        //errorBarUpper: 'x95',
+        //errorBarLower: 'x5'
+      }
+ 
+      const metric2 = { 
+        prop: 'y50', 
+        colour: 'red', 
+        opacity: 1,
+        lineWidth: 2,
+        bandUpper: 'y95', 
+        bandLower: 'y5', 
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: 0.3,
+        bandStrokeOpacity: 1,
+        bandStrokeWidth: 1,
+        points: 'y50',
+        pointsUpper: 'y95',
+        pointsLower: 'y5'
+      }
+
       function enhanced1(file) {
 
-        let pCornish, pDorset
+        var optsLines = {
+          selector: '#enhanced12',
+          taxa: ['dummy'], // A value is needed here even for blank charts
+          yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
+          axisRight: 'on',
+          axisTop: 'on',
+          metrics: {},
+          showLegend: false,
+          interactivity: 'none', 
+          showTaxonLabel: false,
+          showCounts: 'line',
+          axisLeftLabel: 'Relative frequency',
+          margin: {left: 50, right: 50, bottom: 20, top: 20},
+          xPadPercent: 0.03,
+          yPadPercent: 0.03,
+          minYearTrans: 1940,
+          maxYearTrans: 2030
+        }
+
+        let pCornish, pDorset, pCornishMsd, pDorsetMsd
         if (file === 'cornish' || file === 'both') {
           pCornish = d3.csv('./data/trends/cornish-heath-gb-gam.csv', formatData)
+          pCornishMsd = d3.csv(`./data/trends/cornish-heath-gb-mean-sd.csv`, formatDataMeanSd)
+          pCornishLinmod = d3.csv(`./data/trends/cornish-heath-gb-linmod.csv`, formatDataLinmod)
         }
         if (file === 'dorset' || file === 'both') {
           pDorset = d3.csv('./data/trends/dorset-heath-gb-gam.csv', formatData)
+          pDorsetMsd = d3.csv(`./data/trends/dorset-heath-gb-mean-sd.csv`, formatDataMeanSd)
+          pDorsetLinmod = d3.csv(`./data/trends/dorset-heath-gb-linmod.csv`, formatDataLinmod)
         }
 
         if (file === 'cornish') {
-          pCornish.then(data => {
-            if (optsE1.metrics.length === 2) {
-              optsE1.metrics = [optsE1.metrics[0]]
-            }
-            optsE1.data = data
-            optsE1.taxa = ['2cd4p9h.xvy'],
-            optsE1.minYear = 2000,
-            optsE1.minYear = 2015,
-            en1.setChartOpts(optsE1)
+          const optsE1 = {...optsE}
+          const optsE2 = {...optsE}
+
+          Promise.all([pCornish, pCornishMsd]).then(d => {
+            const opts = {...optsE}
+            opts.metrics = [metric1]
+            opts.data = d[0]
+            opts.dataPoints = d[1]
+            opts.taxa = ['2cd4p9h.xvy'],
+            opts.minYear = 1980,
+            //opts.minYear = 2015,
+            //opts.dataTrendLines = [{taxon: '2cd4p9h.xvy', gradient: 0.000805999041325647, intercept: -1.45489180256989, colour: 'magenta', width: 3, opacity: 0.5}]
+            en1.setChartOpts(opts)
+          })
+          Promise.all([pCornishLinmod, pCornishMsd]).then(d => {
+            const opts = {...optsE}
+            opts.selector = '#enhanced2'
+            opts.metrics = []
+            opts.dataPoints = d[1]
+            opts.dataTrendLines = d[0]
+            opts.taxa = ['2cd4p9h.xvy']
+            opts.minYear = 1980,
+            opts.maxYear = 2019,
+            en2.setChartOpts(opts)
           })
         }
 
         if (file === 'dorset') {
-          pDorset.then(data => {
-            if (optsE1.metrics.length === 2) {
-              optsE1.metrics = [optsE1.metrics[0]]
-            }
-            optsE1.data = data
+
+          const optsE1 = {...optsE}
+          const optsE2 = {...optsE}
+
+          Promise.all([pDorset, pDorsetMsd]).then(d => {
+            optsE1.metrics = [metric1]
+            optsE1.data = d[0]
+            optsE1.dataPoints = d[1]
             optsE1.taxa = ['2cd4p9h.vf6'],
-            optsE1.minYear = 1950,
+            //optsE1.minYear = null,
             en1.setChartOpts(optsE1)
+          })
+
+          Promise.all([pDorsetLinmod, pDorsetMsd]).then(d => {
+            const opts = {...optsE}
+            opts.selector = '#enhanced2'
+            opts.metrics = []
+            opts.dataPoints = d[1]
+            opts.dataTrendLines = d[0]
+            opts.taxa = ['2cd4p9h.vf6']
+            opts.minYear = 1949,
+            opts.maxYear = 2019,
+            en2.setChartOpts(opts)
           })
         }
 
         if (file === 'both') {
+          const optsE1 = {...optsE}
+
           Promise.all([pCornish, pDorset]).then(data => {
 
             optsE1.data  = data[0].map(d => {
@@ -560,28 +645,7 @@
                 y95: d1.x95
               }
             })
-
-            if (optsE1.metrics.length === 1) {
-              optsE1.metrics.push(
-                { 
-                  prop: 'y50', 
-                  colour: 'red', 
-                  opacity: 1,
-                  lineWidth: 2,
-                  bandUpper: 'y95', 
-                  bandLower: 'y5', 
-                  bandFill: 'silver', 
-                  bandStroke: 'rgb(200,200,200)',
-                  bandOpacity: 0.3,
-                  bandStrokeOpacity: 1,
-                  bandStrokeWidth: 1,
-                  points: 'y50',
-                  pointsUpper: 'y95',
-                  pointsLower: 'y5'
-                }
-              )
-            }
-
+            optsE1.metrics = [metric1, metric2]
             optsE1.taxa = ['dummy'],
             en1.setChartOpts(optsE1)
           })

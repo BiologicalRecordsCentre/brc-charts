@@ -95,6 +95,25 @@ import { highlightItem } from './highlightitem'
  * <li> <b>c2</b> - a metric for a given year (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
  * </ul>
+ * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects.
+ * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+ * <ul>
+ * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>year</b> - a four digit number indicating a year.
+ * <li> <b>y</b> - y value for a given year. 
+ * <li> <b>upper</b> - a value for upper confidence band.
+ * <li> <b>lower</b> - a value for lower confidence band.
+ * </ul>
+ * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
+ * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+ * <ul>
+ * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>gradient</b> - a gradient for the line.
+ * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+ * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
+ * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
+ * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
+ * </ul>
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
 
@@ -104,7 +123,8 @@ import { highlightItem } from './highlightitem'
  * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
  * @param {number} opts.maxYearTrans If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
  * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
- * @param {number} opts.paddingYear Padding to add, in number of years, either side of min and max year value. Can only be used on line charts. (Default - 0.)
+ * @param {number} opts.xPadPercent Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)
+ * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
  * @returns {module:yearly~api} api - Returns an API for the chart.
  */
 
@@ -144,18 +164,22 @@ export function yearly({
   duration = 1000,
   interactivity = 'none',
   data = [],
+  dataPoints = [],
+  dataTrendLines = [],
   taxa = [],
   metrics = [],
   minYear = null,
   maxYear = null,
   minYearTrans = null,
   maxYearTrans = null,
-  paddingYear = 0,
+  xPadPercent = 0,
+  yPadPercent = 0,
 } = {}) {
 
-  // paddingYear can not be used with charts of bar type.
+  // xPadPercent and yPadPercent can not be used with charts of bar type.
   if (showCounts === 'bar') {
-    paddingYear = 0
+    xPadPercent = 0
+    yPadPercent = 0
   }
 
   let metricsPlus
@@ -206,11 +230,14 @@ export function yearly({
       t,
       taxa,
       data,
+      dataPoints,
+      dataTrendLines,
       minYear,
       maxYear,
       minYearTrans,
       maxYearTrans,
-      paddingYear,
+      xPadPercent,
+      yPadPercent,
       metricsPlus,
       width,
       height,
@@ -316,6 +343,7 @@ export function yearly({
   * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+  * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
@@ -360,6 +388,12 @@ export function yearly({
     }
     if ('data' in opts) {
       data = opts.data
+    }
+    if ('dataPoints' in opts) {
+      dataPoints = opts.dataPoints
+    }
+    if ('dataTrendLines' in opts) {
+      dataTrendLines = opts.dataTrendLines
     }
 
     if ('taxa' in opts) {

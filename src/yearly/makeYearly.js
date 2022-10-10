@@ -7,11 +7,14 @@ export function makeYearly (
   taxon,
   taxa,
   data,
+  dataPoints,
+  dataTrendLines,
   minYear,
   maxYear,
   minYearTrans,
   maxYearTrans,
-  paddingYear,
+  xPadPercent,
+  yPadPercent,
   metricsPlus,
   width,
   height,
@@ -40,37 +43,71 @@ export function makeYearly (
     .filter(d => d.taxon === taxon && d.year >= minYear && d.year <= maxYear)
     .sort((a, b) => (a.year > b.year) ? 1 : -1)
 
-  // Set the min and maximum values for the y axis
-  const maxCounts = metricsPlus.map(m => Math.max(
+  const dataPointsFiltered = dataPoints
+    .filter(d => d.taxon === taxon && d.year >= minYear && d.year <= maxYear)
+    .sort((a, b) => (a.year > b.year) ? 1 : -1)
+
+  // Filter dataTrendLinesFiltered data on taxon and also from an array 
+  // of gradients and intercepts to an array of arrays of two point lines
+  const dataTrendLinesFiltered = dataTrendLines
+    .filter(d => d.taxon === taxon)
+    .map(d => {
+      return {
+        taxon: d.taxon,
+        colour: 'blue',
+        width: 2,
+        opacity: 0.05,
+        y1: d.gradient * minYear + d.intercept,
+        y2: d.gradient * maxYear + d.intercept
+      }
+    })
+
+
+  //Set the min and maximum values for the y axis
+  const maxMetricCounts = metricsPlus.map(m => Math.max(
     ...dataFiltered.map(d => d[m.prop]),
     ...dataFiltered.filter(d => d[m.bandUpper]).map(d => d[m.bandUpper])
   ))
-  const minCounts = metricsPlus.map(m => Math.min(
+  let yMaxCount = Math.max(
+    ...maxMetricCounts,
+    ...dataPointsFiltered.map(d => d.y),
+    ...dataPointsFiltered.filter(d => d.upper).map(d => d.upper),
+    ...dataTrendLinesFiltered.map(d => d.y1),
+    ...dataTrendLinesFiltered.map(d => d.y2)
+  )
+  const minMetricCounts = metricsPlus.map(m => Math.min(
     ...dataFiltered.map(d => d[m.prop]),
     ...dataFiltered.filter(d => d[m.bandLower]).map(d => d[m.bandLower])
   ))
-
-  let yMaxCount = Math.max(...maxCounts)
+  let yMinCount = Math.min(
+    ...minMetricCounts,
+    ...dataPointsFiltered.map(d => d.y),
+    ...dataPointsFiltered.filter(d => d.lower).map(d => d.lower),
+    ...dataTrendLinesFiltered.map(d => d.y1),
+    ...dataTrendLinesFiltered.map(d => d.y2)
+  )
+  
   if (yAxisOpts.minMax !== null) {
     if (yMaxCount < yAxisOpts.minMax) {
       yMaxCount = yAxisOpts.minMax
     }
   }
-
-  let yMinCount = Math.min(...minCounts)
   if (yAxisOpts.fixedMin !== null) {
     yMinCount = yAxisOpts.fixedMin
   }
-
+  
   // Value scales
   let years = []
   for (let i = minYear; i <= maxYear; i++) {
     years.push(i)
   }
 
+  const xPadding = (maxYear-minYear) * xPadPercent
+  const yPadding = (yMaxCount-yMinCount) * yPadPercent
+
   const xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1)
-  const xScaleLine = d3.scaleLinear().domain([minYear - paddingYear, maxYear + paddingYear]).range([0, width])
-  const yScale = d3.scaleLinear().domain([yMinCount, yMaxCount]).range([height, 0])
+  const xScaleLine = d3.scaleLinear().domain([minYear - xPadding, maxYear + xPadding]).range([0, width])
+  const yScale = d3.scaleLinear().domain([yMinCount - yPadding, yMaxCount + yPadding]).range([height, 0])
   
   // Top axis
   let tAxis
@@ -84,7 +121,7 @@ export function makeYearly (
   // Bottom axis
   let bAxis
   if (axisBottom === 'on' || axisBottom === 'tick') {
-    bAxis = xAxisYear(width, axisBottom === 'tick', minYear - paddingYear, maxYear + paddingYear, showCounts === 'bar')
+    bAxis = xAxisYear(width, axisBottom === 'tick', minYear - xPadding, maxYear + xPadding, showCounts === 'bar')
   }
 
   // Left and right axes
@@ -147,29 +184,39 @@ export function makeYearly (
     }, {})
 
     // Construct data structure for line charts.
-    if (showCounts === 'line') {
+    if (showCounts === 'line' && isFinite(yMinCount)) {
+
+      const points = adjustForTrans(years.map(y => {
+        // Note below that if the year is not in the datasets, we create a
+        // point with the value of zero.
+        // TODO - this needs revisiting if we account for 'broken' lines
+        // where gaps should be shown. So this will need parameterising 
+        // somehow.
+        return {
+          year: y,
+          n: dataDict[y] ? dataDict[y] : 0,
+        }
+      }))
+
       chartLines.push({
         colour: m.colour,
         opacity: m.opacity,
         strokeWidth: m.strokeWidth,
         type: 'counts',
         prop: m.prop,
-        points: adjustForTrans(years.map(y => {
-          // Note below that if the year is not in the datasets, we create a
-          // point with the value of zero.
-          // TODO - this needs revisiting if we account for 'broken' lines
-          // where gaps should be shown. So this will need parameterising 
-          // somehow.
+        yMin: yMinCount,
+        pathEnter: lineCounts(points.map(p => {
           return {
-            year: y,
-            n: dataDict[y] ? dataDict[y] : 0,
+            n: yMinCount,
+            year: p.year
           }
-        }))
+        })),
+        path: lineCounts(points)
       })
     }
 
     // Construct data structure for condidence band on line charts.
-    if (showCounts === 'line' && m.bandUpper && m.bandLower) {
+    if (showCounts === 'line' && m.bandUpper && m.bandLower && isFinite(yMinCount)) {
       const ddUpper = dataFiltered.reduce((a,d) => {
         a[d.year]=d[m.bandUpper]
         return a
@@ -191,6 +238,22 @@ export function makeYearly (
         }
       })
 
+      const pointsLower = adjustForTrans(lowerLine)
+      const pointsUpper = adjustForTrans(upperLine)
+      const pointsBand = [...adjustForTrans(lowerLine), ...adjustForTrans(upperLine).reverse()]
+      const pointsLowerEnter = pointsLower.map(p => {
+        return {
+          n: yMinCount,
+          year: p.year
+        }
+      })
+      const pointsUpderEnter = pointsUpper.map(p => {
+        return {
+          n: yMinCount,
+          year: p.year
+        }
+      })
+
       chartBands.push({
         fill: m.bandFill ? m.bandFill : 'silver',
         stroke: m.bandStroke ? m.bandStroke : 'grey',
@@ -199,8 +262,15 @@ export function makeYearly (
         strokeWidth: m.bandStrokeWidth ? m.bandStrokeWidth : 1,
         type: 'counts',
         prop: m.prop,
-        pointsLines: [adjustForTrans(lowerLine), adjustForTrans(upperLine)],
-        pointsBand: [...adjustForTrans(lowerLine), ...adjustForTrans(upperLine).reverse()],
+        bandPath: lineCounts(pointsBand),
+        bandPathEnter: lineCounts(pointsBand.map(p => {
+          return {
+            n: yMinCount,
+            year: p.year
+          }
+        })),
+        bandBorders: [lineCounts(pointsLower), lineCounts(pointsUpper)],
+        bandBordersEnter: [lineCounts(pointsLowerEnter), lineCounts(pointsUpderEnter)]
       })
     }
 
@@ -262,10 +332,67 @@ export function makeYearly (
     } 
   })
 
+  // Construct data structure for supplementary trend lines.
+  // TODO - if at some point we parameterise display styles,
+  // then it must be specified in here.
+  const chartTrendLineSup = dataTrendLinesFiltered.map(d => {
+    // y = mx + c
+    let x1, x2
+    const minx = minYear - xPadding
+    const maxx = maxYear + xPadding
+    if (showCounts === 'bar') {
+      x1 = xScaleBar(minx)
+      x2 = xScaleBar(maxx) + xScaleBar.bandwidth() 
+    } else {
+      x1 = xScaleLine(minx)
+      x2 = xScaleLine(maxx)
+    }
+    return {
+      colour: d.colour ? d.colour : 'red',
+      width: d.width ? d.width : '1',
+      opacity: d.opacity ? d.opacity : '1',
+      pathEnter:  `M ${x1} ${height} L ${x2} ${height}`,
+      path: `M ${x1} ${yScale( d.y1)} L ${x2} ${yScale( d.y2)}`,
+    }
+  })
+
+  // Construct data structure for supplementary points.
+  // TODO - if at some point we parameterise display styles,
+  // then it must be specified in here.
+  const chartPointsSup = dataPointsFiltered.map(d => {
+    let x 
+    // if (showCounts === 'bar') {
+    //   x = xScaleBar(Math.floor(d.year)) + xScaleBar.bandwidth() * 0.5 +(d.year % 1)
+    // } else {
+    //   x = xScaleLine(d.year)
+    // }
+    x = xScaleLine(d.year)
+
+    return {
+      x: x,
+      y: yScale(d.y),
+      year: d.year
+    }
+  })
+
+  // Construct data structure for supplementary point error bars.
+  // TODO - if at some point we parameterise display styles,
+  // then it must be specified in here.
+  const chartPointsSupErrorBars = dataPointsFiltered.map(d => {
+    const x = xScaleLine(d.year)
+    return {
+      pathEnter:  `M ${x} ${height} L ${x} ${height}`,
+      path: `M ${x} ${yScale(d.lower)} L ${x} ${yScale(d.upper)}`,
+      year: d.year
+    }
+  })
+
   // d3 transition object
   const t = svgYearly.transition()
       .duration(duration)
 
+
+console.log('chartPointsSup', chartPointsSup)
   // Bars
   gYearly.selectAll(".yearly-bar")
     .data(chartBars, d => `bars-${d.prop}-${d.year}`)
@@ -302,30 +429,16 @@ export function makeYearly (
         .attr("opacity", d => d.fillOpacity)
         .attr("fill", d => d.fill)
         .attr("stroke", "none")
-        .attr("d", d => {
-            return lineCounts(d.pointsBand.map(p => {
-              return {
-                n: yMinCount,
-                year: p.year
-              }
-            }))
-          }),
+        .attr("d", d => d.bandPathEnter),
       update => update,
       exit => exit
         .call(exit => exit.transition(t)
-          .attr("d", d => {
-            return lineCounts(d.pointsBand.map(p => {
-              return {
-                n: yMinCount,
-                year: p.year
-              }
-            }))
-          })
+          .attr("d", d => d.bandPathEnter)
           .remove())
     ).transition(t)
       // The selection returned by the join function is the merged
       // enter and update selections
-      .attr("d", d => lineCounts(d.pointsBand))
+      .attr("d", d => d.bandPath)
 
   // Band lines
   for (let iLine=0; iLine<2; iLine++) { 
@@ -338,29 +451,16 @@ export function makeYearly (
           .attr("fill","none")
           .attr("stroke", d => d.stroke)
           .attr("stroke-width", d => d.strokeWidth)
-          .attr("d", d => {
-            return lineCounts(d.pointsLines[iLine].map(p => {
-              return {
-                n: yMinCount,
-                year: p.year
-              }
-            }))}),
+          .attr("d", d => d.bandBordersEnter[iLine]),
         update => update,
         exit => exit
           .call(exit => exit.transition(t)
-            .attr("d", d => {
-              return lineCounts(d.pointsLines[iLine].map(p => {
-                return {
-                  n: yMinCount,
-                  year: p.year
-                }
-              }))
-            })
+            .attr("d", d => d.bandBordersEnter[iLine])
             .remove())
          ).transition(t)
         // The selection returned by the join function is the merged
         // enter and update selections
-        .attr("d", d => lineCounts(d.pointsLines[iLine]))
+        .attr("d", d => d.bandBorders[iLine])
   }
 
   // Main lines
@@ -373,29 +473,16 @@ export function makeYearly (
         .attr("fill", "none")
         .attr("stroke", d => d.colour)
         .attr("stroke-width", d => d.strokeWidth)
-        .attr("d", d => {
-          return lineCounts(d.points.map(p => {
-            return {
-              n: yMinCount,
-              year: p.year
-            }
-          }))}),
+        .attr("d", d => d.pathEnter),
       update => update,
       exit => exit
         .call(exit => exit.transition(t)
-          .attr("d", d => {
-            return lineCounts(d.points.map(p => {
-              return {
-                n: yMinCount,
-                year: p.year
-              }
-            }))
-          })
+          .attr("d", d => d.pathEnter)
           .remove())
     ).transition(t)
     // The selection returned by the join function is the merged
     // enter and update selections
-    .attr("d", d => lineCounts(d.points))
+    .attr("d", d => d.path)
 
   // Error bars
   gYearly.selectAll('.yearly-error-bars')
@@ -410,14 +497,14 @@ export function makeYearly (
           .style('opacity', 0),
         update => update,
         exit => exit
-          .transition().duration(duration)
+          .transition(t)
           .style("opacity", 0)
           .attr("d", d => d.pathEnter)
           .remove()
       )
       // The selection returned by the join function is the merged
       // enter and update selections
-      .transition().duration(duration)
+      .transition(t)
       .attr("d", d => d.path)
       .style('opacity', 1)
 
@@ -437,21 +524,95 @@ export function makeYearly (
           .style('opacity', 0),
         update => update,
         exit => exit
-          .transition().duration(duration)
+          .transition(t)
           .style("opacity", 0)
           .attr('cy', height)
           .remove()
       )
       // The selection returned by the join function is the merged
       // enter and update selections
-      .transition().duration(duration)
+      .transition(t)
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y)
+        .style('opacity', 1)
+
+  // Supplementary trend lines
+  gYearly.selectAll('.yearly-trend-lines-sup')
+    .data(chartTrendLineSup)
+    .join(
+      enter => enter.append('path')
+        .attr("d", d => d.pathEnter)
+        .attr('class', 'yearly-trend-lines-sup')
+        .style('stroke', d => d.colour)
+        .style('stroke-width', d => d.width)
+        .attr("opacity", 0),
+      update => update,
+      exit => exit
+        .transition(t)
+        .style("opacity", 0)
+        .attr("d", d => d.pathEnter)
+        .remove()
+    )
+    // Join returns merged enter and update selection
+    .transition(t)
+      .attr("d", d => d.path)
+      .attr("opacity", d => d.opacity)
+ 
+  // Supplementary points error bars
+  gYearly.selectAll('.yearly-error-bars-sup')
+    .data(chartPointsSupErrorBars, d => `error-bars-sup-${d.year}`)
+    .join(
+      enter => enter.append('path')
+        .attr("class", `yearly-error-bars-sup`)
+        .attr("d", d => d.pathEnter)
+        .style('fill', 'none')
+        .style('stroke', 'black')
+        .style('stroke-width', 1)
+        .style('opacity', 0),
+      update => update,
+      exit => exit
+        .transition(t)
+        .style("opacity", 0)
+        .attr("d", d => d.pathEnter)
+        .remove()
+    )
+    // The selection returned by the join function is the merged
+    // enter and update selections
+    .transition(t)
+      .attr("d", d => d.path)
+      .style('opacity', 1)
+      
+  // Supplementary points
+  gYearly.selectAll('.yearly-point-data-sup')
+      .data(chartPointsSup, d => `point-data-sup-${d.year}`)
+      .join(
+        enter => enter.append('circle')
+          .attr("class", `yearly-point-data-sup`)
+          .attr('cx', d => d.x)
+          //.attr('cy', d => d.y)
+          .attr('cy', height)
+          .attr('r', 3)
+          .style('fill', 'white')
+          .style('stroke', 'black')
+          .style('stroke-width', 1)
+          .style('opacity', 0),
+        update => update,
+        exit => exit
+          .transition(t)
+          .style("opacity", 0)
+          .attr('cy', height)
+          .remove()
+      )
+      // The selection returned by the join function is the merged
+      // enter and update selections
+      .transition(t)
         .attr('cx', d => d.x)
         .attr('cy', d => d.y)
         .style('opacity', 1)
 
   addEventHandlers(gYearly.selectAll("path"), 'prop', svgChart, interactivity)
   addEventHandlers(gYearly.selectAll(".yearly-bar"), 'prop', svgChart, interactivity)
-  addEventHandlers(gYearly.selectAll("circle"), 'prop', svgChart, interactivity)
+  addEventHandlers(gYearly.selectAll(".yearly-point"), 'prop', svgChart, interactivity)
       
   if (init) {
 
@@ -546,23 +707,20 @@ export function makeYearly (
     // yearMin and/or yearMax may have changed.
     if (axisBottom === 'on' || axisBottom === 'tick') {
       svgYearly.select(".x.axis")
-        .transition()
-        .duration(duration)
+        .transition(t)
         .call(bAxis)
     }
   }
 
   if (svgYearly.selectAll(".l-axis").size()){
     svgYearly.select(".l-axis")
-    .transition()
-    .duration(duration)
+    .transition(t)
     .call(lAxis)
   }
 
   if (svgYearly.selectAll(".r-axis").size()){
     svgYearly.select(".r-axis")
-    .transition()
-    .duration(duration)
+    .transition(t)
     .call(rAxis)
   }
   
@@ -570,6 +728,7 @@ export function makeYearly (
 
   function adjustForTrans(pnts) {
     const ret = [...pnts]
+
     if (minYearTrans) {
       for(let i=minYearTrans; i<=pnts[0].year; i++) {
         ret.unshift({
@@ -587,6 +746,7 @@ export function makeYearly (
         })
       }
     }
+
     return ret
   }
 }

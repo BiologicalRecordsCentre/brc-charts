@@ -6549,7 +6549,7 @@
     }
   }
 
-  function makeYearly(svgChart, taxon, taxa, data, minYear, maxYear, minYearTrans, maxYearTrans, paddingYear, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel) {
+  function makeYearly(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel) {
     // Pre-process data.
     // Filter to named taxon and to min and max year and sort in year order
     // Add max value to each.
@@ -6557,9 +6557,28 @@
       return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
     }).sort(function (a, b) {
       return a.year > b.year ? 1 : -1;
-    }); // Set the min and maximum values for the y axis
+    });
+    var dataPointsFiltered = dataPoints.filter(function (d) {
+      return d.taxon === taxon && d.year >= minYear && d.year <= maxYear;
+    }).sort(function (a, b) {
+      return a.year > b.year ? 1 : -1;
+    }); // Filter dataTrendLinesFiltered data on taxon and also from an array 
+    // of gradients and intercepts to an array of arrays of two point lines
 
-    var maxCounts = metricsPlus.map(function (m) {
+    var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
+      return d.taxon === taxon;
+    }).map(function (d) {
+      return {
+        taxon: d.taxon,
+        colour: 'blue',
+        width: 2,
+        opacity: 0.05,
+        y1: d.gradient * minYear + d.intercept,
+        y2: d.gradient * maxYear + d.intercept
+      };
+    }); //Set the min and maximum values for the y axis
+
+    var maxMetricCounts = metricsPlus.map(function (m) {
       return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
@@ -6568,7 +6587,18 @@
         return d[m.bandUpper];
       }))));
     });
-    var minCounts = metricsPlus.map(function (m) {
+    var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxMetricCounts).concat(_toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.upper;
+    }).map(function (d) {
+      return d.upper;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
+    var minMetricCounts = metricsPlus.map(function (m) {
       return Math.min.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
@@ -6577,15 +6607,23 @@
         return d[m.bandLower];
       }))));
     });
-    var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxCounts));
+    var yMinCount = Math.min.apply(Math, _toConsumableArray(minMetricCounts).concat(_toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.lower;
+    }).map(function (d) {
+      return d.lower;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
 
     if (yAxisOpts.minMax !== null) {
       if (yMaxCount < yAxisOpts.minMax) {
         yMaxCount = yAxisOpts.minMax;
       }
     }
-
-    var yMinCount = Math.min.apply(Math, _toConsumableArray(minCounts));
 
     if (yAxisOpts.fixedMin !== null) {
       yMinCount = yAxisOpts.fixedMin;
@@ -6598,9 +6636,11 @@
       years.push(i);
     }
 
+    var xPadding = (maxYear - minYear) * xPadPercent;
+    var yPadding = (yMaxCount - yMinCount) * yPadPercent;
     var xScaleBar = d3.scaleBand().domain(years).range([0, width]).paddingInner(0.1);
-    var xScaleLine = d3.scaleLinear().domain([minYear - paddingYear, maxYear + paddingYear]).range([0, width]);
-    var yScale = d3.scaleLinear().domain([yMinCount, yMaxCount]).range([height, 0]); // Top axis
+    var xScaleLine = d3.scaleLinear().domain([minYear - xPadding, maxYear + xPadding]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([yMinCount - yPadding, yMaxCount + yPadding]).range([height, 0]); // Top axis
 
     var tAxis;
 
@@ -6613,7 +6653,7 @@
     var bAxis;
 
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = xAxisYear(width, axisBottom === 'tick', minYear - paddingYear, maxYear + paddingYear, showCounts === 'bar');
+      bAxis = xAxisYear(width, axisBottom === 'tick', minYear - xPadding, maxYear + xPadding, showCounts === 'bar');
     } // Left and right axes
 
 
@@ -6673,29 +6713,37 @@
         return a;
       }, {}); // Construct data structure for line charts.
 
-      if (showCounts === 'line') {
+      if (showCounts === 'line' && isFinite(yMinCount)) {
+        var points = adjustForTrans(years.map(function (y) {
+          // Note below that if the year is not in the datasets, we create a
+          // point with the value of zero.
+          // TODO - this needs revisiting if we account for 'broken' lines
+          // where gaps should be shown. So this will need parameterising 
+          // somehow.
+          return {
+            year: y,
+            n: dataDict[y] ? dataDict[y] : 0
+          };
+        }));
         chartLines.push({
           colour: m.colour,
           opacity: m.opacity,
           strokeWidth: m.strokeWidth,
           type: 'counts',
           prop: m.prop,
-          points: adjustForTrans(years.map(function (y) {
-            // Note below that if the year is not in the datasets, we create a
-            // point with the value of zero.
-            // TODO - this needs revisiting if we account for 'broken' lines
-            // where gaps should be shown. So this will need parameterising 
-            // somehow.
+          yMin: yMinCount,
+          pathEnter: lineCounts(points.map(function (p) {
             return {
-              year: y,
-              n: dataDict[y] ? dataDict[y] : 0
+              n: yMinCount,
+              year: p.year
             };
-          }))
+          })),
+          path: lineCounts(points)
         });
       } // Construct data structure for condidence band on line charts.
 
 
-      if (showCounts === 'line' && m.bandUpper && m.bandLower) {
+      if (showCounts === 'line' && m.bandUpper && m.bandLower && isFinite(yMinCount)) {
         var ddUpper = dataFiltered.reduce(function (a, d) {
           a[d.year] = d[m.bandUpper];
           return a;
@@ -6716,6 +6764,21 @@
             n: ddLower[y] ? ddLower[y] : 0
           };
         });
+        var pointsLower = adjustForTrans(lowerLine);
+        var pointsUpper = adjustForTrans(upperLine);
+        var pointsBand = [].concat(_toConsumableArray(adjustForTrans(lowerLine)), _toConsumableArray(adjustForTrans(upperLine).reverse()));
+        var pointsLowerEnter = pointsLower.map(function (p) {
+          return {
+            n: yMinCount,
+            year: p.year
+          };
+        });
+        var pointsUpderEnter = pointsUpper.map(function (p) {
+          return {
+            n: yMinCount,
+            year: p.year
+          };
+        });
         chartBands.push({
           fill: m.bandFill ? m.bandFill : 'silver',
           stroke: m.bandStroke ? m.bandStroke : 'grey',
@@ -6724,8 +6787,15 @@
           strokeWidth: m.bandStrokeWidth ? m.bandStrokeWidth : 1,
           type: 'counts',
           prop: m.prop,
-          pointsLines: [adjustForTrans(lowerLine), adjustForTrans(upperLine)],
-          pointsBand: [].concat(_toConsumableArray(adjustForTrans(lowerLine)), _toConsumableArray(adjustForTrans(upperLine).reverse()))
+          bandPath: lineCounts(pointsBand),
+          bandPathEnter: lineCounts(pointsBand.map(function (p) {
+            return {
+              n: yMinCount,
+              year: p.year
+            };
+          })),
+          bandBorders: [lineCounts(pointsLower), lineCounts(pointsUpper)],
+          bandBordersEnter: [lineCounts(pointsLowerEnter), lineCounts(pointsUpderEnter)]
         });
       } // Construct data structure for bar charts.
 
@@ -6748,7 +6818,7 @@
 
 
       if (m.points) {
-        var points = dataFiltered.filter(function (d) {
+        var _points = dataFiltered.filter(function (d) {
           return d[m.prop];
         }).map(function (d) {
           var x;
@@ -6766,7 +6836,8 @@
             prop: m.prop
           };
         });
-        chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
+
+        chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(_points));
       } // Construct data structure for error bars.
       // TODO - if at some point we parameterise display styles
       // for error bars, then it must be specified in here.
@@ -6791,9 +6862,63 @@
         });
         chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(errorBars));
       }
+    }); // Construct data structure for supplementary trend lines.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartTrendLineSup = dataTrendLinesFiltered.map(function (d) {
+      // y = mx + c
+      var x1, x2;
+      var minx = minYear - xPadding;
+      var maxx = maxYear + xPadding;
+
+      if (showCounts === 'bar') {
+        x1 = xScaleBar(minx);
+        x2 = xScaleBar(maxx) + xScaleBar.bandwidth();
+      } else {
+        x1 = xScaleLine(minx);
+        x2 = xScaleLine(maxx);
+      }
+
+      return {
+        colour: d.colour ? d.colour : 'red',
+        width: d.width ? d.width : '1',
+        opacity: d.opacity ? d.opacity : '1',
+        pathEnter: "M ".concat(x1, " ").concat(height, " L ").concat(x2, " ").concat(height),
+        path: "M ".concat(x1, " ").concat(yScale(d.y1), " L ").concat(x2, " ").concat(yScale(d.y2))
+      };
+    }); // Construct data structure for supplementary points.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartPointsSup = dataPointsFiltered.map(function (d) {
+      var x; // if (showCounts === 'bar') {
+      //   x = xScaleBar(Math.floor(d.year)) + xScaleBar.bandwidth() * 0.5 +(d.year % 1)
+      // } else {
+      //   x = xScaleLine(d.year)
+      // }
+
+      x = xScaleLine(d.year);
+      return {
+        x: x,
+        y: yScale(d.y),
+        year: d.year
+      };
+    }); // Construct data structure for supplementary point error bars.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartPointsSupErrorBars = dataPointsFiltered.map(function (d) {
+      var x = xScaleLine(d.year);
+      return {
+        pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
+        path: "M ".concat(x, " ").concat(yScale(d.lower), " L ").concat(x, " ").concat(yScale(d.upper)),
+        year: d.year
+      };
     }); // d3 transition object
 
-    var t = svgYearly.transition().duration(duration); // Bars
+    var t = svgYearly.transition().duration(duration);
+    console.log('chartPointsSup', chartPointsSup); // Bars
 
     gYearly.selectAll(".yearly-bar").data(chartBars, function (d) {
       return "bars-".concat(d.prop, "-").concat(d.year);
@@ -6835,30 +6960,20 @@
       }).attr("fill", function (d) {
         return d.fill;
       }).attr("stroke", "none").attr("d", function (d) {
-        return lineCounts(d.pointsBand.map(function (p) {
-          return {
-            n: yMinCount,
-            year: p.year
-          };
-        }));
+        return d.bandPathEnter;
       });
     }, function (update) {
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
         return exit.transition(t).attr("d", function (d) {
-          return lineCounts(d.pointsBand.map(function (p) {
-            return {
-              n: yMinCount,
-              year: p.year
-            };
-          }));
+          return d.bandPathEnter;
         }).remove();
       });
     }).transition(t) // The selection returned by the join function is the merged
     // enter and update selections
     .attr("d", function (d) {
-      return lineCounts(d.pointsBand);
+      return d.bandPath;
     }); // Band lines
 
     var _loop = function _loop(iLine) {
@@ -6874,30 +6989,20 @@
         }).attr("stroke-width", function (d) {
           return d.strokeWidth;
         }).attr("d", function (d) {
-          return lineCounts(d.pointsLines[iLine].map(function (p) {
-            return {
-              n: yMinCount,
-              year: p.year
-            };
-          }));
+          return d.bandBordersEnter[iLine];
         });
       }, function (update) {
         return update;
       }, function (exit) {
         return exit.call(function (exit) {
           return exit.transition(t).attr("d", function (d) {
-            return lineCounts(d.pointsLines[iLine].map(function (p) {
-              return {
-                n: yMinCount,
-                year: p.year
-              };
-            }));
+            return d.bandBordersEnter[iLine];
           }).remove();
         });
       }).transition(t) // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", function (d) {
-        return lineCounts(d.pointsLines[iLine]);
+        return d.bandBorders[iLine];
       });
     };
 
@@ -6918,30 +7023,20 @@
       }).attr("stroke-width", function (d) {
         return d.strokeWidth;
       }).attr("d", function (d) {
-        return lineCounts(d.points.map(function (p) {
-          return {
-            n: yMinCount,
-            year: p.year
-          };
-        }));
+        return d.pathEnter;
       });
     }, function (update) {
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
         return exit.transition(t).attr("d", function (d) {
-          return lineCounts(d.points.map(function (p) {
-            return {
-              n: yMinCount,
-              year: p.year
-            };
-          }));
+          return d.pathEnter;
         }).remove();
       });
     }).transition(t) // The selection returned by the join function is the merged
     // enter and update selections
     .attr("d", function (d) {
-      return lineCounts(d.points);
+      return d.path;
     }); // Error bars
 
     gYearly.selectAll('.yearly-error-bars').data(chartErrorBars, function (d) {
@@ -6955,12 +7050,12 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).attr("d", function (d) {
+      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
         return d.pathEnter;
       }).remove();
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition().duration(duration).attr("d", function (d) {
+    .transition(t).attr("d", function (d) {
       return d.path;
     }).style('opacity', 1); // Points
 
@@ -6976,17 +7071,75 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).attr('cy', height).remove();
+      return exit.transition(t).style("opacity", 0).attr('cy', height).remove();
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition().duration(duration).attr('cx', function (d) {
+    .transition(t).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }).style('opacity', 1); // Supplementary trend lines
+
+    gYearly.selectAll('.yearly-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
+      return enter.append('path').attr("d", function (d) {
+        return d.pathEnter;
+      }).attr('class', 'yearly-trend-lines-sup').style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }).attr("opacity", 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
+        return d.pathEnter;
+      }).remove();
+    }) // Join returns merged enter and update selection
+    .transition(t).attr("d", function (d) {
+      return d.path;
+    }).attr("opacity", function (d) {
+      return d.opacity;
+    }); // Supplementary points error bars
+
+    gYearly.selectAll('.yearly-error-bars-sup').data(chartPointsSupErrorBars, function (d) {
+      return "error-bars-sup-".concat(d.year);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", "yearly-error-bars-sup").attr("d", function (d) {
+        return d.pathEnter;
+      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
+        return d.pathEnter;
+      }).remove();
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .transition(t).attr("d", function (d) {
+      return d.path;
+    }).style('opacity', 1); // Supplementary points
+
+    gYearly.selectAll('.yearly-point-data-sup').data(chartPointsSup, function (d) {
+      return "point-data-sup-".concat(d.year);
+    }).join(function (enter) {
+      return enter.append('circle').attr("class", "yearly-point-data-sup").attr('cx', function (d) {
+        return d.x;
+      }) //.attr('cy', d => d.y)
+      .attr('cy', height).attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.transition(t).style("opacity", 0).attr('cy', height).remove();
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .transition(t).attr('cx', function (d) {
       return d.x;
     }).attr('cy', function (d) {
       return d.y;
     }).style('opacity', 1);
     addEventHandlers$2(gYearly.selectAll("path"), 'prop', svgChart, interactivity);
     addEventHandlers$2(gYearly.selectAll(".yearly-bar"), 'prop', svgChart, interactivity);
-    addEventHandlers$2(gYearly.selectAll("circle"), 'prop', svgChart, interactivity);
+    addEventHandlers$2(gYearly.selectAll(".yearly-point"), 'prop', svgChart, interactivity);
 
     if (init) {
       // Constants for positioning
@@ -7057,16 +7210,16 @@
 
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        svgYearly.select(".x.axis").transition().duration(duration).call(bAxis);
+        svgYearly.select(".x.axis").transition(t).call(bAxis);
       }
     }
 
     if (svgYearly.selectAll(".l-axis").size()) {
-      svgYearly.select(".l-axis").transition().duration(duration).call(lAxis);
+      svgYearly.select(".l-axis").transition(t).call(lAxis);
     }
 
     if (svgYearly.selectAll(".r-axis").size()) {
-      svgYearly.select(".r-axis").transition().duration(duration).call(rAxis);
+      svgYearly.select(".r-axis").transition(t).call(rAxis);
     }
 
     return svgYearly;
@@ -7242,6 +7395,25 @@
    * <li> <b>c2</b> - a metric for a given year (can have any name).
    * ... - there must be at least one metric column, but there can be any number of them.
    * </ul>
+   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>year</b> - a four digit number indicating a year.
+   * <li> <b>y</b> - y value for a given year. 
+   * <li> <b>upper</b> - a value for upper confidence band.
+   * <li> <b>lower</b> - a value for lower confidence band.
+   * </ul>
+   * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>gradient</b> - a gradient for the line.
+   * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+   * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
+   * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
+   * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
+   * </ul>
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
 
@@ -7251,7 +7423,8 @@
    * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
    * @param {number} opts.maxYearTrans If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
    * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
-   * @param {number} opts.paddingYear Padding to add, in number of years, either side of min and max year value. Can only be used on line charts. (Default - 0.)
+   * @param {number} opts.xPadPercent Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)
+   * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
    * @returns {module:yearly~api} api - Returns an API for the chart.
    */
 
@@ -7335,6 +7508,10 @@
         interactivity = _ref$interactivity === void 0 ? 'none' : _ref$interactivity,
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$dataPoints = _ref.dataPoints,
+        dataPoints = _ref$dataPoints === void 0 ? [] : _ref$dataPoints,
+        _ref$dataTrendLines = _ref.dataTrendLines,
+        dataTrendLines = _ref$dataTrendLines === void 0 ? [] : _ref$dataTrendLines,
         _ref$taxa = _ref.taxa,
         taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
         _ref$metrics = _ref.metrics,
@@ -7347,12 +7524,15 @@
         minYearTrans = _ref$minYearTrans === void 0 ? null : _ref$minYearTrans,
         _ref$maxYearTrans = _ref.maxYearTrans,
         maxYearTrans = _ref$maxYearTrans === void 0 ? null : _ref$maxYearTrans,
-        _ref$paddingYear = _ref.paddingYear,
-        paddingYear = _ref$paddingYear === void 0 ? 0 : _ref$paddingYear;
+        _ref$xPadPercent = _ref.xPadPercent,
+        xPadPercent = _ref$xPadPercent === void 0 ? 0 : _ref$xPadPercent,
+        _ref$yPadPercent = _ref.yPadPercent,
+        yPadPercent = _ref$yPadPercent === void 0 ? 0 : _ref$yPadPercent;
 
-    // paddingYear can not be used with charts of bar type.
+    // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (showCounts === 'bar') {
-      paddingYear = 0;
+      xPadPercent = 0;
+      yPadPercent = 0;
     }
 
     var metricsPlus;
@@ -7399,7 +7579,7 @@
 
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
-        return makeYearly(svgChart, t, taxa, data, minYear, maxYear, minYearTrans, maxYearTrans, paddingYear, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
+        return makeYearly(svgChart, t, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -7469,6 +7649,7 @@
       * @param {number} opts.maxYear Indicates the latest year to use on the y axis.
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -7526,6 +7707,14 @@
 
       if ('data' in opts) {
         data = opts.data;
+      }
+
+      if ('dataPoints' in opts) {
+        dataPoints = opts.dataPoints;
+      }
+
+      if ('dataTrendLines' in opts) {
+        dataTrendLines = opts.dataTrendLines;
       }
 
       if ('taxa' in opts) {
