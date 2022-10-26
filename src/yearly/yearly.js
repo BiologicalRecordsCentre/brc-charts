@@ -231,6 +231,8 @@ export function yearly({
     }
 
     const subChartPad = 10
+    const pTrans = []
+
     const svgsTaxa = taxa.map(t => makeYearly(
       svgChart,
       t,
@@ -264,7 +266,8 @@ export function yearly({
       axisLabelFontSize,
       axisLeftLabel,
       axisRightLabel,
-      fillGaps
+      fillGaps,
+      pTrans
     ))
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
@@ -291,6 +294,8 @@ export function yearly({
 
     svgChart.attr("width", perRow * (subChartWidth + subChartPad))
     svgChart.attr("height", legendHeight +  Math.ceil(svgsTaxa.length/perRow) * (subChartHeight + subChartPad))
+
+    return Promise.allSettled(pTrans)
   }
 
   function preProcessMetrics () {
@@ -353,6 +358,7 @@ export function yearly({
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
+  * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
   * options object, it's value is not changed.
@@ -421,26 +427,34 @@ export function yearly({
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
+    let pRet
     if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts || 'minCount' in opts || 'maxCount' in opts) {
       preProcessMetrics()
-      makeChart()
+      pRet = makeChart()
+      gen.positionMainElements(svg, expand)
+    } else {
+      pRet = Promise.resolve()
     }
-    gen.positionMainElements(svg, expand)
+    return pRet
   }
 
 /** @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
+  * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * For single species charts, this allows you to change the taxon displayed.
   */
   function setTaxon(taxon){
+    let pRet
     if (taxa.length !== 1) {
       console.log("You can only use the setTaxon method when your chart displays a single taxon.")
+      pRet = Promise.resolve()
     } else {
       taxa = [taxon]
       highlightItem(null, false, svgChart)
-      makeChart()
+      pRet = makeChart()
     }
+    return pRet
   }
 
 /** @function getChartWidth

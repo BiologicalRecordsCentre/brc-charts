@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { xAxisYear, safeId } from '../general'
+import { xAxisYear, safeId, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
 export function makeYearly (
@@ -35,7 +35,8 @@ export function makeYearly (
   axisLabelFontSize,
   axisLeftLabel,
   axisRightLabel,
-  fillGaps
+  fillGaps,
+  pTrans
 ) {
 
   // Pre-process data.
@@ -414,11 +415,11 @@ export function makeYearly (
         .attr('x', d => xScaleBar(d.year)),
       update => update,
       exit => exit
-        .call(exit => exit.transition(t)
+        .call(exit => transPromise(exit.transition(t)
           .attr('height', 0)
           .attr('y', height)
-          .remove())
-    ).transition(t)
+          .remove(), pTrans))
+    ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr('y', d => d.n)
@@ -426,7 +427,7 @@ export function makeYearly (
       .attr('height', d => height - d.n)
       .attr('width', xScaleBar.bandwidth())
       .attr("fill", d => d.colour)
-      .attr("opacity", d => d.opacity)
+      .attr("opacity", d => d.opacity), pTrans))
 
   // Bands
   gYearly.selectAll(".yearly-band")
@@ -440,15 +441,16 @@ export function makeYearly (
         .attr("d", d => d.bandPathEnter),
       update => update,
       exit => exit
-        .call(exit => exit.transition(t)
+        .call(exit => transPromise(exit.transition(t)
           .attr("d", d => d.bandPathEnter)
-          .remove())
-    ).transition(t)
+          .remove(), pTrans))
+    ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", d => d.bandPath)
       .attr("opacity", d => d.fillOpacity)
-      .attr("fill", d => d.fill)
+      .attr("fill", d => d.fill), pTrans))
+
 
   // Band lines
   for (let iLine=0; iLine<2; iLine++) { 
@@ -464,16 +466,16 @@ export function makeYearly (
           .attr("d", d => d.bandBordersEnter[iLine]),
         update => update,
         exit => exit
-          .call(exit => exit.transition(t)
+          .call(exit =>  transPromise(exit.transition(t)
             .attr("d", d => d.bandBordersEnter[iLine])
-            .remove())
-         ).transition(t)
-        // The selection returned by the join function is the merged
-        // enter and update selections
-        .attr("d", d => d.bandBorders[iLine])
-        .attr("opacity", d => d.strokeOpacity)
-        .attr("stroke", d => d.stroke)
-        .attr("stroke-width", d => d.strokeWidth)
+            .remove(), pTrans))
+         ).call(merge => transPromise(merge.transition(t)
+          // The selection returned by the join function is the merged
+          // enter and update selections
+          .attr("d", d => d.bandBorders[iLine])
+          .attr("opacity", d => d.strokeOpacity)
+          .attr("stroke", d => d.stroke)
+          .attr("stroke-width", d => d.strokeWidth), pTrans))
   }
 
   // Main lines
@@ -489,16 +491,16 @@ export function makeYearly (
         .attr("d", d => d.pathEnter),
       update => update,
       exit => exit
-        .call(exit => exit.transition(t)
+        .call(exit => transPromise(exit.transition(t)
           .attr("d", d => d.pathEnter)
-          .remove())
-    ).transition(t)
-    // The selection returned by the join function is the merged
-    // enter and update selections
-    .attr("d", d => d.path)
-    .attr("opacity", d => d.opacity)
-    .attr("stroke", d => d.colour)
-    .attr("stroke-width", d => d.strokeWidth)
+          .remove(), pTrans))
+    ).call(merge => transPromise(merge.transition(t)
+      // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", d => d.path)
+      .attr("opacity", d => d.opacity)
+      .attr("stroke", d => d.colour)
+      .attr("stroke-width", d => d.strokeWidth), pTrans))
 
   // Error bars
   gYearly.selectAll('.yearly-error-bars')
@@ -512,17 +514,17 @@ export function makeYearly (
           .style('stroke-width', 1)
           .style('opacity', 0),
         update => update,
-        exit => exit
+        exit => exit.call(exit => transPromise(exit
           .transition(t)
           .style("opacity", 0)
           .attr("d", d => d.pathEnter)
-          .remove()
+          .remove(), pTrans))
       )
       // The selection returned by the join function is the merged
       // enter and update selections
-      .transition(t)
-      .attr("d", d => d.path)
-      .style('opacity', 1)
+      .call(merge => transPromise(merge.transition(t)
+        .attr("d", d => d.path)
+        .style('opacity', 1), pTrans))
 
   // Points
   gYearly.selectAll('.yearly-point')
@@ -540,17 +542,17 @@ export function makeYearly (
           .style('opacity', 0),
         update => update,
         exit => exit
-          .transition(t)
+          .call(exit => transPromise(exit.transition(t)
           .style("opacity", 0)
           .attr('cy', height)
-          .remove()
+          .remove(), pTrans))
       )
       // The selection returned by the join function is the merged
       // enter and update selections
-      .transition(t)
+      .call(merge => transPromise(merge.transition(t)
         .attr('cx', d => d.x)
         .attr('cy', d => d.y)
-        .style('opacity', 1)
+        .style('opacity', 1), pTrans))
 
   // Supplementary trend lines
   gYearly.selectAll('.yearly-trend-lines-sup')
@@ -564,17 +566,17 @@ export function makeYearly (
         .attr("opacity", 0),
       update => update,
       exit => exit
-        .transition(t)
+        .call(exit => transPromise(exit.transition(t)
         .style("opacity", 0)
         .attr("d", d => d.pathEnter)
-        .remove()
+        .remove(), pTrans))
     )
     // Join returns merged enter and update selection
-    .transition(t)
+    .call(merge => transPromise(merge.transition(t)
       .attr("d", d => d.path)
       .attr("opacity", d => d.opacity)
       .style('stroke', d => d.colour)
-      .style('stroke-width', d => d.width)
+      .style('stroke-width', d => d.width), pTrans))
  
   // Supplementary points error bars
   gYearly.selectAll('.yearly-error-bars-sup')
@@ -589,16 +591,16 @@ export function makeYearly (
         .style('opacity', 0),
       update => update,
       exit => exit
-        .transition(t)
+        .call(exit => transPromise(exit.transition(t)
         .style("opacity", 0)
         .attr("d", d => d.pathEnter)
-        .remove()
+        .remove(), pTrans))
     )
     // The selection returned by the join function is the merged
     // enter and update selections
-    .transition(t)
+    .call(merge => transPromise(merge.transition(t)
       .attr("d", d => d.path)
-      .style('opacity', 1)
+      .style('opacity', 1), pTrans))
       
   // Supplementary points
   gYearly.selectAll('.yearly-point-data-sup')
@@ -616,17 +618,17 @@ export function makeYearly (
           .style('opacity', 0),
         update => update,
         exit => exit
-          .transition(t)
+          .call(exit => transPromise(exit.transition(t)
           .style("opacity", 0)
           .attr('cy', height)
-          .remove()
+          .remove(), pTrans))
       )
       // The selection returned by the join function is the merged
       // enter and update selections
-      .transition(t)
+      .call(merge => transPromise(merge.transition(t)
         .attr('cx', d => d.x)
         .attr('cy', d => d.y)
-        .style('opacity', 1)
+        .style('opacity', 1), pTrans))
 
   addEventHandlers(gYearly.selectAll("path"), 'prop', svgChart, interactivity)
   addEventHandlers(gYearly.selectAll(".yearly-bar"), 'prop', svgChart, interactivity)
@@ -724,22 +726,23 @@ export function makeYearly (
     // Update the bottom axis if it exists. We do this because
     // yearMin and/or yearMax may have changed.
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      svgYearly.select(".x.axis")
+      transPromise(svgYearly.select(".x.axis")
         .transition(t)
-        .call(bAxis)
+        .call(bAxis), pTrans)
     }
   }
 
   if (svgYearly.selectAll(".l-axis").size()){
-    svgYearly.select(".l-axis")
-    .transition(t)
-    .call(lAxis)
+
+    transPromise(svgYearly.select(".l-axis")
+      .transition(t)
+      .call(lAxis), pTrans)
   }
 
   if (svgYearly.selectAll(".r-axis").size()){
-    svgYearly.select(".r-axis")
-    .transition(t)
-    .call(rAxis)
+    transPromise(svgYearly.select(".r-axis")
+      .transition(t)
+      .call(rAxis), pTrans)
   }
   
   return svgYearly

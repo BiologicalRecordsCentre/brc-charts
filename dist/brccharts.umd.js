@@ -6549,7 +6549,7 @@
     }
   }
 
-  function makeYearly(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, fillGaps) {
+  function makeYearly(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, fillGaps, pTrans) {
     // Pre-process data.
     // Filter to named taxon and to min and max year and sort in year order
     // Add max value to each.
@@ -6937,20 +6937,22 @@
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
-        return exit.transition(t).attr('height', 0).attr('y', height).remove();
+        return transPromise(exit.transition(t).attr('height', 0).attr('y', height).remove(), pTrans);
       });
-    }).transition(t) // The selection returned by the join function is the merged
-    // enter and update selections
-    .attr('y', function (d) {
-      return d.n;
-    }).attr('x', function (d) {
-      return xScaleBar(d.year);
-    }).attr('height', function (d) {
-      return height - d.n;
-    }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
-      return d.colour;
-    }).attr("opacity", function (d) {
-      return d.opacity;
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr('y', function (d) {
+        return d.n;
+      }).attr('x', function (d) {
+        return xScaleBar(d.year);
+      }).attr('height', function (d) {
+        return height - d.n;
+      }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
+        return d.colour;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }), pTrans);
     }); // Bands
 
     gYearly.selectAll(".yearly-band").data(chartBands, function (d) {
@@ -6969,18 +6971,20 @@
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
-        return exit.transition(t).attr("d", function (d) {
+        return transPromise(exit.transition(t).attr("d", function (d) {
           return d.bandPathEnter;
-        }).remove();
+        }).remove(), pTrans);
       });
-    }).transition(t) // The selection returned by the join function is the merged
-    // enter and update selections
-    .attr("d", function (d) {
-      return d.bandPath;
-    }).attr("opacity", function (d) {
-      return d.fillOpacity;
-    }).attr("fill", function (d) {
-      return d.fill;
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.bandPath;
+      }).attr("opacity", function (d) {
+        return d.fillOpacity;
+      }).attr("fill", function (d) {
+        return d.fill;
+      }), pTrans);
     }); // Band lines
 
     var _loop = function _loop(iLine) {
@@ -7002,20 +7006,22 @@
         return update;
       }, function (exit) {
         return exit.call(function (exit) {
-          return exit.transition(t).attr("d", function (d) {
+          return transPromise(exit.transition(t).attr("d", function (d) {
             return d.bandBordersEnter[iLine];
-          }).remove();
+          }).remove(), pTrans);
         });
-      }).transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", function (d) {
-        return d.bandBorders[iLine];
-      }).attr("opacity", function (d) {
-        return d.strokeOpacity;
-      }).attr("stroke", function (d) {
-        return d.stroke;
-      }).attr("stroke-width", function (d) {
-        return d.strokeWidth;
+      }).call(function (merge) {
+        return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+        // enter and update selections
+        .attr("d", function (d) {
+          return d.bandBorders[iLine];
+        }).attr("opacity", function (d) {
+          return d.strokeOpacity;
+        }).attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }), pTrans);
       });
     };
 
@@ -7042,20 +7048,22 @@
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
-        return exit.transition(t).attr("d", function (d) {
+        return transPromise(exit.transition(t).attr("d", function (d) {
           return d.pathEnter;
-        }).remove();
+        }).remove(), pTrans);
       });
-    }).transition(t) // The selection returned by the join function is the merged
-    // enter and update selections
-    .attr("d", function (d) {
-      return d.path;
-    }).attr("opacity", function (d) {
-      return d.opacity;
-    }).attr("stroke", function (d) {
-      return d.colour;
-    }).attr("stroke-width", function (d) {
-      return d.strokeWidth;
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }), pTrans);
     }); // Error bars
 
     gYearly.selectAll('.yearly-error-bars').data(chartErrorBars, function (d) {
@@ -7069,14 +7077,18 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
-        return d.pathEnter;
-      }).remove();
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition(t).attr("d", function (d) {
-      return d.path;
-    }).style('opacity', 1); // Points
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    }); // Points
 
     gYearly.selectAll('.yearly-point').data(chartPoints, function (d) {
       return "point-".concat(d.prop, "-").concat(d.year);
@@ -7090,14 +7102,18 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition(t).style("opacity", 0).attr('cy', height).remove();
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr('cy', height).remove(), pTrans);
+      });
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition(t).attr('cx', function (d) {
-      return d.x;
-    }).attr('cy', function (d) {
-      return d.y;
-    }).style('opacity', 1); // Supplementary trend lines
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).style('opacity', 1), pTrans);
+    }); // Supplementary trend lines
 
     gYearly.selectAll('.yearly-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
       return enter.append('path').attr("d", function (d) {
@@ -7110,18 +7126,22 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
-        return d.pathEnter;
-      }).remove();
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
     }) // Join returns merged enter and update selection
-    .transition(t).attr("d", function (d) {
-      return d.path;
-    }).attr("opacity", function (d) {
-      return d.opacity;
-    }).style('stroke', function (d) {
-      return d.colour;
-    }).style('stroke-width', function (d) {
-      return d.width;
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }), pTrans);
     }); // Supplementary points error bars
 
     gYearly.selectAll('.yearly-error-bars-sup').data(chartPointsSupErrorBars, function (d) {
@@ -7133,14 +7153,18 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition(t).style("opacity", 0).attr("d", function (d) {
-        return d.pathEnter;
-      }).remove();
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition(t).attr("d", function (d) {
-      return d.path;
-    }).style('opacity', 1); // Supplementary points
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    }); // Supplementary points
 
     gYearly.selectAll('.yearly-point-data-sup').data(chartPointsSup, function (d) {
       return "point-data-sup-".concat(d.year);
@@ -7152,14 +7176,18 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition(t).style("opacity", 0).attr('cy', height).remove();
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr('cy', height).remove(), pTrans);
+      });
     }) // The selection returned by the join function is the merged
     // enter and update selections
-    .transition(t).attr('cx', function (d) {
-      return d.x;
-    }).attr('cy', function (d) {
-      return d.y;
-    }).style('opacity', 1);
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).style('opacity', 1), pTrans);
+    });
     addEventHandlers$2(gYearly.selectAll("path"), 'prop', svgChart, interactivity);
     addEventHandlers$2(gYearly.selectAll(".yearly-bar"), 'prop', svgChart, interactivity);
     addEventHandlers$2(gYearly.selectAll(".yearly-point"), 'prop', svgChart, interactivity);
@@ -7233,16 +7261,16 @@
 
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
-        svgYearly.select(".x.axis").transition(t).call(bAxis);
+        transPromise(svgYearly.select(".x.axis").transition(t).call(bAxis), pTrans);
       }
     }
 
     if (svgYearly.selectAll(".l-axis").size()) {
-      svgYearly.select(".l-axis").transition(t).call(lAxis);
+      transPromise(svgYearly.select(".l-axis").transition(t).call(lAxis), pTrans);
     }
 
     if (svgYearly.selectAll(".r-axis").size()) {
-      svgYearly.select(".r-axis").transition(t).call(rAxis);
+      transPromise(svgYearly.select(".r-axis").transition(t).call(rAxis), pTrans);
     }
 
     return svgYearly;
@@ -7558,7 +7586,8 @@
         xPadPercent = _ref$xPadPercent === void 0 ? 0 : _ref$xPadPercent,
         _ref$yPadPercent = _ref.yPadPercent,
         yPadPercent = _ref$yPadPercent === void 0 ? 0 : _ref$yPadPercent,
-        _ref$fillGaps = _ref.fillGaps;
+        _ref$fillGaps = _ref.fillGaps,
+        fillGaps = _ref$fillGaps === void 0 ? true : _ref$fillGaps;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (showCounts === 'bar') {
@@ -7609,8 +7638,9 @@
       }
 
       var subChartPad = 10;
+      var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
-        return makeYearly(svgChart, t, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
+        return makeYearly(svgChart, t, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, fillGaps, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -7623,6 +7653,7 @@
       });
       svgChart.attr("width", perRow * (subChartWidth + subChartPad));
       svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+      return Promise.allSettled(pTrans);
     }
 
     function preProcessMetrics() {
@@ -7681,6 +7712,7 @@
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
+      * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
       * options object, it's value is not changed.
@@ -7765,29 +7797,39 @@
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      var pRet;
 
       if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts || 'minCount' in opts || 'maxCount' in opts) {
         preProcessMetrics();
-        makeChart();
+        pRet = makeChart();
+        positionMainElements(svg, expand);
+      } else {
+        pRet = Promise.resolve();
       }
 
-      positionMainElements(svg, expand);
+      return pRet;
     }
     /** @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
+      * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * For single species charts, this allows you to change the taxon displayed.
       */
 
 
     function setTaxon(taxon) {
+      var pRet;
+
       if (taxa.length !== 1) {
         console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+        pRet = Promise.resolve();
       } else {
         taxa = [taxon];
         highlightItem$2(null, false, svgChart);
-        makeChart();
+        pRet = makeChart();
       }
+
+      return pRet;
     }
     /** @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.

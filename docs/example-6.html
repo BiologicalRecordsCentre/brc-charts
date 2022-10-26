@@ -587,7 +587,7 @@
             opts.minYear = 1980
             //opts.minYear = 2015,
             //opts.dataTrendLines = [{taxon: '2cd4p9h.xvy', gradient: 0.000805999041325647, intercept: -1.45489180256989, colour: 'magenta', width: 3, opacity: 0.5}]
-            en1.setChartOpts(opts)
+            en1.setChartOpts(opts).then(() => console.log('done'))
           })
          
           Promise.all([pCornishLinmod, pCornishMsd]).then(d => {
