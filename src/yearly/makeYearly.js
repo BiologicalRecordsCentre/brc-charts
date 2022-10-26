@@ -13,6 +13,8 @@ export function makeYearly (
   maxYear,
   minYearTrans,
   maxYearTrans,
+  minCount,
+  maxCount,
   xPadPercent,
   yPadPercent,
   metricsPlus,
@@ -32,7 +34,8 @@ export function makeYearly (
   taxonLabelItalics,
   axisLabelFontSize,
   axisLeftLabel,
-  axisRightLabel
+  axisRightLabel,
+  fillGaps
 ) {
 
   // Pre-process data.
@@ -54,9 +57,9 @@ export function makeYearly (
     .map(d => {
       return {
         taxon: d.taxon,
-        colour: 'blue',
-        width: 2,
-        opacity: 0.05,
+        colour: d.colour,
+        width: d.width,
+        opacity: d.opacity,
         y1: d.gradient * minYear + d.intercept,
         y2: d.gradient * maxYear + d.intercept
       }
@@ -68,7 +71,10 @@ export function makeYearly (
     ...dataFiltered.map(d => d[m.prop]),
     ...dataFiltered.filter(d => d[m.bandUpper]).map(d => d[m.bandUpper])
   ))
+
+  const maxCountA = maxCount !== null ? [maxCount] : []
   let yMaxCount = Math.max(
+    ...maxCountA,
     ...maxMetricCounts,
     ...dataPointsFiltered.map(d => d.y),
     ...dataPointsFiltered.filter(d => d.upper).map(d => d.upper),
@@ -79,7 +85,10 @@ export function makeYearly (
     ...dataFiltered.map(d => d[m.prop]),
     ...dataFiltered.filter(d => d[m.bandLower]).map(d => d[m.bandLower])
   ))
+
+  const minCountA = minCount !== null ? [minCount] : []
   let yMinCount = Math.min(
+    ...minCountA,
     ...minMetricCounts,
     ...dataPointsFiltered.map(d => d.y),
     ...dataPointsFiltered.filter(d => d.lower).map(d => d.lower),
@@ -257,9 +266,9 @@ export function makeYearly (
       chartBands.push({
         fill: m.bandFill ? m.bandFill : 'silver',
         stroke: m.bandStroke ? m.bandStroke : 'grey',
-        fillOpacity: m.bandOpacity ? m.bandOpacity : 0.5,
-        strokeOpacity: m.bandStrokeOpacity ? m.bandStrokeOpacity : 1,
-        strokeWidth: m.bandStrokeWidth ? m.bandStrokeWidth : 1,
+        fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
+        strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
+        strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
         type: 'counts',
         prop: m.prop,
         bandPath: lineCounts(pointsBand),
@@ -391,8 +400,6 @@ export function makeYearly (
   const t = svgYearly.transition()
       .duration(duration)
 
-
-console.log('chartPointsSup', chartPointsSup)
   // Bars
   gYearly.selectAll(".yearly-bar")
     .data(chartBars, d => `bars-${d.prop}-${d.year}`)
@@ -419,6 +426,7 @@ console.log('chartPointsSup', chartPointsSup)
       .attr('height', d => height - d.n)
       .attr('width', xScaleBar.bandwidth())
       .attr("fill", d => d.colour)
+      .attr("opacity", d => d.opacity)
 
   // Bands
   gYearly.selectAll(".yearly-band")
@@ -439,6 +447,8 @@ console.log('chartPointsSup', chartPointsSup)
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", d => d.bandPath)
+      .attr("opacity", d => d.fillOpacity)
+      .attr("fill", d => d.fill)
 
   // Band lines
   for (let iLine=0; iLine<2; iLine++) { 
@@ -461,6 +471,9 @@ console.log('chartPointsSup', chartPointsSup)
         // The selection returned by the join function is the merged
         // enter and update selections
         .attr("d", d => d.bandBorders[iLine])
+        .attr("opacity", d => d.strokeOpacity)
+        .attr("stroke", d => d.stroke)
+        .attr("stroke-width", d => d.strokeWidth)
   }
 
   // Main lines
@@ -483,6 +496,9 @@ console.log('chartPointsSup', chartPointsSup)
     // The selection returned by the join function is the merged
     // enter and update selections
     .attr("d", d => d.path)
+    .attr("opacity", d => d.opacity)
+    .attr("stroke", d => d.colour)
+    .attr("stroke-width", d => d.strokeWidth)
 
   // Error bars
   gYearly.selectAll('.yearly-error-bars')
@@ -557,6 +573,8 @@ console.log('chartPointsSup', chartPointsSup)
     .transition(t)
       .attr("d", d => d.path)
       .attr("opacity", d => d.opacity)
+      .style('stroke', d => d.colour)
+      .style('stroke-width', d => d.width)
  
   // Supplementary points error bars
   gYearly.selectAll('.yearly-error-bars-sup')

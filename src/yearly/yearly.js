@@ -117,14 +117,17 @@ import { highlightItem } from './highlightitem'
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
 
- * @param {number} opts.minYear Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
- * @param {number} opts.maxYear Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+ * @param {number} opts.minYear Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)
+ * @param {number} opts.maxYear Indicates the latest year to use on the x axis. If left unset, the latest year in the dataset is used. (Default - null.)
  * @param {number} opts.minYearTrans If set, this indicates the lowest possible year. It is only useful if transitioning between datasets with different
  * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
  * @param {number} opts.maxYearTrans If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
  * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+ * @param {number} opts.minCount Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
+ * @param {number} opts.maxCount Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
  * @param {number} opts.xPadPercent Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)
  * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
+ * @param {boolean} opts.fillGaps A boolean which indicates if gaps in yearly data are to be replaced with a value of zero. (Default - true.)
  * @returns {module:yearly~api} api - Returns an API for the chart.
  */
 
@@ -172,8 +175,11 @@ export function yearly({
   maxYear = null,
   minYearTrans = null,
   maxYearTrans = null,
+  minCount = null,
+  maxCount = null,
   xPadPercent = 0,
   yPadPercent = 0,
+  fillGaps = true
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -236,6 +242,8 @@ export function yearly({
       maxYear,
       minYearTrans,
       maxYearTrans,
+      minCount,
+      maxCount,
       xPadPercent,
       yPadPercent,
       metricsPlus,
@@ -255,7 +263,8 @@ export function yearly({
       taxonLabelItalics,
       axisLabelFontSize,
       axisLeftLabel,
-      axisRightLabel
+      axisRightLabel,
+      fillGaps
     ))
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))
@@ -300,7 +309,7 @@ export function yearly({
       return {
         prop: m.prop,
         label: m.label ?  m.label : m.prop,
-        opacity: m.opacity ? m.opacity : 0.5,
+        opacity: m.opacity !== 'undefined' ? m.opacity : 0.5,
         colour: m.colour ? m.colour : 'blue',
         fading: iFade,
         strokeWidth: strokeWidth,
@@ -383,6 +392,12 @@ export function yearly({
     if ('maxYear' in opts) {
       maxYear = opts.maxYear
     }
+    if ('minCount' in opts) {
+      minCount = opts.minCount
+    }
+    if ('maxCount' in opts) {
+      maxCount = opts.maxCount
+    }
     if ('metrics' in opts) {
       metrics = opts.metrics
     }
@@ -406,7 +421,7 @@ export function yearly({
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
-    if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
+    if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts || 'minCount' in opts || 'maxCount' in opts) {
       preProcessMetrics()
       makeChart()
     }

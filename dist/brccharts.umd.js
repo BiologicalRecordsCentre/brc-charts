@@ -6549,7 +6549,7 @@
     }
   }
 
-  function makeYearly(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel) {
+  function makeYearly(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, fillGaps) {
     // Pre-process data.
     // Filter to named taxon and to min and max year and sort in year order
     // Add max value to each.
@@ -6570,9 +6570,9 @@
     }).map(function (d) {
       return {
         taxon: d.taxon,
-        colour: 'blue',
-        width: 2,
-        opacity: 0.05,
+        colour: d.colour,
+        width: d.width,
+        opacity: d.opacity,
         y1: d.gradient * minYear + d.intercept,
         y2: d.gradient * maxYear + d.intercept
       };
@@ -6587,7 +6587,8 @@
         return d[m.bandUpper];
       }))));
     });
-    var yMaxCount = Math.max.apply(Math, _toConsumableArray(maxMetricCounts).concat(_toConsumableArray(dataPointsFiltered.map(function (d) {
+    var maxCountA = maxCount !== null ? [maxCount] : [];
+    var yMaxCount = Math.max.apply(Math, maxCountA.concat(_toConsumableArray(maxMetricCounts), _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return d.upper;
@@ -6607,7 +6608,8 @@
         return d[m.bandLower];
       }))));
     });
-    var yMinCount = Math.min.apply(Math, _toConsumableArray(minMetricCounts).concat(_toConsumableArray(dataPointsFiltered.map(function (d) {
+    var minCountA = minCount !== null ? [minCount] : [];
+    var yMinCount = Math.min.apply(Math, minCountA.concat(_toConsumableArray(minMetricCounts), _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return d.lower;
@@ -6782,9 +6784,9 @@
         chartBands.push({
           fill: m.bandFill ? m.bandFill : 'silver',
           stroke: m.bandStroke ? m.bandStroke : 'grey',
-          fillOpacity: m.bandOpacity ? m.bandOpacity : 0.5,
-          strokeOpacity: m.bandStrokeOpacity ? m.bandStrokeOpacity : 1,
-          strokeWidth: m.bandStrokeWidth ? m.bandStrokeWidth : 1,
+          fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
+          strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
+          strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
           type: 'counts',
           prop: m.prop,
           bandPath: lineCounts(pointsBand),
@@ -6917,8 +6919,7 @@
       };
     }); // d3 transition object
 
-    var t = svgYearly.transition().duration(duration);
-    console.log('chartPointsSup', chartPointsSup); // Bars
+    var t = svgYearly.transition().duration(duration); // Bars
 
     gYearly.selectAll(".yearly-bar").data(chartBars, function (d) {
       return "bars-".concat(d.prop, "-").concat(d.year);
@@ -6948,6 +6949,8 @@
       return height - d.n;
     }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
       return d.colour;
+    }).attr("opacity", function (d) {
+      return d.opacity;
     }); // Bands
 
     gYearly.selectAll(".yearly-band").data(chartBands, function (d) {
@@ -6974,6 +6977,10 @@
     // enter and update selections
     .attr("d", function (d) {
       return d.bandPath;
+    }).attr("opacity", function (d) {
+      return d.fillOpacity;
+    }).attr("fill", function (d) {
+      return d.fill;
     }); // Band lines
 
     var _loop = function _loop(iLine) {
@@ -7003,6 +7010,12 @@
       // enter and update selections
       .attr("d", function (d) {
         return d.bandBorders[iLine];
+      }).attr("opacity", function (d) {
+        return d.strokeOpacity;
+      }).attr("stroke", function (d) {
+        return d.stroke;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
       });
     };
 
@@ -7037,6 +7050,12 @@
     // enter and update selections
     .attr("d", function (d) {
       return d.path;
+    }).attr("opacity", function (d) {
+      return d.opacity;
+    }).attr("stroke", function (d) {
+      return d.colour;
+    }).attr("stroke-width", function (d) {
+      return d.strokeWidth;
     }); // Error bars
 
     gYearly.selectAll('.yearly-error-bars').data(chartErrorBars, function (d) {
@@ -7099,6 +7118,10 @@
       return d.path;
     }).attr("opacity", function (d) {
       return d.opacity;
+    }).style('stroke', function (d) {
+      return d.colour;
+    }).style('stroke-width', function (d) {
+      return d.width;
     }); // Supplementary points error bars
 
     gYearly.selectAll('.yearly-error-bars-sup').data(chartPointsSupErrorBars, function (d) {
@@ -7417,14 +7440,17 @@
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
 
-   * @param {number} opts.minYear Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
-   * @param {number} opts.maxYear Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
+   * @param {number} opts.minYear Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)
+   * @param {number} opts.maxYear Indicates the latest year to use on the x axis. If left unset, the latest year in the dataset is used. (Default - null.)
    * @param {number} opts.minYearTrans If set, this indicates the lowest possible year. It is only useful if transitioning between datasets with different
    * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
    * @param {number} opts.maxYearTrans If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
    * year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+   * @param {number} opts.minCount Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
+   * @param {number} opts.maxCount Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
    * @param {number} opts.xPadPercent Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)
    * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
+   * @param {boolean} opts.fillGaps A boolean which indicates if gaps in yearly data are to be replaced with a value of zero. (Default - true.)
    * @returns {module:yearly~api} api - Returns an API for the chart.
    */
 
@@ -7524,10 +7550,15 @@
         minYearTrans = _ref$minYearTrans === void 0 ? null : _ref$minYearTrans,
         _ref$maxYearTrans = _ref.maxYearTrans,
         maxYearTrans = _ref$maxYearTrans === void 0 ? null : _ref$maxYearTrans,
+        _ref$minCount = _ref.minCount,
+        minCount = _ref$minCount === void 0 ? null : _ref$minCount,
+        _ref$maxCount = _ref.maxCount,
+        maxCount = _ref$maxCount === void 0 ? null : _ref$maxCount,
         _ref$xPadPercent = _ref.xPadPercent,
         xPadPercent = _ref$xPadPercent === void 0 ? 0 : _ref$xPadPercent,
         _ref$yPadPercent = _ref.yPadPercent,
-        yPadPercent = _ref$yPadPercent === void 0 ? 0 : _ref$yPadPercent;
+        yPadPercent = _ref$yPadPercent === void 0 ? 0 : _ref$yPadPercent,
+        _ref$fillGaps = _ref.fillGaps;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (showCounts === 'bar') {
@@ -7579,7 +7610,7 @@
 
       var subChartPad = 10;
       var svgsTaxa = taxa.map(function (t) {
-        return makeYearly(svgChart, t, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
+        return makeYearly(svgChart, t, taxa, data, dataPoints, dataTrendLines, minYear, maxYear, minYearTrans, maxYearTrans, minCount, maxCount, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, showCounts, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -7611,7 +7642,7 @@
         return {
           prop: m.prop,
           label: m.label ? m.label : m.prop,
-          opacity: m.opacity ? m.opacity : 0.5,
+          opacity: m.opacity !== 'undefined' ? m.opacity : 0.5,
           colour: m.colour ? m.colour : 'blue',
           fading: iFade,
           strokeWidth: strokeWidth,
@@ -7701,6 +7732,14 @@
         maxYear = opts.maxYear;
       }
 
+      if ('minCount' in opts) {
+        minCount = opts.minCount;
+      }
+
+      if ('maxCount' in opts) {
+        maxCount = opts.maxCount;
+      }
+
       if ('metrics' in opts) {
         metrics = opts.metrics;
       }
@@ -7727,7 +7766,7 @@
       makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
 
-      if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts) {
+      if ('taxa' in opts || 'data' in opts || 'minYear' in opts || 'maxYear' in opts || 'metrics' in opts || 'minCount' in opts || 'maxCount' in opts) {
         preProcessMetrics();
         makeChart();
       }
@@ -17525,7 +17564,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.16.0";
+  var version = "0.16.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

@@ -581,12 +581,15 @@
             opts.metrics = [metric1]
             opts.data = d[0]
             opts.dataPoints = d[1]
-            opts.taxa = ['2cd4p9h.xvy'],
-            opts.minYear = 1980,
+            opts.taxa = ['2cd4p9h.xvy']
+            opts.minCount = -0.2
+            opts.maxCount = 1
+            opts.minYear = 1980
             //opts.minYear = 2015,
             //opts.dataTrendLines = [{taxon: '2cd4p9h.xvy', gradient: 0.000805999041325647, intercept: -1.45489180256989, colour: 'magenta', width: 3, opacity: 0.5}]
             en1.setChartOpts(opts)
           })
+         
           Promise.all([pCornishLinmod, pCornishMsd]).then(d => {
             const opts = {...optsE}
             opts.selector = '#enhanced2'
@@ -594,9 +597,11 @@
             opts.dataPoints = d[1]
             opts.dataTrendLines = d[0]
             opts.taxa = ['2cd4p9h.xvy']
-            opts.minYear = 1980,
-            opts.maxYear = 2019,
+            opts.minYear = 1980
+            opts.maxYear = 2019
             en2.setChartOpts(opts)
+
+            console.log('trend lines', d[0])
           })
         }
 
@@ -609,17 +614,27 @@
             optsE1.metrics = [metric1]
             optsE1.data = d[0]
             optsE1.dataPoints = d[1]
-            optsE1.taxa = ['2cd4p9h.vf6'],
-            //optsE1.minYear = null,
+            optsE1.taxa = ['2cd4p9h.vf6']
+            optsE1.minCount = null
+            optsE2.maxCount = null
+            //optsE1.minYear = null
             en1.setChartOpts(optsE1)
           })
 
+          const zeroLine = {
+            taxon: '2cd4p9h.vf6',
+            gradient: 0,
+            intercept: 0.2,
+            colour: 'red',
+            width: 5,
+            opacity: 1
+          }
           Promise.all([pDorsetLinmod, pDorsetMsd]).then(d => {
             const opts = {...optsE}
             opts.selector = '#enhanced2'
             opts.metrics = []
             opts.dataPoints = d[1]
-            opts.dataTrendLines = d[0]
+            opts.dataTrendLines = [...d[0], zeroLine],
             opts.taxa = ['2cd4p9h.vf6']
             opts.minYear = 1949,
             opts.maxYear = 2019,
