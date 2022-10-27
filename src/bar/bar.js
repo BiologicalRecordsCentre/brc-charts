@@ -5,6 +5,7 @@
 // It is currently undocumented.
 
 import * as d3 from 'd3'
+import { transPromise, saveChartImage } from '../general'
 
 export function bar({
   // Default options in here
@@ -30,7 +31,11 @@ export function bar({
   const updateChart = makeChart(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration)
 
   return {
-    updateChart: updateChart
+    updateChart: updateChart,
+    saveImage: (asSvg, filename) => {
+      console.log('generate density image')
+      saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename) 
+    }
   }
 }
 
@@ -109,7 +114,13 @@ function makeUpdateChart(
   duration,
   gChart
 ) {
+
   return (data) => {
+
+    // d3 transition object
+    const t = svg.transition()
+        .duration(duration)
+    let pTrans = []
 
     // Value scales
     let yMaxBuff = Math.max(...data.map(d => d.value))
@@ -129,10 +140,10 @@ function makeUpdateChart(
         .tickSizeOuter(0))
     }
     if (bAxis && axisBottom === 'tick') {
-      bAxis.transition().duration(duration)
+      transPromise(bAxis.transition(t)
         .call(d3.axisBottom()
         .scale(xScaleBottom)
-        .tickSizeOuter(0))
+        .tickSizeOuter(0)), pTrans)
 
       const labels = bAxis.selectAll("text")	
       if (labelPosition["text-anchor"]) labels.style("text-anchor", labelPosition["text-anchor"])
@@ -140,25 +151,26 @@ function makeUpdateChart(
       if (labelPosition["dy"]) labels.attr("dy", labelPosition["dy"])
       if (labelPosition["transform"]) labels.attr("transform", labelPosition["transform"])
     }
+
     if (bAxis && axisBottom === 'on') {
-      bAxis.transition().duration(duration)
+       transPromise(bAxis.transition(t)
         .call(d3.axisBottom()
         .scale(xScale) // Actual scale doesn't matter, but needs one
         .tickValues([])
-        .tickSizeOuter(0))
+        .tickSizeOuter(0)), pTrans)
     }
     if (lAxis) {
-      lAxis.transition().duration(duration)
+       transPromise(lAxis.transition(t)
         .call(d3.axisLeft()
         .scale(yScale)
-        .ticks(5))
+        .ticks(5)), pTrans)
     }
     if (rAxis) {
-      rAxis
+       transPromise(rAxis.transition(t)
         .call(d3.axisRight()
         .scale(yScale)
         .tickValues([])
-        .tickSizeOuter(0))
+        .tickSizeOuter(0)), pTrans)
     }
     // Bar data
     data.forEach(d => {
@@ -168,62 +180,70 @@ function makeUpdateChart(
       d.width = xScaleBottom.bandwidth()
       d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero
     })
-    d3Bars(data, gChart, duration)
+    
+    pTrans = [...d3Bars(data, gChart, t), ...pTrans]
+
+    return Promise.allSettled(pTrans)
   }
 }
 
-function d3Bars(data, gChart, duration) {
+function d3Bars(data, gChart, t) {
 
-    gChart.selectAll(`.bar`)
-      .data(data)
-      .join(
-        enter => enter.append('rect')
-          .attr('class', 'bar')
-          .style('fill', d => d.fill)
-          .style('stroke', d => d.stroke)
-          .style('stroke-width', d => d.strokeWidth)
-          .style('opacity', 0)
-          .attr('x', d => d.x)
-          .attr('y', d => d.ye)
-          .attr('width', d => d.width)
-          .attr('height', 0),
+  const pTrans = []
 
-        update => update,
-        exit => exit
-          .transition().duration(duration)
-          .style('opacity', 0)
-          .remove()
-      )
-      // Join returns merged enter and update selection
-          .transition().duration(duration)
-          .style('opacity', 1)
-          .attr('x', d => d.x)
-          .attr('y', d => d.y)
-          .attr('width', d => d.width)
-          .attr('height', d => d.height)
+  gChart.selectAll(`.bar`)
+    .data(data)
+    .join(
+      enter => enter.append('rect')
+        .attr('class', 'bar')
+        .style('fill', d => d.fill)
+        .style('stroke', d => d.stroke)
+        .style('stroke-width', d => d.strokeWidth)
+        .style('opacity', 0)
+        .attr('x', d => d.x)
+        .attr('y', d => d.ye)
+        .attr('width', d => d.width)
+        .attr('height', 0),
 
-    gChart.selectAll(`.barLabel`)
-      .data(data)
-      .join(
-        enter => enter.append('text')
-          .attr('class', 'barLabel')
-          .style('opacity', 0)
-          .attr('x', d => d.x)
-          .attr('y', d => d.ye)
-          .attr('width', d => d.width)
-          .attr('height', 0),
+      update => update,
+      exit => exit
+        .call(exit => transPromise(exit.transition(t)
+        .style('opacity', 0)
+        .remove(), pTrans))
+    ).call(merge => transPromise(merge.transition(t)
+      // The selection returned by the join function is the merged
+      // enter and update selections
+      .style('opacity', 1)
+      .attr('x', d => d.x)
+      .attr('y', d => d.y)
+      .attr('width', d => d.width)
+      .attr('height', d => d.height), pTrans))
 
-        update => update,
-        exit => exit
-          .transition().duration(duration)
-          .style('opacity', 0)
-          .remove()
-      )
-      // Join returns merged enter and update selection
-          .transition().duration(duration)
-          .style('opacity', 1)
-          .attr('x', d => d.x)
-          .attr('y', d => d.y)
-          .attr('width', d => d.width)
-          .attr('height', d => d.height)
+  gChart.selectAll(`.barLabel`)
+    .data(data)
+    .join(
+      enter => enter.append('text')
+        .attr('class', 'barLabel')
+        .style('opacity', 0)
+        .attr('x', d => d.x)
+        .attr('y', d => d.ye)
+        .attr('width', d => d.width)
+        .attr('height', 0),
+
+      update => update,
+      exit => exit
+        .call(exit => transPromise(exit.transition(t)
+        .style('opacity', 0)
+        .remove(), pTrans))
+    )
+    // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(merge => transPromise(merge.transition(t)
+      .style('opacity', 1)
+      .attr('x', d => d.x)
+      .attr('y', d => d.y)
+      .attr('width', d => d.width)
+      .attr('height', d => d.height), pTrans))
+  
+  return pTrans
 }

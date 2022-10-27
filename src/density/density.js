@@ -7,6 +7,7 @@
 // It is currently undocumented.
 
 import * as d3 from 'd3'
+import { transPromise, saveChartImage } from '../general'
 
 export function density({
   // Default options in here
@@ -36,7 +37,11 @@ export function density({
   const updateChart = makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight)
 
   return {
-    updateChart: updateChart
+    updateChart: updateChart,
+    saveImage: (asSvg, filename) => {
+      console.log('generate density image')
+      saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename) 
+    }
   }
 }
 
@@ -132,6 +137,11 @@ function makeUpdateChart(
 ) {
   return (data, xMin, xMax, xlines, ylines, scaleHeight) => {
 
+    // d3 transition object
+    const t = svg.transition()
+        .duration(duration)
+    let pTrans = []
+
     // Set ylines and xlines to empty array if not set
     if (!xlines) xlines = []
     if (!ylines) ylines = []
@@ -205,29 +215,29 @@ function makeUpdateChart(
 
     // Generate axes
     if (tAxis) {
-      tAxis.transition().duration(duration)
+       transPromise(tAxis.transition(t)
         .call(d3.axisTop()
         .scale(data.length ? custScale : xScale) 
         .tickSize([0])
         .ticks(5)
-        .tickSizeOuter(0))
+        .tickSizeOuter(0)), pTrans)
     }
 
     if (bAxis) {
-      bAxis.transition().duration(duration)
+       transPromise(bAxis.transition(t)
         .call(d3.axisBottom()
         .scale(xScale)
-        .ticks(5))
+        .ticks(5)), pTrans)
     }
     if (lAxis) {
-      lAxis.transition().duration(duration)
+       transPromise(lAxis.transition(t)
         .call(d3.axisLeft()
         .scale(yScale)
-        .tickValues([]))
+        .tickValues([])), pTrans)
         //.ticks(5))
     }
     if (rAxis) {
-      rAxis
+       rAxis
         .call(d3.axisRight()
         .scale(yScale)
         .tickValues([])
@@ -254,47 +264,56 @@ function makeUpdateChart(
     }
     
     // Generate density lines
-    d3Density(gChart1, duration, densities, linePaths, styles)
+    pTrans = [...pTrans, ...d3Density(gChart1, densities, linePaths, styles, t)]
 
     // Add path to ylines and generate
     ylines.forEach(l => {
       l.path = linePath([[xMinBuff, l.y], [xMaxBuff, l.y]])
     })
-    d3Line(gChart1, ylines, 'ylines', duration)
+    pTrans = [...pTrans, ...d3Line(gChart1, ylines, 'ylines', t)]
 
     // Add path to xlines and generate
     xlines.forEach(l => {
       l.path = linePath([[l.x, 0], [l.x, maxDensity * 1.02]])
     })
-    d3Line(gChart1, xlines, 'xlines', duration)
+    pTrans = [...pTrans, ...d3Line(gChart1, xlines, 'xlines', t)]
+
+    return Promise.allSettled(pTrans)
   }
 }
 
-function d3Density(gChart, duration, data, linePaths, styles) {
+function d3Density(gChart, data, linePaths, styles, t) {
 
-    gChart.selectAll(`.density-line`)
-      .data(data)
-      .join(
-        enter => enter.append('path')
-          .attr("opacity", 0)
-          .attr("d", (d,i) => linePaths[i](d))
-          .attr("class", "density-line")
-          .style('fill', 'none')
-          .style('stroke', (d,i) => getStyle(styles, i).stroke)
-          .style('stroke-width', (d,i) => getStyle(styles, i).strokeWidth),
-        update => update,
-        exit => exit
-          .transition().duration(duration)
-          .style("opacity", 0)
-          .remove()
-      )
-      // Join returns merged enter and update selection
-          .transition().duration(duration)
-          .attr("opacity", 1)
-          .attr("d", (d,i) => linePaths[i](d))
+  const pTrans = []
+
+  gChart.selectAll(`.density-line`)
+    .data(data)
+    .join(
+      enter => enter.append('path')
+        .attr("opacity", 0)
+        .attr("d", (d,i) => linePaths[i](d))
+        .attr("class", "density-line")
+        .style('fill', 'none')
+        .style('stroke', (d,i) => getStyle(styles, i).stroke)
+        .style('stroke-width', (d,i) => getStyle(styles, i).strokeWidth),
+      update => update,
+      exit => exit
+        .call(exit => transPromise(exit.transition(t)
+        .style("opacity", 0)
+        .remove(), pTrans))
+    )
+    // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(merge => transPromise(merge.transition(t)
+        .attr("opacity", 1)
+        .attr("d", (d,i) => linePaths[i](d)), pTrans))
+
+  return pTrans
 }
 
-function d3Line(gChart, lines, lineClass, duration) {
+function d3Line(gChart, lines, lineClass, t) {
+
+  const pTrans = []
 
   // Horizontal y lines
   gChart.selectAll(`.${lineClass}`)
@@ -309,14 +328,17 @@ function d3Line(gChart, lines, lineClass, duration) {
         .style('opacity', 0),
       update => update,
       exit => exit
-        .transition().duration(duration)
+        .call(exit => transPromise(exit.transition(t)
         .style("opacity", 0)
-        .remove()
+        .remove(), pTrans))
     )
-    // Join returns merged enter and update selection
-        .transition().duration(duration)
-        .attr('d', d => d.path)
-        .style('opacity', 1)
+    // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(merge => transPromise(merge.transition(t)
+      .attr('d', d => d.path)
+      .style('opacity', 1), pTrans))
+
+  return pTrans
 }
 
 // Function to compute density

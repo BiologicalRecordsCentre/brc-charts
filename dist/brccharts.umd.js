@@ -6053,7 +6053,11 @@
 
     var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight);
     return {
-      updateChart: updateChart
+      updateChart: updateChart,
+      saveImage: function saveImage(asSvg, filename) {
+        console.log('generate density image');
+        saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename);
+      }
     };
   }
 
@@ -6127,7 +6131,10 @@
 
   function makeUpdateChart$2(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles) {
     return function (data, xMin, xMax, xlines, ylines, scaleHeight) {
-      // Set ylines and xlines to empty array if not set
+      // d3 transition object
+      var t = svg.transition().duration(duration);
+      var pTrans = []; // Set ylines and xlines to empty array if not set
+
       if (!xlines) xlines = [];
       if (!ylines) ylines = []; // Data - do any data pre-processing here
 
@@ -6205,15 +6212,15 @@
       }); // Generate axes
 
       if (tAxis) {
-        tAxis.transition().duration(duration).call(d3.axisTop().scale(data.length ? custScale : xScale).tickSize([0]).ticks(5).tickSizeOuter(0));
+        transPromise(tAxis.transition(t).call(d3.axisTop().scale(data.length ? custScale : xScale).tickSize([0]).ticks(5).tickSizeOuter(0)), pTrans);
       }
 
       if (bAxis) {
-        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScale).ticks(5));
+        transPromise(bAxis.transition(t).call(d3.axisBottom().scale(xScale).ticks(5)), pTrans);
       }
 
       if (lAxis) {
-        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).tickValues([])); //.ticks(5))
+        transPromise(lAxis.transition(t).call(d3.axisLeft().scale(yScale).tickValues([])), pTrans); //.ticks(5))
       }
 
       if (rAxis) {
@@ -6237,21 +6244,23 @@
       if (dataWork.length) ; // Generate density lines
 
 
-      d3Density(gChart1, duration, densities, linePaths, styles); // Add path to ylines and generate
+      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Density(gChart1, densities, linePaths, styles, t))); // Add path to ylines and generate
 
       ylines.forEach(function (l) {
         l.path = linePath([[xMinBuff, l.y], [xMaxBuff, l.y]]);
       });
-      d3Line$2(gChart1, ylines, 'ylines', duration); // Add path to xlines and generate
+      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line$2(gChart1, ylines, 'ylines', t))); // Add path to xlines and generate
 
       xlines.forEach(function (l) {
         l.path = linePath([[l.x, 0], [l.x, maxDensity * 1.02]]);
       });
-      d3Line$2(gChart1, xlines, 'xlines', duration);
+      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line$2(gChart1, xlines, 'xlines', t)));
+      return Promise.allSettled(pTrans);
     };
   }
 
-  function d3Density(gChart, duration, data, linePaths, styles) {
+  function d3Density(gChart, data, linePaths, styles, t) {
+    var pTrans = [];
     gChart.selectAll(".density-line").data(data).join(function (enter) {
       return enter.append('path').attr("opacity", 0).attr("d", function (d, i) {
         return linePaths[i](d);
@@ -6263,15 +6272,22 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr("opacity", 1).attr("d", function (d, i) {
-      return linePaths[i](d);
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("opacity", 1).attr("d", function (d, i) {
+        return linePaths[i](d);
+      }), pTrans);
     });
+    return pTrans;
   }
 
-  function d3Line$2(gChart, lines, lineClass, duration) {
-    // Horizontal y lines
+  function d3Line$2(gChart, lines, lineClass, t) {
+    var pTrans = []; // Horizontal y lines
+
     gChart.selectAll(".".concat(lineClass)).data(lines).join(function (enter) {
       return enter.append('path').attr('d', function (d) {
         return d.path;
@@ -6285,11 +6301,17 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('d', function (d) {
-      return d.path;
-    }).style('opacity', 1);
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('d', function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    });
+    return pTrans;
   } // Function to compute density
 
 
@@ -6369,7 +6391,11 @@
 
     var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
     return {
-      updateChart: updateChart
+      updateChart: updateChart,
+      saveImage: function saveImage(asSvg, filename) {
+        console.log('generate density image');
+        saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename);
+      }
     };
   }
 
@@ -6422,7 +6448,10 @@
 
   function makeUpdateChart$3(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
     return function (data) {
-      // Value scales
+      // d3 transition object
+      var t = svg.transition().duration(duration);
+      var pTrans = []; // Value scales
+
       var yMaxBuff = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
         return d.value;
       })));
@@ -6438,7 +6467,7 @@
       }
 
       if (bAxis && axisBottom === 'tick') {
-        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScaleBottom).tickSizeOuter(0));
+        transPromise(bAxis.transition(t).call(d3.axisBottom().scale(xScaleBottom).tickSizeOuter(0)), pTrans);
         var labels = bAxis.selectAll("text");
         if (labelPosition["text-anchor"]) labels.style("text-anchor", labelPosition["text-anchor"]);
         if (labelPosition["dx"]) labels.attr("dx", labelPosition["dx"]);
@@ -6447,16 +6476,16 @@
       }
 
       if (bAxis && axisBottom === 'on') {
-        bAxis.transition().duration(duration).call(d3.axisBottom().scale(xScale) // Actual scale doesn't matter, but needs one
-        .tickValues([]).tickSizeOuter(0));
+        transPromise(bAxis.transition(t).call(d3.axisBottom().scale(xScale) // Actual scale doesn't matter, but needs one
+        .tickValues([]).tickSizeOuter(0)), pTrans);
       }
 
       if (lAxis) {
-        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
+        transPromise(lAxis.transition(t).call(d3.axisLeft().scale(yScale).ticks(5)), pTrans);
       }
 
       if (rAxis) {
-        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
+        transPromise(rAxis.transition(t).call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0)), pTrans);
       } // Bar data
 
 
@@ -6467,11 +6496,13 @@
         d.width = xScaleBottom.bandwidth();
         d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero;
       });
-      d3Bars(data, gChart, duration);
+      pTrans = [].concat(_toConsumableArray(d3Bars(data, gChart, t)), _toConsumableArray(pTrans));
+      return Promise.allSettled(pTrans);
     };
   }
 
-  function d3Bars(data, gChart, duration) {
+  function d3Bars(data, gChart, t) {
+    var pTrans = [];
     gChart.selectAll(".bar").data(data).join(function (enter) {
       return enter.append('rect').attr('class', 'bar').style('fill', function (d) {
         return d.fill;
@@ -6489,16 +6520,21 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style('opacity', 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).style('opacity', 1).attr('x', function (d) {
-      return d.x;
-    }).attr('y', function (d) {
-      return d.y;
-    }).attr('width', function (d) {
-      return d.width;
-    }).attr('height', function (d) {
-      return d.height;
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style('opacity', 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .style('opacity', 1).attr('x', function (d) {
+        return d.x;
+      }).attr('y', function (d) {
+        return d.y;
+      }).attr('width', function (d) {
+        return d.width;
+      }).attr('height', function (d) {
+        return d.height;
+      }), pTrans);
     });
     gChart.selectAll(".barLabel").data(data).join(function (enter) {
       return enter.append('text').attr('class', 'barLabel').style('opacity', 0).attr('x', function (d) {
@@ -6511,17 +6547,23 @@
     }, function (update) {
       return update;
     }, function (exit) {
-      return exit.transition().duration(duration).style('opacity', 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).style('opacity', 1).attr('x', function (d) {
-      return d.x;
-    }).attr('y', function (d) {
-      return d.y;
-    }).attr('width', function (d) {
-      return d.width;
-    }).attr('height', function (d) {
-      return d.height;
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style('opacity', 0).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).style('opacity', 1).attr('x', function (d) {
+        return d.x;
+      }).attr('y', function (d) {
+        return d.y;
+      }).attr('width', function (d) {
+        return d.width;
+      }).attr('height', function (d) {
+        return d.height;
+      }), pTrans);
     });
+    return pTrans;
   }
 
   function addEventHandlers$2(sel, prop, svgChart, interactivity) {

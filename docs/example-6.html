@@ -31,6 +31,7 @@
     <button onclick="enhanced1('dorset')">Dorset</button>
     <button onclick="enhanced1('both')">Both</button>
     <button onclick="clearEnhanced('both')">clear</button>
+    <button onclick="downloadEnhanced()">Download images</button>
 
     <p>
       All the examples on this page use data derived from records downloaded from the NBN in March 2021 from these datasets:
@@ -448,7 +449,8 @@
         minYearTrans: 1940,
         maxYearTrans: 2030,
         minYear: 1949,
-        maxYear: 2019
+        maxYear: 2019,
+        duration: 3000
       }
 
       const en1 = brccharts.yearly(optsE)
@@ -457,6 +459,11 @@
       function clearEnhanced() {
         en1.setTaxon('')
         en2.setTaxon('')
+      }
+
+      function downloadEnhanced() {
+        en1.saveImage(true, 'yearly1')
+        en2.saveImage(true, 'yearly2')
       }
 
       function formatData(d) {
