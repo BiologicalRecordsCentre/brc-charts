@@ -25,14 +25,6 @@
 &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
 </pre>
 
-    <div id="enhanced1"></div>
-    <div id="enhanced2"></div>
-    <button onclick="enhanced1('cornish')">Cornish</button>
-    <button onclick="enhanced1('dorset')">Dorset</button>
-    <button onclick="enhanced1('both')">Both</button>
-    <button onclick="clearEnhanced('both')">clear</button>
-    <button onclick="downloadEnhanced()">Download images</button>
-
     <p>
       All the examples on this page use data derived from records downloaded from the NBN in March 2021 from these datasets:
       <i><a href="https://registry.nbnatlas.org/public/showDataResource/dr695">Ladybird Survey of the UK</a></i> and 
@@ -216,6 +208,20 @@
     <div id="chart5" style="margin-top: 1em"></div>
     <button onclick="api.saveImage(true, 'yearly')">Download image</button>
     <!--<button onclick="test()">Test</button>-->
+
+    <h2>Examples demonstrating how this chart was used for BSBI atlas</h2>
+    <p>
+      The examples below illustrate how the yearly chart can be used to create other
+      types of charts. These examples based on data from the BSBI online atlas. Dig into the code 
+      and look at the API documentation on GitHub to see how it's done.
+    </p>
+    <div id="enhanced1"></div>
+    <div id="enhanced2"></div>
+    <button onclick="enhanced1('cornish')">Cornish</button>
+    <button onclick="enhanced1('dorset')">Dorset</button>
+    <button onclick="enhanced1('both')">Both</button>
+    <button onclick="clearEnhanced('both')">clear</button>
+    <button onclick="downloadEnhanced()">Download images</button>
 
     <!--JS and CSS required for highlighting inline example code-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
@@ -429,11 +435,10 @@
         })
       }
 
-      // Enhanced examples
+      // Enhanced examples - which create charts like those used in BSBI atlas
       var optsE = {
         selector: '#enhanced1',
-        //taxa: ['2cd4p9h.x66'],
-        taxa: ['dummy'], // A value is needed here even for blank charts
+        taxa: [''], // A value is needed here even for blank charts
         yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
         axisRight: 'on',
         axisTop: 'on',
@@ -531,7 +536,7 @@
  
       const metric2 = { 
         prop: 'y50', 
-        colour: 'red', 
+        colour: 'silver', 
         opacity: 1,
         lineWidth: 2,
         bandUpper: 'y95', 
@@ -542,15 +547,17 @@
         bandStrokeOpacity: 1,
         bandStrokeWidth: 1,
         points: 'y50',
-        pointsUpper: 'y95',
-        pointsLower: 'y5'
+        //pointsUpper: 'y95',
+       // pointsLower: 'y5',
+        errorBarUpper: 'y95',
+        errorBarLower: 'y5'
       }
 
       function enhanced1(file) {
 
         var optsLines = {
           selector: '#enhanced12',
-          taxa: ['dummy'], // A value is needed here even for blank charts
+          taxa: [''], // A value is needed here even for blank charts
           yAxisOpts: {numFormat: '.2f', minMax: null, fixedMin: null},
           axisRight: 'on',
           axisTop: 'on',
@@ -589,8 +596,8 @@
             opts.data = d[0]
             opts.dataPoints = d[1]
             opts.taxa = ['2cd4p9h.xvy']
-            opts.minCount = -0.2
-            opts.maxCount = 1
+            //opts.minCount = -0.2
+            //opts.maxCount = 1
             opts.minYear = 1980
             //opts.minYear = 2015,
             //opts.dataTrendLines = [{taxon: '2cd4p9h.xvy', gradient: 0.000805999041325647, intercept: -1.45489180256989, colour: 'magenta', width: 3, opacity: 0.5}]
@@ -628,20 +635,12 @@
             en1.setChartOpts(optsE1)
           })
 
-          const zeroLine = {
-            taxon: '2cd4p9h.vf6',
-            gradient: 0,
-            intercept: 0.2,
-            colour: 'red',
-            width: 5,
-            opacity: 1
-          }
           Promise.all([pDorsetLinmod, pDorsetMsd]).then(d => {
             const opts = {...optsE}
             opts.selector = '#enhanced2'
             opts.metrics = []
             opts.dataPoints = d[1]
-            opts.dataTrendLines = [...d[0], zeroLine],
+            opts.dataTrendLines = d[0],
             opts.taxa = ['2cd4p9h.vf6']
             opts.minYear = 1949,
             opts.maxYear = 2019,

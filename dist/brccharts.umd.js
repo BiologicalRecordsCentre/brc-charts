@@ -6081,7 +6081,7 @@
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
-    var svgDensity = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+    var svgDensity = d3.select("".concat(selector)).append('svg').attr('id', elid).style('font-family', 'sans-serif'); // Size the chart svg
 
     if (expand) {
       svgDensity.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
@@ -6403,7 +6403,7 @@
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
-    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
+    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid).style('font-family', 'sans-serif'); // Size the chart svg
 
     if (expand) {
       svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
@@ -6732,7 +6732,7 @@
       gYearly = svgYearly.select('.brc-chart-yearly-g');
       init = false;
     } else {
-      svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon)).style('overflow', 'visible');
+      svgYearly = svgChart.append('svg').classed('brc-chart-yearly', true).attr('id', safeId(taxon)).style('overflow', 'visible').style('font-family', 'sans-serif');
       gYearly = svgYearly.append('g').classed('brc-chart-yearly-g', true);
       init = true;
     } // Line path generator
@@ -17648,7 +17648,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.16.1";
+  var version = "0.17.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

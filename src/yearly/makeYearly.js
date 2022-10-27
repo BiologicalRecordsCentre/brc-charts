@@ -167,6 +167,7 @@ export function makeYearly (
       .classed('brc-chart-yearly', true)
       .attr('id', safeId(taxon))
       .style('overflow', 'visible')
+      .style('font-family', 'sans-serif')
     gYearly = svgYearly.append('g')
       .classed('brc-chart-yearly-g', true)
     init = true

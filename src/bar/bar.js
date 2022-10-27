@@ -48,6 +48,7 @@ function makeChart(data, labelPosition, selector, elid, width, height, padding, 
   const svgTrend = d3.select(`${selector}`)
     .append('svg')
     .attr('id', elid)
+    .style('font-family', 'sans-serif')
 
   // Size the chart svg
   if (expand) {

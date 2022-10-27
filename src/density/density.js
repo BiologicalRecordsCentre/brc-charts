@@ -61,6 +61,7 @@ function makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, heig
   const svgDensity = d3.select(`${selector}`)
     .append('svg')
     .attr('id', elid)
+    .style('font-family', 'sans-serif')
 
   // Size the chart svg
   if (expand) {
