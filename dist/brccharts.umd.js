@@ -6773,7 +6773,8 @@
             opacity: m.opacity,
             strokeWidth: m.strokeWidth,
             type: 'counts',
-            prop: "".concat(m.prop, "-").concat(i),
+            prop: m.prop,
+            part: i,
             yMin: yMinCount,
             pathEnter: lineCounts(points.map(function (p) {
               return {
@@ -6834,7 +6835,8 @@
             strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
             strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
             type: 'counts',
-            prop: "".concat(m.prop, "-").concat(_i),
+            prop: m.prop,
+            part: _i,
             bandPath: lineCounts(pointsBand),
             bandPathEnter: lineCounts(pointsBand.map(function (p) {
               return {
@@ -7000,7 +7002,7 @@
     }); // Bands
 
     gYearly.selectAll(".yearly-band").data(chartBands, function (d) {
-      return "band-".concat(d.prop);
+      return "band-".concat(d.prop, "-").concat(d.part);
     }).join(function (enter) {
       return enter.append("path").attr("class", function (d) {
         return "yearly-band yearly-graphic yearly-".concat(d.prop);
@@ -7031,7 +7033,7 @@
 
     var _loop = function _loop(iLine) {
       gYearly.selectAll(".yearly-band-border-".concat(iLine)).data(chartBands, function (d) {
-        return "band-line-".concat(d.prop, "-").concat(iLine);
+        return "band-line-".concat(d.prop, "-").concat(iLine, "-").concat(d.part);
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
           return "yearly-band-border-".concat(iLine, " yearly-graphic yearly-").concat(d.prop);
@@ -7071,7 +7073,7 @@
 
 
     gYearly.selectAll(".yearly-line").data(chartLines, function (d) {
-      return "line-".concat(d.prop);
+      return "line-".concat(d.prop, "-").concat(d.part);
     }).join(function (enter) {
       return enter.append("path").attr("class", function (d) {
         return "yearly-line yearly-graphic yearly-".concat(d.prop);

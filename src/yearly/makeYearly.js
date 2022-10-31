@@ -214,7 +214,8 @@ export function makeYearly (
           opacity: m.opacity,
           strokeWidth: m.strokeWidth,
           type: 'counts',
-          prop: `${m.prop}-${i}`,
+          prop: m.prop,
+          part: i,
           yMin: yMinCount,
           pathEnter: lineCounts(points.map(p => {
             return {
@@ -278,7 +279,8 @@ export function makeYearly (
           strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
           strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
           type: 'counts',
-          prop: `${m.prop}-${i}`,
+          prop: m.prop,
+          part: i,
           bandPath: lineCounts(pointsBand),
           bandPathEnter: lineCounts(pointsBand.map(p => {
             return {
@@ -440,7 +442,7 @@ export function makeYearly (
 
   // Bands
   gYearly.selectAll(".yearly-band")
-    .data(chartBands, d => `band-${d.prop}`)
+    .data(chartBands, d => `band-${d.prop}-${d.part}`)
     .join(
       enter => enter.append("path")
         .attr("class", d => `yearly-band yearly-graphic yearly-${d.prop}`)
@@ -465,7 +467,7 @@ export function makeYearly (
   // Band lines
   for (let iLine=0; iLine<2; iLine++) { 
     gYearly.selectAll(`.yearly-band-border-${iLine}`)
-      .data(chartBands, d => `band-line-${d.prop}-${iLine}`)
+      .data(chartBands, d => `band-line-${d.prop}-${iLine}-${d.part}`)
       .join(
         enter => enter.append("path")
           .attr("class", d => `yearly-band-border-${iLine} yearly-graphic yearly-${d.prop}`)
@@ -491,7 +493,7 @@ export function makeYearly (
 
   // Main lines
   gYearly.selectAll(".yearly-line")
-    .data(chartLines,  d => `line-${d.prop}`)
+    .data(chartLines,  d => `line-${d.prop}-${d.part}`)
     .join(
       enter => enter.append("path")
         .attr("class", d => `yearly-line yearly-graphic yearly-${d.prop}`)
