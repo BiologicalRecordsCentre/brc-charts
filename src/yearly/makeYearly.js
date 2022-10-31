@@ -35,9 +35,11 @@ export function makeYearly (
   axisLabelFontSize,
   axisLeftLabel,
   axisRightLabel,
-  fillGaps,
+  missingValues,
   pTrans
 ) {
+
+
 
   // Pre-process data.
   // Filter to named taxon and to min and max year and sort in year order
@@ -96,7 +98,7 @@ export function makeYearly (
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
-  
+
   if (yAxisOpts.minMax !== null) {
     if (yMaxCount < yAxisOpts.minMax) {
       yMaxCount = yAxisOpts.minMax
@@ -197,36 +199,35 @@ export function makeYearly (
     // Construct data structure for line charts.
     if (showCounts === 'line' && isFinite(yMinCount)) {
 
-      const points = adjustForTrans(years.map(y => {
-        // Note below that if the year is not in the datasets, we create a
-        // point with the value of zero.
-        // TODO - this needs revisiting if we account for 'broken' lines
-        // where gaps should be shown. So this will need parameterising 
-        // somehow.
+      const pointSets = adjustForTrans(years.map(y => {
+        // Replace any missing values (for a given year)
+        // with the missing value specified (can be a value
+        // or 'bridge' or 'break')
         return {
           year: y,
-          n: dataDict[y] ? dataDict[y] : 0,
+          n: dataDict[y] ? dataDict[y] : missingValues,
         }
       }))
-
-      chartLines.push({
-        colour: m.colour,
-        opacity: m.opacity,
-        strokeWidth: m.strokeWidth,
-        type: 'counts',
-        prop: m.prop,
-        yMin: yMinCount,
-        pathEnter: lineCounts(points.map(p => {
-          return {
-            n: yMinCount,
-            year: p.year
-          }
-        })),
-        path: lineCounts(points)
+      pointSets.forEach((points, i) => {
+        chartLines.push({
+          colour: m.colour,
+          opacity: m.opacity,
+          strokeWidth: m.strokeWidth,
+          type: 'counts',
+          prop: `${m.prop}-${i}`,
+          yMin: yMinCount,
+          pathEnter: lineCounts(points.map(p => {
+            return {
+              n: yMinCount,
+              year: p.year
+            }
+          })),
+          path: lineCounts(points)
+        })
       })
     }
 
-    // Construct data structure for condidence band on line charts.
+    // Construct data structure for confidence band on line charts.
     if (showCounts === 'line' && m.bandUpper && m.bandLower && isFinite(yMinCount)) {
       const ddUpper = dataFiltered.reduce((a,d) => {
         a[d.year]=d[m.bandUpper]
@@ -239,50 +240,56 @@ export function makeYearly (
       const upperLine = years.map(y => {
         return {
           year: y,
-          n: ddUpper[y] ? ddUpper[y] : 0,
+          n: ddUpper[y] ? ddUpper[y] : missingValues,
         }
       })
       const lowerLine = [...years].map(y => {
         return {
           year: y,
-          n: ddLower[y] ? ddLower[y] : 0,
+          n: ddLower[y] ? ddLower[y] : missingValues,
         }
       })
 
-      const pointsLower = adjustForTrans(lowerLine)
-      const pointsUpper = adjustForTrans(upperLine)
-      const pointsBand = [...adjustForTrans(lowerLine), ...adjustForTrans(upperLine).reverse()]
-      const pointsLowerEnter = pointsLower.map(p => {
-        return {
-          n: yMinCount,
-          year: p.year
-        }
-      })
-      const pointsUpderEnter = pointsUpper.map(p => {
-        return {
-          n: yMinCount,
-          year: p.year
-        }
-      })
+      const pointsLowerSet = adjustForTrans(lowerLine)
+      const pointsUpperSet = adjustForTrans(upperLine)
+      for (let i=0; i<pointsLowerSet.length; i++) {
 
-      chartBands.push({
-        fill: m.bandFill ? m.bandFill : 'silver',
-        stroke: m.bandStroke ? m.bandStroke : 'grey',
-        fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
-        strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
-        strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-        type: 'counts',
-        prop: m.prop,
-        bandPath: lineCounts(pointsBand),
-        bandPathEnter: lineCounts(pointsBand.map(p => {
+        const pointsLower = pointsLowerSet[i]
+        const pointsUpper = pointsUpperSet[i]
+        const pointsBand = [...pointsLowerSet[i], ...pointsUpperSet[i].reverse()]
+
+        const pointsLowerEnter = pointsLower.map(p => {
           return {
             n: yMinCount,
             year: p.year
           }
-        })),
-        bandBorders: [lineCounts(pointsLower), lineCounts(pointsUpper)],
-        bandBordersEnter: [lineCounts(pointsLowerEnter), lineCounts(pointsUpderEnter)]
-      })
+        })
+        const pointsUpperEnter = pointsUpper.map(p => {
+          return {
+            n: yMinCount,
+            year: p.year
+          }
+        })
+
+        chartBands.push({
+          fill: m.bandFill ? m.bandFill : 'silver',
+          stroke: m.bandStroke ? m.bandStroke : 'grey',
+          fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
+          strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
+          strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
+          type: 'counts',
+          prop: `${m.prop}-${i}`,
+          bandPath: lineCounts(pointsBand),
+          bandPathEnter: lineCounts(pointsBand.map(p => {
+            return {
+              n: yMinCount,
+              year: p.year
+            }
+          })),
+          bandBorders: [lineCounts(pointsLower), lineCounts(pointsUpper)],
+          bandBordersEnter: [lineCounts(pointsLowerEnter), lineCounts(pointsUpperEnter)]
+        })
+      }
     }
 
     // Construct data structure for bar charts.
@@ -411,7 +418,7 @@ export function makeYearly (
         .attr('width', xScaleBar.bandwidth())
         .attr('height', 0)
         .attr('fill', d => d.colour)
-        .attr('opacity', d => d.opacity)
+        .attr('opacity', 0)
         .attr('y', height)
         .attr('x', d => xScaleBar(d.year)),
       update => update,
@@ -419,6 +426,7 @@ export function makeYearly (
         .call(exit => transPromise(exit.transition(t)
           .attr('height', 0)
           .attr('y', height)
+          .style("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
@@ -436,7 +444,7 @@ export function makeYearly (
     .join(
       enter => enter.append("path")
         .attr("class", d => `yearly-band yearly-graphic yearly-${d.prop}`)
-        .attr("opacity", d => d.fillOpacity)
+        .attr("opacity", 0)
         .attr("fill", d => d.fill)
         .attr("stroke", "none")
         .attr("d", d => d.bandPathEnter),
@@ -444,6 +452,7 @@ export function makeYearly (
       exit => exit
         .call(exit => transPromise(exit.transition(t)
           .attr("d", d => d.bandPathEnter)
+          .style("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
@@ -460,7 +469,7 @@ export function makeYearly (
       .join(
         enter => enter.append("path")
           .attr("class", d => `yearly-band-border-${iLine} yearly-graphic yearly-${d.prop}`)
-          .attr("opacity", d => d.strokeOpacity)
+          .attr("opacity", 0)
           .attr("fill","none")
           .attr("stroke", d => d.stroke)
           .attr("stroke-width", d => d.strokeWidth)
@@ -469,6 +478,7 @@ export function makeYearly (
         exit => exit
           .call(exit =>  transPromise(exit.transition(t)
             .attr("d", d => d.bandBordersEnter[iLine])
+            .style("opacity", 0)
             .remove(), pTrans))
          ).call(merge => transPromise(merge.transition(t)
           // The selection returned by the join function is the merged
@@ -485,7 +495,7 @@ export function makeYearly (
     .join(
       enter => enter.append("path")
         .attr("class", d => `yearly-line yearly-graphic yearly-${d.prop}`)
-        .attr("opacity", d => d.opacity)
+        .attr("opacity", 0)
         .attr("fill", "none")
         .attr("stroke", d => d.colour)
         .attr("stroke-width", d => d.strokeWidth)
@@ -494,6 +504,7 @@ export function makeYearly (
       exit => exit
         .call(exit => transPromise(exit.transition(t)
           .attr("d", d => d.pathEnter)
+          .style("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
@@ -748,27 +759,69 @@ export function makeYearly (
   
   return svgYearly
 
-  function adjustForTrans(pnts) {
-    const ret = [...pnts]
+  function adjustForTrans(pntsIn) {
+    // Return an array of arrays of points. There may be more than one array
+    // of points in the main array if there are breaks in the input array
+    // of points.
 
-    if (minYearTrans) {
-      for(let i=minYearTrans; i<=pnts[0].year; i++) {
-        ret.unshift({
-          n: pnts[0].n,
-          year: pnts[0].year
-        })
+    // First restructure the passed in points to an array of arrays.
+    let pntsSplit = []
+    pntsIn.forEach(p => {
+      if (p.n === 'break') {
+        // Add a new array
+        pntsSplit.push([])
+      } else {
+        if (pntsSplit.length === 0) {
+          // Fist value so first add a new array
+          pntsSplit.push([])
+        }
+        // Add point to array
+        pntsSplit[pntsSplit.length - 1].push(p)
       }
-    }
+    })
+    // At this point pntsSplit could have empty arrays, e.g. if there
+    // where consecutive 'breaks' so weed these out.
+    pntsSplit = pntsSplit.filter(a => a.length > 0)
 
-    if (maxYearTrans) {
-      for(let i=pnts[pnts.length-1].year + 1; i <= maxYearTrans; i++) {
-        ret.push({
-          n: pnts[pnts.length-1].n,
-          year: pnts[pnts.length-1].year
-        })
+    // Adjust of transition year ranges
+    const retSet = []
+    pntsSplit.forEach(pnts => {
+
+      const ret = [...pnts]
+      retSet.push(ret)
+
+      // If missing year values are being bridged, add a point at last
+      // known value.
+      for (let i = 0; i < pnts.length; i++) {
+        if (pnts[i].n === 'bridge') {
+          pnts[i].n = pnts[i-1].n
+          pnts[i].year = pnts[i-1].year
+        }
       }
-    }
 
-    return ret
+      // When minYearTans and MaxYearTrans are set, then each trend line
+      // must have the same number of points in (MaxYearTrans - minYearTans + 1 points).
+      // This is to make nice looking transitions between lines with otherwise
+      // different numbers of points.
+      if (minYearTrans) {
+        for(let i=minYearTrans; i<pnts[0].year; i++) {
+          ret.unshift({
+            n: pnts[0].n,
+            year: pnts[0].year
+          })
+        }
+      }
+      if (maxYearTrans) {
+        for(let i=pnts[pnts.length-1].year + 1; i <= maxYearTrans; i++) {
+          ret.push({
+            n: pnts[pnts.length-1].n,
+            year: pnts[pnts.length-1].year
+          })
+        }
+      }
+    })
+    
+    return retSet
+    //return retSet[retSet.length - 1]
   }
 }

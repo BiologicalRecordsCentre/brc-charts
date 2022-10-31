@@ -127,7 +127,8 @@ import { highlightItem } from './highlightitem'
  * @param {number} opts.maxCount Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
  * @param {number} opts.xPadPercent Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)
  * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
- * @param {boolean} opts.fillGaps A boolean which indicates if gaps in yearly data are to be replaced with a value of zero. (Default - true.)
+ * @param {string|number} opts.missingValues A value which indicates how gaps in yearly data are treated. Can either be the string value 'break' which
+ * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
  * @returns {module:yearly~api} api - Returns an API for the chart.
  */
 
@@ -179,7 +180,7 @@ export function yearly({
   maxCount = null,
   xPadPercent = 0,
   yPadPercent = 0,
-  fillGaps = true
+  missingValues = 0
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -266,7 +267,7 @@ export function yearly({
       axisLabelFontSize,
       axisLeftLabel,
       axisRightLabel,
-      fillGaps,
+      missingValues,
       pTrans
     ))
 
