@@ -9,6 +9,7 @@ import { trend3 } from './src/trend3/trend3'
 import { density } from './src/density/density'
 import { bar } from './src/bar/bar'
 import { yearly } from './src/yearly/yearly'
+import { temporal } from './src/temporal/temporal'
 import { altlat } from './src/altlat'
 import pkg from './package.json'
 
@@ -28,5 +29,6 @@ export {
   density,
   bar,
   yearly,
+  temporal,
   altlat
 } 

@@ -7965,6 +7965,1411 @@
     };
   }
 
+  function addEventHandlers$3(sel, prop, svgChart, interactivity) {
+    sel.on("mouseover", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem$3(d[prop], true, svgChart);
+      }
+    }).on("mouseout", function (d) {
+      if (interactivity === 'mousemove') {
+        highlightItem$3(d[prop], false, svgChart);
+      }
+    }).on("click", function (d) {
+      if (interactivity === 'mouseclick') {
+        highlightItem$3(d[prop], true, svgChart);
+        d3.event.stopPropagation();
+      }
+    });
+  }
+  function highlightItem$3(id, highlight, svgChart) {
+    svgChart.selectAll('.temporal-graphic').classed('lowlight', false);
+
+    if (highlight) {
+      svgChart.selectAll('.temporal-graphic').classed('lowlight', true);
+      svgChart.selectAll(".temporal-".concat(id)).classed('lowlight', false);
+    }
+  }
+
+  function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, pTrans) {
+    // Pre-process data.
+    // Filter to named taxon and to min and max period and sort in period order
+    // Add max value to each.
+    var dataFiltered = data.filter(function (d) {
+      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+    }).sort(function (a, b) {
+      return a.period > b.period ? 1 : -1;
+    });
+    var dataPointsFiltered = dataPoints.filter(function (d) {
+      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+    }).sort(function (a, b) {
+      return a.period > b.period ? 1 : -1;
+    }); // Filter dataTrendLinesFiltered data on taxon and also from an array 
+    // of gradients and intercepts to an array of arrays of two point lines
+
+    var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
+      return d.taxon === taxon;
+    }).map(function (d) {
+      return {
+        taxon: d.taxon,
+        colour: d.colour,
+        width: d.width,
+        opacity: d.opacity,
+        y1: d.gradient * minPeriod + d.intercept,
+        y2: d.gradient * maxPeriod + d.intercept
+      };
+    }); //Set the min and maximum values for the y axis
+
+    var maxMetricYs = metricsPlus.map(function (m) {
+      return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandUpper];
+      }).map(function (d) {
+        return d[m.bandUpper];
+      }))));
+    });
+    var maxYA = maxY !== null ? [maxY] : [];
+    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.upper;
+    }).map(function (d) {
+      return d.upper;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
+    var minMetricYs = metricsPlus.map(function (m) {
+      return Math.min.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandLower];
+      }).map(function (d) {
+        return d[m.bandLower];
+      }))));
+    });
+    var minYA = minY !== null ? [minY] : [];
+    var yminY = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.lower;
+    }).map(function (d) {
+      return d.lower;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
+
+    if (yAxisOpts.minMax !== null) {
+      if (ymaxY < yAxisOpts.minMax) {
+        ymaxY = yAxisOpts.minMax;
+      }
+    }
+
+    if (yAxisOpts.fixedMin !== null) {
+      yminY = yAxisOpts.fixedMin;
+    } // Value scales
+
+
+    var periods = [];
+
+    for (var i = minPeriod; i <= maxPeriod; i++) {
+      periods.push(i);
+    }
+
+    var xPadding = (maxPeriod - minPeriod) * xPadPercent;
+    var yPadding = (ymaxY - yminY) * yPadPercent;
+    var xScaleBar = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
+    var xScaleLine = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
+    var yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]); // Top axis
+
+    var tAxis;
+
+    if (axisTop === 'on') {
+      tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
+      .tickValues([]).tickSizeOuter(0);
+    } // Bottom axis
+
+
+    var bAxis;
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      if (periodType === 'year') {
+        bAxis = xAxisYear(width, axisBottom === 'tick', minPeriod - xPadding, maxPeriod + xPadding, chartStyle === 'bar');
+      } else {
+        bAxis = xAxisMonthNoText(width); //bAxis = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial')
+      }
+    } // Left and right axes
+
+
+    var makeXaxis = function makeXaxis(leftRight, axisOpt) {
+      var axis;
+      var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
+
+      switch (axisOpt) {
+        case 'on':
+          axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0);
+          break;
+
+        case 'tick':
+          axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
+          break;
+      }
+
+      return axis;
+    };
+
+    var lAxis = makeXaxis('left', axisLeft);
+    var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
+
+    var init, svgTemporal, gTemporal;
+
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-temporal').size() === 1) {
+      svgTemporal = svgChart.select('.brc-chart-temporal');
+      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
+      init = false;
+    } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+      svgTemporal = svgChart.select("#".concat(safeId(taxon)));
+      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
+      init = false;
+    } else {
+      svgTemporal = svgChart.append('svg').classed('brc-chart-temporal', true).attr('id', safeId(taxon)).style('overflow', 'visible').style('font-family', 'sans-serif');
+      gTemporal = svgTemporal.append('g').classed('brc-chart-temporal-g', true);
+      init = true;
+    } // Line path generator
+
+
+    var lineValues = d3.line() //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
+    // because resulting number of points in path is not constant.
+    .x(function (d) {
+      return xScaleLine(d.period);
+    }).y(function (d) {
+      return yScale(d.n);
+    });
+    var chartLines = [];
+    var chartBars = [];
+    var chartBands = [];
+    var chartPoints = [];
+    var chartErrorBars = [];
+    metricsPlus.forEach(function (m) {
+      // Create a collection of the periods in the dataset.
+      var dataDict = dataFiltered.reduce(function (a, d) {
+        a[d.period] = d[m.prop];
+        return a;
+      }, {}); // Construct data structure for line charts.
+
+      if (chartStyle === 'line' && isFinite(yminY)) {
+        var pointSets = adjustForTrans(periods.map(function (y) {
+          // Replace any missing values (for a given period)
+          // with the missing value specified (can be a value
+          // or 'bridge' or 'break')
+          return {
+            period: y,
+            n: dataDict[y] ? dataDict[y] : missingValues
+          };
+        }));
+        pointSets.forEach(function (points, i) {
+          chartLines.push({
+            colour: m.colour,
+            opacity: m.opacity,
+            strokeWidth: m.strokeWidth,
+            type: 'counts',
+            prop: m.prop,
+            part: i,
+            yMin: yminY,
+            pathEnter: lineValues(points.map(function (p) {
+              return {
+                n: yminY,
+                period: p.period
+              };
+            })),
+            path: lineValues(points)
+          });
+        });
+      } // Construct data structure for confidence band on line charts.
+
+
+      if (chartStyle === 'line' && m.bandUpper && m.bandLower && isFinite(yminY)) {
+        var ddUpper = dataFiltered.reduce(function (a, d) {
+          a[d.period] = d[m.bandUpper];
+          return a;
+        }, {});
+        var ddLower = dataFiltered.reduce(function (a, d) {
+          a[d.period] = d[m.bandLower];
+          return a;
+        }, {});
+        var upperLine = periods.map(function (y) {
+          return {
+            period: y,
+            n: ddUpper[y] ? ddUpper[y] : missingValues
+          };
+        });
+        var lowerLine = [].concat(periods).map(function (y) {
+          return {
+            period: y,
+            n: ddLower[y] ? ddLower[y] : missingValues
+          };
+        });
+        var pointsLowerSet = adjustForTrans(lowerLine);
+        var pointsUpperSet = adjustForTrans(upperLine);
+
+        for (var _i = 0; _i < pointsLowerSet.length; _i++) {
+          var pointsLower = pointsLowerSet[_i];
+          var pointsUpper = pointsUpperSet[_i];
+          var pointsBand = [].concat(_toConsumableArray(pointsLowerSet[_i]), _toConsumableArray(pointsUpperSet[_i].reverse()));
+          var pointsLowerEnter = pointsLower.map(function (p) {
+            return {
+              n: yminY,
+              period: p.period
+            };
+          });
+          var pointsUpperEnter = pointsUpper.map(function (p) {
+            return {
+              n: yminY,
+              period: p.period
+            };
+          });
+          chartBands.push({
+            fill: m.bandFill ? m.bandFill : 'silver',
+            stroke: m.bandStroke ? m.bandStroke : 'grey',
+            fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
+            strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
+            strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
+            //type: 'counts',
+            prop: m.prop,
+            part: _i,
+            bandPath: lineValues(pointsBand),
+            bandPathEnter: lineValues(pointsBand.map(function (p) {
+              return {
+                n: yminY,
+                period: p.period
+              };
+            })),
+            bandBorders: [lineValues(pointsLower), lineValues(pointsUpper)],
+            bandBordersEnter: [lineValues(pointsLowerEnter), lineValues(pointsUpperEnter)]
+          });
+        }
+      } // Construct data structure for bar charts.
+
+
+      if (chartStyle === 'bar') {
+        var bars = dataFiltered.map(function (d) {
+          return {
+            colour: m.colour,
+            opacity: m.opacity,
+            //type: 'counts',
+            prop: m.prop,
+            period: d.period,
+            n: yScale(d[m.prop])
+          };
+        });
+        chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
+      } // Construct data structure for points.
+      // TODO - if at some point we parameterise display styles
+      // for points bars, then it must be specified in here.
+
+
+      if (m.points) {
+        var points = dataFiltered.filter(function (d) {
+          return d[m.prop];
+        }).map(function (d) {
+          var x;
+
+          if (chartStyle === 'bar') {
+            x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2;
+          } else {
+            x = xScaleLine(d.period);
+          }
+
+          return {
+            x: x,
+            y: yScale(d[m.prop]),
+            period: d.period,
+            prop: m.prop
+          };
+        });
+        chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
+      } // Construct data structure for error bars.
+      // TODO - if at some point we parameterise display styles
+      // for error bars, then it must be specified in here.
+
+
+      if (m.errorBarUpper && m.errorBarLower) {
+        var errorBars = dataFiltered.map(function (d) {
+          var x;
+
+          if (chartStyle === 'bar') {
+            x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2;
+          } else {
+            x = xScaleLine(d.period);
+          }
+
+          return {
+            period: d.period,
+            pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
+            path: "M ".concat(x, " ").concat(yScale(d[m.errorBarLower]), " L ").concat(x, " ").concat(yScale(d[m.errorBarUpper])),
+            prop: m.prop
+          };
+        });
+        chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(errorBars));
+      }
+    }); // Construct data structure for supplementary trend lines.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartTrendLineSup = dataTrendLinesFiltered.map(function (d) {
+      // y = mx + c
+      var x1, x2;
+      var minx = minPeriod - xPadding;
+      var maxx = maxPeriod + xPadding;
+
+      if (chartStyle === 'bar') {
+        x1 = xScaleBar(minx);
+        x2 = xScaleBar(maxx) + xScaleBar.bandwidth();
+      } else {
+        x1 = xScaleLine(minx);
+        x2 = xScaleLine(maxx);
+      }
+
+      return {
+        colour: d.colour ? d.colour : 'red',
+        width: d.width ? d.width : '1',
+        opacity: d.opacity ? d.opacity : '1',
+        pathEnter: "M ".concat(x1, " ").concat(height, " L ").concat(x2, " ").concat(height),
+        path: "M ".concat(x1, " ").concat(yScale(d.y1), " L ").concat(x2, " ").concat(yScale(d.y2))
+      };
+    }); // Construct data structure for supplementary points.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartPointsSup = dataPointsFiltered.map(function (d) {
+      var x; // if (chartStyle === 'bar') {
+      //   x = xScaleBar(Math.floor(d.period)) + xScaleBar.bandwidth() * 0.5 +(d.period % 1)
+      // } else {
+      //   x = xScaleLine(d.period)
+      // }
+
+      x = xScaleLine(d.period);
+      return {
+        x: x,
+        y: yScale(d.y),
+        period: d.period
+      };
+    }); // Construct data structure for supplementary point error bars.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+
+    var chartPointsSupErrorBars = dataPointsFiltered.map(function (d) {
+      var x = xScaleLine(d.period);
+      return {
+        pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
+        path: "M ".concat(x, " ").concat(yScale(d.lower), " L ").concat(x, " ").concat(yScale(d.upper)),
+        period: d.period
+      };
+    }); // d3 transition object
+
+    var t = svgTemporal.transition().duration(duration); // Bars
+
+    gTemporal.selectAll(".temporal-bar").data(chartBars, function (d) {
+      return "bars-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append("rect").attr("class", function (d) {
+        return "temporal-bar temporal-graphic temporal-".concat(d.prop);
+      }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
+        return d.colour;
+      }).attr('opacity', 0).attr('y', height).attr('x', function (d) {
+        return xScaleBar(d.period);
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).attr('height', 0).attr('y', height).style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr('y', function (d) {
+        return d.n;
+      }).attr('x', function (d) {
+        return xScaleBar(d.period);
+      }).attr('height', function (d) {
+        return height - d.n;
+      }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
+        return d.colour;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }), pTrans);
+    }); // Bands
+
+    gTemporal.selectAll(".temporal-band").data(chartBands, function (d) {
+      return "band-".concat(d.prop, "-").concat(d.part);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "temporal-band temporal-graphic temporal-".concat(d.prop);
+      }).attr("opacity", 0).attr("fill", function (d) {
+        return d.fill;
+      }).attr("stroke", "none").attr("d", function (d) {
+        return d.bandPathEnter;
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).attr("d", function (d) {
+          return d.bandPathEnter;
+        }).style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.bandPath;
+      }).attr("opacity", function (d) {
+        return d.fillOpacity;
+      }).attr("fill", function (d) {
+        return d.fill;
+      }), pTrans);
+    }); // Band lines
+
+    var _loop = function _loop(iLine) {
+      gTemporal.selectAll(".temporal-band-border-".concat(iLine)).data(chartBands, function (d) {
+        return "band-line-".concat(d.prop, "-").concat(iLine, "-").concat(d.part);
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (d) {
+          return "temporal-band-border-".concat(iLine, " temporal-graphic temporal-").concat(d.prop);
+        }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }).attr("d", function (d) {
+          return d.bandBordersEnter[iLine];
+        });
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return transPromise(exit.transition(t).attr("d", function (d) {
+            return d.bandBordersEnter[iLine];
+          }).style("opacity", 0).remove(), pTrans);
+        });
+      }).call(function (merge) {
+        return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+        // enter and update selections
+        .attr("d", function (d) {
+          return d.bandBorders[iLine];
+        }).attr("opacity", function (d) {
+          return d.strokeOpacity;
+        }).attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }), pTrans);
+      });
+    };
+
+    for (var iLine = 0; iLine < 2; iLine++) {
+      _loop(iLine);
+    } // Main lines
+
+
+    gTemporal.selectAll(".temporal-line").data(chartLines, function (d) {
+      return "line-".concat(d.prop, "-").concat(d.part);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "temporal-line temporal-graphic temporal-".concat(d.prop);
+      }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }).attr("d", function (d) {
+        return d.pathEnter;
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).attr("d", function (d) {
+          return d.pathEnter;
+        }).style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }), pTrans);
+    }); // Error bars
+
+    gTemporal.selectAll('.temporal-error-bars').data(chartErrorBars, function (d) {
+      return "error-bars-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", function (d) {
+        return "temporal-error-bars temporal-graphic temporal-".concat(d.prop);
+      }).attr("d", function (d) {
+        return d.pathEnter;
+      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    }); // Points
+
+    gTemporal.selectAll('.temporal-point').data(chartPoints, function (d) {
+      return "point-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append('circle').attr("class", function (d) {
+        return "temporal-point temporal-graphic temporal-".concat(d.prop);
+      }).attr('cx', function (d) {
+        return d.x;
+      }) //.attr('cy', d => d.y)
+      .attr('cy', height).attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr('cy', height).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).style('opacity', 1), pTrans);
+    }); // Supplementary trend lines
+
+    gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
+      return enter.append('path').attr("d", function (d) {
+        return d.pathEnter;
+      }).attr('class', 'temporal-trend-lines-sup').style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }).attr("opacity", 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
+    }) // Join returns merged enter and update selection
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }), pTrans);
+    }); // Supplementary points error bars
+
+    gTemporal.selectAll('.temporal-error-bars-sup').data(chartPointsSupErrorBars, function (d) {
+      return "error-bars-sup-".concat(d.period);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", "temporal-error-bars-sup").attr("d", function (d) {
+        return d.pathEnter;
+      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    }); // Supplementary points
+
+    gTemporal.selectAll('.temporal-point-data-sup').data(chartPointsSup, function (d) {
+      return "point-data-sup-".concat(d.period);
+    }).join(function (enter) {
+      return enter.append('circle').attr("class", "temporal-point-data-sup").attr('cx', function (d) {
+        return d.x;
+      }) //.attr('cy', d => d.y)
+      .attr('cy', height).attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr('cy', height).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).style('opacity', 1), pTrans);
+    });
+    addEventHandlers$3(gTemporal.selectAll("path"), 'prop', svgChart, interactivity);
+    addEventHandlers$3(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity);
+    addEventHandlers$3(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity);
+
+    if (init) {
+      // Constants for positioning
+      var axisLeftPadX = margin.left ? margin.left : 0;
+      var axisRightPadX = margin.right ? margin.right : 0;
+      var axisBottomPadY = margin.bottom ? margin.bottom : 0;
+      var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
+
+      if (showTaxonLabel) {
+        var taxonLabel = svgTemporal.append('text').classed('brc-chart-temporal-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
+        var labelHeight = taxonLabel.node().getBBox().height;
+        taxonLabel.attr("transform", "translate(".concat(axisLeftPadX, ", ").concat(labelHeight, ")"));
+      } // Size SVG
+
+
+      svgTemporal.attr('width', width + axisLeftPadX + axisRightPadX).attr('height', height + axisBottomPadY + axisTopPadY); // Position chart
+
+      gTemporal.attr("transform", "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")")); // Create axes and position within SVG
+
+      var leftYaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var leftYaxisLabelTrans = "translate(".concat(axisLabelFontSize, ",").concat(axisTopPadY + height / 2, ") rotate(270)");
+      var rightYaxisTrans = "translate(".concat(axisLeftPadX + width, ", ").concat(axisTopPadY, ")");
+      var rightYaxisLabelTrans = "translate(".concat(axisLeftPadX + width + axisRightPadX - axisLabelFontSize, ", ").concat(axisTopPadY + height / 2, ") rotate(90)");
+      var topXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY, ")");
+      var bottomXaxisTrans = "translate(".concat(axisLeftPadX, ",").concat(axisTopPadY + height, ")"); // Create axes and position within SVG
+
+      if (lAxis) {
+        var gLaxis = svgTemporal.append("g").attr("class", "l-axis"); // .classed('temporal-type-counts',  axisLeft === 'tick')
+        // .classed('temporal-type-props',  axisLeft !== 'tick')
+
+        gLaxis.attr("transform", leftYaxisTrans);
+      }
+
+      if (bAxis) {
+        var gBaxis = svgTemporal.append("g").attr("class", "x axis").call(bAxis);
+        gBaxis.attr("transform", bottomXaxisTrans);
+      }
+
+      if (tAxis) {
+        var gTaxis = svgTemporal.append("g").call(tAxis);
+        gTaxis.attr("transform", topXaxisTrans);
+      }
+
+      if (rAxis) {
+        var gRaxis = svgTemporal.append("g") //.call(rAxis)
+        .attr("class", "r-axis"); // .classed('temporal-type-counts',  axisRight === 'tick')
+        // .classed('temporal-type-props',  axisRight !== 'tick')
+
+        gRaxis.attr("transform", rightYaxisTrans);
+      }
+
+      var tYaxisLeftLabel = svgTemporal.append("text") // .classed('temporal-type-counts',  axisLeft === 'tick')
+      // .classed('temporal-type-props',  axisLeft !== 'tick')
+      .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+      tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans);
+      var tYaxisRightLabel = svgTemporal.append("text") // .classed('temporal-type-counts',  axisRight === 'tick')
+      // .classed('temporal-type-props',  axisRight !== 'tick')
+      .style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisRightLabel);
+      tYaxisRightLabel.attr("transform", rightYaxisLabelTrans);
+    } else {
+      if (taxa.length === 1) {
+        // Update taxon label
+        if (showTaxonLabel) {
+          svgTemporal.select('.brc-chart-temporal-label').text(taxon);
+        }
+      } // Update the bottom axis if it exists. We do this because
+      // periodMin and/or periodMax may have changed.
+
+
+      if (axisBottom === 'on' || axisBottom === 'tick') {
+        transPromise(svgTemporal.select(".x.axis").transition(t).call(bAxis), pTrans);
+      }
+    }
+
+    if (svgTemporal.selectAll(".l-axis").size()) {
+      transPromise(svgTemporal.select(".l-axis").transition(t).call(lAxis), pTrans);
+    }
+
+    if (svgTemporal.selectAll(".r-axis").size()) {
+      transPromise(svgTemporal.select(".r-axis").transition(t).call(rAxis), pTrans);
+    }
+
+    return svgTemporal;
+
+    function adjustForTrans(pntsIn) {
+      // Return an array of arrays of points. There may be more than one array
+      // of points in the main array if there are breaks in the input array
+      // of points.
+      // First restructure the passed in points to an array of arrays.
+      var pntsSplit = [];
+      pntsIn.forEach(function (p) {
+        if (p.n === 'break') {
+          // Add a new array
+          pntsSplit.push([]);
+        } else {
+          if (pntsSplit.length === 0) {
+            // Fist value so first add a new array
+            pntsSplit.push([]);
+          } // Add point to array
+
+
+          pntsSplit[pntsSplit.length - 1].push(p);
+        }
+      }); // At this point pntsSplit could have empty arrays, e.g. if there
+      // where consecutive 'breaks' so weed these out.
+
+      pntsSplit = pntsSplit.filter(function (a) {
+        return a.length > 0;
+      }); // Adjust of transition temporal ranges
+
+      var retSet = [];
+      pntsSplit.forEach(function (pnts) {
+        var ret = _toConsumableArray(pnts);
+
+        retSet.push(ret); // If missing period values are being bridged, add a point at last
+        // known value.
+
+        for (var _i2 = 0; _i2 < pnts.length; _i2++) {
+          if (pnts[_i2].n === 'bridge') {
+            pnts[_i2].n = pnts[_i2 - 1].n;
+            pnts[_i2].period = pnts[_i2 - 1].period;
+          }
+        } // When minPeriodTans and MaxPeriodTrans are set, then each trend line
+        // must have the same number of points in (MaxPeriodTrans - minPeriodTans + 1 points).
+        // This is to make nice looking transitions between lines with otherwise
+        // different numbers of points.
+
+
+        if (minPeriodTrans) {
+          for (var _i3 = minPeriodTrans; _i3 < pnts[0].period; _i3++) {
+            ret.unshift({
+              n: pnts[0].n,
+              period: pnts[0].period
+            });
+          }
+        }
+
+        if (maxPeriodTrans) {
+          for (var _i4 = pnts[pnts.length - 1].period + 1; _i4 <= maxPeriodTrans; _i4++) {
+            ret.push({
+              n: pnts[pnts.length - 1].n,
+              period: pnts[pnts.length - 1].period
+            });
+          }
+        }
+      });
+      return retSet; //return retSet[retSet.length - 1]
+    }
+  }
+
+  function makeLegend$3(svgChart, metricsPlus, legendWidth, legendFontSize, headPad, showCounts, interactivity) {
+    var swatchSize = 15;
+    var swatchFact = 1.3; // Loop through all the legend elements and work out their
+    // positions based on swatch size, item label text size and
+    // legend width.
+
+    var metricsReversed = cloneData(metricsPlus).reverse();
+    var rows = 0;
+    var lineWidth = -swatchSize;
+    metricsReversed.forEach(function (m) {
+      var tmpText = svgChart.append('text') //.style('display', 'none')
+      .text(m.label).style('font-size', legendFontSize);
+      var widthText = tmpText.node().getBBox().width;
+      tmpText.remove();
+
+      if (lineWidth + swatchSize + swatchSize * swatchFact + widthText > legendWidth) {
+        ++rows;
+        lineWidth = -swatchSize;
+      }
+
+      m.x = lineWidth + swatchSize + headPad;
+      m.y = rows * swatchSize * swatchFact;
+      lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
+    });
+    var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var rect = enter.append("rect").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-rect temporal-graphic temporal-".concat(m.prop);
+      }).attr('width', swatchSize).attr('height', showCounts === 'bar' ? swatchSize : 2);
+      return rect;
+    }).attr('x', function (m) {
+      return m.x;
+    }).attr('y', function (m) {
+      return showCounts === 'bar' ? m.y + swatchSize / 5 : m.y + swatchSize / 2;
+    }).attr('fill', function (m) {
+      return m.colour;
+    });
+    var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+      return safeId(m.label);
+    }).join(function (enter) {
+      var text = enter.append("text").attr("class", function (m) {
+        return "brc-legend-item brc-legend-item-text temporal-graphic temporal-".concat(m.prop);
+      }).text(function (m) {
+        return m.label;
+      }).style('font-size', legendFontSize);
+      return text;
+    }).attr('x', function (m) {
+      return m.x + swatchSize * swatchFact;
+    }).attr('y', function (m) {
+      return m.y + legendFontSize * 1;
+    });
+    addEventHandlers$3(ls, 'prop', svgChart, interactivity);
+    addEventHandlers$3(lt, 'prop', svgChart, interactivity);
+    return swatchSize * swatchFact * (rows + 1);
+  }
+
+  /** 
+   * @param {Object} opts - Initialisation options.
+   * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
+   * @param {string} opts.elid - The id for the dom object created. (Default - 'temporal-chart'.)
+   * @param {number} opts.width - The width of each sub-chart area in pixels. (Default - 300.)
+   * @param {number} opts.height - The height of the each sub-chart area in pixels. (Default - 200.)
+   * @param {Object} opts.margin - An object indicating the margins to add around each sub-chart area.
+   * @param {number} opts.margin.left - Left margin in pixels. (Default - 40.)
+   * @param {number} opts.margin.right - Right margin in pixels. (Default - 40.)
+   * @param {number} opts.margin.top - Top margin in pixels. (Default - 20.)
+   * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
+   * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
+   * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+   * @param {string} opts.title - Title for the chart. (Default - ''.)
+   * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
+   * @param {string} opts.footer - Footer for the chart. (Default - ''.)
+   * @param {string} opts.titleFontSize - Font size (pixels) of chart title. (Default - 24.)
+   * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle. (Default - 16.)
+   * @param {string} opts.footerFontSize - Font size (pixels) of chart footer. (Default - 10.)
+   * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)
+   * @param {boolean} opts.showTaxonLabel - Whether or not to show taxon label above each sub-graph. (Default - true.)
+   * @param {boolean} opts.showLegend - Whether or not to show an overall chart legend. (Default - true.)
+   * @param {string} opts.taxonLabelFontSize - Font size (pixels) of taxon sub-chart label. (Default - 10.)
+   * @param {boolean} opts.taxonLabelItalics - Whether or not to italicise taxon label.(Default - true.)
+   * @param {string} opts.legendFontSize - Font size (pixels) of legend item text. (Default - 16.)
+   * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
+   * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
+   * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+   * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+   * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
+   * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
+   * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
+   * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+   * @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
+   * @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
+   * @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
+   * @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
+   * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
+   * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
+   * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
+   * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)
+   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
+   * data for which graphics should be generated on the chart.
+   * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+   * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
+   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+   * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+   * (Optional - default is 'blue'.)
+   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+   * (Optional - default is 0.5.)
+   * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+   * (Optional - default is 1.)
+   * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
+   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
+   * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
+   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
+   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
+   * specifying web colours can be used. 
+   * (Optional - default is 'silver'.)
+   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
+   * specifying web colours can be used. 
+   * (Optional - default is 'grey'.)
+   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+   * (Optional - default is 0.5.)
+   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+   * (Optional - default is 1.)
+   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+   * (Optional - default is 1.)
+   * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
+   * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
+   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+  * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
+   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+   * </ul>
+   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>period</b> - a number indicating a week or a year.
+   * <li> <b>c1</b> - a metric for a given period (can have any name). 
+   * <li> <b>c2</b> - a metric for a given period (can have any name).
+   * ... - there must be at least one metric column, but there can be any number of them.
+   * </ul>
+   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>period</b> - a number indicating a week or a year.
+   * <li> <b>y</b> - y value for a given period. 
+   * <li> <b>upper</b> - a value for upper confidence band.
+   * <li> <b>lower</b> - a value for lower confidence band.
+   * </ul>
+   * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>gradient</b> - a gradient for the line.
+   * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+   * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
+   * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
+   * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
+   * </ul>
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * If empty, graphs for all taxa are created. (Default - [].)
+   * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year' or 'week. (Default - 'year'.)
+   * @param {number} opts.minPeriod Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
+   * @param {number} opts.maxPeriod Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
+   * @param {number} opts.minPeriodTrans If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different
+   * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+   * @param {number} opts.maxPeriodTrans If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
+   * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+   * @param {number} opts.minY Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
+   * @param {number} opts.maxY Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
+   * @param {number} opts.xPadPercent Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
+   * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
+   * @param {string|number} opts.missingValues A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+   * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
+   * @returns {module:temporal~api} api - Returns an API for the chart.
+   */
+
+  function temporal() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        _ref$selector = _ref.selector,
+        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
+        _ref$elid = _ref.elid,
+        elid = _ref$elid === void 0 ? 'temporal-chart' : _ref$elid,
+        _ref$width = _ref.width,
+        width = _ref$width === void 0 ? 300 : _ref$width,
+        _ref$height = _ref.height,
+        height = _ref$height === void 0 ? 200 : _ref$height,
+        _ref$margin = _ref.margin,
+        margin = _ref$margin === void 0 ? {
+      left: 30,
+      right: 30,
+      top: 15,
+      bottom: 20
+    } : _ref$margin,
+        _ref$perRow = _ref.perRow,
+        perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
+        _ref$expand = _ref.expand,
+        expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$title = _ref.title,
+        title = _ref$title === void 0 ? '' : _ref$title,
+        _ref$subtitle = _ref.subtitle,
+        subtitle = _ref$subtitle === void 0 ? '' : _ref$subtitle,
+        _ref$footer = _ref.footer,
+        footer = _ref$footer === void 0 ? '' : _ref$footer,
+        _ref$titleFontSize = _ref.titleFontSize,
+        titleFontSize = _ref$titleFontSize === void 0 ? 24 : _ref$titleFontSize,
+        _ref$subtitleFontSize = _ref.subtitleFontSize,
+        subtitleFontSize = _ref$subtitleFontSize === void 0 ? 16 : _ref$subtitleFontSize,
+        _ref$footerFontSize = _ref.footerFontSize,
+        footerFontSize = _ref$footerFontSize === void 0 ? 10 : _ref$footerFontSize,
+        _ref$legendFontSize = _ref.legendFontSize,
+        legendFontSize = _ref$legendFontSize === void 0 ? 16 : _ref$legendFontSize,
+        _ref$showLegend = _ref.showLegend,
+        showLegend = _ref$showLegend === void 0 ? false : _ref$showLegend,
+        _ref$axisLeftLabel = _ref.axisLeftLabel,
+        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
+        _ref$axisRightLabel = _ref.axisRightLabel,
+        axisRightLabel = _ref$axisRightLabel === void 0 ? '' : _ref$axisRightLabel,
+        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
+        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
+        _ref$titleAlign = _ref.titleAlign,
+        titleAlign = _ref$titleAlign === void 0 ? 'left' : _ref$titleAlign,
+        _ref$subtitleAlign = _ref.subtitleAlign,
+        subtitleAlign = _ref$subtitleAlign === void 0 ? 'left' : _ref$subtitleAlign,
+        _ref$footerAlign = _ref.footerAlign,
+        footerAlign = _ref$footerAlign === void 0 ? 'left' : _ref$footerAlign,
+        _ref$showTaxonLabel = _ref.showTaxonLabel,
+        showTaxonLabel = _ref$showTaxonLabel === void 0 ? true : _ref$showTaxonLabel,
+        _ref$taxonLabelFontSi = _ref.taxonLabelFontSize,
+        taxonLabelFontSize = _ref$taxonLabelFontSi === void 0 ? 10 : _ref$taxonLabelFontSi,
+        _ref$taxonLabelItalic = _ref.taxonLabelItalics,
+        taxonLabelItalics = _ref$taxonLabelItalic === void 0 ? false : _ref$taxonLabelItalic,
+        _ref$axisLeft = _ref.axisLeft,
+        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
+        _ref$yAxisOpts = _ref.yAxisOpts,
+        yAxisOpts = _ref$yAxisOpts === void 0 ? {
+      numFormat: 'd',
+      minMax: 5,
+      fixedMin: 0,
+      padding: 0
+    } : _ref$yAxisOpts,
+        _ref$axisBottom = _ref.axisBottom,
+        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
+        _ref$axisRight = _ref.axisRight,
+        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
+        _ref$axisTop = _ref.axisTop,
+        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
+        _ref$chartStyle = _ref.chartStyle,
+        chartStyle = _ref$chartStyle === void 0 ? 'bar' : _ref$chartStyle,
+        _ref$headPad = _ref.headPad,
+        headPad = _ref$headPad === void 0 ? 0 : _ref$headPad,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
+        _ref$interactivity = _ref.interactivity,
+        interactivity = _ref$interactivity === void 0 ? 'none' : _ref$interactivity,
+        _ref$data = _ref.data,
+        data = _ref$data === void 0 ? [] : _ref$data,
+        _ref$dataPoints = _ref.dataPoints,
+        dataPoints = _ref$dataPoints === void 0 ? [] : _ref$dataPoints,
+        _ref$dataTrendLines = _ref.dataTrendLines,
+        dataTrendLines = _ref$dataTrendLines === void 0 ? [] : _ref$dataTrendLines,
+        _ref$taxa = _ref.taxa,
+        taxa = _ref$taxa === void 0 ? [] : _ref$taxa,
+        _ref$metrics = _ref.metrics,
+        metrics = _ref$metrics === void 0 ? [] : _ref$metrics,
+        _ref$minPeriod = _ref.minPeriod,
+        minPeriod = _ref$minPeriod === void 0 ? null : _ref$minPeriod,
+        _ref$maxPeriod = _ref.maxPeriod,
+        maxPeriod = _ref$maxPeriod === void 0 ? null : _ref$maxPeriod,
+        _ref$minPeriodTrans = _ref.minPeriodTrans,
+        minPeriodTrans = _ref$minPeriodTrans === void 0 ? null : _ref$minPeriodTrans,
+        _ref$maxPeriodTrans = _ref.maxPeriodTrans,
+        maxPeriodTrans = _ref$maxPeriodTrans === void 0 ? null : _ref$maxPeriodTrans,
+        _ref$minY = _ref.minY,
+        minY = _ref$minY === void 0 ? null : _ref$minY,
+        _ref$maxY = _ref.maxY,
+        maxY = _ref$maxY === void 0 ? null : _ref$maxY,
+        _ref$xPadPercent = _ref.xPadPercent,
+        xPadPercent = _ref$xPadPercent === void 0 ? 0 : _ref$xPadPercent,
+        _ref$yPadPercent = _ref.yPadPercent,
+        yPadPercent = _ref$yPadPercent === void 0 ? 0 : _ref$yPadPercent,
+        _ref$missingValues = _ref.missingValues,
+        missingValues = _ref$missingValues === void 0 ? 0 : _ref$missingValues,
+        _ref$periodType = _ref.periodType,
+        periodType = _ref$periodType === void 0 ? 'year' : _ref$periodType;
+
+    // xPadPercent and yPadPercent can not be used with charts of bar type.
+    if (chartStyle === 'bar') {
+      xPadPercent = 0;
+      yPadPercent = 0;
+    }
+
+    var metricsPlus;
+    var mainDiv = d3.select("".concat(selector)).append('div').attr('id', elid).style('position', 'relative').style('display', 'inline');
+    var svg = mainDiv.append('svg');
+    svg.on("click", function () {
+      if (interactivity === 'mouseclick') {
+        highlightItem$3(null, false, svgChart);
+      }
+    });
+    var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-temporal');
+    preProcessMetrics();
+    makeChart(); // Texts must come after chartbecause 
+    // the chart width is required
+
+    var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
+    makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+    makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+    makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+    positionMainElements(svg, expand, headPad);
+
+    function makeChart() {
+      // Set min and max period from data if not set
+      if (!minPeriod) {
+        minPeriod = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
+          return d.period;
+        })));
+      }
+
+      if (!maxPeriod) {
+        maxPeriod = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
+          return d.period;
+        })));
+      } // If taxa for graphs not set, set to all in dataset
+
+
+      if (!taxa.length) {
+        taxa = data.map(function (d) {
+          return d.taxon;
+        }).filter(function (v, i, a) {
+          return a.indexOf(v) === i;
+        });
+      }
+
+      var subChartPad = 10;
+      var pTrans = [];
+      var svgsTaxa = taxa.map(function (t) {
+        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, pTrans);
+      });
+      var subChartWidth = Number(svgsTaxa[0].attr("width"));
+      var subChartHeight = Number(svgsTaxa[0].attr("height"));
+      var legendHeight = showLegend ? makeLegend$3(svgChart, metricsPlus, perRow * (subChartWidth + subChartPad) - headPad, legendFontSize, headPad, chartStyle, interactivity) + subChartPad : 0;
+      svgsTaxa.forEach(function (svgTaxon, i) {
+        var col = i % perRow;
+        var row = Math.floor(i / perRow);
+        svgTaxon.attr("x", col * (subChartWidth + subChartPad));
+        svgTaxon.attr("y", row * (subChartHeight + subChartPad) + legendHeight);
+      });
+      svgChart.attr("width", perRow * (subChartWidth + subChartPad));
+      svgChart.attr("height", legendHeight + Math.ceil(svgsTaxa.length / perRow) * (subChartHeight + subChartPad));
+      return Promise.allSettled(pTrans);
+    }
+
+    function preProcessMetrics() {
+      // Look for 'fading' colour in taxa and colour appropriately 
+      // in fading shades of grey.
+      var iFading = 0;
+      metricsPlus = metrics.map(function (m) {
+        var iFade, strokeWidth;
+
+        if (m.colour === 'fading') {
+          iFade = ++iFading;
+          strokeWidth = 1;
+        } else {
+          strokeWidth = m.linewidth ? m.linewidth : 2;
+        }
+
+        return {
+          prop: m.prop,
+          label: m.label ? m.label : m.prop,
+          opacity: m.opacity !== 'undefined' ? m.opacity : 0.5,
+          colour: m.colour ? m.colour : 'blue',
+          fading: iFade,
+          strokeWidth: strokeWidth,
+          bandUpper: m.bandUpper,
+          bandLower: m.bandLower,
+          bandFill: m.bandFill,
+          bandOpacity: m.bandOpacity,
+          bandStroke: m.bandStroke,
+          bandStrokeWidth: m.bandStrokeWidth,
+          bandStrokeOpacity: m.bandStrokeOpacity,
+          points: m.points,
+          errorBarUpper: m.errorBarUpper,
+          errorBarLower: m.errorBarLower
+        };
+      }).reverse();
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+      metricsPlus.forEach(function (m) {
+        if (m.fading) {
+          m.colour = grey(m.fading);
+        }
+      });
+    }
+    /** @function setChartOpts
+      * @param {Object} opts - text options.
+      * @param {string} opts.title - Title for the chart.
+      * @param {string} opts.subtitle - Subtitle for the chart.
+      * @param {string} opts.footer - Footer for the chart.
+      * @param {string} opts.titleFontSize - Font size (pixels) of chart title.
+      * @param {string} opts.subtitleFontSize - Font size (pixels) of chart subtitle.
+      * @param {string} opts.footerFontSize - Font size (pixels) of chart footer.
+      * @param {string} opts.titleAlign - Alignment of chart title: either 'left', 'right' or 'centre'.
+      * @param {string} opts.subtitleAlign - Alignment of chart subtitle: either 'left', 'right' or 'centre'.
+      * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
+      * @param {number} opts.minPeriod Indicates the earliest period to use on the y axis.
+      * @param {number} opts.maxPeriod Indicates the latest period to use on the y axis.
+      * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
+      * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
+      * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
+      * @returns {Promise} promise that resolves when all transitions complete.
+      * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * options object, it's value is not changed.
+      */
+
+
+    function setChartOpts(opts) {
+      if ('title' in opts) {
+        title = opts.title;
+      }
+
+      if ('subtitle' in opts) {
+        subtitle = opts.subtitle;
+      }
+
+      if ('footer' in opts) {
+        footer = opts.footer;
+      }
+
+      if ('titleFontSize' in opts) {
+        titleFontSize = opts.titleFontSize;
+      }
+
+      if ('subtitleFontSize' in opts) {
+        subtitleFontSize = opts.subtitleFontSize;
+      }
+
+      if ('footerFontSize' in opts) {
+        footerFontSize = opts.footerFontSize;
+      }
+
+      if ('titleAlign' in opts) {
+        titleAlign = opts.titleAlign;
+      }
+
+      if ('subtitleAlign' in opts) {
+        subtitleAlign = opts.subtitleAlign;
+      }
+
+      if ('footerAlign' in opts) {
+        footerAlign = opts.footerAlign;
+      }
+
+      if ('minPeriod' in opts) {
+        minPeriod = opts.minPeriod;
+      }
+
+      if ('maxPeriod' in opts) {
+        maxPeriod = opts.maxPeriod;
+      }
+
+      if ('minY' in opts) {
+        minY = opts.minY;
+      }
+
+      if ('maxY' in opts) {
+        maxY = opts.maxY;
+      }
+
+      if ('metrics' in opts) {
+        metrics = opts.metrics;
+      }
+
+      if ('data' in opts) {
+        data = opts.data;
+      }
+
+      if ('dataPoints' in opts) {
+        dataPoints = opts.dataPoints;
+      }
+
+      if ('dataTrendLines' in opts) {
+        dataTrendLines = opts.dataTrendLines;
+      }
+
+      if ('taxa' in opts) {
+        taxa = opts.taxa;
+        highlightItem$3(null, false, svgChart);
+      }
+
+      var textWidth = Number(svg.select('.mainChart').attr("width"));
+      makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
+      makeText(subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg);
+      makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
+      var pRet;
+
+      if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts) {
+        preProcessMetrics();
+        pRet = makeChart();
+        positionMainElements(svg, expand);
+      } else {
+        pRet = Promise.resolve();
+      }
+
+      return pRet;
+    }
+    /** @function setTaxon
+      * @param {string} opts.taxon - The taxon to display.
+      * @returns {Promise} promise that resolves when all transitions complete.
+      * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
+      * For single species charts, this allows you to change the taxon displayed.
+      */
+
+
+    function setTaxon(taxon) {
+      var pRet;
+
+      if (taxa.length !== 1) {
+        console.log("You can only use the setTaxon method when your chart displays a single taxon.");
+        pRet = Promise.resolve();
+      } else {
+        taxa = [taxon];
+        highlightItem$3(null, false, svgChart);
+        pRet = makeChart();
+      }
+
+      return pRet;
+    }
+    /** @function getChartWidth
+      * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
+      * Return the full width of the chart svg.
+      */
+
+
+    function getChartWidth() {
+      return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
+    }
+    /** @function getChartHeight
+      * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
+      * Return the full height of the chart svg.
+      */
+
+
+    function getChartHeight() {
+      return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
+    }
+    /** @function saveImage
+      * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
+      * @param {string} filename - Name of the file (without extension) to generate and download.
+      * If the filename is falsey (e.g. blank), it will not automatically download the
+      * file. (Allows caller to do something else with the data URL which is returned
+      * as the promise's resolved value.)
+      * @returns {Promise} promise object represents the data URL of the image.
+      * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
+      * Download the chart as an image file.
+      */
+
+
+    function saveImage(asSvg, filename) {
+      return saveChartImage(svg, expand, asSvg, filename);
+    }
+    /**
+     * @typedef {Object} api
+     * @property {module:temporal~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
+     * @property {module:temporal~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
+     * @property {module:temporal~setChartOpts} setChartOpts - Sets various options for the chart. 
+     * @property {module:temporal~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
+     * @property {module:temporal~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     */
+
+
+    return {
+      getChartHeight: getChartHeight,
+      getChartWidth: getChartWidth,
+      setChartOpts: setChartOpts,
+      setTaxon: setTaxon,
+      saveImage: saveImage
+    };
+  }
+
   function globals (defs) {
     defs('EPSG:4326', "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees");
     defs('EPSG:4269', "+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees");
@@ -17757,6 +19162,7 @@
   exports.phen1 = phen1;
   exports.phen2 = phen2;
   exports.pie = pie;
+  exports.temporal = temporal;
   exports.trend = trend;
   exports.trend2 = trend2;
   exports.trend3 = trend3;
