@@ -466,6 +466,28 @@
       pArray.push(p);
     }
   }
+  function temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width) {
+    var periods = [];
+
+    for (var _i2 = minPeriod; _i2 <= maxPeriod; _i2++) {
+      periods.push(_i2);
+    }
+
+    var scaleFn;
+
+    if (chartStyle === 'bar') {
+      scaleFn = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
+    } else if (chartStyle === 'line') {
+      scaleFn = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
+    }
+
+    return {
+      d3: scaleFn,
+      val: function val(v) {
+        return scaleFn(v);
+      }
+    };
+  }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
     sel.on("mouseover", function (d) {
@@ -8081,6 +8103,7 @@
 
     var xPadding = (maxPeriod - minPeriod) * xPadPercent;
     var yPadding = (ymaxY - yminY) * yPadPercent;
+    var xScale = temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width);
     var xScaleBar = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
     var xScaleLine = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
     var yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]); // Top axis
@@ -8088,18 +8111,24 @@
     var tAxis;
 
     if (axisTop === 'on') {
-      tAxis = d3.axisTop().scale(xScaleLine) // Actual scale doesn't matter, but needs one
-      .tickValues([]).tickSizeOuter(0);
+      tAxis = d3.axisTop() //.scale(xScaleLine) // Actual scale doesn't matter, but needs one
+      .scale(xScale.d3).tickValues([]).tickSizeOuter(0);
     } // Bottom axis
 
 
-    var bAxis;
+    var bAxis, bAxis1;
 
     if (axisBottom === 'on' || axisBottom === 'tick') {
       if (periodType === 'year') {
         bAxis = xAxisYear(width, axisBottom === 'tick', minPeriod - xPadding, maxPeriod + xPadding, chartStyle === 'bar');
       } else {
-        bAxis = xAxisMonthNoText(width); //bAxis = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial')
+        // PeriodType is month or week.
+        // For month or week periodTypes, axis is generated in two parts,
+        // one for the ticks and one for the annotation because
+        // default places tick in centre of text. Baxis 1 takes
+        // care of the text.
+        bAxis = xAxisMonthNoText(width);
+        bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial');
       }
     } // Left and right axes
 
@@ -8143,8 +8172,9 @@
 
     var lineValues = d3.line() //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
     // because resulting number of points in path is not constant.
+    //.x(d => xScaleLine(d.period))
     .x(function (d) {
-      return xScaleLine(d.period);
+      return xScale.val(d.period);
     }).y(function (d) {
       return yScale(d.n);
     });
@@ -8672,6 +8702,15 @@
         gBaxis.attr("transform", bottomXaxisTrans);
       }
 
+      if (bAxis1) {
+        // For month or week periodType charts, axis is generated in two parts,
+        // one for the ticks and one for the annotation because
+        // default places tick in centre of text. Baxis 1 takes
+        // care of the text.
+        var gBaxis1 = svgTemporal.append("g").attr("class", "x axis1").call(bAxis1);
+        gBaxis1.attr("transform", bottomXaxisTrans);
+      }
+
       if (tAxis) {
         var gTaxis = svgTemporal.append("g").call(tAxis);
         gTaxis.attr("transform", topXaxisTrans);
@@ -8705,6 +8744,10 @@
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
         transPromise(svgTemporal.select(".x.axis").transition(t).call(bAxis), pTrans);
+
+        if (bAxis1) {
+          transPromise(svgTemporal.select(".x.axis1").transition(t).call(bAxis1), pTrans);
+        }
       }
     }
 
@@ -8951,7 +8994,7 @@
    * </ul>
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
-   * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year' or 'week. (Default - 'year'.)
+   * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
    * @param {number} opts.minPeriod Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
    * @param {number} opts.maxPeriod Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
    * @param {number} opts.minPeriodTrans If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different

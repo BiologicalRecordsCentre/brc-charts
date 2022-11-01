@@ -116,7 +116,7 @@ import { highlightItem } from './highlightitem'
  * </ul>
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
- * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year' or 'week. (Default - 'year'.)
+ * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
  * @param {number} opts.minPeriod Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
  * @param {number} opts.maxPeriod Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
  * @param {number} opts.minPeriodTrans If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different

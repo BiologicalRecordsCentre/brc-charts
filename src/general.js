@@ -390,3 +390,24 @@ export function transPromise(transition, pArray) {
     pArray.push(p)
   }
 }
+
+
+export function temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width) {
+
+  let periods = []
+  for (let i = minPeriod; i <= maxPeriod; i++) {
+    periods.push(i)
+  }
+  let scaleFn
+  if (chartStyle === 'bar') {
+    scaleFn = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
+  } else if (chartStyle === 'line') {
+    scaleFn = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
+  }
+  return {
+    d3: scaleFn,
+    val: v => {
+      return scaleFn(v)
+    }
+  }
+}

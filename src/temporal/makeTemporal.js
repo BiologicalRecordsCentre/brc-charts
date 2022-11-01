@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { xAxisYear, xAxisMonthText, xAxisMonthNoText, safeId, transPromise } from '../general'
+import { xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, safeId, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
 export function makeTemporal (
@@ -115,6 +115,7 @@ export function makeTemporal (
   const xPadding = (maxPeriod-minPeriod) * xPadPercent
   const yPadding = (ymaxY-yminY) * yPadPercent
 
+  const xScale = temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width)
   const xScaleBar = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
   const xScaleLine = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
   const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
@@ -123,19 +124,25 @@ export function makeTemporal (
   let tAxis
   if (axisTop === 'on') {
     tAxis = d3.axisTop()
-      .scale(xScaleLine) // Actual scale doesn't matter, but needs one
+      //.scale(xScaleLine) // Actual scale doesn't matter, but needs one
+      .scale(xScale.d3) 
       .tickValues([])
       .tickSizeOuter(0)
   }
 
   // Bottom axis
-  let bAxis, bAxisTicks
+  let bAxis, bAxis1
   if (axisBottom === 'on' || axisBottom === 'tick') {
     if (periodType === 'year') {
       bAxis = xAxisYear(width, axisBottom === 'tick', minPeriod - xPadding, maxPeriod + xPadding, chartStyle === 'bar')
     } else {
+      // PeriodType is month or week.
+      // For month or week periodTypes, axis is generated in two parts,
+      // one for the ticks and one for the annotation because
+      // default places tick in centre of text. Baxis 1 takes
+      // care of the text.
       bAxis = xAxisMonthNoText(width)
-      //bAxis = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial')
+      bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial')
     }
   }
 
@@ -182,7 +189,8 @@ export function makeTemporal (
   const lineValues = d3.line()
     //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
                                 // because resulting number of points in path is not constant.
-    .x(d => xScaleLine(d.period))
+    //.x(d => xScaleLine(d.period))
+    .x(d => xScale.val(d.period))
     .y(d => yScale(d.n))
 
   let chartLines = []
@@ -702,6 +710,16 @@ export function makeTemporal (
         .call(bAxis)
       gBaxis.attr("transform", bottomXaxisTrans)
     }
+    if (bAxis1) {
+      // For month or week periodType charts, axis is generated in two parts,
+      // one for the ticks and one for the annotation because
+      // default places tick in centre of text. Baxis 1 takes
+      // care of the text.
+      const gBaxis1 = svgTemporal.append("g")
+        .attr("class", "x axis1")
+        .call(bAxis1)
+      gBaxis1.attr("transform", bottomXaxisTrans)
+    }
     if (tAxis) {
       const gTaxis = svgTemporal.append("g")
         .call(tAxis)
@@ -746,6 +764,11 @@ export function makeTemporal (
       transPromise(svgTemporal.select(".x.axis")
         .transition(t)
         .call(bAxis), pTrans)
+      if (bAxis1) {
+        transPromise(svgTemporal.select(".x.axis1")
+          .transition(t)
+          .call(bAxis1), pTrans)
+      }
     }
   }
 
