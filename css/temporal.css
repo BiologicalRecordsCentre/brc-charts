@@ -1,0 +1,20 @@
+/* .brc-chart-temporal path {
+    fill: none;
+} */
+
+.brc-chart-temporal {
+    overflow: visible;
+}
+.brc-chart-temporal .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+    stroke-opacity: 1;
+    fill-opacity: 1;
+}
+
+.brc-chart-temporal .lowlight {
+    opacity: 0.2;
+    stroke-opacity: 0.2;
+    fill-opacity: 0.2;
+}

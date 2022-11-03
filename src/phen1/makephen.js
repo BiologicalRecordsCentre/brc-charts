@@ -203,8 +203,8 @@ export function makePhen (taxon, taxa, data, metricsin, svgChart, width, height,
   let xAxis1, xAxis2
   if (axisBottom === 'on' || axisBottom === 'tick') {
     //xAxis = xAxisMonth(width, axisBottom === 'tick')
-    xAxis1 = xAxisMonthNoText(width)
-    xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font)
+    xAxis1 = xAxisMonthNoText(width, [1,12])
+    xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font, [1,12])
   }
 
   // Right axis

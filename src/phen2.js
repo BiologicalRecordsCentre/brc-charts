@@ -222,8 +222,8 @@ export function phen2({
     let xAxis1, xAxis2
     if (axisBottom === 'on' || axisBottom === 'tick') {
       //xAxis = xAxisMonth(width, axisBottom === 'tick', monthFontSize, font)
-      xAxis1 = xAxisMonthNoText(width)
-      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font)
+      xAxis1 = xAxisMonthNoText(width, [1,12])
+      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font, [1,12])
     }
 
     // Top axis

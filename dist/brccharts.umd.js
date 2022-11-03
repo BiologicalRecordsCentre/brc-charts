@@ -4,6 +4,28 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.brccharts = {}, global.d3));
 }(this, (function (exports, d3) { 'use strict';
 
+  function _interopNamespace(e) {
+    if (e && e.__esModule) return e;
+    var n = Object.create(null);
+    if (e) {
+      Object.keys(e).forEach(function (k) {
+        if (k !== 'default') {
+          var d = Object.getOwnPropertyDescriptor(e, k);
+          Object.defineProperty(n, k, d.get ? d : {
+            enumerable: true,
+            get: function () {
+              return e[k];
+            }
+          });
+        }
+      });
+    }
+    n['default'] = e;
+    return Object.freeze(n);
+  }
+
+  var d3__namespace = /*#__PURE__*/_interopNamespace(d3);
+
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
@@ -111,18 +133,43 @@
       return _objectSpread2({}, d);
     });
   }
-  var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367];
-  var monthMid2day = [1];
+  var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 365];
+  var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-  for (var i = 0; i < month2day.length - 1; i++) {
-    monthMid2day.push(month2day[i] + (month2day[i + 1] - month2day[i]) / 2);
+  function filterYsDomain(monthScaleRange) {
+    var minMonth = monthScaleRange[0];
+    var maxMonth = monthScaleRange[1];
+    return ysDomain.filter(function (m, i) {
+      return i + 1 >= minMonth && i + 1 <= maxMonth;
+    });
   }
 
-  monthMid2day.push(367);
+  function filterMonth2day(monthScaleRange, noAdjust) {
+    var minMonth = monthScaleRange[0];
+    var maxMonth = monthScaleRange[1];
+    var fMonth2day = month2day.filter(function (d, i) {
+      return i + 1 >= minMonth && i + 1 <= maxMonth + 1;
+    });
+
+    if (noAdjust) {
+      return fMonth2day;
+    } else {
+      return fMonth2day.map(function (d) {
+        return d - month2day[minMonth - 1] + 1;
+      });
+    }
+  }
+
+  function getDayRange(monthScaleRange) {
+    var filteredMonth2day = filterMonth2day(monthScaleRange);
+    return filteredMonth2day[filteredMonth2day.length - 1] - filteredMonth2day[0];
+  }
+
   function xAxisMonth(width, ticks, fontSize, font) {
-    var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    // Still used by accum chart, but replaced by xAxisMonthText
+    // and xAxisMonthNoText elsewhere.
     var ysRange = month2day.map(function (d) {
-      return (d - 1) / 366 * width;
+      return (d - 1) / 365 * width;
     });
     var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
     var xAxis = d3.axisBottom().scale(xScaleTime); // Work out the max text widths of the three styles
@@ -169,24 +216,36 @@
 
     return xAxis;
   }
-  function xAxisMonthNoText(width) {
-    var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    var ysRange = month2day.map(function (d) {
-      return (d - 1) / 366 * width;
+  function xAxisMonthNoText(width, monthScaleRange) {
+    var filteredYsDomain = filterYsDomain(monthScaleRange);
+    var filteredMonth2day = filterMonth2day(monthScaleRange);
+    var dayRange = getDayRange(monthScaleRange);
+    var ysRange = filteredMonth2day.map(function (d) {
+      return (d - 1) / dayRange * width;
     });
-    var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
+    var xScaleTime = d3.scaleOrdinal().domain(filteredYsDomain).range(ysRange);
     var xAxis = d3.axisBottom().scale(xScaleTime);
-    xAxis.ticks(ysDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function () {
+    xAxis.ticks(filteredYsDomain).tickSize(width >= 200 ? 13 : 5, 0).tickFormat(function () {
       return '';
     });
     return xAxis;
   }
-  function xAxisMonthText(width, ticks, fontSize, font) {
-    var ysDomain = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function xAxisMonthText(width, ticks, fontSize, font, monthScaleRange) {
+    var filteredYsDomain = filterYsDomain(monthScaleRange);
+    filteredYsDomain.unshift('');
+    var filteredMonth2day = filterMonth2day(monthScaleRange);
+    var dayRange = getDayRange(monthScaleRange);
+    var monthMid2day = [1];
+
+    for (var i = 0; i < filteredMonth2day.length - 1; i++) {
+      monthMid2day.push(filteredMonth2day[i] + (filteredMonth2day[i + 1] - filteredMonth2day[i]) / 2);
+    }
+
+    monthMid2day.push(dayRange + 1);
     var ysRange = monthMid2day.map(function (d) {
-      return (d - 1) / 366 * width;
+      return (d - 1) / dayRange * width;
     });
-    var xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange);
+    var xScaleTime = d3.scaleOrdinal().domain(filteredYsDomain).range(ysRange);
     var xAxis = d3.axisBottom().scale(xScaleTime); // Work out the max text widths of the three styles
     // of month representation
 
@@ -203,24 +262,25 @@
       })));
     };
 
-    var maxFullMonth = getMaxTextWidth(ysDomain);
-    var maxMedMonth = getMaxTextWidth(ysDomain.map(function (m) {
+    var maxFullMonth = getMaxTextWidth(filteredYsDomain);
+    var maxMedMonth = getMaxTextWidth(filteredYsDomain.map(function (m) {
       return m.substr(0, 3);
     }));
-    var maxMinMonth = getMaxTextWidth(ysDomain.map(function (m) {
+    var maxMinMonth = getMaxTextWidth(filteredYsDomain.map(function (m) {
       return m.substr(0, 1);
     }));
     svg.remove();
+    var monthNumber = monthScaleRange[1] - monthScaleRange[0] + 1;
 
     if (ticks) {
-      xAxis.ticks(ysDomain).tickSize(0).tickFormat(function (month) {
+      xAxis.ticks(filteredYsDomain).tickSize(0).tickFormat(function (month) {
         if (month === '') {
           return '';
-        } else if (width / 12 > maxFullMonth + 4) {
+        } else if (width / monthNumber > maxFullMonth + 4) {
           return month;
-        } else if (width / 12 >= maxMedMonth + 4) {
+        } else if (width / monthNumber >= maxMedMonth + 4) {
           return month.substr(0, 3);
-        } else if (width / 12 >= maxMinMonth + 4) {
+        } else if (width / monthNumber >= maxMinMonth + 4) {
           return month.substr(0, 1);
         } else {
           return '';
@@ -280,19 +340,19 @@
     var lines = [''];
     var line = 0;
 
-    for (var _i = 0; _i < textSplit.length; _i++) {
-      if (textSplit[_i] === '\n') {
+    for (var i = 0; i < textSplit.length; i++) {
+      if (textSplit[i] === '\n') {
         line++;
         lines[line] = '';
       } else {
-        var workingText = "".concat(lines[line], " ").concat(textSplit[_i]);
+        var workingText = "".concat(lines[line], " ").concat(textSplit[i]);
         workingText = workingText.trim();
         var txt = svg.append('text').text(workingText).style('font-size', fontSize);
         var width = txt.node().getBBox().width;
 
         if (width > maxWidth) {
           line++;
-          lines[line] = textSplit[_i];
+          lines[line] = textSplit[i];
         } else {
           lines[line] = workingText;
         }
@@ -466,27 +526,85 @@
       pArray.push(p);
     }
   }
-  function temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width) {
+  function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width) {
+    // This function returns an object that provides all the functionality of a d3 scale but it is
+    // tailored to the needs of the temporal chart. The return object has the following properties:
+    // * d3 - this is the raw d3 scale function that lies at the hear of all the functionality.
+    // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary 
+    //   preprocessing on passed value before passing to the d3 scale bandwidth function.
+    // * v - a replacement for the d3 scale function which does any necessary 
+    //   preprocessing on passed value before passing to the d3 scale function.
     var periods = [];
 
-    for (var _i2 = minPeriod; _i2 <= maxPeriod; _i2++) {
-      periods.push(_i2);
+    for (var i = minPeriod; i <= maxPeriod; i++) {
+      periods.push(i);
     }
 
-    var scaleFn;
+    var scaleD3, scaleFn, bandwidthFn;
 
-    if (chartStyle === 'bar') {
-      scaleFn = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
+    if (periodType === 'month' || periodType === 'week') {
+      var m2d = filterMonth2day(monthScaleRange, true);
+      scaleD3 = d3.scaleLinear().domain([m2d[0], m2d[m2d.length - 1]]).range([1, width]);
+
+      scaleFn = function scaleFn(v) {
+        return scaleD3(periodToDay(v, periodType, chartStyle));
+      };
+
+      bandwidthFn = function bandwidthFn(v) {
+        return periodToWidth(v, periodType, scaleD3);
+      };
+    } else if (chartStyle === 'bar') {
+      scaleD3 = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
+      scaleFn = scaleD3;
+
+      bandwidthFn = function bandwidthFn(v) {
+        return scaleFn.bandwidth(v);
+      };
     } else if (chartStyle === 'line') {
-      scaleFn = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
+      scaleD3 = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
+      scaleFn = scaleD3;
+
+      bandwidthFn = function bandwidthFn() {
+        return 0;
+      };
     }
 
     return {
-      d3: scaleFn,
-      val: function val(v) {
-        return scaleFn(v);
+      d3: scaleD3,
+      bandwidth: function bandwidth(v) {
+        return bandwidthFn(v);
+      },
+      v: function v(_v) {
+        return scaleFn(_v);
       }
     };
+  }
+
+  function periodToDay(p, periodType, chartStyle) {
+    if (periodType === 'week') {
+      if (chartStyle === 'bar') {
+        return (p - 1) * 7 + 1;
+      } else {
+        // style is line
+        return (p - 1) * 7 + 1 + 3.5;
+      }
+    } else {
+      // period === month
+      if (chartStyle === 'bar') {
+        return month2day[p - 1];
+      } else {
+        // style is line
+        return month2day[p - 1] + (month2day[p] - month2day[p - 1]) / 2;
+      }
+    }
+  }
+
+  function periodToWidth(p, periodType, xScale) {
+    if (periodType === 'week') {
+      return xScale(7) - xScale(0) - 1;
+    } else {
+      return xScale(month2day[p]) - xScale(month2day[p - 1]) - 1;
+    }
   }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
@@ -1713,8 +1831,8 @@
 
     if (axisBottom === 'on' || axisBottom === 'tick') {
       //xAxis = xAxisMonth(width, axisBottom === 'tick')
-      xAxis1 = xAxisMonthNoText(width);
-      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font);
+      xAxis1 = xAxisMonthNoText(width, [1, 12]);
+      xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font, [1, 12]);
     } // Right axis
 
 
@@ -2795,8 +2913,8 @@
 
       if (axisBottom === 'on' || axisBottom === 'tick') {
         //xAxis = xAxisMonth(width, axisBottom === 'tick', monthFontSize, font)
-        xAxis1 = xAxisMonthNoText(width);
-        xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font);
+        xAxis1 = xAxisMonthNoText(width, [1, 12]);
+        xAxis2 = xAxisMonthText(width, axisBottom === 'tick', monthFontSize, font, [1, 12]);
       } // Top axis
 
 
@@ -8012,177 +8130,76 @@
     }
   }
 
-  function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, pTrans) {
-    // Pre-process data.
-    // Filter to named taxon and to min and max period and sort in period order
-    // Add max value to each.
-    var dataFiltered = data.filter(function (d) {
-      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
-    }).sort(function (a, b) {
-      return a.period > b.period ? 1 : -1;
+  function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, svgChart, interactivity) {
+    var chartBars = [];
+    metricsPlus.forEach(function (m) {
+      var bars = dataFiltered.map(function (d) {
+        return {
+          colour: m.colour,
+          opacity: m.opacity,
+          //type: 'counts',
+          prop: m.prop,
+          period: d.period,
+          n: yScale(d[m.prop])
+        };
+      });
+      chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
     });
-    var dataPointsFiltered = dataPoints.filter(function (d) {
-      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
-    }).sort(function (a, b) {
-      return a.period > b.period ? 1 : -1;
-    }); // Filter dataTrendLinesFiltered data on taxon and also from an array 
-    // of gradients and intercepts to an array of arrays of two point lines
-
-    var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
-      return d.taxon === taxon;
-    }).map(function (d) {
-      return {
-        taxon: d.taxon,
-        colour: d.colour,
-        width: d.width,
-        opacity: d.opacity,
-        y1: d.gradient * minPeriod + d.intercept,
-        y2: d.gradient * maxPeriod + d.intercept
-      };
-    }); //Set the min and maximum values for the y axis
-
-    var maxMetricYs = metricsPlus.map(function (m) {
-      return Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-        return d[m.prop];
-      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
-        return d[m.bandUpper];
-      }).map(function (d) {
-        return d[m.bandUpper];
-      }))));
+    gTemporal.selectAll(".temporal-bar").data(chartBars, function (d) {
+      return "bars-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append("rect").attr("class", function (d) {
+        return "temporal-bar temporal-graphic temporal-".concat(d.prop);
+      }).attr('width', function (d) {
+        return xScale.bandwidth(d.period);
+      }).attr('height', 0).attr('fill', function (d) {
+        return d.colour;
+      }).attr('opacity', 0).attr('y', height).attr('x', function (d) {
+        return xScale.v(d.period);
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).attr('height', 0).attr('y', height).style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr('y', function (d) {
+        return d.n;
+      }).attr('x', function (d) {
+        return xScale.v(d.period);
+      }).attr('height', function (d) {
+        return height - d.n;
+      }).attr('width', function (d) {
+        return xScale.bandwidth(d.period);
+      }).attr("fill", function (d) {
+        return d.colour;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }), pTrans);
     });
-    var maxYA = maxY !== null ? [maxY] : [];
-    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
-      return d.y;
-    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
-      return d.upper;
-    }).map(function (d) {
-      return d.upper;
-    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
-      return d.y1;
-    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
-      return d.y2;
-    }))));
-    var minMetricYs = metricsPlus.map(function (m) {
-      return Math.min.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-        return d[m.prop];
-      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
-        return d[m.bandLower];
-      }).map(function (d) {
-        return d[m.bandLower];
-      }))));
-    });
-    var minYA = minY !== null ? [minY] : [];
-    var yminY = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
-      return d.y;
-    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
-      return d.lower;
-    }).map(function (d) {
-      return d.lower;
-    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
-      return d.y1;
-    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
-      return d.y2;
-    }))));
+    addEventHandlers$3(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity);
+  }
 
-    if (yAxisOpts.minMax !== null) {
-      if (ymaxY < yAxisOpts.minMax) {
-        ymaxY = yAxisOpts.minMax;
-      }
-    }
-
-    if (yAxisOpts.fixedMin !== null) {
-      yminY = yAxisOpts.fixedMin;
-    } // Value scales
-
-
-    var periods = [];
-
-    for (var i = minPeriod; i <= maxPeriod; i++) {
-      periods.push(i);
-    }
-
-    var xPadding = (maxPeriod - minPeriod) * xPadPercent;
-    var yPadding = (ymaxY - yminY) * yPadPercent;
-    var xScale = temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width);
-    var xScaleBar = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1);
-    var xScaleLine = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width]);
-    var yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]); // Top axis
-
-    var tAxis;
-
-    if (axisTop === 'on') {
-      tAxis = d3.axisTop() //.scale(xScaleLine) // Actual scale doesn't matter, but needs one
-      .scale(xScale.d3).tickValues([]).tickSizeOuter(0);
-    } // Bottom axis
-
-
-    var bAxis, bAxis1;
-
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      if (periodType === 'year') {
-        bAxis = xAxisYear(width, axisBottom === 'tick', minPeriod - xPadding, maxPeriod + xPadding, chartStyle === 'bar');
-      } else {
-        // PeriodType is month or week.
-        // For month or week periodTypes, axis is generated in two parts,
-        // one for the ticks and one for the annotation because
-        // default places tick in centre of text. Baxis 1 takes
-        // care of the text.
-        bAxis = xAxisMonthNoText(width);
-        bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial');
-      }
-    } // Left and right axes
-
-
-    var makeXaxis = function makeXaxis(leftRight, axisOpt) {
-      var axis;
-      var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
-
-      switch (axisOpt) {
-        case 'on':
-          axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0);
-          break;
-
-        case 'tick':
-          axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
-          break;
-      }
-
-      return axis;
-    };
-
-    var lAxis = makeXaxis('left', axisLeft);
-    var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
-
-    var init, svgTemporal, gTemporal;
-
-    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-temporal').size() === 1) {
-      svgTemporal = svgChart.select('.brc-chart-temporal');
-      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
-      init = false;
-    } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
-      svgTemporal = svgChart.select("#".concat(safeId(taxon)));
-      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
-      init = false;
-    } else {
-      svgTemporal = svgChart.append('svg').classed('brc-chart-temporal', true).attr('id', safeId(taxon)).style('overflow', 'visible').style('font-family', 'sans-serif');
-      gTemporal = svgTemporal.append('g').classed('brc-chart-temporal-g', true);
-      init = true;
-    } // Line path generator
-
-
-    var lineValues = d3.line() //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
-    // because resulting number of points in path is not constant.
-    //.x(d => xScaleLine(d.period))
-    .x(function (d) {
-      return xScale.val(d.period);
+  function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity) {
+    // Line path generator
+    var lineValues = d3.line().x(function (d) {
+      return xScale.v(d.period);
     }).y(function (d) {
       return yScale(d.n);
     });
+
+    if (lineInterpolator) {
+      // Interpolating curves can make transitions of polygons iffy
+      // because resulting number of points in path is not constant.
+      //lineValues.curve(d3.curveMonotoneX)
+      lineValues.curve(d3__namespace[lineInterpolator]);
+    }
+
     var chartLines = [];
-    var chartBars = [];
     var chartBands = [];
-    var chartPoints = [];
-    var chartErrorBars = [];
     metricsPlus.forEach(function (m) {
       // Create a collection of the periods in the dataset.
       var dataDict = dataFiltered.reduce(function (a, d) {
@@ -8190,38 +8207,35 @@
         return a;
       }, {}); // Construct data structure for line charts.
 
-      if (chartStyle === 'line' && isFinite(yminY)) {
-        var pointSets = adjustForTrans(periods.map(function (y) {
-          // Replace any missing values (for a given period)
-          // with the missing value specified (can be a value
-          // or 'bridge' or 'break')
-          return {
-            period: y,
-            n: dataDict[y] ? dataDict[y] : missingValues
-          };
-        }));
-        pointSets.forEach(function (points, i) {
-          chartLines.push({
-            colour: m.colour,
-            opacity: m.opacity,
-            strokeWidth: m.strokeWidth,
-            type: 'counts',
-            prop: m.prop,
-            part: i,
-            yMin: yminY,
-            pathEnter: lineValues(points.map(function (p) {
-              return {
-                n: yminY,
-                period: p.period
-              };
-            })),
-            path: lineValues(points)
-          });
+      var pointSets = adjustForTrans(periods.map(function (y) {
+        // Replace any missing values (for a given period)
+        // with the missing value specified (can be a value
+        // or 'bridge' or 'break')
+        return {
+          period: y,
+          n: dataDict[y] ? dataDict[y] : missingValues
+        };
+      }));
+      pointSets.forEach(function (points, i) {
+        chartLines.push({
+          colour: m.colour,
+          opacity: m.opacity,
+          strokeWidth: m.strokeWidth,
+          type: 'counts',
+          prop: m.prop,
+          part: i,
+          yMin: yminY,
+          pathEnter: lineValues(points.map(function (p) {
+            return {
+              n: yminY,
+              period: p.period
+            };
+          })),
+          path: lineValues(points)
         });
-      } // Construct data structure for confidence band on line charts.
+      }); // Construct data structure for confidence band on line charts.
 
-
-      if (chartStyle === 'line' && m.bandUpper && m.bandLower && isFinite(yminY)) {
+      if (m.bandUpper && m.bandLower) {
         var ddUpper = dataFiltered.reduce(function (a, d) {
           a[d.period] = d[m.bandUpper];
           return a;
@@ -8236,19 +8250,21 @@
             n: ddUpper[y] ? ddUpper[y] : missingValues
           };
         });
-        var lowerLine = [].concat(periods).map(function (y) {
+
+        var lowerLine = _toConsumableArray(periods).map(function (y) {
           return {
             period: y,
             n: ddLower[y] ? ddLower[y] : missingValues
           };
         });
+
         var pointsLowerSet = adjustForTrans(lowerLine);
         var pointsUpperSet = adjustForTrans(upperLine);
 
-        for (var _i = 0; _i < pointsLowerSet.length; _i++) {
-          var pointsLower = pointsLowerSet[_i];
-          var pointsUpper = pointsUpperSet[_i];
-          var pointsBand = [].concat(_toConsumableArray(pointsLowerSet[_i]), _toConsumableArray(pointsUpperSet[_i].reverse()));
+        for (var i = 0; i < pointsLowerSet.length; i++) {
+          var pointsLower = pointsLowerSet[i];
+          var pointsUpper = pointsUpperSet[i];
+          var pointsBand = [].concat(_toConsumableArray(pointsLowerSet[i]), _toConsumableArray(pointsUpperSet[i].reverse()));
           var pointsLowerEnter = pointsLower.map(function (p) {
             return {
               n: yminY,
@@ -8269,7 +8285,7 @@
             strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
             //type: 'counts',
             prop: m.prop,
-            part: _i,
+            part: i,
             bandPath: lineValues(pointsBand),
             bandPathEnter: lineValues(pointsBand.map(function (p) {
               return {
@@ -8281,26 +8297,192 @@
             bandBordersEnter: [lineValues(pointsLowerEnter), lineValues(pointsUpperEnter)]
           });
         }
-      } // Construct data structure for bar charts.
+      }
+    }); // Bands
 
+    gTemporal.selectAll(".temporal-band").data(chartBands, function (d) {
+      return "band-".concat(d.prop, "-").concat(d.part);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "temporal-band temporal-graphic temporal-".concat(d.prop);
+      }).attr("opacity", 0).attr("fill", function (d) {
+        return d.fill;
+      }).attr("stroke", "none") //.attr("d", d => d.bandPathEnter),
+      .attr("d", function (d) {
+        return d.bandPath;
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t) //.attr("d", d => d.bandPathEnter)
+        .style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.bandPath;
+      }).attr("opacity", function (d) {
+        return d.fillOpacity;
+      }).attr("fill", function (d) {
+        return d.fill;
+      }), pTrans);
+    });
+    addEventHandlers$3(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity); // Band lines
 
-      if (chartStyle === 'bar') {
-        var bars = dataFiltered.map(function (d) {
-          return {
-            colour: m.colour,
-            opacity: m.opacity,
-            //type: 'counts',
-            prop: m.prop,
-            period: d.period,
-            n: yScale(d[m.prop])
-          };
+    var _loop = function _loop(iLine) {
+      gTemporal.selectAll(".temporal-band-border-".concat(iLine)).data(chartBands, function (d) {
+        return "band-line-".concat(d.prop, "-").concat(iLine, "-").concat(d.part);
+      }).join(function (enter) {
+        return enter.append("path").attr("class", function (d) {
+          return "temporal-band-border-".concat(iLine, " temporal-graphic temporal-").concat(d.prop);
+        }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }) //.attr("d", d => d.bandBordersEnter[iLine]),
+        .attr("d", function (d) {
+          return d.bandBorders[iLine];
         });
-        chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
-      } // Construct data structure for points.
+      }, function (update) {
+        return update;
+      }, function (exit) {
+        return exit.call(function (exit) {
+          return transPromise(exit.transition(t) //.attr("d", d => d.bandBordersEnter[iLine])
+          .style("opacity", 0).remove(), pTrans);
+        });
+      }).call(function (merge) {
+        return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+        // enter and update selections
+        .attr("d", function (d) {
+          return d.bandBorders[iLine];
+        }).attr("opacity", function (d) {
+          return d.strokeOpacity;
+        }).attr("stroke", function (d) {
+          return d.stroke;
+        }).attr("stroke-width", function (d) {
+          return d.strokeWidth;
+        }), pTrans);
+      });
+      addEventHandlers$3(gTemporal.selectAll(".temporal-band-border-".concat(iLine)), 'prop', svgChart, interactivity);
+    };
+
+    for (var iLine = 0; iLine < 2; iLine++) {
+      _loop(iLine);
+    } // Main lines
+
+
+    gTemporal.selectAll(".temporal-line").data(chartLines, function (d) {
+      return "line-".concat(d.prop, "-").concat(d.part);
+    }).join(function (enter) {
+      return enter.append("path").attr("class", function (d) {
+        return "temporal-line temporal-graphic temporal-".concat(d.prop);
+      }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }) //.attr("d", d => d.pathEnter),
+      .attr("d", function (d) {
+        return d.path;
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t) //.attr("d", d => d.pathEnter)
+        .style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).attr("stroke", function (d) {
+        return d.colour;
+      }).attr("stroke-width", function (d) {
+        return d.strokeWidth;
+      }), pTrans);
+    });
+    addEventHandlers$3(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity);
+
+    function adjustForTrans(pntsIn) {
+      // Return an array of arrays of points. There may be more than one array
+      // of points in the main array if there are breaks in the input array
+      // of points.
+      // First restructure the passed in points to an array of arrays.
+      var pntsSplit = [];
+      pntsIn.forEach(function (p) {
+        if (p.n === 'break') {
+          // Add a new array
+          pntsSplit.push([]);
+        } else {
+          if (pntsSplit.length === 0) {
+            // Fist value so first add a new array
+            pntsSplit.push([]);
+          } // Add point to array
+
+
+          pntsSplit[pntsSplit.length - 1].push(p);
+        }
+      }); // At this point pntsSplit could have empty arrays, e.g. if there
+      // where consecutive 'breaks' so weed these out.
+
+      pntsSplit = pntsSplit.filter(function (a) {
+        return a.length > 0;
+      }); // Adjust of transition temporal ranges
+
+      var retSet = [];
+      pntsSplit.forEach(function (pnts) {
+        var ret = _toConsumableArray(pnts);
+
+        retSet.push(ret); // If missing period values are being bridged, add a point at last
+        // known value.
+
+        for (var i = 0; i < pnts.length; i++) {
+          if (pnts[i].n === 'bridge') {
+            pnts[i].n = pnts[i - 1].n;
+            pnts[i].period = pnts[i - 1].period;
+          }
+        } // When minPeriodTans and MaxPeriodTrans are set, then each trend line
+        // must have the same number of points in (MaxPeriodTrans - minPeriodTans + 1 points).
+        // This is to make nice looking transitions between lines with otherwise
+        // different numbers of points.
+
+
+        if (minPeriodTrans) {
+          for (var _i = minPeriodTrans; _i < pnts[0].period; _i++) {
+            ret.unshift({
+              n: pnts[0].n,
+              period: pnts[0].period
+            });
+          }
+        }
+
+        if (maxPeriodTrans) {
+          for (var _i2 = pnts[pnts.length - 1].period + 1; _i2 <= maxPeriodTrans; _i2++) {
+            ret.push({
+              n: pnts[pnts.length - 1].n,
+              period: pnts[pnts.length - 1].period
+            });
+          }
+        }
+      });
+      return retSet;
+    }
+
+    addEventHandlers$3(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity);
+  }
+
+  function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
+    var chartPoints = [];
+    var chartErrorBars = [];
+    metricsPlus.forEach(function (m) {
+      // Construct data structure for points.
       // TODO - if at some point we parameterise display styles
       // for points bars, then it must be specified in here.
-
-
       if (m.points) {
         var points = dataFiltered.filter(function (d) {
           return d[m.prop];
@@ -8308,9 +8490,9 @@
           var x;
 
           if (chartStyle === 'bar') {
-            x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2;
+            x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2;
           } else {
-            x = xScaleLine(d.period);
+            x = xScale.v(d.period);
           }
 
           return {
@@ -8331,9 +8513,9 @@
           var x;
 
           if (chartStyle === 'bar') {
-            x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2;
+            x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2;
           } else {
-            x = xScaleLine(d.period);
+            x = xScale.v(d.period);
           }
 
           return {
@@ -8345,43 +8527,72 @@
         });
         chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(errorBars));
       }
-    }); // Construct data structure for supplementary trend lines.
+    }); // Error bars
+
+    gTemporal.selectAll('.temporal-error-bars').data(chartErrorBars, function (d) {
+      return "error-bars-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", function (d) {
+        return "temporal-error-bars temporal-graphic temporal-".concat(d.prop);
+      }) //.attr("d", d => d.pathEnter)
+      .attr("d", function (d) {
+        return d.path;
+      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0) //.attr("d", d => d.pathEnter)
+        .attr("d", function (d) {
+          return d.path;
+        }).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('opacity', 1), pTrans);
+    });
+    addEventHandlers$3(gTemporal.selectAll(".temporal-error-bars"), 'prop', svgChart, interactivity); // Points
+
+    gTemporal.selectAll('.temporal-point').data(chartPoints, function (d) {
+      return "point-".concat(d.prop, "-").concat(d.period);
+    }).join(function (enter) {
+      return enter.append('circle').attr("class", function (d) {
+        return "temporal-point temporal-graphic temporal-".concat(d.prop);
+      }).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }) //.attr('cy', height)
+      .attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0) //.attr('cy', height)
+        .remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr('cx', function (d) {
+        return d.x;
+      }).attr('cy', function (d) {
+        return d.y;
+      }).style('opacity', 1), pTrans);
+    });
+    addEventHandlers$3(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity);
+  }
+
+  function generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans) {
+    // Construct data structure for supplementary points.
     // TODO - if at some point we parameterise display styles,
     // then it must be specified in here.
-
-    var chartTrendLineSup = dataTrendLinesFiltered.map(function (d) {
-      // y = mx + c
-      var x1, x2;
-      var minx = minPeriod - xPadding;
-      var maxx = maxPeriod + xPadding;
-
-      if (chartStyle === 'bar') {
-        x1 = xScaleBar(minx);
-        x2 = xScaleBar(maxx) + xScaleBar.bandwidth();
-      } else {
-        x1 = xScaleLine(minx);
-        x2 = xScaleLine(maxx);
-      }
-
-      return {
-        colour: d.colour ? d.colour : 'red',
-        width: d.width ? d.width : '1',
-        opacity: d.opacity ? d.opacity : '1',
-        pathEnter: "M ".concat(x1, " ").concat(height, " L ").concat(x2, " ").concat(height),
-        path: "M ".concat(x1, " ").concat(yScale(d.y1), " L ").concat(x2, " ").concat(yScale(d.y2))
-      };
-    }); // Construct data structure for supplementary points.
-    // TODO - if at some point we parameterise display styles,
-    // then it must be specified in here.
-
     var chartPointsSup = dataPointsFiltered.map(function (d) {
-      var x; // if (chartStyle === 'bar') {
-      //   x = xScaleBar(Math.floor(d.period)) + xScaleBar.bandwidth() * 0.5 +(d.period % 1)
-      // } else {
-      //   x = xScaleLine(d.period)
-      // }
-
-      x = xScaleLine(d.period);
+      var x;
+      x = xScale.v(d.period);
       return {
         x: x,
         y: yScale(d.y),
@@ -8392,230 +8603,13 @@
     // then it must be specified in here.
 
     var chartPointsSupErrorBars = dataPointsFiltered.map(function (d) {
-      var x = xScaleLine(d.period);
+      var x = xScale.v(d.period);
       return {
         pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
         path: "M ".concat(x, " ").concat(yScale(d.lower), " L ").concat(x, " ").concat(yScale(d.upper)),
         period: d.period
       };
-    }); // d3 transition object
-
-    var t = svgTemporal.transition().duration(duration); // Bars
-
-    gTemporal.selectAll(".temporal-bar").data(chartBars, function (d) {
-      return "bars-".concat(d.prop, "-").concat(d.period);
-    }).join(function (enter) {
-      return enter.append("rect").attr("class", function (d) {
-        return "temporal-bar temporal-graphic temporal-".concat(d.prop);
-      }).attr('width', xScaleBar.bandwidth()).attr('height', 0).attr('fill', function (d) {
-        return d.colour;
-      }).attr('opacity', 0).attr('y', height).attr('x', function (d) {
-        return xScaleBar(d.period);
-      });
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).attr('height', 0).attr('y', height).style("opacity", 0).remove(), pTrans);
-      });
-    }).call(function (merge) {
-      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr('y', function (d) {
-        return d.n;
-      }).attr('x', function (d) {
-        return xScaleBar(d.period);
-      }).attr('height', function (d) {
-        return height - d.n;
-      }).attr('width', xScaleBar.bandwidth()).attr("fill", function (d) {
-        return d.colour;
-      }).attr("opacity", function (d) {
-        return d.opacity;
-      }), pTrans);
-    }); // Bands
-
-    gTemporal.selectAll(".temporal-band").data(chartBands, function (d) {
-      return "band-".concat(d.prop, "-").concat(d.part);
-    }).join(function (enter) {
-      return enter.append("path").attr("class", function (d) {
-        return "temporal-band temporal-graphic temporal-".concat(d.prop);
-      }).attr("opacity", 0).attr("fill", function (d) {
-        return d.fill;
-      }).attr("stroke", "none").attr("d", function (d) {
-        return d.bandPathEnter;
-      });
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).attr("d", function (d) {
-          return d.bandPathEnter;
-        }).style("opacity", 0).remove(), pTrans);
-      });
-    }).call(function (merge) {
-      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", function (d) {
-        return d.bandPath;
-      }).attr("opacity", function (d) {
-        return d.fillOpacity;
-      }).attr("fill", function (d) {
-        return d.fill;
-      }), pTrans);
-    }); // Band lines
-
-    var _loop = function _loop(iLine) {
-      gTemporal.selectAll(".temporal-band-border-".concat(iLine)).data(chartBands, function (d) {
-        return "band-line-".concat(d.prop, "-").concat(iLine, "-").concat(d.part);
-      }).join(function (enter) {
-        return enter.append("path").attr("class", function (d) {
-          return "temporal-band-border-".concat(iLine, " temporal-graphic temporal-").concat(d.prop);
-        }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
-          return d.stroke;
-        }).attr("stroke-width", function (d) {
-          return d.strokeWidth;
-        }).attr("d", function (d) {
-          return d.bandBordersEnter[iLine];
-        });
-      }, function (update) {
-        return update;
-      }, function (exit) {
-        return exit.call(function (exit) {
-          return transPromise(exit.transition(t).attr("d", function (d) {
-            return d.bandBordersEnter[iLine];
-          }).style("opacity", 0).remove(), pTrans);
-        });
-      }).call(function (merge) {
-        return transPromise(merge.transition(t) // The selection returned by the join function is the merged
-        // enter and update selections
-        .attr("d", function (d) {
-          return d.bandBorders[iLine];
-        }).attr("opacity", function (d) {
-          return d.strokeOpacity;
-        }).attr("stroke", function (d) {
-          return d.stroke;
-        }).attr("stroke-width", function (d) {
-          return d.strokeWidth;
-        }), pTrans);
-      });
-    };
-
-    for (var iLine = 0; iLine < 2; iLine++) {
-      _loop(iLine);
-    } // Main lines
-
-
-    gTemporal.selectAll(".temporal-line").data(chartLines, function (d) {
-      return "line-".concat(d.prop, "-").concat(d.part);
-    }).join(function (enter) {
-      return enter.append("path").attr("class", function (d) {
-        return "temporal-line temporal-graphic temporal-".concat(d.prop);
-      }).attr("opacity", 0).attr("fill", "none").attr("stroke", function (d) {
-        return d.colour;
-      }).attr("stroke-width", function (d) {
-        return d.strokeWidth;
-      }).attr("d", function (d) {
-        return d.pathEnter;
-      });
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).attr("d", function (d) {
-          return d.pathEnter;
-        }).style("opacity", 0).remove(), pTrans);
-      });
-    }).call(function (merge) {
-      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", function (d) {
-        return d.path;
-      }).attr("opacity", function (d) {
-        return d.opacity;
-      }).attr("stroke", function (d) {
-        return d.colour;
-      }).attr("stroke-width", function (d) {
-        return d.strokeWidth;
-      }), pTrans);
-    }); // Error bars
-
-    gTemporal.selectAll('.temporal-error-bars').data(chartErrorBars, function (d) {
-      return "error-bars-".concat(d.prop, "-").concat(d.period);
-    }).join(function (enter) {
-      return enter.append('path').attr("class", function (d) {
-        return "temporal-error-bars temporal-graphic temporal-".concat(d.prop);
-      }).attr("d", function (d) {
-        return d.pathEnter;
-      }).style('fill', 'none').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
-          return d.pathEnter;
-        }).remove(), pTrans);
-      });
-    }) // The selection returned by the join function is the merged
-    // enter and update selections
-    .call(function (merge) {
-      return transPromise(merge.transition(t).attr("d", function (d) {
-        return d.path;
-      }).style('opacity', 1), pTrans);
-    }); // Points
-
-    gTemporal.selectAll('.temporal-point').data(chartPoints, function (d) {
-      return "point-".concat(d.prop, "-").concat(d.period);
-    }).join(function (enter) {
-      return enter.append('circle').attr("class", function (d) {
-        return "temporal-point temporal-graphic temporal-".concat(d.prop);
-      }).attr('cx', function (d) {
-        return d.x;
-      }) //.attr('cy', d => d.y)
-      .attr('cy', height).attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).style("opacity", 0).attr('cy', height).remove(), pTrans);
-      });
-    }) // The selection returned by the join function is the merged
-    // enter and update selections
-    .call(function (merge) {
-      return transPromise(merge.transition(t).attr('cx', function (d) {
-        return d.x;
-      }).attr('cy', function (d) {
-        return d.y;
-      }).style('opacity', 1), pTrans);
-    }); // Supplementary trend lines
-
-    gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
-      return enter.append('path').attr("d", function (d) {
-        return d.pathEnter;
-      }).attr('class', 'temporal-trend-lines-sup').style('stroke', function (d) {
-        return d.colour;
-      }).style('stroke-width', function (d) {
-        return d.width;
-      }).attr("opacity", 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.call(function (exit) {
-        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
-          return d.pathEnter;
-        }).remove(), pTrans);
-      });
-    }) // Join returns merged enter and update selection
-    .call(function (merge) {
-      return transPromise(merge.transition(t).attr("d", function (d) {
-        return d.path;
-      }).attr("opacity", function (d) {
-        return d.opacity;
-      }).style('stroke', function (d) {
-        return d.colour;
-      }).style('stroke-width', function (d) {
-        return d.width;
-      }), pTrans);
-    }); // Supplementary points error bars
+    }); // Supplementary point error bars
 
     gTemporal.selectAll('.temporal-error-bars-sup').data(chartPointsSupErrorBars, function (d) {
       return "error-bars-sup-".concat(d.period);
@@ -8661,9 +8655,320 @@
         return d.y;
       }).style('opacity', 1), pTrans);
     });
-    addEventHandlers$3(gTemporal.selectAll("path"), 'prop', svgChart, interactivity);
-    addEventHandlers$3(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity);
-    addEventHandlers$3(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity);
+  }
+
+  function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding) {
+    // Construct data structure for supplementary trend lines.
+    // TODO - if at some point we parameterise display styles,
+    // then it must be specified in here.
+    var chartTrendLineSup = dataTrendLinesFiltered.map(function (d) {
+      // y = mx + c
+      var minx = minPeriod - xPadding;
+      var maxx = maxPeriod + xPadding;
+      var x1 = xScale.v(minx);
+      var x2;
+
+      if (chartStyle === 'bar') {
+        x2 = xScale.v(maxx) + xScale.bandwidth(maxx);
+      } else {
+        x2 = xScale.v(maxx);
+      }
+
+      return {
+        colour: d.colour ? d.colour : 'red',
+        width: d.width ? d.width : '1',
+        opacity: d.opacity ? d.opacity : '1',
+        pathEnter: "M ".concat(x1, " ").concat(height, " L ").concat(x2, " ").concat(height),
+        path: "M ".concat(x1, " ").concat(yScale(d.y1), " L ").concat(x2, " ").concat(yScale(d.y2))
+      };
+    }); // Supplementary trend lines
+
+    gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
+      return enter.append('path').attr("d", function (d) {
+        return d.pathEnter;
+      }).attr('class', 'temporal-trend-lines-sup').style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }).attr("opacity", 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
+          return d.pathEnter;
+        }).remove(), pTrans);
+      });
+    }) // Join returns merged enter and update selection
+    .call(function (merge) {
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).attr("opacity", function (d) {
+        return d.opacity;
+      }).style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.width;
+      }), pTrans);
+    });
+  }
+
+  function generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans) {
+    // Construct data structures for vertical lines and bars
+    var chartVerticalLines = verticals.filter(function (d) {
+      return !d.width;
+    }).map(function (d, i) {
+      // Use the D3 scale function (not v) because in charts of type periodType
+      // week or month, the start and width values are in *days* not periods
+      // (week or month number).
+      var x = xScale.d3(d.start);
+      return {
+        path: "M ".concat(x, " 0 L ").concat(x, " ").concat(height),
+        colour: d.colour,
+        index: i
+      };
+    }); // Construct data structures for vertical lines and bars
+
+    var chartVerticalBands = verticals.filter(function (d) {
+      return d.width;
+    }).map(function (d, i) {
+      // Use the D3 scale function (not v) because in charts of type periodType
+      // week or month, the start and width values are in *days* not periods
+      // (week or month number).
+      return {
+        x: xScale.d3(d.start),
+        width: xScale.d3(d.start + d.width) - xScale.d3(d.start),
+        colour: d.colour,
+        index: i
+      };
+    }); // Vertical lines
+
+    gTemporal.selectAll('.temporal-vertical-line-sup').data(chartVerticalLines, function (d) {
+      return "vertical-line-sup-".concat(d.index);
+    }).join(function (enter) {
+      return enter.append('path').attr("class", "temporal-vertical-line-sup").attr("d", function (d) {
+        return d.path;
+      }).style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', 1).style('opacity', 0);
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).remove(), pTrans);
+      });
+    }) // The selection returned by the join function is the merged
+    // enter and update selections
+    .call(function (merge) {
+      return transPromise(merge.transition(t).style('opacity', 1), pTrans);
+    }); // Vertical bands
+
+    gTemporal.selectAll('.temporal-vertical-band-sup').data(chartVerticalBands, function (d) {
+      return "vertical-band-sup-".concat(d.index);
+    }).join(function (enter) {
+      return enter.append("rect").attr("class", "temporal-vertical-band-sup").attr('width', function (d) {
+        return d.width;
+      }).attr('height', height).attr('fill', function (d) {
+        return d.colour;
+      }).attr('opacity', 0).attr('y', 0).attr('x', function (d) {
+        return d.x;
+      });
+    }, function (update) {
+      return update;
+    }, function (exit) {
+      return exit.call(function (exit) {
+        return transPromise(exit.transition(t).style("opacity", 0).remove(), pTrans);
+      });
+    }).call(function (merge) {
+      return transPromise(merge.transition(t) // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("opacity", 1), pTrans);
+    });
+  }
+
+  function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, pTrans) {
+    // Pre-process data.
+    // Filter to named taxon and to min and max period and sort in period order
+    // Add max value to each.
+    var dataFiltered = data.filter(function (d) {
+      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+    }).sort(function (a, b) {
+      return a.period > b.period ? 1 : -1;
+    });
+    var dataPointsFiltered = dataPoints.filter(function (d) {
+      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+    }).sort(function (a, b) {
+      return a.period > b.period ? 1 : -1;
+    }); // Filter dataTrendLinesFiltered data on taxon and also from an array 
+    // of gradients and intercepts to an array of arrays of two point lines
+
+    var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
+      return d.taxon === taxon;
+    }).map(function (d) {
+      return {
+        taxon: d.taxon,
+        colour: d.colour,
+        width: d.width,
+        opacity: d.opacity,
+        y1: d.gradient * minPeriod + d.intercept,
+        y2: d.gradient * maxPeriod + d.intercept
+      };
+    }); //Set the min and maximum values for the y axis
+
+    var maxMetricYs = metricsPlus.map(function (m) {
+      return Math.max.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.prop];
+      }).map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandUpper];
+      }).map(function (d) {
+        return d[m.bandUpper];
+      })), _toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.errorBarUpper];
+      }).map(function (d) {
+        return d[m.errorBarUpper];
+      }))));
+    });
+    var maxYA = maxY !== null ? [maxY] : [];
+    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.upper;
+    }).map(function (d) {
+      return d.upper;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
+    var minMetricYs = metricsPlus.map(function (m) {
+      return Math.min.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.prop];
+      }).map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.bandLower];
+      }).map(function (d) {
+        return d[m.bandLower];
+      })), _toConsumableArray(dataFiltered.filter(function (d) {
+        return d[m.errorBarLower];
+      }).map(function (d) {
+        return d[m.errorBarLower];
+      }))));
+    });
+    var minYA = minY !== null ? [minY] : [];
+    var yminY = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+      return d.y;
+    })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
+      return d.lower;
+    }).map(function (d) {
+      return d.lower;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y1;
+    })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
+      return d.y2;
+    }))));
+
+    if (yAxisOpts.minMax !== null) {
+      if (ymaxY < yAxisOpts.minMax) {
+        ymaxY = yAxisOpts.minMax;
+      }
+    }
+
+    if (yAxisOpts.fixedMin !== null) {
+      yminY = yAxisOpts.fixedMin;
+    } // Value scales
+
+
+    var periods = [];
+
+    for (var i = minPeriod; i <= maxPeriod; i++) {
+      periods.push(i);
+    }
+
+    var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
+    var yPadding = (ymaxY - yminY) * yPadPercent / 100;
+    var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
+    var yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]); // Top axis
+
+    var tAxis;
+
+    if (axisTop === 'on') {
+      tAxis = d3.axisTop().scale(xScale.d3) // Needs a d3 scale obj
+      .tickValues([]).tickSizeOuter(0);
+    } // Bottom axis
+
+
+    var bAxis, bAxis1;
+
+    if (axisBottom === 'on' || axisBottom === 'tick') {
+      if (periodType === 'year') {
+        bAxis = xAxisYear(width, axisBottom === 'tick', minPeriod - xPadding, maxPeriod + xPadding, chartStyle === 'bar');
+      } else {
+        // PeriodType is month or week.
+        // For month or week periodTypes, axis is generated in two parts,
+        // one for the ticks and one for the annotation because
+        // default places tick in centre of text. bAxis1 takes
+        // care of the text.
+        bAxis = xAxisMonthNoText(width, monthScaleRange);
+        bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial', monthScaleRange);
+      }
+    } // Left and right axes
+
+
+    var makeXaxis = function makeXaxis(leftRight, axisOpt) {
+      var axis;
+      var d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight();
+
+      switch (axisOpt) {
+        case 'on':
+          axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0);
+          break;
+
+        case 'tick':
+          axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
+          break;
+      }
+
+      return axis;
+    };
+
+    var lAxis = makeXaxis('left', axisLeft);
+    var rAxis = makeXaxis('right', axisRight); // Create or get the relevant chart svg
+
+    var init, svgTemporal, gTemporal;
+
+    if (taxa.length === 1 && svgChart.selectAll('.brc-chart-temporal').size() === 1) {
+      svgTemporal = svgChart.select('.brc-chart-temporal');
+      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
+      init = false;
+    } else if (svgChart.select("#".concat(safeId(taxon))).size()) {
+      svgTemporal = svgChart.select("#".concat(safeId(taxon)));
+      gTemporal = svgTemporal.select('.brc-chart-temporal-g');
+      init = false;
+    } else {
+      svgTemporal = svgChart.append('svg').classed('brc-chart-temporal', true).attr('id', safeId(taxon)).style('overflow', 'visible').style('font-family', 'sans-serif');
+      gTemporal = svgTemporal.append('g').classed('brc-chart-temporal-g', true);
+      init = true;
+    } // d3 transition object
+
+
+    var t = svgTemporal.transition().duration(duration); // Generate/regenerate chart elements
+
+    generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans);
+
+    if (chartStyle === 'bar') {
+      generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, svgChart, interactivity);
+    }
+
+    if (chartStyle === 'line' && isFinite(yminY)) {
+      generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity);
+    }
+
+    generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity);
+    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
+    generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans);
 
     if (init) {
       // Constants for positioning
@@ -8760,71 +9065,6 @@
     }
 
     return svgTemporal;
-
-    function adjustForTrans(pntsIn) {
-      // Return an array of arrays of points. There may be more than one array
-      // of points in the main array if there are breaks in the input array
-      // of points.
-      // First restructure the passed in points to an array of arrays.
-      var pntsSplit = [];
-      pntsIn.forEach(function (p) {
-        if (p.n === 'break') {
-          // Add a new array
-          pntsSplit.push([]);
-        } else {
-          if (pntsSplit.length === 0) {
-            // Fist value so first add a new array
-            pntsSplit.push([]);
-          } // Add point to array
-
-
-          pntsSplit[pntsSplit.length - 1].push(p);
-        }
-      }); // At this point pntsSplit could have empty arrays, e.g. if there
-      // where consecutive 'breaks' so weed these out.
-
-      pntsSplit = pntsSplit.filter(function (a) {
-        return a.length > 0;
-      }); // Adjust of transition temporal ranges
-
-      var retSet = [];
-      pntsSplit.forEach(function (pnts) {
-        var ret = _toConsumableArray(pnts);
-
-        retSet.push(ret); // If missing period values are being bridged, add a point at last
-        // known value.
-
-        for (var _i2 = 0; _i2 < pnts.length; _i2++) {
-          if (pnts[_i2].n === 'bridge') {
-            pnts[_i2].n = pnts[_i2 - 1].n;
-            pnts[_i2].period = pnts[_i2 - 1].period;
-          }
-        } // When minPeriodTans and MaxPeriodTrans are set, then each trend line
-        // must have the same number of points in (MaxPeriodTrans - minPeriodTans + 1 points).
-        // This is to make nice looking transitions between lines with otherwise
-        // different numbers of points.
-
-
-        if (minPeriodTrans) {
-          for (var _i3 = minPeriodTrans; _i3 < pnts[0].period; _i3++) {
-            ret.unshift({
-              n: pnts[0].n,
-              period: pnts[0].period
-            });
-          }
-        }
-
-        if (maxPeriodTrans) {
-          for (var _i4 = pnts[pnts.length - 1].period + 1; _i4 <= maxPeriodTrans; _i4++) {
-            ret.push({
-              n: pnts[pnts.length - 1].n,
-              period: pnts[pnts.length - 1].period
-            });
-          }
-        }
-      });
-      return retSet; //return retSet[retSet.length - 1]
-    }
   }
 
   function makeLegend$3(svgChart, metricsPlus, legendWidth, legendFontSize, headPad, showCounts, interactivity) {
@@ -8958,7 +9198,7 @@
    * (Optional - default is 1.)
    * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
    * (Optional - default is 1.)
-   * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
+   * <li> <b>points</b> - a boolean value which indicates whether or not a point is to be displayed (over the line or bar).
    * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
    * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
   * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
@@ -8992,6 +9232,17 @@
    * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
    * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
    * </ul>
+   * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+   * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+   * <ul>
+   * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
+   * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
+   * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
+   * than map to the first day for each month.) 
+   * <li> <b>width</b> - the width of the band to be drawn. If absent or zero, then a line is drawn rather than a band. Specified in the
+   * same units as the 'start' value. (Default - 0.). 
+   * </ul>
+   * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
    * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
@@ -9006,7 +9257,9 @@
    * @param {number} opts.xPadPercent Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
    * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
    * @param {string|number} opts.missingValues A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+   * @param {Array.<number>} opts.monthScaleRange A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
    * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
+   * @param {boolean} opts.lineInterpolator Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
    * @returns {module:temporal~api} api - Returns an API for the chart.
    */
 
@@ -9117,7 +9370,13 @@
         _ref$missingValues = _ref.missingValues,
         missingValues = _ref$missingValues === void 0 ? 0 : _ref$missingValues,
         _ref$periodType = _ref.periodType,
-        periodType = _ref$periodType === void 0 ? 'year' : _ref$periodType;
+        periodType = _ref$periodType === void 0 ? 'year' : _ref$periodType,
+        _ref$monthScaleRange = _ref.monthScaleRange,
+        monthScaleRange = _ref$monthScaleRange === void 0 ? [1, 12] : _ref$monthScaleRange,
+        _ref$lineInterpolator = _ref.lineInterpolator,
+        lineInterpolator = _ref$lineInterpolator === void 0 ? 'curveLinear' : _ref$lineInterpolator,
+        _ref$verticals = _ref.verticals,
+        verticals = _ref$verticals === void 0 ? [] : _ref$verticals;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (chartStyle === 'bar') {
@@ -9170,7 +9429,7 @@
       var subChartPad = 10;
       var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
-        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, pTrans);
+        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -9294,6 +9553,10 @@
         maxPeriod = opts.maxPeriod;
       }
 
+      if ('monthScaleRange' in opts) {
+        monthScaleRange = opts.monthScaleRange;
+      }
+
       if ('minY' in opts) {
         minY = opts.minY;
       }
@@ -9329,7 +9592,7 @@
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       var pRet;
 
-      if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts) {
+      if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts || 'monthScaleRange' in opts) {
         preProcessMetrics();
         pRet = makeChart();
         positionMainElements(svg, expand);

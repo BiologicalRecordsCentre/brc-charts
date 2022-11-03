@@ -1,0 +1,89 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library example 8</title>
+
+  <style>
+    label {
+      margin-right: 1em;
+    }
+    /* body {
+      font-size: 0.8em !important;
+    } */
+  </style>
+</head>
+<body>
+  <div class="content">
+
+    <h1>Using the BRC Charts Library</h1>
+    <h2>Temporal chart</h2>
+    <p>
+      This page of examples demonstrates the use and flexibility of the new 'temporal' chart. It is designed
+      to integrate the phen1 and yearly charts into a single integrated and flexible chart. At the time of
+      writing (03/11/2022) it can perform all the functions of the yearly chart and most of those provided
+      by the phen1 chart (area display and stacking remain to be integrated from
+      the phen1 chart.)
+    </p>
+    <p>
+      Examples on this page demonstarte a wide variety of uses. To understand how any particular chart
+      is created, dig into the source code.
+    </p>
+
+    <h3>Example 1 - butterfly phenology</h3>
+    <div id='butterfly1'></div>
+   
+  <!--Page CSS-->
+  <link rel="stylesheet" href="example.css" />
+
+  <!--D3 JS required exernal dependency of BRC Charts library-->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!--BRC Charts library JS and CSS-->
+  <script src="./../dist/brccharts.min.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+
+  <script>
+    // Example 1
+    d3.csv('./data/butterflies-16-20.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+          d.period = d.week
+        }
+        return d
+      }).then(function(data){
+        console.log(data)
+        var phen = {
+          selector: '#butterfly1',
+          data: data,
+          taxa: ['Vanessa cardui', 'Aglais urticae'],
+          //yAxisOpts: {numFormat: 'd', minMax: null, fixedMin: null},
+          monthLineWidth: 1,
+          periodType: 'week',
+          lineInterpolator: 'curveMonotoneX',
+          chartStyle: 'line',
+          metrics: [
+            { prop: '2020', label: '2020', colour: 'red',  lineWidth: '1', opacity: 1 },
+            { prop: '2019', label: '2019', colour: '#4188A3' },
+            { prop: '2018', label: '2018', colour: 'fading' },
+            { prop: '2017', label: '2017', colour: 'fading' },
+            { prop: '2016', label: '2016', colour: 'fading' },
+          ],
+          showLegend: true,
+          interactivity: 'mouseclick', 
+          taxonLabelItalics: true,
+          width: 400,
+          height: 250,
+          perRow: 2,
+          margin: {left: 48, right: 0, top: 20, bottom: 15},
+          expand: true,
+          axisLeftLabel: 'Number of records per week',
+          taxonLabelFontSize: 14
+        }
+        brccharts.temporal(phen)
+      })
+
+  </script>
+</body>
+</html>

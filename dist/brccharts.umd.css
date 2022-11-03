@@ -62,7 +62,13 @@
 #phen2-chart .mainChart {
     overflow: visible;
 }
+.blah {
+    background: red;
+}
 
+svg {
+    font-family: Arial, Helvetica, sans-serif;
+}
 .brc-chart-phen1 path.highlight.phen-path-line {
     stroke: black;
     stroke-width: 3;
@@ -90,17 +96,20 @@
 .brc-chart-phen1-top .brc-legend-item-line.highlight {
     fill:black;
 }
-.blah {
-    background: red;
+.brc-chart-trend path {
+    fill: none;
 }
 
-svg {
-    font-family: Arial, Helvetica, sans-serif;
-}.brc-chart-altlat .highlight {
+.brc-chart-trend {
+    overflow: visible;
+}
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
     opacity: 1;
 }
 
-.brc-chart-altlat .lowlight {
+.brc-chart-trend .lowlight {
     opacity: 0.1;
 }
 .chart-overflow svg {
@@ -162,6 +171,25 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}/* .brc-chart-yearly path {
+    fill: none;
+} */
+
+.brc-chart-yearly {
+    overflow: visible;
+}
+.brc-chart-yearly .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+    stroke-opacity: 1;
+    fill-opacity: 1;
+}
+
+.brc-chart-yearly .lowlight {
+    opacity: 0.2;
+    stroke-opacity: 0.2;
+    fill-opacity: 0.2;
 }.brc-chart-accum path {
     fill: none;
 }
@@ -202,29 +230,14 @@ svg circle.lowlighted {
 
 .brc-chart-accum .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-trend path {
-    fill: none;
-}
-
-.brc-chart-trend {
-    overflow: visible;
-}
-.brc-chart-trend .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-trend .lowlight {
-    opacity: 0.1;
-}/* .brc-chart-yearly path {
+}/* .brc-chart-temporal path {
     fill: none;
 } */
 
-.brc-chart-yearly {
+.brc-chart-temporal {
     overflow: visible;
 }
-.brc-chart-yearly .highlight {
+.brc-chart-temporal .highlight {
     /* stroke: black;
     stroke-width: 3; */
     opacity: 1;
@@ -232,8 +245,14 @@ svg circle.lowlighted {
     fill-opacity: 1;
 }
 
-.brc-chart-yearly .lowlight {
+.brc-chart-temporal .lowlight {
     opacity: 0.2;
     stroke-opacity: 0.2;
     fill-opacity: 0.2;
+}.brc-chart-altlat .highlight {
+    opacity: 1;
+}
+
+.brc-chart-altlat .lowlight {
+    opacity: 0.1;
 }

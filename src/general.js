@@ -9,17 +9,38 @@ export function cloneData(data) {
   return data.map(d => { return {...d}})
 }
 
-export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367]
-const monthMid2day = [1]
-for (let i=0; i<month2day.length-1; i++) {
-  monthMid2day.push((month2day[i] + (month2day[i+1]-month2day[i])/2))
+export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 365]
+const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  
+function filterYsDomain(monthScaleRange) {
+  const minMonth = monthScaleRange[0]
+  const maxMonth = monthScaleRange[1]
+  return ysDomain.filter((m,i) => i+1 >= minMonth && i+1 <= maxMonth)
 }
-monthMid2day.push(367)
+
+function filterMonth2day(monthScaleRange, noAdjust) {
+  const minMonth = monthScaleRange[0]
+  const maxMonth = monthScaleRange[1]
+  const fMonth2day = month2day.filter((d,i) => {
+    return i+1 >= minMonth && i+1 <= maxMonth+1
+  })
+  if (noAdjust) {
+    return fMonth2day
+  } else {
+    return fMonth2day.map(d => d - month2day[minMonth-1] + 1)
+  }
+}
+
+function getDayRange(monthScaleRange) {
+  const filteredMonth2day = filterMonth2day(monthScaleRange)
+  return filteredMonth2day[filteredMonth2day.length-1] - filteredMonth2day[0]
+}
 
 export function xAxisMonth(width, ticks, fontSize, font) {
 
-  const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const ysRange = month2day.map(d => (d-1)/366 * width)
+  // Still used by accum chart, but replaced by xAxisMonthText
+  // and xAxisMonthNoText elsewhere.
+  const ysRange = month2day.map(d => (d-1)/365 * width)
   const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
 
   const xAxis = d3.axisBottom()
@@ -67,27 +88,40 @@ export function xAxisMonth(width, ticks, fontSize, font) {
   return xAxis
 }
 
-export function xAxisMonthNoText(width) {
+export function xAxisMonthNoText(width, monthScaleRange) {
+ 
+  const filteredYsDomain = filterYsDomain(monthScaleRange)
+  const filteredMonth2day = filterMonth2day(monthScaleRange)
+  const dayRange = getDayRange(monthScaleRange)
 
-  const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const ysRange = month2day.map(d => (d-1)/366 * width)
-  const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+  const ysRange = filteredMonth2day.map(d => (d-1)/dayRange * width)
+  const xScaleTime = d3.scaleOrdinal().domain(filteredYsDomain).range(ysRange)
 
   const xAxis = d3.axisBottom()
     .scale(xScaleTime)
 
-  xAxis.ticks(ysDomain)
+  xAxis.ticks(filteredYsDomain)
     .tickSize(width >= 200 ? 13 : 5, 0)
     .tickFormat(() => '')
  
   return xAxis
 }
 
-export function xAxisMonthText(width, ticks, fontSize, font) {
+export function xAxisMonthText(width, ticks, fontSize, font, monthScaleRange) {
 
-  const ysDomain = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const ysRange = monthMid2day.map(d => (d-1)/366 * width)
-  const xScaleTime = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+  const filteredYsDomain = filterYsDomain(monthScaleRange)
+  filteredYsDomain.unshift('')
+  const filteredMonth2day = filterMonth2day(monthScaleRange)
+  const dayRange = getDayRange(monthScaleRange)
+
+  const monthMid2day = [1]
+  for (let i=0; i<filteredMonth2day.length-1; i++) {
+    monthMid2day.push((filteredMonth2day[i] + (filteredMonth2day[i+1]-filteredMonth2day[i])/2))
+  }
+  monthMid2day.push(dayRange + 1)
+  
+  const ysRange = monthMid2day.map(d => (d-1)/dayRange * width)
+  const xScaleTime = d3.scaleOrdinal().domain(filteredYsDomain).range(ysRange)
 
   const xAxis = d3.axisBottom()
     .scale(xScaleTime)
@@ -106,22 +140,24 @@ export function xAxisMonthText(width, ticks, fontSize, font) {
       return textWidth
     }))
   }
-  const maxFullMonth = getMaxTextWidth(ysDomain)
-  const maxMedMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,3)))
-  const maxMinMonth = getMaxTextWidth(ysDomain.map(m=>m.substr(0,1)))
+  const maxFullMonth = getMaxTextWidth(filteredYsDomain)
+  const maxMedMonth = getMaxTextWidth(filteredYsDomain.map(m=>m.substr(0,3)))
+  const maxMinMonth = getMaxTextWidth(filteredYsDomain.map(m=>m.substr(0,1)))
+
   svg.remove()
 
+  const monthNumber = monthScaleRange[1] - monthScaleRange[0] + 1
   if (ticks) {
-    xAxis.ticks(ysDomain)
+    xAxis.ticks(filteredYsDomain)
       .tickSize(0)
       .tickFormat(month => { 
         if (month === '') {
           return ''
-        } else if (width / 12 > maxFullMonth + 4) {
+        } else if (width / monthNumber > maxFullMonth + 4) {
           return month
-        } else if (width / 12 >= maxMedMonth + 4) {
+        } else if (width / monthNumber >= maxMedMonth + 4) {
           return month.substr(0,3)
-        } else if (width /12 >= maxMinMonth + 4) {
+        } else if (width / monthNumber >= maxMinMonth + 4) {
           return month.substr(0,1)
         } else {
           return ''
@@ -391,23 +427,77 @@ export function transPromise(transition, pArray) {
   }
 }
 
+export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width) {
 
-export function temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width) {
-
+  // This function returns an object that provides all the functionality of a d3 scale but it is
+  // tailored to the needs of the temporal chart. The return object has the following properties:
+  // * d3 - this is the raw d3 scale function that lies at the hear of all the functionality.
+  // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary 
+  //   preprocessing on passed value before passing to the d3 scale bandwidth function.
+  // * v - a replacement for the d3 scale function which does any necessary 
+  //   preprocessing on passed value before passing to the d3 scale function.
   let periods = []
   for (let i = minPeriod; i <= maxPeriod; i++) {
     periods.push(i)
   }
-  let scaleFn
-  if (chartStyle === 'bar') {
-    scaleFn = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
+  let scaleD3, scaleFn, bandwidthFn
+  if (periodType === 'month' || periodType === 'week') {
+
+    const m2d = filterMonth2day(monthScaleRange, true)
+    scaleD3 = d3.scaleLinear().domain([m2d[0], m2d[m2d.length - 1]]).range([1, width])
+    scaleFn = (v) => {
+      return scaleD3(periodToDay(v, periodType, chartStyle, monthScaleRange))
+    }
+    bandwidthFn = (v) => {
+      return periodToWidth(v, periodType, scaleD3)
+    }
+  } else if (chartStyle === 'bar') {
+    scaleD3 = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
+    scaleFn = scaleD3
+    bandwidthFn = v => {
+      return scaleFn.bandwidth(v)
+    }
   } else if (chartStyle === 'line') {
-    scaleFn = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
+    scaleD3 = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
+    scaleFn = scaleD3
+    bandwidthFn = () => {
+      return 0
+    }
   }
   return {
-    d3: scaleFn,
-    val: v => {
+    d3: scaleD3,
+    bandwidth: v => {
+      return bandwidthFn(v)
+    },
+    v: v => {
       return scaleFn(v)
     }
+  }
+}
+
+function periodToDay(p, periodType, chartStyle) {
+  if (periodType === 'week') {
+    if (chartStyle === 'bar') {
+      return (p-1)*7 + 1
+    } else {
+      // style is line
+      return (p-1)*7 + 1 + 3.5
+    }
+  } else {
+    // period === month
+    if (chartStyle === 'bar') {
+      return month2day[p-1]
+    } else {
+      // style is line
+      return month2day[p-1] + ((month2day[p] - month2day[p-1]) / 2)
+    }
+  }
+}
+
+function periodToWidth(p, periodType, xScale) {
+  if (periodType === 'week') {
+    return xScale(7) - xScale(0) - 1
+  } else {
+    return xScale(month2day[p]) - xScale(month2day[p-1]) - 1
   }
 }

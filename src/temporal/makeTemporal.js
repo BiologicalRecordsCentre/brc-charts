@@ -1,6 +1,12 @@
 import * as d3 from 'd3'
 import { xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, safeId, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
+import { generateBars } from './chartBar'
+import { generateLines } from './chartLine'
+import { generatePointsAndErrors } from './chartPointAndError'
+import { generateSupPointsAndErrors } from './chartSupPointAndError'
+import { generateSupTrendLines } from './chartSupTrendLine'
+import { generateSupVerticals } from './chartSupVertical'
 
 export function makeTemporal (
   svgChart,
@@ -10,6 +16,7 @@ export function makeTemporal (
   dataPoints,
   dataTrendLines,
   periodType,
+  monthScaleRange,
   minPeriod,
   maxPeriod,
   minPeriodTrans,
@@ -37,6 +44,8 @@ export function makeTemporal (
   axisLeftLabel,
   axisRightLabel,
   missingValues,
+  lineInterpolator,
+  verticals,
   pTrans
 ) {
   // Pre-process data.
@@ -66,11 +75,11 @@ export function makeTemporal (
       }
     })
 
-
   //Set the min and maximum values for the y axis
   const maxMetricYs = metricsPlus.map(m => Math.max(
-    ...dataFiltered.map(d => d[m.prop]),
-    ...dataFiltered.filter(d => d[m.bandUpper]).map(d => d[m.bandUpper])
+    ...dataFiltered.filter(d => d[m.prop]).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => d[m.bandUpper]).map(d => d[m.bandUpper]),
+    ...dataFiltered.filter(d => d[m.errorBarUpper]).map(d => d[m.errorBarUpper])
   ))
 
   const maxYA = maxY !== null ? [maxY] : []
@@ -83,8 +92,9 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
   const minMetricYs = metricsPlus.map(m => Math.min(
-    ...dataFiltered.map(d => d[m.prop]),
-    ...dataFiltered.filter(d => d[m.bandLower]).map(d => d[m.bandLower])
+    ...dataFiltered.filter(d => d[m.prop]).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => d[m.bandLower]).map(d => d[m.bandLower]),
+    ...dataFiltered.filter(d => d[m.errorBarLower]).map(d => d[m.errorBarLower])
   ))
 
   const minYA = minY !== null ? [minY] : []
@@ -105,27 +115,24 @@ export function makeTemporal (
   if (yAxisOpts.fixedMin !== null) {
     yminY = yAxisOpts.fixedMin
   }
-  
+
   // Value scales
   let periods = []
   for (let i = minPeriod; i <= maxPeriod; i++) {
     periods.push(i)
   }
 
-  const xPadding = (maxPeriod-minPeriod) * xPadPercent
-  const yPadding = (ymaxY-yminY) * yPadPercent
+  const xPadding = (maxPeriod-minPeriod) * xPadPercent/100
+  const yPadding = (ymaxY-yminY) * yPadPercent/100
 
-  const xScale = temporalScale(chartStyle, minPeriod, maxPeriod, xPadding, width)
-  const xScaleBar = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
-  const xScaleLine = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
+  const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
   const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
-  
+
   // Top axis
   let tAxis
   if (axisTop === 'on') {
     tAxis = d3.axisTop()
-      //.scale(xScaleLine) // Actual scale doesn't matter, but needs one
-      .scale(xScale.d3) 
+      .scale(xScale.d3) // Needs a d3 scale obj
       .tickValues([])
       .tickSizeOuter(0)
   }
@@ -139,10 +146,10 @@ export function makeTemporal (
       // PeriodType is month or week.
       // For month or week periodTypes, axis is generated in two parts,
       // one for the ticks and one for the annotation because
-      // default places tick in centre of text. Baxis 1 takes
+      // default places tick in centre of text. bAxis1 takes
       // care of the text.
-      bAxis = xAxisMonthNoText(width)
-      bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial')
+      bAxis = xAxisMonthNoText(width, monthScaleRange)
+      bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial', monthScaleRange)
     }
   }
 
@@ -185,480 +192,21 @@ export function makeTemporal (
     init = true
   }
 
-  // Line path generator
-  const lineValues = d3.line()
-    //.curve(d3.curveMonotoneX) // Interpolating curves can make transitions of polygons iffy
-                                // because resulting number of points in path is not constant.
-    //.x(d => xScaleLine(d.period))
-    .x(d => xScale.val(d.period))
-    .y(d => yScale(d.n))
-
-  let chartLines = []
-  let chartBars = []
-  let chartBands = []
-  let chartPoints = []
-  let chartErrorBars = []
-
-  metricsPlus.forEach(m => {
-
-    // Create a collection of the periods in the dataset.
-    const dataDict = dataFiltered.reduce((a,d) => {
-      a[d.period]=d[m.prop]
-      return a
-    }, {})
-
-    // Construct data structure for line charts.
-    if (chartStyle === 'line' && isFinite(yminY)) {
-
-      const pointSets = adjustForTrans(periods.map(y => {
-        // Replace any missing values (for a given period)
-        // with the missing value specified (can be a value
-        // or 'bridge' or 'break')
-        return {
-          period: y,
-          n: dataDict[y] ? dataDict[y] : missingValues,
-        }
-      }))
-      pointSets.forEach((points, i) => {
-        chartLines.push({
-          colour: m.colour,
-          opacity: m.opacity,
-          strokeWidth: m.strokeWidth,
-          type: 'counts',
-          prop: m.prop,
-          part: i,
-          yMin: yminY,
-          pathEnter: lineValues(points.map(p => {
-            return {
-              n: yminY,
-              period: p.period
-            }
-          })),
-          path: lineValues(points)
-        })
-      })
-    }
-
-    // Construct data structure for confidence band on line charts.
-    if (chartStyle === 'line' && m.bandUpper && m.bandLower && isFinite(yminY)) {
-      const ddUpper = dataFiltered.reduce((a,d) => {
-        a[d.period]=d[m.bandUpper]
-        return a
-      }, {})
-      const ddLower = dataFiltered.reduce((a,d) => {
-        a[d.period]=d[m.bandLower]
-        return a
-      }, {})
-      const upperLine = periods.map(y => {
-        return {
-          period: y,
-          n: ddUpper[y] ? ddUpper[y] : missingValues,
-        }
-      })
-      const lowerLine = [...periods].map(y => {
-        return {
-          period: y,
-          n: ddLower[y] ? ddLower[y] : missingValues,
-        }
-      })
-
-      const pointsLowerSet = adjustForTrans(lowerLine)
-      const pointsUpperSet = adjustForTrans(upperLine)
-      for (let i=0; i<pointsLowerSet.length; i++) {
-
-        const pointsLower = pointsLowerSet[i]
-        const pointsUpper = pointsUpperSet[i]
-        const pointsBand = [...pointsLowerSet[i], ...pointsUpperSet[i].reverse()]
-
-        const pointsLowerEnter = pointsLower.map(p => {
-          return {
-            n: yminY,
-            period: p.period
-          }
-        })
-        const pointsUpperEnter = pointsUpper.map(p => {
-          return {
-            n: yminY,
-            period: p.period
-          }
-        })
-
-        chartBands.push({
-          fill: m.bandFill ? m.bandFill : 'silver',
-          stroke: m.bandStroke ? m.bandStroke : 'grey',
-          fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
-          strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
-          strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-          //type: 'counts',
-          prop: m.prop,
-          part: i,
-          bandPath: lineValues(pointsBand),
-          bandPathEnter: lineValues(pointsBand.map(p => {
-            return {
-              n: yminY,
-              period: p.period
-            }
-          })),
-          bandBorders: [lineValues(pointsLower), lineValues(pointsUpper)],
-          bandBordersEnter: [lineValues(pointsLowerEnter), lineValues(pointsUpperEnter)]
-        })
-      }
-    }
-
-    // Construct data structure for bar charts.
-    if (chartStyle === 'bar') {
-      const bars = dataFiltered.map(d => {
-        return {
-          colour: m.colour,
-          opacity: m.opacity,
-          //type: 'counts',
-          prop: m.prop,
-          period: d.period,
-          n: yScale(d[m.prop]),
-        }
-      })
-      chartBars = [...chartBars, ...bars]
-    }
-
-    // Construct data structure for points.
-    // TODO - if at some point we parameterise display styles
-    // for points bars, then it must be specified in here.
-    if (m.points) {
-      const points = dataFiltered.filter(d => d[m.prop]).map(d => {
-        let x
-        if (chartStyle === 'bar') {
-          x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2
-        } else {
-          x = xScaleLine(d.period)
-        }
-        return {
-          x: x,
-          y: yScale(d[m.prop]),
-          period: d.period,
-          prop: m.prop,
-        }
-      })
-      chartPoints = [...chartPoints, ...points]
-    }
-
-    // Construct data structure for error bars.
-    // TODO - if at some point we parameterise display styles
-    // for error bars, then it must be specified in here.
-    if (m.errorBarUpper && m.errorBarLower) {
-      const errorBars = dataFiltered.map(d => {
-        let x
-        if (chartStyle === 'bar') {
-          x = xScaleBar(d.period) + xScaleBar.bandwidth() / 2
-        } else {
-          x = xScaleLine(d.period)
-        }
-        return {
-          period: d.period,
-          pathEnter:  `M ${x} ${height} L ${x} ${height}`,
-          path: `M ${x} ${yScale(d[m.errorBarLower])} L ${x} ${yScale(d[m.errorBarUpper])}`,
-          prop: m.prop,
-        }
-      })
-      chartErrorBars = [...chartErrorBars, ...errorBars]
-    } 
-  })
-
-  // Construct data structure for supplementary trend lines.
-  // TODO - if at some point we parameterise display styles,
-  // then it must be specified in here.
-  const chartTrendLineSup = dataTrendLinesFiltered.map(d => {
-    // y = mx + c
-    let x1, x2
-    const minx = minPeriod - xPadding
-    const maxx = maxPeriod + xPadding
-    if (chartStyle === 'bar') {
-      x1 = xScaleBar(minx)
-      x2 = xScaleBar(maxx) + xScaleBar.bandwidth() 
-    } else {
-      x1 = xScaleLine(minx)
-      x2 = xScaleLine(maxx)
-    }
-    return {
-      colour: d.colour ? d.colour : 'red',
-      width: d.width ? d.width : '1',
-      opacity: d.opacity ? d.opacity : '1',
-      pathEnter:  `M ${x1} ${height} L ${x2} ${height}`,
-      path: `M ${x1} ${yScale( d.y1)} L ${x2} ${yScale( d.y2)}`,
-    }
-  })
-
-  // Construct data structure for supplementary points.
-  // TODO - if at some point we parameterise display styles,
-  // then it must be specified in here.
-  const chartPointsSup = dataPointsFiltered.map(d => {
-    let x 
-    // if (chartStyle === 'bar') {
-    //   x = xScaleBar(Math.floor(d.period)) + xScaleBar.bandwidth() * 0.5 +(d.period % 1)
-    // } else {
-    //   x = xScaleLine(d.period)
-    // }
-    x = xScaleLine(d.period)
-
-    return {
-      x: x,
-      y: yScale(d.y),
-      period: d.period
-    }
-  })
-
-  // Construct data structure for supplementary point error bars.
-  // TODO - if at some point we parameterise display styles,
-  // then it must be specified in here.
-  const chartPointsSupErrorBars = dataPointsFiltered.map(d => {
-    const x = xScaleLine(d.period)
-    return {
-      pathEnter:  `M ${x} ${height} L ${x} ${height}`,
-      path: `M ${x} ${yScale(d.lower)} L ${x} ${yScale(d.upper)}`,
-      period: d.period
-    }
-  })
-
   // d3 transition object
-  const t = svgTemporal.transition()
-      .duration(duration)
+  const t = svgTemporal.transition().duration(duration)
 
-  // Bars
-  gTemporal.selectAll(".temporal-bar")
-    .data(chartBars, d => `bars-${d.prop}-${d.period}`)
-    .join(
-      enter => enter.append("rect")
-        .attr("class", d => `temporal-bar temporal-graphic temporal-${d.prop}`)
-        .attr('width', xScaleBar.bandwidth())
-        .attr('height', 0)
-        .attr('fill', d => d.colour)
-        .attr('opacity', 0)
-        .attr('y', height)
-        .attr('x', d => xScaleBar(d.period)),
-      update => update,
-      exit => exit
-        .call(exit => transPromise(exit.transition(t)
-          .attr('height', 0)
-          .attr('y', height)
-          .style("opacity", 0)
-          .remove(), pTrans))
-    ).call(merge => transPromise(merge.transition(t)
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr('y', d => d.n)
-      .attr('x', d => xScaleBar(d.period))
-      .attr('height', d => height - d.n)
-      .attr('width', xScaleBar.bandwidth())
-      .attr("fill", d => d.colour)
-      .attr("opacity", d => d.opacity), pTrans))
-
-  // Bands
-  gTemporal.selectAll(".temporal-band")
-    .data(chartBands, d => `band-${d.prop}-${d.part}`)
-    .join(
-      enter => enter.append("path")
-        .attr("class", d => `temporal-band temporal-graphic temporal-${d.prop}`)
-        .attr("opacity", 0)
-        .attr("fill", d => d.fill)
-        .attr("stroke", "none")
-        .attr("d", d => d.bandPathEnter),
-      update => update,
-      exit => exit
-        .call(exit => transPromise(exit.transition(t)
-          .attr("d", d => d.bandPathEnter)
-          .style("opacity", 0)
-          .remove(), pTrans))
-    ).call(merge => transPromise(merge.transition(t)
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", d => d.bandPath)
-      .attr("opacity", d => d.fillOpacity)
-      .attr("fill", d => d.fill), pTrans))
-
-
-  // Band lines
-  for (let iLine=0; iLine<2; iLine++) { 
-    gTemporal.selectAll(`.temporal-band-border-${iLine}`)
-      .data(chartBands, d => `band-line-${d.prop}-${iLine}-${d.part}`)
-      .join(
-        enter => enter.append("path")
-          .attr("class", d => `temporal-band-border-${iLine} temporal-graphic temporal-${d.prop}`)
-          .attr("opacity", 0)
-          .attr("fill","none")
-          .attr("stroke", d => d.stroke)
-          .attr("stroke-width", d => d.strokeWidth)
-          .attr("d", d => d.bandBordersEnter[iLine]),
-        update => update,
-        exit => exit
-          .call(exit =>  transPromise(exit.transition(t)
-            .attr("d", d => d.bandBordersEnter[iLine])
-            .style("opacity", 0)
-            .remove(), pTrans))
-         ).call(merge => transPromise(merge.transition(t)
-          // The selection returned by the join function is the merged
-          // enter and update selections
-          .attr("d", d => d.bandBorders[iLine])
-          .attr("opacity", d => d.strokeOpacity)
-          .attr("stroke", d => d.stroke)
-          .attr("stroke-width", d => d.strokeWidth), pTrans))
+  // Generate/regenerate chart elements
+  generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans)
+  if (chartStyle === 'bar') {
+    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, svgChart, interactivity)
   }
+  if (chartStyle === 'line' && isFinite(yminY)) {
+    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity)
+  }
+  generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity)
+  generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
+  generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans)
 
-  // Main lines
-  gTemporal.selectAll(".temporal-line")
-    .data(chartLines,  d => `line-${d.prop}-${d.part}`)
-    .join(
-      enter => enter.append("path")
-        .attr("class", d => `temporal-line temporal-graphic temporal-${d.prop}`)
-        .attr("opacity", 0)
-        .attr("fill", "none")
-        .attr("stroke", d => d.colour)
-        .attr("stroke-width", d => d.strokeWidth)
-        .attr("d", d => d.pathEnter),
-      update => update,
-      exit => exit
-        .call(exit => transPromise(exit.transition(t)
-          .attr("d", d => d.pathEnter)
-          .style("opacity", 0)
-          .remove(), pTrans))
-    ).call(merge => transPromise(merge.transition(t)
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .attr("d", d => d.path)
-      .attr("opacity", d => d.opacity)
-      .attr("stroke", d => d.colour)
-      .attr("stroke-width", d => d.strokeWidth), pTrans))
-
-  // Error bars
-  gTemporal.selectAll('.temporal-error-bars')
-      .data(chartErrorBars, d => `error-bars-${d.prop}-${d.period}`)
-      .join(
-        enter => enter.append('path')
-          .attr("class", d => `temporal-error-bars temporal-graphic temporal-${d.prop}`)
-          .attr("d", d => d.pathEnter)
-          .style('fill', 'none')
-          .style('stroke', 'black')
-          .style('stroke-width', 1)
-          .style('opacity', 0),
-        update => update,
-        exit => exit.call(exit => transPromise(exit
-          .transition(t)
-          .style("opacity", 0)
-          .attr("d", d => d.pathEnter)
-          .remove(), pTrans))
-      )
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .call(merge => transPromise(merge.transition(t)
-        .attr("d", d => d.path)
-        .style('opacity', 1), pTrans))
-
-  // Points
-  gTemporal.selectAll('.temporal-point')
-      .data(chartPoints, d => `point-${d.prop}-${d.period}`)
-      .join(
-        enter => enter.append('circle')
-          .attr("class", d => `temporal-point temporal-graphic temporal-${d.prop}`)
-          .attr('cx', d => d.x)
-          //.attr('cy', d => d.y)
-          .attr('cy', height)
-          .attr('r', 3)
-          .style('fill', 'white')
-          .style('stroke', 'black')
-          .style('stroke-width', 1)
-          .style('opacity', 0),
-        update => update,
-        exit => exit
-          .call(exit => transPromise(exit.transition(t)
-          .style("opacity", 0)
-          .attr('cy', height)
-          .remove(), pTrans))
-      )
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .call(merge => transPromise(merge.transition(t)
-        .attr('cx', d => d.x)
-        .attr('cy', d => d.y)
-        .style('opacity', 1), pTrans))
-
-  // Supplementary trend lines
-  gTemporal.selectAll('.temporal-trend-lines-sup')
-    .data(chartTrendLineSup)
-    .join(
-      enter => enter.append('path')
-        .attr("d", d => d.pathEnter)
-        .attr('class', 'temporal-trend-lines-sup')
-        .style('stroke', d => d.colour)
-        .style('stroke-width', d => d.width)
-        .attr("opacity", 0),
-      update => update,
-      exit => exit
-        .call(exit => transPromise(exit.transition(t)
-        .style("opacity", 0)
-        .attr("d", d => d.pathEnter)
-        .remove(), pTrans))
-    )
-    // Join returns merged enter and update selection
-    .call(merge => transPromise(merge.transition(t)
-      .attr("d", d => d.path)
-      .attr("opacity", d => d.opacity)
-      .style('stroke', d => d.colour)
-      .style('stroke-width', d => d.width), pTrans))
- 
-  // Supplementary points error bars
-  gTemporal.selectAll('.temporal-error-bars-sup')
-    .data(chartPointsSupErrorBars, d => `error-bars-sup-${d.period}`)
-    .join(
-      enter => enter.append('path')
-        .attr("class", `temporal-error-bars-sup`)
-        .attr("d", d => d.pathEnter)
-        .style('fill', 'none')
-        .style('stroke', 'black')
-        .style('stroke-width', 1)
-        .style('opacity', 0),
-      update => update,
-      exit => exit
-        .call(exit => transPromise(exit.transition(t)
-        .style("opacity", 0)
-        .attr("d", d => d.pathEnter)
-        .remove(), pTrans))
-    )
-    // The selection returned by the join function is the merged
-    // enter and update selections
-    .call(merge => transPromise(merge.transition(t)
-      .attr("d", d => d.path)
-      .style('opacity', 1), pTrans))
-      
-  // Supplementary points
-  gTemporal.selectAll('.temporal-point-data-sup')
-      .data(chartPointsSup, d => `point-data-sup-${d.period}`)
-      .join(
-        enter => enter.append('circle')
-          .attr("class", `temporal-point-data-sup`)
-          .attr('cx', d => d.x)
-          //.attr('cy', d => d.y)
-          .attr('cy', height)
-          .attr('r', 3)
-          .style('fill', 'white')
-          .style('stroke', 'black')
-          .style('stroke-width', 1)
-          .style('opacity', 0),
-        update => update,
-        exit => exit
-          .call(exit => transPromise(exit.transition(t)
-          .style("opacity", 0)
-          .attr('cy', height)
-          .remove(), pTrans))
-      )
-      // The selection returned by the join function is the merged
-      // enter and update selections
-      .call(merge => transPromise(merge.transition(t)
-        .attr('cx', d => d.x)
-        .attr('cy', d => d.y)
-        .style('opacity', 1), pTrans))
-
-  addEventHandlers(gTemporal.selectAll("path"), 'prop', svgChart, interactivity)
-  addEventHandlers(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity)
-  addEventHandlers(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity)
-      
   if (init) {
 
     // Constants for positioning
@@ -786,70 +334,4 @@ export function makeTemporal (
   }
   
   return svgTemporal
-
-  function adjustForTrans(pntsIn) {
-    // Return an array of arrays of points. There may be more than one array
-    // of points in the main array if there are breaks in the input array
-    // of points.
-
-    // First restructure the passed in points to an array of arrays.
-    let pntsSplit = []
-    pntsIn.forEach(p => {
-      if (p.n === 'break') {
-        // Add a new array
-        pntsSplit.push([])
-      } else {
-        if (pntsSplit.length === 0) {
-          // Fist value so first add a new array
-          pntsSplit.push([])
-        }
-        // Add point to array
-        pntsSplit[pntsSplit.length - 1].push(p)
-      }
-    })
-    // At this point pntsSplit could have empty arrays, e.g. if there
-    // where consecutive 'breaks' so weed these out.
-    pntsSplit = pntsSplit.filter(a => a.length > 0)
-
-    // Adjust of transition temporal ranges
-    const retSet = []
-    pntsSplit.forEach(pnts => {
-
-      const ret = [...pnts]
-      retSet.push(ret)
-
-      // If missing period values are being bridged, add a point at last
-      // known value.
-      for (let i = 0; i < pnts.length; i++) {
-        if (pnts[i].n === 'bridge') {
-          pnts[i].n = pnts[i-1].n
-          pnts[i].period = pnts[i-1].period
-        }
-      }
-
-      // When minPeriodTans and MaxPeriodTrans are set, then each trend line
-      // must have the same number of points in (MaxPeriodTrans - minPeriodTans + 1 points).
-      // This is to make nice looking transitions between lines with otherwise
-      // different numbers of points.
-      if (minPeriodTrans) {
-        for(let i=minPeriodTrans; i<pnts[0].period; i++) {
-          ret.unshift({
-            n: pnts[0].n,
-            period: pnts[0].period
-          })
-        }
-      }
-      if (maxPeriodTrans) {
-        for(let i=pnts[pnts.length-1].period + 1; i <= maxPeriodTrans; i++) {
-          ret.push({
-            n: pnts[pnts.length-1].n,
-            period: pnts[pnts.length-1].period
-          })
-        }
-      }
-    })
-    
-    return retSet
-    //return retSet[retSet.length - 1]
-  }
 }

@@ -80,7 +80,7 @@ import { highlightItem } from './highlightitem'
  * (Optional - default is 1.)
  * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
  * (Optional - default is 1.)
- * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
+ * <li> <b>points</b> - a boolean value which indicates whether or not a point is to be displayed (over the line or bar).
  * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
  * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
 * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
@@ -114,6 +114,17 @@ import { highlightItem } from './highlightitem'
  * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
  * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
  * </ul>
+ * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+ * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+ * <ul>
+ * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
+ * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
+ * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
+ * than map to the first day for each month.) 
+ * <li> <b>width</b> - the width of the band to be drawn. If absent or zero, then a line is drawn rather than a band. Specified in the
+ * same units as the 'start' value. (Default - 0.). 
+ * </ul>
+ * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
  * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
@@ -128,7 +139,9 @@ import { highlightItem } from './highlightitem'
  * @param {number} opts.xPadPercent Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
  * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
  * @param {string|number} opts.missingValues A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+ * @param {Array.<number>} opts.monthScaleRange A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
  * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
+ * @param {boolean} opts.lineInterpolator Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -181,7 +194,10 @@ export function temporal({
   xPadPercent = 0,
   yPadPercent = 0,
   missingValues = 0,
-  periodType = 'year'
+  periodType = 'year',
+  monthScaleRange = [1,12],
+  lineInterpolator = 'curveLinear',
+  verticals = []
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -243,6 +259,7 @@ export function temporal({
       dataPoints,
       dataTrendLines,
       periodType,
+      monthScaleRange,
       minPeriod,
       maxPeriod,
       minPeriodTrans,
@@ -270,6 +287,8 @@ export function temporal({
       axisLeftLabel,
       axisRightLabel,
       missingValues,
+      lineInterpolator,
+      verticals,
       pTrans
     ))
 
@@ -401,6 +420,9 @@ export function temporal({
     if ('maxPeriod' in opts) {
       maxPeriod = opts.maxPeriod
     }
+    if ('monthScaleRange' in opts) {
+      monthScaleRange = opts.monthScaleRange
+    }
     if ('minY' in opts) {
       minY = opts.minY
     }
@@ -431,7 +453,7 @@ export function temporal({
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let pRet
-    if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts) {
+    if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts || 'monthScaleRange' in opts) {
       preProcessMetrics()
       pRet = makeChart()
       gen.positionMainElements(svg, expand)
