@@ -22,21 +22,32 @@ export function generateLines(
 ) {
 
   // Line path generator
-  const lineValues = d3.line()
-    .x(d => xScale.v(d.period))
-    .y(d => yScale(d.n))
+  // const lineValues = d3.line()
+  //   .x(d => xScale.v(d.period))
+  //   .y(d => yScale(d.n))
 
-  if (lineInterpolator) {
-    // Interpolating curves can make transitions of polygons iffy
-    // because resulting number of points in path is not constant.
-    //lineValues.curve(d3.curveMonotoneX)
-    lineValues.curve(d3[lineInterpolator]) 
+  // if (lineInterpolator) {
+  //   // Interpolating curves can make transitions of polygons iffy
+  //   // because resulting number of points in path is not constant.
+  //   lineValues.curve(d3[lineInterpolator]) 
+  // }
+
+  const lineValues = (points, iPart) => {
+    const d3LineGen = d3.line()
+      .x(d => xScale.v(d.period))
+      .y(d => yScale(d.n, iPart))
+    if (lineInterpolator) {
+      // Interpolating curves can make transitions of polygons iffy
+      // because resulting number of points in path is not constant.
+      d3LineGen.curve(d3[lineInterpolator]) 
+    }
+    return d3LineGen(points)
   }
 
   let chartLines = []
   let chartBands = []
 
-  metricsPlus.forEach(m => {
+  metricsPlus.forEach((m, iMetric) => {
       // Create a collection of the periods in the dataset.
     const dataDict = dataFiltered.reduce((a,d) => {
       a[d.period]=d[m.prop]
@@ -67,8 +78,8 @@ export function generateLines(
             n: yminY,
             period: p.period
           }
-        })),
-        path: lineValues(points)
+        }), iMetric),
+        path: lineValues(points, iMetric)
       })
     })
 
@@ -125,15 +136,15 @@ export function generateLines(
           //type: 'counts',
           prop: m.prop,
           part: i,
-          bandPath: lineValues(pointsBand),
+          bandPath: lineValues(pointsBand, iMetric),
           bandPathEnter: lineValues(pointsBand.map(p => {
             return {
               n: yminY,
               period: p.period
             }
-          })),
-          bandBorders: [lineValues(pointsLower), lineValues(pointsUpper)],
-          bandBordersEnter: [lineValues(pointsLowerEnter), lineValues(pointsUpperEnter)]
+          }), iMetric),
+          bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
+          bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
         })
       }
     }
@@ -288,6 +299,4 @@ export function generateLines(
     
     return retSet
   }
-
-  addEventHandlers(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity)
 }

@@ -29,9 +29,27 @@
       is created, dig into the source code.
     </p>
 
-    <h3>Example 1 - butterfly phenology</h3>
+    <h3>Example 1 - butterfly phenology 1</h3>
     <div id='butterfly1'></div>
-   
+
+    <h3>Example 2 - butterfly phenology 2</h3>
+    <button onclick="ex2button1Click()">Aglais urticae</button>
+    <button onclick="ex2button2Click()">Vanessa cardui</button>
+    <button onclick="ex2button3Click()">Clear</button>
+    <br/><br/>
+    <button onclick="ex2button4Click()">2020 only</button>
+    <button onclick="ex2button5Click()">2020 and 2019</button>
+    <button onclick="ex2button6Click()">2010 to 2020</button>
+    <button onclick="ex2button7Click()">1990 to 2020</button>
+    <br/><br/>
+    <button onclick="ex2button8Click()">Counts</button>
+    <button onclick="ex2button9Click()">Proportions</button>
+    <button onclick="ex2button10Click()">Normalized</button>
+    <br/><br/>
+    <input type="checkbox" id="ex2CbSpread" name="ex2CbSpread" onchange="ex2SpreadChanged()">
+    <label for="ex2CbSpread">Spread</label>
+    <div id='butterfly2'></div>
+
   <!--Page CSS-->
   <link rel="stylesheet" href="example.css" />
 
@@ -53,25 +71,25 @@
         }
         return d
       }).then(function(data){
-        console.log(data)
+        //console.log(data)
         var phen = {
           selector: '#butterfly1',
-          data: data,
+          data: data.filter(d => d.period < 53),
           taxa: ['Vanessa cardui', 'Aglais urticae'],
           //yAxisOpts: {numFormat: 'd', minMax: null, fixedMin: null},
-          monthLineWidth: 1,
           periodType: 'week',
           lineInterpolator: 'curveMonotoneX',
           chartStyle: 'line',
           metrics: [
-            { prop: '2020', label: '2020', colour: 'red',  lineWidth: '1', opacity: 1 },
+            { prop: '2020', label: '2020', colour: 'red',  linewidth: 2, opacity: 1 },
             { prop: '2019', label: '2019', colour: '#4188A3' },
             { prop: '2018', label: '2018', colour: 'fading' },
             { prop: '2017', label: '2017', colour: 'fading' },
             { prop: '2016', label: '2016', colour: 'fading' },
           ],
           showLegend: true,
-          interactivity: 'mouseclick', 
+          interactivity: 'mousemove', 
+          taxonLabelFontSize: 16,
           taxonLabelItalics: true,
           width: 400,
           height: 250,
@@ -79,10 +97,134 @@
           margin: {left: 48, right: 0, top: 20, bottom: 15},
           expand: true,
           axisLeftLabel: 'Number of records per week',
-          taxonLabelFontSize: 14
         }
         brccharts.temporal(phen)
       })
+
+    // Example 2
+    var ex2metrics1 = [
+      { prop: '2020', label: '2020', colour: 'magenta' },
+    ]
+    var ex2metrics2 = [
+      { prop: '2020', label: '2020', colour: 'red' },
+      { prop: '2019', label: '2019', colour: 'blue' },
+    ]
+
+    var ex2metrics3=[]
+    var colours=d3.scaleOrdinal(d3.schemeCategory10)
+    for (i=2020; i>=2010; i--){
+      ex2metrics3.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010)})
+    }
+
+    var ex2metrics4=[]
+    for (i=2018; i>=1990; i--){
+      ex2metrics4.push({prop: `${i}`, label: `${i}`, colour: 'fading'})
+    }
+    ex2metrics4 = [
+      { prop: '2020', label: '2020', colour: 'red' },
+      { prop: '2019', label: '2019', colour: '#4188A3' },
+    ].concat(ex2metrics4)
+
+    var ex2
+    d3.csv('./data/st-pl-1990-onwards.csv', function(d){
+      for (p in d) {
+        if (p !== 'taxon') {
+          d[p] = Number(d[p])
+        }
+        d.period = d.week
+      }
+      return d
+    }).then(function(data){
+      console.log(data)
+      var phen = {
+        selector: '#butterfly2',
+        data: data.filter(d => d.period < 53),
+        taxa: ['Vanessa cardui'],
+        metricExpression: '',
+        yAxisOpts: {numFormat: 'd', minMax: null, fixedMin: null},
+        //yPadPercent: 5,
+        periodType: 'week',
+        lineInterpolator: 'curveMonotoneX',
+        chartStyle: 'line',
+        metrics: ex2metrics1,
+        showLegend: true,
+        interactivity: 'mousemove', 
+        taxonLabelFontSize: 16,
+        taxonLabelItalics: true,
+        width: 900,
+        height: 500,
+        expand: true,
+        perRow: 1,
+        margin: {left: 48, right: 0, top: 20, bottom: 15},
+        verticals: [
+        {
+          colour: '#f8f8f8',
+          start: 32,
+          width: 29
+        },
+        {
+          colour: '#f8f8f8',
+          start: 92,
+          width: 30
+        },
+        {
+          colour: '#f8f8f8',
+          start: 153,
+          width: 30
+        },
+        {
+          colour: '#f8f8f8',
+          start: 214,
+          width: 31
+        },
+        {
+          colour: '#f8f8f8',
+          start: 275,
+          width: 31
+        },
+        {
+          colour: '#f8f8f8',
+          start: 336,
+          width: 30
+        }
+      ]
+      }
+      ex2 = brccharts.temporal(phen)
+    })
+
+    function ex2button1Click() {
+      ex2.setTaxon('Aglais urticae').then(() => console.log('transition done'))
+    }
+    function ex2button2Click() {
+      ex2.setTaxon('Vanessa cardui').then(() => console.log('transition done'))
+    }
+    function ex2button3Click() {
+      ex2.setTaxon('').then(() => console.log('transition done'))
+    }
+    function ex2button4Click() {
+      ex2.setChartOpts({metrics: ex2metrics1}).then(() => console.log('transition done'))
+    }
+    function ex2button5Click() {
+      ex2.setChartOpts({metrics: ex2metrics2}).then(() => console.log('transition done'))
+    }
+    function ex2button6Click() {
+      ex2.setChartOpts({metrics: ex2metrics3}).then(() => console.log('transition done'))
+    }
+    function ex2button7Click() {
+      ex2.setChartOpts({metrics: ex2metrics4}).then(() => console.log('transition done'))
+    }
+    function ex2button8Click() {
+      ex2.setChartOpts({metricExpression: ''}).then(() => console.log('transition done'))
+    }
+    function ex2button9Click() {
+      ex2.setChartOpts({metricExpression: 'proportion'}).then(() => console.log('transition done'))
+    }
+    function ex2button10Click() {
+      ex2.setChartOpts({metricExpression: 'normalized'}).then(() => console.log('transition done'))
+    }
+    function ex2SpreadChanged() {
+      ex2.setChartOpts({spread: d3.select("#ex2CbSpread").property("checked")}).then(() => console.log('transition done'))
+    }
 
   </script>
 </body>

@@ -1,6 +1,5 @@
 import * as d3 from 'd3'
-import { xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, safeId, transPromise } from '../general'
-import { addEventHandlers } from './highlightitem'
+import { xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, spreadScale, safeId, transPromise } from '../general'
 import { generateBars } from './chartBar'
 import { generateLines } from './chartLine'
 import { generatePointsAndErrors } from './chartPointAndError'
@@ -46,15 +45,35 @@ export function makeTemporal (
   missingValues,
   lineInterpolator,
   verticals,
+  metricExpression,
+  spread,
   pTrans
 ) {
   // Pre-process data.
   // Filter to named taxon and to min and max period and sort in period order
-  // Add max value to each.
-
-  const dataFiltered = data
+  // Adjust metrics data to accoutn for metricExpress value.
+  const dataFiltered = JSON.parse(JSON.stringify(data))
     .filter(d => d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod)
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
+  
+  // Adjust metric values and record, in metric structure,
+  // hightest values (required in spread display)
+  metricsPlus.forEach(m => {
+    const vals = dataFiltered.map(d => d[m.prop])
+    let denominator 
+    if (metricExpression === 'proportion') {
+      denominator = vals.reduce((a, v) => a + v, 0)
+    } else if (metricExpression === 'normalized') {
+      denominator = Math.max(...vals)
+    } else {
+      denominator = 1
+    }
+    dataFiltered.forEach(d => {
+      d[m.prop] = d[m.prop] / denominator
+    })
+    // Record max data value in metric
+    m.maxValue = Math.max(...dataFiltered.map(d => d[m.prop]))
+  })
 
   const dataPointsFiltered = dataPoints
     .filter(d => d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod)
@@ -107,6 +126,7 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
 
+
   if (yAxisOpts.minMax !== null) {
     if (ymaxY < yAxisOpts.minMax) {
       ymaxY = yAxisOpts.minMax
@@ -126,7 +146,9 @@ export function makeTemporal (
   const yPadding = (ymaxY-yminY) * yPadPercent/100
 
   const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
-  const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
+  //const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
+
+  const yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, spread)
 
   // Top axis
   let tAxis
@@ -159,10 +181,11 @@ export function makeTemporal (
     const d3axis = leftRight === 'left' ? d3.axisLeft() : d3.axisRight()
     switch(axisOpt) {
       case 'on':
-        axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0)
+        axis = d3axis.scale(yScale.yAxis).tickValues([]).tickSizeOuter(0)
         break
       case 'tick':
-        axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat))
+        axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat))
+        axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yScale.tickFormat))
         break
     }
     return axis

@@ -9,7 +9,7 @@ export function cloneData(data) {
   return data.map(d => { return {...d}})
 }
 
-export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 365]
+export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
 const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   
 function filterYsDomain(monthScaleRange) {
@@ -464,6 +464,10 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
       return 0
     }
   }
+
+  // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
+  // is required, so the d3 scale is added as a property to this scale function so that it can
+  // be accessed.
   return {
     d3: scaleD3,
     bandwidth: v => {
@@ -500,4 +504,64 @@ function periodToWidth(p, periodType, xScale) {
   } else {
     return xScale(month2day[p]) - xScale(month2day[p-1]) - 1
   }
+}
+
+export function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
+  
+  let fn, fnAxis, tickFormat
+ 
+  if (spread && metrics.length > 1) {
+    
+    // Work out height in 'sread units' - su.
+    const overlap = 0.8
+    const bottom = 0.5
+    const maxmax = Math.max(...metrics.map(m => m.maxValue))
+    const suLastMetric = metrics[0].maxValue / maxmax * (1 + overlap)
+    const suPenultimateMetric = metrics[1].maxValue / maxmax * (1 + overlap) - 1
+    const suLast = Math.max(suLastMetric, suPenultimateMetric)
+    const suHeight = metrics.length - bottom + suLast
+    const spreadOffset = height / suHeight
+    const spreadHeight = (1 + overlap) * spreadOffset 
+
+    fn = (v, iMetric) => {
+      const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0]) 
+      return d3fn(v) + height - spreadHeight - bottom * spreadOffset - (metrics.length - iMetric - 1)  * spreadOffset
+    }
+
+    // Axis scale
+    const ysDomain = ['']
+    const ysRange = [0]
+    if (metrics.length){
+      for (let i=0; i<metrics.length; i++) {
+        ysDomain.push(metrics[i].label)
+        ysRange.push(height - bottom * spreadOffset - ((metrics.length - i - 1) * spreadOffset))
+      }
+      ysDomain.push('')
+      ysRange.push(height)
+    } else {
+      ysRange.push(height)
+    }
+    fnAxis = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
+    tickFormat = 'c'
+  } else {
+    const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
+    fn = v => {
+      return d3fn(v)
+    }
+    fnAxis = d3fn
+    if (ymaxY-yminY > 20) {
+      tickFormat = 'd'
+    } else if (ymaxY-yminY > 1) {
+      tickFormat = '.1f' 
+    } else {
+      tickFormat = '.2f'
+    }
+  }
+
+  // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
+  // is required, so the d3 scale is added as a property to this scale function so that it can
+  // be accessed.
+  fn.yAxis = fnAxis
+  fn.tickFormat = tickFormat
+  return fn
 }

@@ -24,7 +24,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
     .join(
       enter => enter.append("rect")
         .attr("class", d => `temporal-bar temporal-graphic temporal-${d.prop}`)
-        .attr('width', d => xScale.bandwidth(d.period))
+        .attr('width', d => xScale.d3.bandwidth(d.period))
         .attr('height', 0)
         .attr('fill', d => d.colour)
         .attr('opacity', 0)
@@ -43,7 +43,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
       .attr('y', d => d.n)
       .attr('x', d => xScale.v(d.period))
       .attr('height', d => height - d.n)
-      .attr('width', d => xScale.bandwidth(d.period))
+      .attr('width', d => xScale.d3.bandwidth(d.period))
       .attr("fill", d => d.colour)
       .attr("opacity", d => d.opacity), pTrans))
 

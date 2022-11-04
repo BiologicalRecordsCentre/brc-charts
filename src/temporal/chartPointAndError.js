@@ -14,7 +14,7 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
       const points = dataFiltered.filter(d => d[m.prop]).map(d => {
         let x
         if (chartStyle === 'bar') {
-          x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2
+          x = xScale.v(d.period) + xScale.d3.bandwidth(d.period) / 2
         } else {
           x = xScale.v(d.period)
         }
@@ -35,7 +35,7 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
       const errorBars = dataFiltered.map(d => {
         let x
         if (chartStyle === 'bar') {
-          x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2
+          x = xScale.v(d.period) + xScale.d3.bandwidth(d.period) / 2
         } else {
           x = xScale.v(d.period)
         }

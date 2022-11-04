@@ -24,11 +24,15 @@ export function highlightItem(id, highlight, svgChart) {
 
   svgChart.selectAll('.temporal-graphic')
     .classed('lowlight', false)
+  svgChart.selectAll('.temporal-graphic')
+    .classed('highlight', false)
 
   if (highlight) {
     svgChart.selectAll('.temporal-graphic')
       .classed('lowlight', true)
     svgChart.selectAll(`.temporal-${id}`)
       .classed('lowlight', false)
+    svgChart.selectAll(`.temporal-${id}`)
+      .classed('highlight', true)
   }
 }

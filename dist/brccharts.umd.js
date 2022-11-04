@@ -133,7 +133,7 @@
       return _objectSpread2({}, d);
     });
   }
-  var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 365];
+  var month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366];
   var ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   function filterYsDomain(monthScaleRange) {
@@ -567,7 +567,10 @@
       bandwidthFn = function bandwidthFn() {
         return 0;
       };
-    }
+    } // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
+    // is required, so the d3 scale is added as a property to this scale function so that it can
+    // be accessed.
+
 
     return {
       d3: scaleD3,
@@ -605,6 +608,74 @@
     } else {
       return xScale(month2day[p]) - xScale(month2day[p - 1]) - 1;
     }
+  }
+
+  function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
+    var fn, fnAxis, tickFormat;
+
+    if (spread && metrics.length > 1) {
+      // Work out height in 'sread units' - su.
+      var overlap = 0.8;
+      var bottom = 0.5;
+      var maxmax = Math.max.apply(Math, _toConsumableArray(metrics.map(function (m) {
+        return m.maxValue;
+      })));
+      var suLastMetric = metrics[0].maxValue / maxmax * (1 + overlap);
+      var suPenultimateMetric = metrics[1].maxValue / maxmax * (1 + overlap) - 1;
+      var suLast = Math.max(suLastMetric, suPenultimateMetric);
+      var suHeight = metrics.length - bottom + suLast;
+      var spreadOffset = height / suHeight;
+      var spreadHeight = (1 + overlap) * spreadOffset;
+
+      fn = function fn(v, iMetric) {
+        var d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0]);
+        return d3fn(v) + height - spreadHeight - bottom * spreadOffset - (metrics.length - iMetric - 1) * spreadOffset;
+      }; // Axis scale
+
+
+      var _ysDomain = [''];
+      var ysRange = [0];
+
+      if (metrics.length) {
+        for (var i = 0; i < metrics.length; i++) {
+          _ysDomain.push(metrics[i].label);
+
+          ysRange.push(height - bottom * spreadOffset - (metrics.length - i - 1) * spreadOffset);
+        }
+
+        _ysDomain.push('');
+
+        ysRange.push(height);
+      } else {
+        ysRange.push(height);
+      }
+
+      fnAxis = d3.scaleOrdinal().domain(_ysDomain).range(ysRange);
+      tickFormat = 'c';
+    } else {
+      var d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]);
+
+      fn = function fn(v) {
+        return d3fn(v);
+      };
+
+      fnAxis = d3fn;
+
+      if (ymaxY - yminY > 20) {
+        tickFormat = 'd';
+      } else if (ymaxY - yminY > 1) {
+        tickFormat = '.1f';
+      } else {
+        tickFormat = '.2f';
+      }
+    } // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
+    // is required, so the d3 scale is added as a property to this scale function so that it can
+    // be accessed.
+
+
+    fn.yAxis = fnAxis;
+    fn.tickFormat = tickFormat;
+    return fn;
   }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
@@ -8123,10 +8194,12 @@
   }
   function highlightItem$3(id, highlight, svgChart) {
     svgChart.selectAll('.temporal-graphic').classed('lowlight', false);
+    svgChart.selectAll('.temporal-graphic').classed('highlight', false);
 
     if (highlight) {
       svgChart.selectAll('.temporal-graphic').classed('lowlight', true);
       svgChart.selectAll(".temporal-".concat(id)).classed('lowlight', false);
+      svgChart.selectAll(".temporal-".concat(id)).classed('highlight', true);
     }
   }
 
@@ -8151,7 +8224,7 @@
       return enter.append("rect").attr("class", function (d) {
         return "temporal-bar temporal-graphic temporal-".concat(d.prop);
       }).attr('width', function (d) {
-        return xScale.bandwidth(d.period);
+        return xScale.d3.bandwidth(d.period);
       }).attr('height', 0).attr('fill', function (d) {
         return d.colour;
       }).attr('opacity', 0).attr('y', height).attr('x', function (d) {
@@ -8173,7 +8246,7 @@
       }).attr('height', function (d) {
         return height - d.n;
       }).attr('width', function (d) {
-        return xScale.bandwidth(d.period);
+        return xScale.d3.bandwidth(d.period);
       }).attr("fill", function (d) {
         return d.colour;
       }).attr("opacity", function (d) {
@@ -8185,22 +8258,33 @@
 
   function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity) {
     // Line path generator
-    var lineValues = d3.line().x(function (d) {
-      return xScale.v(d.period);
-    }).y(function (d) {
-      return yScale(d.n);
-    });
+    // const lineValues = d3.line()
+    //   .x(d => xScale.v(d.period))
+    //   .y(d => yScale(d.n))
+    // if (lineInterpolator) {
+    //   // Interpolating curves can make transitions of polygons iffy
+    //   // because resulting number of points in path is not constant.
+    //   lineValues.curve(d3[lineInterpolator]) 
+    // }
+    var lineValues = function lineValues(points, iPart) {
+      var d3LineGen = d3.line().x(function (d) {
+        return xScale.v(d.period);
+      }).y(function (d) {
+        return yScale(d.n, iPart);
+      });
 
-    if (lineInterpolator) {
-      // Interpolating curves can make transitions of polygons iffy
-      // because resulting number of points in path is not constant.
-      //lineValues.curve(d3.curveMonotoneX)
-      lineValues.curve(d3__namespace[lineInterpolator]);
-    }
+      if (lineInterpolator) {
+        // Interpolating curves can make transitions of polygons iffy
+        // because resulting number of points in path is not constant.
+        d3LineGen.curve(d3__namespace[lineInterpolator]);
+      }
+
+      return d3LineGen(points);
+    };
 
     var chartLines = [];
     var chartBands = [];
-    metricsPlus.forEach(function (m) {
+    metricsPlus.forEach(function (m, iMetric) {
       // Create a collection of the periods in the dataset.
       var dataDict = dataFiltered.reduce(function (a, d) {
         a[d.period] = d[m.prop];
@@ -8230,8 +8314,8 @@
               n: yminY,
               period: p.period
             };
-          })),
-          path: lineValues(points)
+          }), iMetric),
+          path: lineValues(points, iMetric)
         });
       }); // Construct data structure for confidence band on line charts.
 
@@ -8286,15 +8370,15 @@
             //type: 'counts',
             prop: m.prop,
             part: i,
-            bandPath: lineValues(pointsBand),
+            bandPath: lineValues(pointsBand, iMetric),
             bandPathEnter: lineValues(pointsBand.map(function (p) {
               return {
                 n: yminY,
                 period: p.period
               };
-            })),
-            bandBorders: [lineValues(pointsLower), lineValues(pointsUpper)],
-            bandBordersEnter: [lineValues(pointsLowerEnter), lineValues(pointsUpperEnter)]
+            }), iMetric),
+            bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
+            bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
           });
         }
       }
@@ -8472,8 +8556,6 @@
       });
       return retSet;
     }
-
-    addEventHandlers$3(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity);
   }
 
   function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
@@ -8490,7 +8572,7 @@
           var x;
 
           if (chartStyle === 'bar') {
-            x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2;
+            x = xScale.v(d.period) + xScale.d3.bandwidth(d.period) / 2;
           } else {
             x = xScale.v(d.period);
           }
@@ -8513,7 +8595,7 @@
           var x;
 
           if (chartStyle === 'bar') {
-            x = xScale.v(d.period) + xScale.bandwidth(d.period) / 2;
+            x = xScale.v(d.period) + xScale.d3.bandwidth(d.period) / 2;
           } else {
             x = xScale.v(d.period);
           }
@@ -8669,7 +8751,7 @@
       var x2;
 
       if (chartStyle === 'bar') {
-        x2 = xScale.v(maxx) + xScale.bandwidth(maxx);
+        x2 = xScale.v(maxx) + xScale.d3.bandwidth(maxx);
       } else {
         x2 = xScale.v(maxx);
       }
@@ -8786,14 +8868,40 @@
     });
   }
 
-  function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, pTrans) {
+  function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, spread, pTrans) {
     // Pre-process data.
     // Filter to named taxon and to min and max period and sort in period order
-    // Add max value to each.
-    var dataFiltered = data.filter(function (d) {
+    // Adjust metrics data to accoutn for metricExpress value.
+    var dataFiltered = JSON.parse(JSON.stringify(data)).filter(function (d) {
       return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
+    }); // Adjust metric values and record, in metric structure,
+    // hightest values (required in spread display)
+
+    metricsPlus.forEach(function (m) {
+      var vals = dataFiltered.map(function (d) {
+        return d[m.prop];
+      });
+      var denominator;
+
+      if (metricExpression === 'proportion') {
+        denominator = vals.reduce(function (a, v) {
+          return a + v;
+        }, 0);
+      } else if (metricExpression === 'normalized') {
+        denominator = Math.max.apply(Math, _toConsumableArray(vals));
+      } else {
+        denominator = 1;
+      }
+
+      dataFiltered.forEach(function (d) {
+        d[m.prop] = d[m.prop] / denominator;
+      }); // Record max data value in metric
+
+      m.maxValue = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })));
     });
     var dataPointsFiltered = dataPoints.filter(function (d) {
       return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
@@ -8889,8 +8997,9 @@
 
     var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
     var yPadding = (ymaxY - yminY) * yPadPercent / 100;
-    var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
-    var yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]); // Top axis
+    var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width); //const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
+
+    var yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, spread); // Top axis
 
     var tAxis;
 
@@ -8923,11 +9032,12 @@
 
       switch (axisOpt) {
         case 'on':
-          axis = d3axis.scale(yScale).tickValues([]).tickSizeOuter(0);
+          axis = d3axis.scale(yScale.yAxis).tickValues([]).tickSizeOuter(0);
           break;
 
         case 'tick':
-          axis = d3axis.scale(yScale).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
+          axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat));
+          axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yScale.tickFormat));
           break;
       }
 
@@ -9137,6 +9247,7 @@
    * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
    * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+   * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart. (Default - false.)
    * @param {string} opts.title - Title for the chart. (Default - ''.)
    * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
    * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -9245,21 +9356,23 @@
    * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
    * If empty, graphs for all taxa are created. (Default - [].)
-   * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
-   * @param {number} opts.minPeriod Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
-   * @param {number} opts.maxPeriod Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
-   * @param {number} opts.minPeriodTrans If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different
+   * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
+   * @param {number} opts.minPeriod - Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
+   * @param {number} opts.maxPeriod - Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
+   * @param {number} opts.minPeriodTrans - If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different
    * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
-   * @param {number} opts.maxPeriodTrans If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
+   * @param {number} opts.maxPeriodTrans - If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
    * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
-   * @param {number} opts.minY Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
-   * @param {number} opts.maxY Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
-   * @param {number} opts.xPadPercent Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
-   * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
-   * @param {string|number} opts.missingValues A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
-   * @param {Array.<number>} opts.monthScaleRange A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
+   * @param {number} opts.minY - Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
+   * @param {number} opts.maxY - Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
+   * @param {number} opts.xPadPercent - Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
+   * @param {number} opts.yPadPercent - Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
+   * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+   * @param {Array.<number>} opts.monthScaleRange - A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
    * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
-   * @param {boolean} opts.lineInterpolator Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
+   * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
+   * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
+   * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
    * @returns {module:temporal~api} api - Returns an API for the chart.
    */
 
@@ -9284,6 +9397,8 @@
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
+        _ref$spread = _ref.spread,
+        spread = _ref$spread === void 0 ? false : _ref$spread,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
@@ -9376,7 +9491,9 @@
         _ref$lineInterpolator = _ref.lineInterpolator,
         lineInterpolator = _ref$lineInterpolator === void 0 ? 'curveLinear' : _ref$lineInterpolator,
         _ref$verticals = _ref.verticals,
-        verticals = _ref$verticals === void 0 ? [] : _ref$verticals;
+        verticals = _ref$verticals === void 0 ? [] : _ref$verticals,
+        _ref$metricExpression = _ref.metricExpression,
+        metricExpression = _ref$metricExpression === void 0 ? '' : _ref$metricExpression;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (chartStyle === 'bar') {
@@ -9429,7 +9546,7 @@
       var subChartPad = 10;
       var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
-        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, pTrans);
+        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, yAxisOpts, axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, spread, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -9477,7 +9594,8 @@
           errorBarUpper: m.errorBarUpper,
           errorBarLower: m.errorBarLower
         };
-      }).reverse();
+      }).reverse(); //console.log('metricsPlus', metricsPlus)
+
       var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
       metricsPlus.forEach(function (m) {
         if (m.fading) {
@@ -9498,6 +9616,10 @@
       * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
       * @param {number} opts.minPeriod Indicates the earliest period to use on the y axis.
       * @param {number} opts.maxPeriod Indicates the latest period to use on the y axis.
+      * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+      * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
+      * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
+      * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -9509,6 +9631,8 @@
 
 
     function setChartOpts(opts) {
+      var remakeChart = false;
+
       if ('title' in opts) {
         title = opts.title;
       }
@@ -9547,43 +9671,68 @@
 
       if ('minPeriod' in opts) {
         minPeriod = opts.minPeriod;
+        remakeChart = true;
       }
 
       if ('maxPeriod' in opts) {
         maxPeriod = opts.maxPeriod;
+        remakeChart = true;
       }
 
       if ('monthScaleRange' in opts) {
         monthScaleRange = opts.monthScaleRange;
+        remakeChart = true;
       }
 
       if ('minY' in opts) {
         minY = opts.minY;
+        remakeChart = true;
       }
 
       if ('maxY' in opts) {
         maxY = opts.maxY;
+        remakeChart = true;
       }
 
       if ('metrics' in opts) {
         metrics = opts.metrics;
+        remakeChart = true;
       }
 
       if ('data' in opts) {
         data = opts.data;
+        remakeChart = true;
+      }
+
+      if ('spread' in opts) {
+        spread = opts.spread;
+        remakeChart = true;
       }
 
       if ('dataPoints' in opts) {
         dataPoints = opts.dataPoints;
+        remakeChart = true;
       }
 
       if ('dataTrendLines' in opts) {
         dataTrendLines = opts.dataTrendLines;
+        remakeChart = true;
+      }
+
+      if ('yAxisOpts' in opts) {
+        yAxisOpts = opts.yAxisOpts;
+        remakeChart = true;
+      }
+
+      if ('metricExpression' in opts) {
+        metricExpression = opts.metricExpression;
+        remakeChart = true;
       }
 
       if ('taxa' in opts) {
         taxa = opts.taxa;
         highlightItem$3(null, false, svgChart);
+        remakeChart = true;
       }
 
       var textWidth = Number(svg.select('.mainChart').attr("width"));
@@ -9592,7 +9741,7 @@
       makeText(footer, 'footerText', footerFontSize, footerAlign, textWidth, svg);
       var pRet;
 
-      if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts || 'monthScaleRange' in opts) {
+      if (remakeChart === true) {
         preProcessMetrics();
         pRet = makeChart();
         positionMainElements(svg, expand);

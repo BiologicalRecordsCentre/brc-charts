@@ -19,6 +19,7 @@ import { highlightItem } from './highlightitem'
  * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
  * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
+ * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart. (Default - false.)
  * @param {string} opts.title - Title for the chart. (Default - ''.)
  * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
  * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -127,21 +128,23 @@ import { highlightItem } from './highlightitem'
  * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
  * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
  * If empty, graphs for all taxa are created. (Default - [].)
- * @param {string} opts.periodType Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
- * @param {number} opts.minPeriod Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
- * @param {number} opts.maxPeriod Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
- * @param {number} opts.minPeriodTrans If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different
+ * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
+ * @param {number} opts.minPeriod - Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
+ * @param {number} opts.maxPeriod - Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
+ * @param {number} opts.minPeriodTrans - If set, this indicates the lowest possible period. It is only useful if transitioning between datasets with different
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
- * @param {number} opts.maxPeriodTrans If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
+ * @param {number} opts.maxPeriodTrans - If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
- * @param {number} opts.minY Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
- * @param {number} opts.maxY Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
- * @param {number} opts.xPadPercent Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
- * @param {number} opts.yPadPercent Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
- * @param {string|number} opts.missingValues A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
- * @param {Array.<number>} opts.monthScaleRange A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
+ * @param {number} opts.minY - Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
+ * @param {number} opts.maxY - Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
+ * @param {number} opts.xPadPercent - Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
+ * @param {number} opts.yPadPercent - Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
+ * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+ * @param {Array.<number>} opts.monthScaleRange - A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
  * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
- * @param {boolean} opts.lineInterpolator Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
+ * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
+ * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
+ * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -154,6 +157,7 @@ export function temporal({
   margin = {left: 30, right: 30, top: 15, bottom: 20},
   perRow = 2,
   expand = false,
+  spread = false,
   title = '',
   subtitle = '',
   footer = '',
@@ -197,7 +201,8 @@ export function temporal({
   periodType = 'year',
   monthScaleRange = [1,12],
   lineInterpolator = 'curveLinear',
-  verticals = []
+  verticals = [],
+  metricExpression = ''
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -289,6 +294,8 @@ export function temporal({
       missingValues,
       lineInterpolator,
       verticals,
+      metricExpression,
+      spread,
       pTrans
     ))
 
@@ -353,6 +360,8 @@ export function temporal({
       }
     }).reverse()
 
+    //console.log('metricsPlus', metricsPlus)
+
     const grey = d3.scaleLinear()
       .range(['#808080', '#E0E0E0'])
       .domain([1, iFading])
@@ -377,6 +386,10 @@ export function temporal({
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {number} opts.minPeriod Indicates the earliest period to use on the y axis.
   * @param {number} opts.maxPeriod Indicates the latest period to use on the y axis.
+  * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+  * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
+  * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
+  * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -386,6 +399,8 @@ export function temporal({
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
+
+    let remakeChart = false
 
     if ('title' in opts) {
       title = opts.title
@@ -416,35 +431,56 @@ export function temporal({
     }
     if ('minPeriod' in opts) {
       minPeriod = opts.minPeriod
+      remakeChart = true
     }
     if ('maxPeriod' in opts) {
       maxPeriod = opts.maxPeriod
+      remakeChart = true
     }
     if ('monthScaleRange' in opts) {
       monthScaleRange = opts.monthScaleRange
+      remakeChart = true
     }
     if ('minY' in opts) {
       minY = opts.minY
+      remakeChart = true
     }
     if ('maxY' in opts) {
       maxY = opts.maxY
+      remakeChart = true
     }
     if ('metrics' in opts) {
       metrics = opts.metrics
+      remakeChart = true
     }
     if ('data' in opts) {
       data = opts.data
+      remakeChart = true
+    }
+     if ('spread' in opts) {
+      spread = opts.spread
+      remakeChart = true
     }
     if ('dataPoints' in opts) {
       dataPoints = opts.dataPoints
+      remakeChart = true
     }
     if ('dataTrendLines' in opts) {
       dataTrendLines = opts.dataTrendLines
+      remakeChart = true
     }
-
+    if ('yAxisOpts' in opts) {
+      yAxisOpts = opts.yAxisOpts
+      remakeChart = true
+    }
+    if ('metricExpression' in opts) {
+      metricExpression = opts.metricExpression
+      remakeChart = true
+    }
     if ('taxa' in opts) {
       taxa = opts.taxa
       highlightItem(null, false, svgChart)
+      remakeChart = true
     }
 
     const textWidth = Number(svg.select('.mainChart').attr("width"))
@@ -453,7 +489,7 @@ export function temporal({
     gen.makeText (footer, 'footerText', footerFontSize, footerAlign, textWidth, svg)
 
     let pRet
-    if ('taxa' in opts || 'data' in opts || 'minPeriod' in opts || 'maxPeriod' in opts || 'metrics' in opts || 'minY' in opts || 'maxY' in opts || 'monthScaleRange' in opts) {
+    if (remakeChart === true) {
       preProcessMetrics()
       pRet = makeChart()
       gen.positionMainElements(svg, expand)

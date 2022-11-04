@@ -12,7 +12,7 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
     const x1 = xScale.v(minx)
     let x2
     if (chartStyle === 'bar') {
-      x2 = xScale.v(maxx) + xScale.bandwidth(maxx)
+      x2 = xScale.v(maxx) + xScale.d3.bandwidth(maxx)
     } else {
       x2 = xScale.v(maxx)
     }
