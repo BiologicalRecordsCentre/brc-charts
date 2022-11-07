@@ -46,9 +46,49 @@
     <button onclick="ex2button9Click()">Proportions</button>
     <button onclick="ex2button10Click()">Normalized</button>
     <br/><br/>
+    <button onclick="ex2button11Click()">Lines</button>
+    <button onclick="ex2button12Click()">Bars</button>
+    <br/><br/>
     <input type="checkbox" id="ex2CbSpread" name="ex2CbSpread" onchange="ex2SpreadChanged()">
     <label for="ex2CbSpread">Spread</label>
     <div id='butterfly2'></div>
+
+    <h3>Example 3 - butterfly phenology 3</h3>
+    <button onclick="ex3button1Click('')">Counts</button>
+    <button onclick="ex3button1Click('proportion')">Proportions</button>
+    <button onclick="ex3button1Click('normalized')">Normalized</button>
+    <div id='butterfly3'></div>
+
+    <h3>Example 4 - butterfly phenology 4</h3>
+    <div id='butterfly4'></div>
+
+    <h3>Example 5 - ladybird yearly 1</h3>
+    <div id='ladybird1'></div>
+
+    <h3>Example 6 - ladybird yearly 2</h3>
+    <div id='ladybird2'></div>
+
+    <h3>Example 7 - ladybird yearly 3</h3>
+    <div id='ladybird3'></div>
+
+    <h3>Example 8 - ladybird yearly 4</h3>
+    <button onclick="ex8.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
+    <button onclick="ex8.setTaxon('Anatis ocellata')">Anatis ocellata</button>
+    <button onclick="ex8.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
+    <button onclick="ex8.setTaxon('')">Clear</button>
+    <br/><br/>
+    <button onclick="ex8.setChartOpts({metricExpression: ''})">Counts</button>
+    <button onclick="ex8.setChartOpts({metricExpression: 'proportion'})">Proportions</button>
+    <button onclick="ex8.setChartOpts({metricExpression: 'normalized'})">Normalized</button>
+    <br/><br/>
+    <button onclick="ex8.setChartOpts({chartStyle: 'line'})">Lines</button>
+    <button onclick="ex8.setChartOpts({chartStyle: 'bar'})">Bars</button>
+    <br/><br/>
+    <input type="checkbox" id="ex8CbSpread" name="ex8CbSpread" onchange="ex8SpreadChanged()">
+    <label for="ex8CbSpread">Spread</label>
+    <input type="checkbox" id="ex8CbStack" name="ex8CbStack" onchange="ex8StackChanged()">
+    <label for="ex8CbStack">Stack</label>
+    <div id="ladybird4"></div>
 
   <!--Page CSS-->
   <link rel="stylesheet" href="example.css" />
@@ -61,6 +101,16 @@
   <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
 
   <script>
+
+    var bEx1 = true
+    var bEx2 = true
+    var bEx3 = false
+    var bEx4 = false
+    var bEx5 = true
+    var bEx6 = true
+    var bEx7 = true
+    var bEx8 = true
+
     // Example 1
     d3.csv('./data/butterflies-16-20.csv', function(d){
         for (p in d) {
@@ -98,7 +148,7 @@
           expand: true,
           axisLeftLabel: 'Number of records per week',
         }
-        brccharts.temporal(phen)
+        if (bEx1) brccharts.temporal(phen)
       })
 
     // Example 2
@@ -135,16 +185,21 @@
       }
       return d
     }).then(function(data){
-      console.log(data)
       var phen = {
         selector: '#butterfly2',
-        data: data.filter(d => d.period < 53),
+        data: data.filter(d => d.period < 53), //.filter(d => d.period > 25 && d.period < 36),
+        missingValues: 'bridge',
+        //missingValues: 0,
+        minPeriodTrans: 1,
+        maxPeriodTrans: 52,
         taxa: ['Vanessa cardui'],
         metricExpression: '',
-        yAxisOpts: {numFormat: 'd', minMax: null, fixedMin: null},
+        //yAxisOpts: {minMax: null, fixedMin: null},
         //yPadPercent: 5,
+        minMaxY: null,
         periodType: 'week',
-        lineInterpolator: 'curveMonotoneX',
+        //lineInterpolator: 'curveMonotoneX',
+        lineInterpolator: 'curveCardinal',
         chartStyle: 'line',
         metrics: ex2metrics1,
         showLegend: true,
@@ -189,7 +244,7 @@
         }
       ]
       }
-      ex2 = brccharts.temporal(phen)
+      if (bEx2) ex2 = brccharts.temporal(phen)
     })
 
     function ex2button1Click() {
@@ -222,10 +277,215 @@
     function ex2button10Click() {
       ex2.setChartOpts({metricExpression: 'normalized'}).then(() => console.log('transition done'))
     }
+    function ex2button11Click() {
+      ex2.setChartOpts({chartStyle: 'line'}).then(() => console.log('transition done'))
+    }
+    function ex2button12Click() {
+      ex2.setChartOpts({chartStyle: 'bar'}).then(() => console.log('transition done'))
+    }
     function ex2SpreadChanged() {
       ex2.setChartOpts({spread: d3.select("#ex2CbSpread").property("checked")}).then(() => console.log('transition done'))
     }
 
+
+    // Example 3 & 4
+    d3.csv('./data/butterflies-16-19-vs-20.csv', function(d){
+      for (p in d) {
+        if (p !== 'taxon') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+        }
+        d.period = d.week
+      }
+      return d
+    }).then(function(data){
+
+      //Weed out any identified to genus only or with less than 100 records.
+      data = data.filter(d => d.taxon.split(" ").length > 1)
+      var taxaCounts = {}
+      data.forEach(d => {
+        if (!taxaCounts[d.taxon]) {
+          taxaCounts[d.taxon] = 0
+        }
+        taxaCounts[d.taxon] = taxaCounts[d.taxon] + d['2020'] + d['2016-19']
+      })
+      //Weed out any taxa with less than 100 records
+      data = data.filter(d => taxaCounts[d.taxon] > 100)
+
+      var phen = {
+        selector: '#butterfly3',
+        data: data,
+        taxa: [],
+        metrics: [   
+          { prop: '2020', label: '2020', colour: '#4188A3' },
+          { prop: '2016-19', label: '2016-2019', colour: '#BCE6FF' },
+        ],
+        taxonLabelItalics: true,
+        taxonLabelFontSize: 12,
+        legendFontSize: 14,
+        width: 150,
+        height: 100,
+        perRow: 4,
+        expand: true,
+        showLegend: true,
+
+        margin: {left: 48, right: 0, top: 20, bottom: 15},
+        missingValues: 0,
+        metricExpression: '',
+        minMaxY: null,
+        periodType: 'week',
+        //lineInterpolator: 'curveMonotoneX',
+        //lineInterpolator: 'curveCardinal',
+        chartStyle: 'line'
+      }
+      if (bEx3) ex3 = brccharts.temporal(phen)
+
+      var phen1 = {
+        selector: '#butterfly4',
+        data: data,
+        taxa: [],
+        metrics: [   
+          { prop: '2020', label: '2020', colour: '#ff9900', fill: '#ff990080' },
+          { prop: '2016-19', label: '2016-2019', colour: '#3399ff', fill: '#3399ff80' },
+        ],
+        taxonLabelItalics: true,
+        taxonLabelFontSize: 9,
+        legendFontSize: 14,
+        width: 150,
+        height: 100,
+        margin: {left: 0, right: 0, top: 15, bottom: 0},
+        perRow: 5,
+        expand: true,
+        axisLeft: 'on',
+        axisBottom: 'tick',
+        axisRight: 'on',
+        axisTop: 'on',
+        //ytype: 'proportion',
+        interactivity: '',
+        title: 'Phenology of butterflies recorded in the UK between 2016 and 2020',
+        subtitle: 'Each chart illustrates the proportion of records made each week throughout the year. For the period 2016-2019 the average weekly counts have been used to calculate the proprotions. ',
+        footer: 'Data were extracted from the BRC indicia Warehouse in on February 4th 2021.',
+        footerAlign: 'right',
+        showLegend: true,
+
+        missingValues: 0, //'bridge', //0,
+        metricExpression: '',
+        minMaxY: null,
+        periodType: 'week',
+        //lineInterpolator: 'curveMonotoneX',
+        //lineInterpolator: 'curveCardinal',
+        chartStyle: 'line'
+      }
+      if (bEx4) brccharts.temporal(phen1)
+    })
+    function ex3button1Click(type) {
+      ex3.setChartOpts({metricExpression: type}).then(() => console.log('transition done'))
+    }
+
+    // Example 5
+    d3.csv('./data/ladybirds-ds.csv', function(d){
+      for (p in d) {
+        if (p !== 'taxon') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+        }
+        d.period = d.year
+      }
+      return d
+    }).then(function(data){
+
+      var opts = {
+        selector: '#ladybird1',
+        data: data,
+        taxa: ['Anatis ocellata', 'Harmonia axyridis'],
+        metrics: [
+          { prop: 'dr736', label: 'iRecord ', colour: 'red'},
+          { prop: 'dr695', label: 'Ladybird survey of UK', colour: '#4188A3' }
+        ],
+        minPeriod: 1980,
+        maxPeriod: 2020,
+        showLegend: true,
+        interactivity: 'mousemove',
+        perRow: 2,
+        //expand: true,
+        missingValues: 'bridge', 
+        metricExpression: '',
+        minMaxY: null,
+        minY: 0,
+        periodType: 'year',
+        lineInterpolator: 'curveMonotoneX',
+        //lineInterpolator: 'curveCardinal',
+        chartStyle: 'bar'
+      }
+      if (bEx5) brccharts.temporal(opts)
+
+      opts.chartStyle = 'line'
+      opts.selector = '#ladybird2'
+      if (bEx6) brccharts.temporal(opts)
+
+      var opts2 = {
+        selector: '#ladybird3',
+        data: data,
+        taxa:['Harmonia axyridis', 'Harmonia axyridis form conspicua', 'Harmonia axyridis form spectabilis', 'Harmonia axyridis form succinea'],
+        metrics: [
+          { prop: 'dr736', label: 'iRecord ', colour: 'red' },
+          { prop: 'dr695', label: 'Ladybird survey of UK', colour: '#4188A3' }
+        ],
+        minPeriod: 2004,
+        maxPeriod: 2020,
+        perRow: 2,
+        width: 350,
+        height: 250,
+        margin: {left: 40, right: 40, bottom: 20, top: 20},
+        taxonLabelItalics: true,
+        taxonLabelFontSize: 12,
+        showLegend: true,
+        interactivity: 'mousemove',
+        title: 'Recording of Harlequin ladybird forms in the UK from 2004 to 2020',
+        subtitle: 'Blue bars represent records from the Ladybird Survey of the UK dataset and red bars represent records from iRecord. Records for the taxon Harmonia axyridis are those for which a specific form was not recorded.',
+        footer: 'Data derived from records downloaded from the NBN in June 2021 from these datasets: Ladybird Survey of the UK and UK Ladybird Survey data from iRecord.',
+        missingValues: 'bridge', 
+
+        minY: 0,
+        periodType: 'year',
+        chartStyle: 'bar'
+      }
+      if (bEx7) brccharts.temporal(opts2)
+
+      var opts3 = {
+        selector: '#ladybird4',
+        taxa: ['Coccinella septempunctata'],
+        data: data,
+        metrics: [
+          { prop: 'dr736', label: 'iRecord ', colour: 'red' },
+          { prop: 'dr695', label: 'UK survey', colour: '#4188A3' }
+        ],
+        minPeriod: 1980,
+        maxPeriod: 2020,
+        width: 800,
+        height: 500,
+        taxonLabelFontSize: 14,
+        margin: {left: 60, right: 50, bottom: 20, top: 30},
+        //axisLeftLabel: 'Number of records',
+        axisLabelFontSize: 12,
+        taxonLabelItalics: true,
+        showLegend: true,
+        interactivity: 'mouseclick',
+        minY: 0,
+        minMaxY: null,
+        periodType: 'year',
+        chartStyle: 'bar',
+        stacked: false
+      }
+      if (bEx8) ex8 = brccharts.temporal(opts3)
+    })
+
+    function ex8SpreadChanged() {
+      ex8.setChartOpts({spread: d3.select("#ex8CbSpread").property("checked")}).then(() => console.log('transition done'))
+    }
+
+    function ex8StackChanged() {
+      ex8.setChartOpts({stacked: d3.select("#ex8CbStack").property("checked")}).then(() => console.log('transition done'))
+    }
+    
   </script>
 </body>
 </html>

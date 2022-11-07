@@ -30,7 +30,7 @@ export function makeLegend (legendWidth, metrics, svgChart, legendFontSize, head
 
     lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
   })
-  
+
   const ls = svgChart.selectAll('.brc-legend-item-rect')
     .data(metricsReversed, m => gen.safeId(m.label))
     .join(enter => {

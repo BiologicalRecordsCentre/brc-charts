@@ -43,11 +43,6 @@ import { highlightItem } from './highlightitem'
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
- * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
- * @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
- * @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
- * @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
- * @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds. (Default - 1000.)
  * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)
@@ -135,16 +130,24 @@ import { highlightItem } from './highlightitem'
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
  * @param {number} opts.maxPeriodTrans - If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
+ //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+ //* @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
+ //* @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
+ //* @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
+ //* @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
  * @param {number} opts.minY - Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
  * @param {number} opts.maxY - Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
+ * @param {number} opts.minMaxY - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
  * @param {number} opts.xPadPercent - Padding to add either side of min and max period value - expressed as percentage of temporal range. Can only be used on line charts. (Default - 0.)
  * @param {number} opts.yPadPercent - Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)
- * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which
+ * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated. Can either be the string value 'break' which leaves gaps in
+ * line charts, 'bridge' which joins the points either side of a missing value or a numeric value which is used to replace the missing value. (Default - 'break'.)
  * @param {Array.<number>} opts.monthScaleRange - A two value numeric array indicating which months to include on annual scales (for periodType 'month' or 'week'). (Default - [1,12].)
  * causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)
  * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
  * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
  * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
+ * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked. (Default - false.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -176,7 +179,7 @@ export function temporal({
   taxonLabelFontSize = 10,
   taxonLabelItalics = false,
   axisLeft = 'tick',
-  yAxisOpts = {numFormat: 'd', minMax: 5, fixedMin: 0, padding: 0},
+  //yAxisOpts = {numFormat: 'd', minMax: 5, fixedMin: 0, padding: 0},
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
@@ -195,14 +198,16 @@ export function temporal({
   maxPeriodTrans = null,
   minY = null,
   maxY = null,
+  minMaxY = 5,
   xPadPercent = 0,
   yPadPercent = 0,
-  missingValues = 0,
+  missingValues = 'break',
   periodType = 'year',
   monthScaleRange = [1,12],
   lineInterpolator = 'curveLinear',
   verticals = [],
-  metricExpression = ''
+  metricExpression = '',
+  stacked = false
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -271,6 +276,7 @@ export function temporal({
       maxPeriodTrans,
       minY,
       maxY,
+      minMaxY,
       xPadPercent,
       yPadPercent,
       metricsPlus,
@@ -280,7 +286,7 @@ export function temporal({
       axisBottom,
       chartStyle,
       axisLeft,
-      yAxisOpts,
+      //yAxisOpts,
       axisRight,
       duration,
       interactivity,
@@ -296,6 +302,7 @@ export function temporal({
       verticals,
       metricExpression,
       spread,
+      stacked,
       pTrans
     ))
 
@@ -345,6 +352,7 @@ export function temporal({
         label: m.label ?  m.label : m.prop,
         opacity: m.opacity !== 'undefined' ? m.opacity : 0.5,
         colour: m.colour ? m.colour : 'blue',
+        fill: m.fill,
         fading: iFade,
         strokeWidth: strokeWidth,
         bandUpper: m.bandUpper,
@@ -386,10 +394,12 @@ export function temporal({
   * @param {string} opts.footerAlign - Alignment of chart footer: either 'left', 'right' or 'centre'.
   * @param {number} opts.minPeriod Indicates the earliest period to use on the y axis.
   * @param {number} opts.maxPeriod Indicates the latest period to use on the y axis.
-  * @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
+  //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
   * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
   * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
   * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
+  * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked.
+  * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -457,8 +467,12 @@ export function temporal({
       data = opts.data
       remakeChart = true
     }
-     if ('spread' in opts) {
+    if ('spread' in opts) {
       spread = opts.spread
+      remakeChart = true
+    }
+    if ('stacked' in opts) {
+      stacked = opts.stacked
       remakeChart = true
     }
     if ('dataPoints' in opts) {
@@ -469,14 +483,19 @@ export function temporal({
       dataTrendLines = opts.dataTrendLines
       remakeChart = true
     }
-    if ('yAxisOpts' in opts) {
-      yAxisOpts = opts.yAxisOpts
-      remakeChart = true
-    }
+    // if ('yAxisOpts' in opts) {
+    //   yAxisOpts = opts.yAxisOpts
+    //   remakeChart = true
+    // }
     if ('metricExpression' in opts) {
       metricExpression = opts.metricExpression
       remakeChart = true
     }
+    if ('chartStyle' in opts) {
+      chartStyle = opts.chartStyle
+      remakeChart = true
+    }
+    
     if ('taxa' in opts) {
       taxa = opts.taxa
       highlightItem(null, false, svgChart)

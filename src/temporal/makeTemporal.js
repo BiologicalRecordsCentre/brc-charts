@@ -22,6 +22,7 @@ export function makeTemporal (
   maxPeriodTrans,
   minY,
   maxY,
+  minMaxY,
   xPadPercent,
   yPadPercent,
   metricsPlus,
@@ -31,7 +32,7 @@ export function makeTemporal (
   axisBottom,
   chartStyle,
   axisLeft,
-  yAxisOpts,
+  //yAxisOpts,
   axisRight,
   duration,
   interactivity,
@@ -47,6 +48,7 @@ export function makeTemporal (
   verticals,
   metricExpression,
   spread,
+  stacked,
   pTrans
 ) {
   // Pre-process data.
@@ -95,10 +97,19 @@ export function makeTemporal (
     })
 
   //Set the min and maximum values for the y axis
+  let missing = []
+  if (typeof missingValues === 'number') {
+    missing = [missingValues]
+  }
+
+  function v(d) {
+    return typeof(d) === 'number'
+  }
   const maxMetricYs = metricsPlus.map(m => Math.max(
-    ...dataFiltered.filter(d => d[m.prop]).map(d => d[m.prop]),
-    ...dataFiltered.filter(d => d[m.bandUpper]).map(d => d[m.bandUpper]),
-    ...dataFiltered.filter(d => d[m.errorBarUpper]).map(d => d[m.errorBarUpper])
+    ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
+    ...dataFiltered.filter(d => v(d[m.errorBarUpper])).map(d => d[m.errorBarUpper]),
+    ...missing
   ))
 
   const maxYA = maxY !== null ? [maxY] : []
@@ -106,14 +117,15 @@ export function makeTemporal (
     ...maxYA,
     ...maxMetricYs,
     ...dataPointsFiltered.map(d => d.y),
-    ...dataPointsFiltered.filter(d => d.upper).map(d => d.upper),
+    ...dataPointsFiltered.filter(d => v(d.upper)).map(d => d.upper),
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
   const minMetricYs = metricsPlus.map(m => Math.min(
-    ...dataFiltered.filter(d => d[m.prop]).map(d => d[m.prop]),
-    ...dataFiltered.filter(d => d[m.bandLower]).map(d => d[m.bandLower]),
-    ...dataFiltered.filter(d => d[m.errorBarLower]).map(d => d[m.errorBarLower])
+    ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),
+    ...dataFiltered.filter(d => v(d[m.errorBarLower])).map(d => d[m.errorBarLower]),
+    ...missing
   ))
 
   const minYA = minY !== null ? [minY] : []
@@ -126,15 +138,19 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
 
-
-  if (yAxisOpts.minMax !== null) {
-    if (ymaxY < yAxisOpts.minMax) {
-      ymaxY = yAxisOpts.minMax
+  if (minMaxY !== null) {
+    if (ymaxY < minMaxY) {
+      ymaxY = minMaxY
     }
   }
-  if (yAxisOpts.fixedMin !== null) {
-    yminY = yAxisOpts.fixedMin
-  }
+  // if (yAxisOpts.minMax !== null) {
+  //   if (ymaxY < yAxisOpts.minMax) {
+  //     ymaxY = yAxisOpts.minMax
+  //   }
+  // }
+  // if (yAxisOpts.fixedMin !== null) {
+  //   yminY = yAxisOpts.fixedMin
+  // }
 
   // Value scales
   let periods = []
@@ -146,8 +162,6 @@ export function makeTemporal (
   const yPadding = (ymaxY-yminY) * yPadPercent/100
 
   const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
-  //const yScale = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
-
   const yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, spread)
 
   // Top axis
@@ -184,7 +198,6 @@ export function makeTemporal (
         axis = d3axis.scale(yScale.yAxis).tickValues([]).tickSizeOuter(0)
         break
       case 'tick':
-        axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yAxisOpts.numFormat))
         axis = d3axis.scale(yScale.yAxis).ticks(5).tickFormat(d3.format(yScale.tickFormat))
         break
     }
@@ -220,12 +233,12 @@ export function makeTemporal (
 
   // Generate/regenerate chart elements
   generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans)
-  if (chartStyle === 'bar') {
-    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, svgChart, interactivity)
-  }
-  if (chartStyle === 'line' && isFinite(yminY)) {
-    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity)
-  }
+  //if (chartStyle === 'bar') {
+    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, stacked)
+  //}
+  //if (chartStyle === 'line') {
+    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, stacked)
+  //}
   generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity)
   generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
   generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans)

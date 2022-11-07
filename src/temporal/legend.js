@@ -51,6 +51,7 @@ export function makeLegend (
     .attr('x', m => m.x)
     .attr('y', m => showCounts === 'bar' ?  m.y + swatchSize/5 : m.y + swatchSize/2)
     .attr('fill', m => m.colour)
+    .attr('height', showCounts === 'bar' ? swatchSize : 2)
 
   const lt = svgChart.selectAll('.brc-legend-item-text')
     .data(metricsReversed, m => gen.safeId(m.label))

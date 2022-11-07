@@ -454,9 +454,7 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
   } else if (chartStyle === 'bar') {
     scaleD3 = d3.scaleBand().domain(periods).range([0, width]).paddingInner(0.1)
     scaleFn = scaleD3
-    bandwidthFn = v => {
-      return scaleFn.bandwidth(v)
-    }
+    bandwidthFn = scaleD3.bandwidth
   } else if (chartStyle === 'line') {
     scaleD3 = d3.scaleLinear().domain([minPeriod - xPadding, maxPeriod + xPadding]).range([0, width])
     scaleFn = scaleD3
@@ -468,15 +466,19 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
   // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
   // is required, so the d3 scale is added as a property to this scale function so that it can
   // be accessed.
-  return {
-    d3: scaleD3,
-    bandwidth: v => {
-      return bandwidthFn(v)
-    },
-    v: v => {
-      return scaleFn(v)
-    }
-  }
+
+  scaleFn.d3 = scaleD3
+  scaleFn.bandwidth = bandwidthFn
+  return scaleFn
+  // return {
+  //   d3: scaleD3,
+  //   bandwidth: v => {
+  //     return bandwidthFn(v)
+  //   },
+  //   v: v => {
+  //     return scaleFn(v)
+  //   }
+  // }
 }
 
 function periodToDay(p, periodType, chartStyle) {
@@ -508,23 +510,23 @@ function periodToWidth(p, periodType, xScale) {
 
 export function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
   
-  let fn, fnAxis, tickFormat
+  let fn, fnAxis, tickFormat, spreadHeight
  
   if (spread && metrics.length > 1) {
     
     // Work out height in 'sread units' - su.
     const overlap = 0.8
-    const bottom = 0.5
-    const maxmax = Math.max(...metrics.map(m => m.maxValue))
-    const suLastMetric = metrics[0].maxValue / maxmax * (1 + overlap)
-    const suPenultimateMetric = metrics[1].maxValue / maxmax * (1 + overlap) - 1
+    const bottom = 0.2
+    const maxmax = Math.max(...metrics.map(m => m.maxValue)) // Can happen if no data (e.g. taxon cleared)
+    const suLastMetric = isFinite(maxmax) ? metrics[0].maxValue / maxmax * (1 + overlap) : 0
+    const suPenultimateMetric = isFinite(maxmax) ? metrics[1].maxValue / maxmax * (1 + overlap) - 1 : 0
     const suLast = Math.max(suLastMetric, suPenultimateMetric)
-    const suHeight = metrics.length - bottom + suLast
+    const suHeight = metrics.length - 1 + suLast + bottom 
     const spreadOffset = height / suHeight
-    const spreadHeight = (1 + overlap) * spreadOffset 
+    spreadHeight = (1 + overlap) * spreadOffset 
 
     fn = (v, iMetric) => {
-      const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0]) 
+      const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0])
       return d3fn(v) + height - spreadHeight - bottom * spreadOffset - (metrics.length - iMetric - 1)  * spreadOffset
     }
 
@@ -556,12 +558,11 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
     } else {
       tickFormat = '.2f'
     }
+    spreadHeight = height
   }
 
-  // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
-  // is required, so the d3 scale is added as a property to this scale function so that it can
-  // be accessed.
   fn.yAxis = fnAxis
   fn.tickFormat = tickFormat
+  fn.height = spreadHeight
   return fn
 }

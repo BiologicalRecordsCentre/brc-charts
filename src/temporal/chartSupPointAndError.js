@@ -7,7 +7,7 @@ export function generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xSc
   // then it must be specified in here.
   const chartPointsSup = dataPointsFiltered.map(d => {
     let x 
-    x = xScale.v(d.period)
+    x = xScale(d.period)
     return {
       x: x,
       y: yScale(d.y),
@@ -19,7 +19,7 @@ export function generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xSc
   // TODO - if at some point we parameterise display styles,
   // then it must be specified in here.
   const chartPointsSupErrorBars = dataPointsFiltered.map(d => {
-    const x = xScale.v(d.period)
+    const x = xScale(d.period)
     return {
       pathEnter:  `M ${x} ${height} L ${x} ${height}`,
       path: `M ${x} ${yScale(d.lower)} L ${x} ${yScale(d.upper)}`,

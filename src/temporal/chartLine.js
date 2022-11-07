@@ -18,23 +18,18 @@ export function generateLines(
   lineInterpolator,
   missingValues,
   svgChart, 
-  interactivity
+  interactivity,
+  chartStyle,
+  stacked
 ) {
 
-  // Line path generator
-  // const lineValues = d3.line()
-  //   .x(d => xScale.v(d.period))
-  //   .y(d => yScale(d.n))
-
-  // if (lineInterpolator) {
-  //   // Interpolating curves can make transitions of polygons iffy
-  //   // because resulting number of points in path is not constant.
-  //   lineValues.curve(d3[lineInterpolator]) 
-  // }
-
   const lineValues = (points, iPart) => {
+    // console.log(iPart, points)
+    // points.forEach(d => {
+    //   console.log(d.n, yScale(d.n, iPart), height)
+    // })
     const d3LineGen = d3.line()
-      .x(d => xScale.v(d.period))
+      .x(d => xScale(d.period))
       .y(d => yScale(d.n, iPart))
     if (lineInterpolator) {
       // Interpolating curves can make transitions of polygons iffy
@@ -46,6 +41,7 @@ export function generateLines(
 
   let chartLines = []
   let chartBands = []
+  let chartLineFills = []
 
   metricsPlus.forEach((m, iMetric) => {
       // Create a collection of the periods in the dataset.
@@ -55,21 +51,26 @@ export function generateLines(
     }, {})
 
     // Construct data structure for line charts.
-    const pointSets = adjustForTrans(periods.map(y => {
-      // Replace any missing values (for a given period)
-      // with the missing value specified (can be a value
-      // or 'bridge' or 'break')
-      return {
-        period: y,
-        n: dataDict[y] ? dataDict[y] : missingValues,
-      }
-    }))
+    let pointSets
+    if (dataFiltered.length && chartStyle === 'line') {
+      pointSets = adjustForTrans(periods.map(y => {
+        // Replace any missing values (for a given period)
+        // with the missing value specified (can be a value
+        // or 'bridge' or 'break')
+        return {
+          period: y,
+          n: dataDict[y] ? dataDict[y] : missingValues,
+        }
+      }))
+    } else {
+      pointSets = []
+    }
+
     pointSets.forEach((points, i) => {
       chartLines.push({
         colour: m.colour,
         opacity: m.opacity,
         strokeWidth: m.strokeWidth,
-        type: 'counts',
         prop: m.prop,
         part: i,
         yMin: yminY,
@@ -82,6 +83,37 @@ export function generateLines(
         path: lineValues(points, iMetric)
       })
     })
+
+    // Construct data structure for main line fill
+    if (m.fill) {
+
+      pointSets.forEach((points, i) => {
+        // Add points to take fill to minimum values and max and min period
+        const pFirst = {
+          period:  points[0].period,
+          n: yminY
+        }
+        const pLast = {
+          period: points[points.length-1].period,
+          n: yminY
+        }
+
+        chartLineFills.push({
+          opacity: m.opacity,
+          fill: m.fill,
+          prop: m.prop,
+          part: i,
+          yMin: yminY,
+          pathEnter: lineValues([...points, pLast, pFirst].map(p => {
+            return {
+              n: yminY,
+              period: p.period
+            }
+          }), iMetric),
+          path: lineValues([...points, pLast, pFirst], iMetric)
+        })
+      })
+    }
 
     // Construct data structure for confidence band on line charts.
     if (m.bandUpper && m.bandLower ) {
@@ -133,7 +165,6 @@ export function generateLines(
           fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
           strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
           strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-          //type: 'counts',
           prop: m.prop,
           part: i,
           bandPath: lineValues(pointsBand, iMetric),
@@ -204,8 +235,6 @@ export function generateLines(
           .attr("stroke-width", d => d.strokeWidth), pTrans))
   
     addEventHandlers(gTemporal.selectAll(`.temporal-band-border-${iLine}`), 'prop', svgChart, interactivity)
-  }
-  
 
   // Main lines
   gTemporal.selectAll(".temporal-line")
@@ -234,6 +263,33 @@ export function generateLines(
       .attr("stroke-width", d => d.strokeWidth), pTrans))
 
   addEventHandlers(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity)
+
+  // Main line fill
+  gTemporal.selectAll(".temporal-line-fill")
+    .data(chartLineFills, d => `band-${d.prop}-${d.part}`)
+    .join(
+      enter => enter.append("path")
+        .attr("class", d => `temporal-line-fill temporal-graphic temporal-${d.prop}`)
+        .attr("opacity", 0)
+        .attr("fill", d => d.fill)
+        .attr("stroke", "none")
+        //.attr("d", d => d.pathEnter),
+        .attr("d", d => d.path),
+      update => update,
+      exit => exit
+        .call(exit => transPromise(exit.transition(t)
+          //.attr("d", d => d.pathEnter)
+          .style("opacity", 0)
+          .remove(), pTrans))
+    ).call(merge => transPromise(merge.transition(t)
+      // The selection returned by the join function is the merged
+      // enter and update selections
+      .attr("d", d => d.path)
+      .attr("opacity", d => d.fillOpacity)
+      .attr("fill", d => d.fill), pTrans))
+
+  addEventHandlers(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
+  }
 
   function adjustForTrans(pntsIn) {
     // Return an array of arrays of points. There may be more than one array
@@ -269,17 +325,24 @@ export function generateLines(
       // If missing period values are being bridged, add a point at last
       // known value.
       for (let i = 0; i < pnts.length; i++) {
-        if (pnts[i].n === 'bridge') {
+        if (pnts[i].n === 'bridge' && i > 0) {
           pnts[i].n = pnts[i-1].n
           pnts[i].period = pnts[i-1].period
         }
       }
+      for (let i = pnts.length-1; i >= 0; i--) {
+        if (pnts[i].n === 'bridge') {
+          pnts[i].n = pnts[i+1].n
+          pnts[i].period = pnts[i+1].period
+        }
+      }
 
-      // When minPeriodTans and MaxPeriodTrans are set, then each trend line
-      // must have the same number of points in (MaxPeriodTrans - minPeriodTans + 1 points).
+      // When minPeriodTrans and MaxPeriodTrans are set, then each trend line
+      // must have the same number of points in (MaxPeriodTrans - minPeriodTrans + 1 points).
       // This is to make nice looking transitions between lines with otherwise
       // different numbers of points.
-      if (minPeriodTrans) {
+      
+      if (minPeriodTrans && pnts.length < maxPeriodTrans-minPeriodTrans) {
         for(let i=minPeriodTrans; i<pnts[0].period; i++) {
           ret.unshift({
             n: pnts[0].n,
@@ -287,7 +350,7 @@ export function generateLines(
           })
         }
       }
-      if (maxPeriodTrans) {
+      if (maxPeriodTrans && pnts.length < maxPeriodTrans-minPeriodTrans) {
         for(let i=pnts[pnts.length-1].period + 1; i <= maxPeriodTrans; i++) {
           ret.push({
             n: pnts[pnts.length-1].n,
@@ -296,7 +359,7 @@ export function generateLines(
         }
       }
     })
-    
+
     return retSet
   }
 }

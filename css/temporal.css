@@ -3,7 +3,7 @@
 }
 
 .brc-chart-temporal .temporal-graphic.lowlight {
-    opacity:0.3;
+    opacity:0.1;
 }
 
 .brc-chart-temporal .temporal-line.highlight {
@@ -12,6 +12,6 @@
     opacity: 1;
 }
 
-.brc-chart-temporal .brc-legend-item-rect.highlight {
+/* .brc-chart-temporal .brc-legend-item-rect.highlight {
     fill:black;
-}
+} */
