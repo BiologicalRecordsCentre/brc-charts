@@ -19,7 +19,6 @@ import { highlightItem } from './highlightitem'
  * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
  * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
- * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart. (Default - false.)
  * @param {string} opts.title - Title for the chart. (Default - ''.)
  * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
  * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -147,7 +146,9 @@ import { highlightItem } from './highlightitem'
  * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
  * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
  * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
- * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked. (Default - false.)
+ * @param {string} opts.composition - Indicates how to display multiple metrics. If set to empty string then the metrics
+ * values are overlaid on each other, setting to 'stack' stacks the graphics and setting to 'spread' spreads them
+ * vertically across the chart. (Default - ''.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -160,7 +161,6 @@ export function temporal({
   margin = {left: 30, right: 30, top: 15, bottom: 20},
   perRow = 2,
   expand = false,
-  spread = false,
   title = '',
   subtitle = '',
   footer = '',
@@ -207,7 +207,7 @@ export function temporal({
   lineInterpolator = 'curveLinear',
   verticals = [],
   metricExpression = '',
-  stacked = false
+  composition = ''
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -301,8 +301,7 @@ export function temporal({
       lineInterpolator,
       verticals,
       metricExpression,
-      spread,
-      stacked,
+      composition,
       pTrans
     ))
 
@@ -345,7 +344,7 @@ export function temporal({
         iFade = ++iFading
         strokeWidth = 1
       } else {
-        strokeWidth = m.linewidth ? m.linewidth : 2
+        strokeWidth = m.linewidth ? m.linewidth : 1
       }
       return {
         prop: m.prop,
@@ -397,8 +396,7 @@ export function temporal({
   //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
   * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
   * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
-  * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
-  * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked.
+  * @param {string} opts.composition - Indicates how to display multiple metrics.
   * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
@@ -467,12 +465,8 @@ export function temporal({
       data = opts.data
       remakeChart = true
     }
-    if ('spread' in opts) {
-      spread = opts.spread
-      remakeChart = true
-    }
-    if ('stacked' in opts) {
-      stacked = opts.stacked
+    if ('composition' in opts) {
+      composition = opts.composition
       remakeChart = true
     }
     if ('dataPoints' in opts) {

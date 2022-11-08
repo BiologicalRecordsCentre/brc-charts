@@ -1,13 +1,13 @@
 import { transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, stacked) {
+export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
 
   let chartBars = []
   const cumulativeHeight = new Array(dataFiltered.length).fill(0)
 
   const metrics = [...metricsPlus]
-  if (stacked) {
+  if (composition === 'stack') {
     metrics.reverse()
   }
   metrics.forEach((m, i) => {
@@ -15,7 +15,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
       const bars = dataFiltered.map((d,j) => {
 
         let n, height
-        if (stacked) {
+        if (composition === 'stack') {
           n = yScale(d[m.prop], i) - cumulativeHeight[j]
           height = yScale(yminY, i) - yScale(d[m.prop], i)
           cumulativeHeight[j] += height

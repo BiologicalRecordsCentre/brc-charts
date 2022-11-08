@@ -508,11 +508,11 @@ function periodToWidth(p, periodType, xScale) {
   }
 }
 
-export function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
+export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition) {
   
   let fn, fnAxis, tickFormat, spreadHeight
  
-  if (spread && metrics.length > 1) {
+  if (composition === 'spread' && metrics.length > 1) {
     
     // Work out height in 'sread units' - su.
     const overlap = 0.8

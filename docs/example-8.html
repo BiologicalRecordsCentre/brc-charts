@@ -18,76 +18,86 @@
     <h1>Using the BRC Charts Library</h1>
     <h2>Temporal chart</h2>
     <p>
-      This page of examples demonstrates the use and flexibility of the new 'temporal' chart. It is designed
-      to integrate the phen1 and yearly charts into a single integrated and flexible chart. At the time of
-      writing (03/11/2022) it can perform all the functions of the yearly chart and most of those provided
-      by the phen1 chart (area display and stacking remain to be integrated from
-      the phen1 chart.)
+      This page of examples demonstrates the use and flexibility of the  <i>temporal</i> chart. 
+      It is designed to integrate the 
+      <i>phen1</i> and <i>yearly</i> charts into a single integrated and flexible chart.
+      The fist example on this page is an interactive chart displaying fictitious 
+      data that is designed to demonstrate (and test) many of the features of the chart.
+      Other examples on this page replicate some of the examples previously used to illustrate
+      the <i>phen1</i> and <i>yearly</i> charts.
     </p>
     <p>
-      Examples on this page demonstarte a wide variety of uses. To understand how any particular chart
-      is created, dig into the source code.
+      To understand how the chart is used in any of these examples, dig into the code and the data.
     </p>
 
-    <h3>Example 1 - butterfly phenology 1</h3>
-    <div id='butterfly1'></div>
+    <h3>Example - interactive features</h3>
+    <div id='interactive'></div>
+    <button onclick="exIgenData()">New data</button>
+    <select id="exIperiodType" onchange='exIgenData()'>
+      <option value="year" selected>Year</option>
+      <option value="month">Month</option>
+      <option value="week">Week</option>
+    </select>
 
-    <h3>Example 2 - butterfly phenology 2</h3>
-    <button onclick="ex2button1Click()">Aglais urticae</button>
-    <button onclick="ex2button2Click()">Vanessa cardui</button>
-    <button onclick="ex2button3Click()">Clear</button>
+    <h3>Example - butterfly phenology 1</h3>
+    <div id='butterfly1'></div>
+    
+    <h3>Example - butterfly phenology 2</h3>
+    <button onclick="exBp2button1Click()">Aglais urticae</button>
+    <button onclick="exBp2button2Click()">Vanessa cardui</button>
+    <button onclick="exBp2button3Click()">Clear</button>
     <br/><br/>
-    <button onclick="ex2button4Click()">2020 only</button>
-    <button onclick="ex2button5Click()">2020 and 2019</button>
-    <button onclick="ex2button6Click()">2010 to 2020</button>
-    <button onclick="ex2button7Click()">1990 to 2020</button>
+    <button onclick="exBp2button4Click()">2020 only</button>
+    <button onclick="exBp2button5Click()">2020 and 2019</button>
+    <button onclick="exBp2button6Click()">2010 to 2020</button>
+    <button onclick="exBp2button7Click()">1990 to 2020</button>
     <br/><br/>
-    <button onclick="ex2button8Click()">Counts</button>
-    <button onclick="ex2button9Click()">Proportions</button>
-    <button onclick="ex2button10Click()">Normalized</button>
+    <button onclick="exBp2button8Click()">Counts</button>
+    <button onclick="exBp2button9Click()">Proportions</button>
+    <button onclick="exBp2button10Click()">Normalized</button>
     <br/><br/>
-    <button onclick="ex2button11Click()">Lines</button>
-    <button onclick="ex2button12Click()">Bars</button>
+    <button onclick="exBp2button11Click()">Lines</button>
+    <button onclick="exBp2button13Click()">Areas</button>
+    <button onclick="exBp2button12Click()">Bars</button>
     <br/><br/>
-    <input type="checkbox" id="ex2CbSpread" name="ex2CbSpread" onchange="ex2SpreadChanged()">
-    <label for="ex2CbSpread">Spread</label>
+    <select id="exBp2composition" onchange='exBp2CompositionChanged()'>
+      <option value="">Overlay</option>
+      <option value="stack">Stacked</option>
+      <option value="spread">Spread</option>
+    </select>
     <div id='butterfly2'></div>
 
-    <h3>Example 3 - butterfly phenology 3</h3>
-    <button onclick="ex3button1Click('')">Counts</button>
-    <button onclick="ex3button1Click('proportion')">Proportions</button>
-    <button onclick="ex3button1Click('normalized')">Normalized</button>
+    <h3>Example - butterfly phenology 3</h3>
+    <button onclick="exBp3button1Click('')">Counts</button>
+    <button onclick="exBp3button1Click('proportion')">Proportions</button>
+    <button onclick="exBp3button1Click('normalized')">Normalized</button>
     <div id='butterfly3'></div>
 
-    <h3>Example 4 - butterfly phenology 4</h3>
+    <h3>Example - butterfly phenology 4</h3>
     <div id='butterfly4'></div>
 
-    <h3>Example 5 - ladybird yearly 1</h3>
+    <h3>Example - ladybird yearly 1</h3>
     <div id='ladybird1'></div>
 
-    <h3>Example 6 - ladybird yearly 2</h3>
+    <h3>Example - ladybird yearly 2</h3>
     <div id='ladybird2'></div>
 
-    <h3>Example 7 - ladybird yearly 3</h3>
+    <h3>Example - ladybird yearly 3</h3>
     <div id='ladybird3'></div>
 
-    <h3>Example 8 - ladybird yearly 4</h3>
-    <button onclick="ex8.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
-    <button onclick="ex8.setTaxon('Anatis ocellata')">Anatis ocellata</button>
-    <button onclick="ex8.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
-    <button onclick="ex8.setTaxon('')">Clear</button>
+    <h3>Example - ladybird yearly 4</h3>
+    <button onclick="exLy4.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
+    <button onclick="exLy4.setTaxon('Anatis ocellata')">Anatis ocellata</button>
+    <button onclick="exLy4.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
+    <button onclick="exLy4.setTaxon('')">Clear</button>
     <br/><br/>
-    <button onclick="ex8.setChartOpts({metricExpression: ''})">Counts</button>
-    <button onclick="ex8.setChartOpts({metricExpression: 'proportion'})">Proportions</button>
-    <button onclick="ex8.setChartOpts({metricExpression: 'normalized'})">Normalized</button>
+    <button onclick="exLy4.setChartOpts({metricExpression: ''})">Counts</button>
+    <button onclick="exLy4.setChartOpts({metricExpression: 'proportion'})">Proportions</button>
+    <button onclick="exLy4.setChartOpts({metricExpression: 'normalized'})">Normalized</button>
     <br/><br/>
-    <button onclick="ex8.setChartOpts({chartStyle: 'line'})">Lines</button>
-    <button onclick="ex8.setChartOpts({chartStyle: 'bar'})">Bars</button>
+    <button onclick="exLy4.setChartOpts({chartStyle: 'line'})">Lines</button>
+    <button onclick="exLy4.setChartOpts({chartStyle: 'bar'})">Bars</button>
     <br/><br/>
-    <input type="checkbox" id="ex8CbSpread" name="ex8CbSpread" onchange="ex8SpreadChanged()">
-    <label for="ex8CbSpread">Spread</label>
-    <input type="checkbox" id="ex8CbStack" name="ex8CbStack" onchange="ex8StackChanged()">
-    <label for="ex8CbStack">Stack</label>
     <div id="ladybird4"></div>
 
   <!--Page CSS-->
@@ -102,16 +112,60 @@
 
   <script>
 
-    var bEx1 = true
-    var bEx2 = true
-    var bEx3 = false
-    var bEx4 = false
-    var bEx5 = true
-    var bEx6 = true
-    var bEx7 = true
-    var bEx8 = true
+    var bexBp1 = false
+    var bexBp2 = false
+    var bexBp3 = false
+    var bexBp4 = false
+    var bexLy2 = false
+    var bexLy2 = false
+    var bexLy3 = false
+    var bexLy4 = false
 
-    // Example 1
+
+    // Example interactive
+
+    var data = genData({periodType: 'year'})
+    console.log(data)
+    var optsInteractive = {
+      selector: '#interactive',
+      data: data,
+      //missingValues: 'bridge',
+      //missingValues: 0,
+      minPeriodTrans: 1,
+      maxPeriodTrans: 52,
+      taxa: ['dummy'],
+      metricExpression: '',
+      //yPadPercent: 5,
+      minMaxY: null,
+      periodType: 'year',
+      //lineInterpolator: 'curveMonotoneX',
+      //lineInterpolator: 'curveCardinal',
+      chartStyle: 'line',
+      metrics: [
+        { prop: 'prop1', label: 'prop1', colour: 'red' },
+        { prop: 'prop2', label: 'prop2', colour: 'blue' },
+      ],
+      showLegend: true,
+      showTaxonLabel: false,
+      interactivity: 'mousemove',
+      width: 900,
+      height: 500,
+      expand: true,
+      perRow: 1,
+      margin: {left: 48, right: 0, top: 20, bottom: 15},
+    }
+    interactive = brccharts.temporal(optsInteractive)
+
+    function exIgenData() {
+
+      const periodType = d3.select("#exIperiodType").property("value")
+      console.log(periodType)
+      const data = genData({periodType: periodType})
+      console.log(data)
+      interactive.setChartOpts({data: data, periodType: periodType})
+    }
+
+    // Example butterfly 1
     d3.csv('./data/butterflies-16-20.csv', function(d){
         for (p in d) {
           if (p !== 'taxon') {
@@ -148,34 +202,34 @@
           expand: true,
           axisLeftLabel: 'Number of records per week',
         }
-        if (bEx1) brccharts.temporal(phen)
+        if (bexBp1) brccharts.temporal(phen)
       })
 
-    // Example 2
-    var ex2metrics1 = [
+    // Example butterfly 2
+    var exBp2metrics1 = [
       { prop: '2020', label: '2020', colour: 'magenta' },
     ]
-    var ex2metrics2 = [
+    var exBp2metrics2 = [
       { prop: '2020', label: '2020', colour: 'red' },
       { prop: '2019', label: '2019', colour: 'blue' },
     ]
 
-    var ex2metrics3=[]
+    var exBp2metrics3=[]
     var colours=d3.scaleOrdinal(d3.schemeCategory10)
     for (i=2020; i>=2010; i--){
-      ex2metrics3.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010)})
+      exBp2metrics3.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010)})
     }
 
-    var ex2metrics4=[]
+    var exBp2metrics4=[]
     for (i=2018; i>=1990; i--){
-      ex2metrics4.push({prop: `${i}`, label: `${i}`, colour: 'fading'})
+      exBp2metrics4.push({prop: `${i}`, label: `${i}`, colour: 'fading'})
     }
-    ex2metrics4 = [
+    exBp2metrics4 = [
       { prop: '2020', label: '2020', colour: 'red' },
       { prop: '2019', label: '2019', colour: '#4188A3' },
-    ].concat(ex2metrics4)
+    ].concat(exBp2metrics4)
 
-    var ex2
+    var exBp2
     d3.csv('./data/st-pl-1990-onwards.csv', function(d){
       for (p in d) {
         if (p !== 'taxon') {
@@ -188,7 +242,7 @@
       var phen = {
         selector: '#butterfly2',
         data: data.filter(d => d.period < 53), //.filter(d => d.period > 25 && d.period < 36),
-        missingValues: 'bridge',
+        //missingValues: 'bridge',
         //missingValues: 0,
         minPeriodTrans: 1,
         maxPeriodTrans: 52,
@@ -199,9 +253,9 @@
         minMaxY: null,
         periodType: 'week',
         //lineInterpolator: 'curveMonotoneX',
-        lineInterpolator: 'curveCardinal',
+        //lineInterpolator: 'curveCardinal',
         chartStyle: 'line',
-        metrics: ex2metrics1,
+        metrics: exBp2metrics1,
         showLegend: true,
         interactivity: 'mousemove', 
         taxonLabelFontSize: 16,
@@ -244,51 +298,71 @@
         }
       ]
       }
-      if (bEx2) ex2 = brccharts.temporal(phen)
+      if (bexBp2) exBp2 = brccharts.temporal(phen)
     })
 
-    function ex2button1Click() {
-      ex2.setTaxon('Aglais urticae').then(() => console.log('transition done'))
+    let currentMetrics = exBp2metrics1
+    function exBp2button1Click() {
+      exBp2.setTaxon('Aglais urticae').then(() => console.log('transition done'))
     }
-    function ex2button2Click() {
-      ex2.setTaxon('Vanessa cardui').then(() => console.log('transition done'))
+    function exBp2button2Click() {
+      exBp2.setTaxon('Vanessa cardui').then(() => console.log('transition done'))
     }
-    function ex2button3Click() {
-      ex2.setTaxon('').then(() => console.log('transition done'))
+    function exBp2button3Click() {
+      exBp2.setTaxon('').then(() => console.log('transition done'))
     }
-    function ex2button4Click() {
-      ex2.setChartOpts({metrics: ex2metrics1}).then(() => console.log('transition done'))
+    function exBp2button4Click() {
+      currentMetrics = exBp2metrics1
+      exBp2.setChartOpts({metrics: exBp2metrics1}).then(() => console.log('transition done'))
     }
-    function ex2button5Click() {
-      ex2.setChartOpts({metrics: ex2metrics2}).then(() => console.log('transition done'))
+    function exBp2button5Click() {
+      currentMetrics = exBp2metrics2
+      exBp2.setChartOpts({metrics: exBp2metrics2}).then(() => console.log('transition done'))
     }
-    function ex2button6Click() {
-      ex2.setChartOpts({metrics: ex2metrics3}).then(() => console.log('transition done'))
+    function exBp2button6Click() {
+      currentMetrics = exBp2metrics3
+      exBp2.setChartOpts({metrics: exBp2metrics3}).then(() => console.log('transition done'))
     }
-    function ex2button7Click() {
-      ex2.setChartOpts({metrics: ex2metrics4}).then(() => console.log('transition done'))
+    function exBp2button7Click() {
+      currentMetrics = exBp2metrics4
+      exBp2.setChartOpts({metrics: exBp2metrics4}).then(() => console.log('transition done'))
     }
-    function ex2button8Click() {
-      ex2.setChartOpts({metricExpression: ''}).then(() => console.log('transition done'))
+    function exBp2button8Click() {
+      exBp2.setChartOpts({metricExpression: ''}).then(() => console.log('transition done'))
     }
-    function ex2button9Click() {
-      ex2.setChartOpts({metricExpression: 'proportion'}).then(() => console.log('transition done'))
+    function exBp2button9Click() {
+      exBp2.setChartOpts({metricExpression: 'proportion'}).then(() => console.log('transition done'))
     }
-    function ex2button10Click() {
-      ex2.setChartOpts({metricExpression: 'normalized'}).then(() => console.log('transition done'))
+    function exBp2button10Click() {
+      exBp2.setChartOpts({metricExpression: 'normalized'}).then(() => console.log('transition done'))
     }
-    function ex2button11Click() {
-      ex2.setChartOpts({chartStyle: 'line'}).then(() => console.log('transition done'))
+    function exBp2button11Click() {
+      const metrics = currentMetrics
+      exBp2.setChartOpts({chartStyle: 'line', metrics: currentMetrics}).then(() => console.log('transition done'))
     }
-    function ex2button12Click() {
-      ex2.setChartOpts({chartStyle: 'bar'}).then(() => console.log('transition done'))
+    function exBp2button12Click() {
+      
+      exBp2.setChartOpts({chartStyle: 'bar'}).then(() => console.log('transition done'))
     }
-    function ex2SpreadChanged() {
-      ex2.setChartOpts({spread: d3.select("#ex2CbSpread").property("checked")}).then(() => console.log('transition done'))
+    function exBp2button13Click() {
+      const metrics = currentMetrics.map(m => {
+        const m2 = {...m}
+        m2.fill = m2.colour
+        return m2
+      })
+      exBp2.setChartOpts({metrics: metrics}).then(() => console.log('transition done'))
+    }
+    function exBp2SpreadChanged() {
+      exBp2.setChartOpts({spread: d3.select("#exBp2CbSpread").property("checked")}).then(() => console.log('transition done'))
+    }
+    function exBp2StackChanged() {
+      exBp2.setChartOpts({stacked: d3.select("#exBp2CbStack").property("checked")}).then(() => console.log('transition done'))
+    }
+    function exBp2CompositionChanged() {
+      exBp2.setChartOpts({composition: d3.select("#exBp2Composition").property("value")}).then(() => console.log('transition done'))
     }
 
-
-    // Example 3 & 4
+    // Examples butterfly 3 and 4
     d3.csv('./data/butterflies-16-19-vs-20.csv', function(d){
       for (p in d) {
         if (p !== 'taxon') {
@@ -337,7 +411,7 @@
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'line'
       }
-      if (bEx3) ex3 = brccharts.temporal(phen)
+      if (bexBp3) exBp3 = brccharts.temporal(phen)
 
       var phen1 = {
         selector: '#butterfly4',
@@ -375,13 +449,13 @@
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'line'
       }
-      if (bEx4) brccharts.temporal(phen1)
+      if (bexBp4) brccharts.temporal(phen1)
     })
-    function ex3button1Click(type) {
-      ex3.setChartOpts({metricExpression: type}).then(() => console.log('transition done'))
+    function exBp3button1Click(type) {
+      exBp3.setChartOpts({metricExpression: type}).then(() => console.log('transition done'))
     }
 
-    // Example 5
+    // Examples ladybird 1,2, 3 and 4
     d3.csv('./data/ladybirds-ds.csv', function(d){
       for (p in d) {
         if (p !== 'taxon') {
@@ -415,11 +489,11 @@
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'bar'
       }
-      if (bEx5) brccharts.temporal(opts)
+      if (bexLy2) brccharts.temporal(opts)
 
       opts.chartStyle = 'line'
       opts.selector = '#ladybird2'
-      if (bEx6) brccharts.temporal(opts)
+      if (bexLy2) brccharts.temporal(opts)
 
       var opts2 = {
         selector: '#ladybird3',
@@ -448,7 +522,7 @@
         periodType: 'year',
         chartStyle: 'bar'
       }
-      if (bEx7) brccharts.temporal(opts2)
+      if (bexLy3) brccharts.temporal(opts2)
 
       var opts3 = {
         selector: '#ladybird4',
@@ -475,17 +549,52 @@
         chartStyle: 'bar',
         stacked: false
       }
-      if (bEx8) ex8 = brccharts.temporal(opts3)
+      if (bexLy4) exLy4 = brccharts.temporal(opts3)
     })
 
-    function ex8SpreadChanged() {
-      ex8.setChartOpts({spread: d3.select("#ex8CbSpread").property("checked")}).then(() => console.log('transition done'))
-    }
+    function genData({
+      periodType = 'year',
+      nMin = 0,
+      nMax = 2000,
+      nProp = 2,
+      taxon = 'dummy'
+    } = {}) {
 
-    function ex8StackChanged() {
-      ex8.setChartOpts({stacked: d3.select("#ex8CbStack").property("checked")}).then(() => console.log('transition done'))
+      let periodMax, periodMin
+      if (periodType === 'month') {
+        periodMax = 12
+        periodMin = 1
+      } else if (periodType === 'week') {
+        periodMax = 52
+        periodMin = 1
+      } else {
+        periodMax = 2020
+        periodMin = 1990
+      }
+      const nRange = nMax-nMin
+      const pRange = periodMax-periodMin
+      const ret = []
+      let nPrev = {}
+      for (i=periodMin; i<=periodMax; i++) {
+        const p = {taxon: taxon, period: i}
+        for (j=1; j<=nProp; j++) {
+          const prop = `prop${j}`
+          let n;
+          if (i===periodMin) {
+            n = Math.random() * nRange
+          } else {
+            dn = Math.random() * nRange/10
+            n = Math.random() > 0.5 ? nPrev[prop] + dn : nPrev[prop] - dn
+          }
+          if (n < nMin) n = nMin
+          if (n > nMax) n = nMax
+          nPrev[prop] = n
+          p[prop] = n
+        }
+        ret.push(p)
+      }
+      return ret
     }
-    
   </script>
 </body>
 </html>

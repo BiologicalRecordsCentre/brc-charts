@@ -609,10 +609,10 @@
     }
   }
 
-  function spreadScale(yminY, ymaxY, yPadding, metrics, height, spread) {
+  function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition) {
     var fn, fnAxis, tickFormat, spreadHeight;
 
-    if (spread && metrics.length > 1) {
+    if (composition === 'spread' && metrics.length > 1) {
       // Work out height in 'sread units' - su.
       var overlap = 0.8;
       var bottom = 0.2;
@@ -8203,13 +8203,13 @@
     }
   }
 
-  function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, stacked) {
+  function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
     var chartBars = [];
     var cumulativeHeight = new Array(dataFiltered.length).fill(0);
 
     var metrics = _toConsumableArray(metricsPlus);
 
-    if (stacked) {
+    if (composition === 'stack') {
       metrics.reverse();
     }
 
@@ -8218,11 +8218,10 @@
         var bars = dataFiltered.map(function (d, j) {
           var n, height;
 
-          if (stacked) {
+          if (composition === 'stack') {
             n = yScale(d[m.prop], i) - cumulativeHeight[j];
             height = yScale(yminY, i) - yScale(d[m.prop], i);
             cumulativeHeight[j] += height;
-            console.log(i, j, n, height);
           } else {
             n = yScale(d[m.prop], i);
             height = yScale(yminY, i) - n;
@@ -8278,7 +8277,7 @@
     addEventHandlers$3(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity);
   }
 
-  function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, stacked) {
+  function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition) {
     var lineValues = function lineValues(points, iPart) {
       // console.log(iPart, points)
       // points.forEach(d => {
@@ -8299,10 +8298,17 @@
       return d3LineGen(points);
     };
 
+    var metrics = _toConsumableArray(metricsPlus);
+
+    if (composition === 'stack') {
+      metrics.reverse();
+    }
+
     var chartLines = [];
     var chartBands = [];
     var chartLineFills = [];
-    metricsPlus.forEach(function (m, iMetric) {
+    var displacement = {};
+    metrics.forEach(function (m, iMetric) {
       // Create a collection of the periods in the dataset.
       var dataDict = dataFiltered.reduce(function (a, d) {
         a[d.period] = d[m.prop];
@@ -8318,7 +8324,7 @@
           // or 'bridge' or 'break')
           return {
             period: y,
-            n: dataDict[y] ? dataDict[y] : missingValues
+            n: typeof dataDict[y] !== 'undefined' ? dataDict[y] : missingValues
           };
         }));
       } else {
@@ -8326,6 +8332,24 @@
       }
 
       pointSets.forEach(function (points, i) {
+        var pnts;
+
+        if (composition === 'stack') {
+          pnts = points.map(function (p) {
+            if (typeof displacement[p.period] !== 'undefined') {
+              var ret = {
+                n: p.n + displacement[p.period],
+                period: p.period
+              };
+              return ret;
+            } else {
+              return _objectSpread2({}, p);
+            }
+          });
+        } else {
+          pnts = points;
+        }
+
         chartLines.push({
           colour: m.colour,
           opacity: m.opacity,
@@ -8333,44 +8357,125 @@
           prop: m.prop,
           part: i,
           yMin: yminY,
-          pathEnter: lineValues(points.map(function (p) {
+          pathEnter: lineValues(pnts.map(function (p) {
             return {
               n: yminY,
               period: p.period
             };
           }), iMetric),
-          path: lineValues(points, iMetric)
+          path: lineValues(pnts, iMetric)
         });
-      }); // Construct data structure for main line fill
 
-      if (m.fill) {
-        pointSets.forEach(function (points, i) {
-          // Add points to take fill to minimum values and max and min period
-          var pFirst = {
-            period: points[0].period,
-            n: yminY
-          };
-          var pLast = {
-            period: points[points.length - 1].period,
-            n: yminY
-          };
+        if (m.fill) {
+          var pntsBase;
+
+          if (composition === 'stack' && iMetric > 0) {
+            // Add bottom line of area to match displacement
+            pntsBase = _toConsumableArray(points).reverse().map(function (p) {
+              if (typeof displacement[p.period] !== 'undefined') {
+                return {
+                  n: displacement[p.period],
+                  period: p.period
+                };
+              } else {
+                return {
+                  n: yminY,
+                  period: p.period
+                };
+              }
+            });
+          } else {
+            // Just add points to take fill to minimum values and max and min period,
+            //i.e. straight line across bottom
+            var pFirst = {
+              period: points[0].period,
+              n: yminY
+            };
+            var pLast = {
+              period: points[points.length - 1].period,
+              n: yminY
+            };
+            pntsBase = [pLast, pFirst];
+          }
+
           chartLineFills.push({
             opacity: m.opacity,
             fill: m.fill,
             prop: m.prop,
             part: i,
             yMin: yminY,
-            pathEnter: lineValues([].concat(_toConsumableArray(points), [pLast, pFirst]).map(function (p) {
+            pathEnter: lineValues([].concat(_toConsumableArray(pnts), _toConsumableArray(pntsBase)).map(function (p) {
               return {
                 n: yminY,
                 period: p.period
               };
             }), iMetric),
-            path: lineValues([].concat(_toConsumableArray(points), [pLast, pFirst]), iMetric)
+            path: lineValues([].concat(_toConsumableArray(pnts), _toConsumableArray(pntsBase)), iMetric)
           });
-        });
-      } // Construct data structure for confidence band on line charts.
+        } // Update displacement for stack displays
 
+
+        if (composition === 'stack') {
+          points.forEach(function (p) {
+            if (typeof displacement[p.period] === 'undefined') {
+              displacement[p.period] = p.n;
+            } else {
+              displacement[p.period] += p.n;
+            }
+          });
+        }
+      }); // Construct data structure for main line fill
+      // if (m.fill) {
+      //   pointSets.forEach((points, i) => {
+      //     let baseline 
+      //     if (composition === 'stack' && iMetric > 0) {
+      //       // Add bottom line of area to match displacement
+      //       const basePoints = [...points]
+      //       basePoints.reverse()
+      //       console.log('basePoints', basePoints)
+      //       baseline = basePoints.map(p => {
+      //         if (typeof(displacement[p.period]) !== 'undefined') {
+      //           return {
+      //             n: displacement[p.period],
+      //             period: p.period
+      //           }
+      //         } else {
+      //           return {
+      //             n: yminY,
+      //             period: p.period
+      //           }
+      //         }
+      //       })
+      //     } else {
+      //       // Just add points to take fill to minimum values and max and min period,
+      //       //i.e. straight line across bottom
+      //       const pFirst = {
+      //         period:  points[0].period,
+      //         n: yminY
+      //       }
+      //       const pLast = {
+      //         period: points[points.length-1].period,
+      //         n: yminY
+      //       }
+      //       baseline = [pLast, pFirst]
+      //     }
+      //     chartLineFills.push({
+      //       opacity: m.opacity,
+      //       fill: m.fill,
+      //       prop: m.prop,
+      //       part: i,
+      //       yMin: yminY,
+      //       pathEnter: lineValues([...points, ...baseline].map(p => {
+      //         return {
+      //           n: yminY,
+      //           period: p.period
+      //         }
+      //       }), iMetric),
+      //       path: lineValues([...points, ...baseline], iMetric)
+      //     })
+      //   })
+      // }
+      // Construct data structure for confidence band on line charts.
 
       if (m.bandUpper && m.bandLower) {
         var ddUpper = dataFiltered.reduce(function (a, d) {
@@ -8605,7 +8710,8 @@
         var ret = _toConsumableArray(pnts);
 
         retSet.push(ret); // If missing period values are being bridged, add a point at last
-        // known value.
+        // known value. Have to traverse the array in both directions in
+        // order to correctly set leading and trailing 'bridge' values.
 
         for (var i = 0; i < pnts.length; i++) {
           if (pnts[i].n === 'bridge' && i > 0) {
@@ -8958,7 +9064,7 @@
   }
 
   function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, spread, stacked, pTrans) {
+  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, pTrans) {
     // Pre-process data.
     // Filter to named taxon and to min and max period and sort in period order
     // Adjust metrics data to accoutn for metricExpress value.
@@ -9013,14 +9119,26 @@
       };
     }); //Set the min and maximum values for the y axis
 
+    function v(d) {
+      return typeof d === 'number';
+    }
+
     var missing = [];
 
     if (typeof missingValues === 'number') {
       missing = [missingValues];
     }
 
-    function v(d) {
-      return typeof d === 'number';
+    var cumulativeTotals = [];
+
+    if (composition === 'stack') {
+      // For stacked displays, need to creat cumulative totals array
+      cumulativeTotals = new Array(dataFiltered.length).fill(0);
+      dataFiltered.forEach(function (d, i) {
+        metricsPlus.forEach(function (m) {
+          cumulativeTotals[i] += d[m.prop];
+        });
+      });
     }
 
     var maxMetricYs = metricsPlus.map(function (m) {
@@ -9039,7 +9157,7 @@
       })), _toConsumableArray(missing)));
     });
     var maxYA = maxY !== null ? [maxY] : [];
-    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return v(d.upper);
@@ -9082,15 +9200,7 @@
       if (ymaxY < minMaxY) {
         ymaxY = minMaxY;
       }
-    } // if (yAxisOpts.minMax !== null) {
-    //   if (ymaxY < yAxisOpts.minMax) {
-    //     ymaxY = yAxisOpts.minMax
-    //   }
-    // }
-    // if (yAxisOpts.fixedMin !== null) {
-    //   yminY = yAxisOpts.fixedMin
-    // }
-    // Value scales
+    } // Value scales
 
 
     var periods = [];
@@ -9102,7 +9212,7 @@
     var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
     var yPadding = (ymaxY - yminY) * yPadPercent / 100;
     var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
-    var yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, spread); // Top axis
+    var yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, composition); // Top axis
 
     var tAxis;
 
@@ -9170,10 +9280,10 @@
 
     generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans); //if (chartStyle === 'bar') {
 
-    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, stacked); //}
+    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition); //}
     //if (chartStyle === 'line') {
 
-    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle); //}
+    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition); //}
 
     generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity);
     generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
@@ -9346,7 +9456,6 @@
    * @param {number} opts.margin.bottom - Bottom margin in pixels. (Default - 20.)
    * @param {number} opts.perRow - The number of sub-charts per row. (Default - 2.)
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)
-   * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart. (Default - false.)
    * @param {string} opts.title - Title for the chart. (Default - ''.)
    * @param {string} opts.subtitle - Subtitle for the chart. (Default - ''.)
    * @param {string} opts.footer - Footer for the chart. (Default - ''.)
@@ -9474,7 +9583,9 @@
    * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines. (Default - 'curveLinear'.)
    * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
    * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
-   * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked. (Default - false.)
+   * @param {string} opts.composition - Indicates how to display multiple metrics. If set to empty string then the metrics
+   * values are overlaid on each other, setting to 'stack' stacks the graphics and setting to 'spread' spreads them
+   * vertically across the chart. (Default - ''.)
    * @returns {module:temporal~api} api - Returns an API for the chart.
    */
 
@@ -9499,8 +9610,6 @@
         perRow = _ref$perRow === void 0 ? 2 : _ref$perRow,
         _ref$expand = _ref.expand,
         expand = _ref$expand === void 0 ? false : _ref$expand,
-        _ref$spread = _ref.spread,
-        spread = _ref$spread === void 0 ? false : _ref$spread,
         _ref$title = _ref.title,
         title = _ref$title === void 0 ? '' : _ref$title,
         _ref$subtitle = _ref.subtitle,
@@ -9591,8 +9700,8 @@
         verticals = _ref$verticals === void 0 ? [] : _ref$verticals,
         _ref$metricExpression = _ref.metricExpression,
         metricExpression = _ref$metricExpression === void 0 ? '' : _ref$metricExpression,
-        _ref$stacked = _ref.stacked,
-        stacked = _ref$stacked === void 0 ? false : _ref$stacked;
+        _ref$composition = _ref.composition,
+        composition = _ref$composition === void 0 ? '' : _ref$composition;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (chartStyle === 'bar') {
@@ -9646,7 +9755,7 @@
       var pTrans = [];
       var svgsTaxa = taxa.map(function (t) {
         return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, spread, stacked, pTrans);
+        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -9673,7 +9782,7 @@
           iFade = ++iFading;
           strokeWidth = 1;
         } else {
-          strokeWidth = m.linewidth ? m.linewidth : 2;
+          strokeWidth = m.linewidth ? m.linewidth : 1;
         }
 
         return {
@@ -9720,8 +9829,7 @@
       //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
       * @param {string} opts.metricExpression - Indicates how the metric is expressed can be '' to leave as is, or 'proportion' to express as a proportion of
       * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
-      * @param {boolean} opts.spread - Indicates whether multiple metrics are to be spread vertically across the chart.
-      * @param {boolean} opts.stacked - Indicates whether or not metrics should be stacked.
+      * @param {string} opts.composition - Indicates how to display multiple metrics.
       * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
@@ -9807,13 +9915,8 @@
         remakeChart = true;
       }
 
-      if ('spread' in opts) {
-        spread = opts.spread;
-        remakeChart = true;
-      }
-
-      if ('stacked' in opts) {
-        stacked = opts.stacked;
+      if ('composition' in opts) {
+        composition = opts.composition;
         remakeChart = true;
       }
 

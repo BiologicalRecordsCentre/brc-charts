@@ -20,8 +20,9 @@ export function generateLines(
   svgChart, 
   interactivity,
   chartStyle,
-  stacked
+  composition
 ) {
+
 
   const lineValues = (points, iPart) => {
     // console.log(iPart, points)
@@ -39,11 +40,17 @@ export function generateLines(
     return d3LineGen(points)
   }
 
+  const metrics = [...metricsPlus]
+  if (composition === 'stack') {
+    metrics.reverse()
+  }
+
   let chartLines = []
   let chartBands = []
   let chartLineFills = []
+  const displacement = {}
 
-  metricsPlus.forEach((m, iMetric) => {
+  metrics.forEach((m, iMetric) => {
       // Create a collection of the periods in the dataset.
     const dataDict = dataFiltered.reduce((a,d) => {
       a[d.period]=d[m.prop]
@@ -59,7 +66,7 @@ export function generateLines(
         // or 'bridge' or 'break')
         return {
           period: y,
-          n: dataDict[y] ? dataDict[y] : missingValues,
+          n: typeof(dataDict[y]) !== 'undefined' ? dataDict[y] : missingValues,
         }
       }))
     } else {
@@ -67,6 +74,24 @@ export function generateLines(
     }
 
     pointSets.forEach((points, i) => {
+
+      let pnts
+      if (composition === 'stack') {
+        pnts = points.map(p => {
+          if (typeof(displacement[p.period]) !== 'undefined') {
+            const ret = {
+              n: p.n + displacement[p.period],
+              period: p.period
+            }
+            return ret
+          } else {
+            return {...p}
+          }
+        })
+      } else {
+        pnts = points
+      }
+
       chartLines.push({
         colour: m.colour,
         opacity: m.opacity,
@@ -74,46 +99,129 @@ export function generateLines(
         prop: m.prop,
         part: i,
         yMin: yminY,
-        pathEnter: lineValues(points.map(p => {
+        pathEnter: lineValues(pnts.map(p => {
           return {
             n: yminY,
             period: p.period
           }
         }), iMetric),
-        path: lineValues(points, iMetric)
+        path: lineValues(pnts, iMetric)
       })
-    })
 
-    // Construct data structure for main line fill
-    if (m.fill) {
-
-      pointSets.forEach((points, i) => {
-        // Add points to take fill to minimum values and max and min period
-        const pFirst = {
-          period:  points[0].period,
-          n: yminY
+      if (m.fill) {
+        let pntsBase 
+        if (composition === 'stack' && iMetric > 0) {
+          // Add bottom line of area to match displacement
+          pntsBase = [...points].reverse().map(p => {
+            if (typeof(displacement[p.period]) !== 'undefined') {
+              return {
+                n: displacement[p.period],
+                period: p.period
+              }
+            } else {
+              return {
+                n: yminY,
+                period: p.period
+              }
+            }
+          })
+        } else {
+          // Just add points to take fill to minimum values and max and min period,
+          //i.e. straight line across bottom
+          const pFirst = {
+            period:  points[0].period,
+            n: yminY
+          }
+          const pLast = {
+            period: points[points.length-1].period,
+            n: yminY
+          }
+          pntsBase = [pLast, pFirst]
         }
-        const pLast = {
-          period: points[points.length-1].period,
-          n: yminY
-        }
-
         chartLineFills.push({
           opacity: m.opacity,
           fill: m.fill,
           prop: m.prop,
           part: i,
           yMin: yminY,
-          pathEnter: lineValues([...points, pLast, pFirst].map(p => {
+          pathEnter: lineValues([...pnts, ...pntsBase].map(p => {
             return {
               n: yminY,
               period: p.period
             }
           }), iMetric),
-          path: lineValues([...points, pLast, pFirst], iMetric)
+          path: lineValues([...pnts, ...pntsBase], iMetric)
         })
-      })
-    }
+      }
+
+      // Update displacement for stack displays
+      if (composition === 'stack') {
+        points.forEach(p => {
+          if (typeof(displacement[p.period]) === 'undefined') {
+            displacement[p.period] = p.n
+          } else {
+            displacement[p.period] += p.n
+          }
+        })
+      }
+    })
+
+    // Construct data structure for main line fill
+    // if (m.fill) {
+
+    //   pointSets.forEach((points, i) => {
+
+    //     let baseline 
+    //     if (composition === 'stack' && iMetric > 0) {
+    //       // Add bottom line of area to match displacement
+    //       const basePoints = [...points]
+    //       basePoints.reverse()
+
+    //       console.log('basePoints', basePoints)
+
+    //       baseline = basePoints.map(p => {
+    //         if (typeof(displacement[p.period]) !== 'undefined') {
+    //           return {
+    //             n: displacement[p.period],
+    //             period: p.period
+    //           }
+    //         } else {
+    //           return {
+    //             n: yminY,
+    //             period: p.period
+    //           }
+    //         }
+    //       })
+    //     } else {
+    //       // Just add points to take fill to minimum values and max and min period,
+    //       //i.e. straight line across bottom
+    //       const pFirst = {
+    //         period:  points[0].period,
+    //         n: yminY
+    //       }
+    //       const pLast = {
+    //         period: points[points.length-1].period,
+    //         n: yminY
+    //       }
+    //       baseline = [pLast, pFirst]
+    //     }
+
+    //     chartLineFills.push({
+    //       opacity: m.opacity,
+    //       fill: m.fill,
+    //       prop: m.prop,
+    //       part: i,
+    //       yMin: yminY,
+    //       pathEnter: lineValues([...points, ...baseline].map(p => {
+    //         return {
+    //           n: yminY,
+    //           period: p.period
+    //         }
+    //       }), iMetric),
+    //       path: lineValues([...points, ...baseline], iMetric)
+    //     })
+    //   })
+    // }
 
     // Construct data structure for confidence band on line charts.
     if (m.bandUpper && m.bandLower ) {
@@ -323,7 +431,8 @@ export function generateLines(
       retSet.push(ret)
 
       // If missing period values are being bridged, add a point at last
-      // known value.
+      // known value. Have to traverse the array in both directions in
+      // order to correctly set leading and trailing 'bridge' values.
       for (let i = 0; i < pnts.length; i++) {
         if (pnts[i].n === 'bridge' && i > 0) {
           pnts[i].n = pnts[i-1].n
