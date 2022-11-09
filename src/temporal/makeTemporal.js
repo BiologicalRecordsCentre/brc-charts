@@ -237,12 +237,8 @@ export function makeTemporal (
 
   // Generate/regenerate chart elements
   generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans)
-  //if (chartStyle === 'bar') {
-    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY,  svgChart, interactivity, chartStyle, composition)
-  //}
-  //if (chartStyle === 'line') {
-    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition)
-  //}
+  generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY,  svgChart, interactivity, chartStyle, composition)
+  generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition)
   generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity)
   generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
   generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans)
@@ -276,6 +272,7 @@ export function makeTemporal (
     // Position chart
     gTemporal.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
     
+  //} else {
     // Create axes and position within SVG
     const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
     const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`

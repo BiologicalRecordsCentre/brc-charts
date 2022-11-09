@@ -33,10 +33,26 @@
     <h3>Example - interactive features</h3>
     <div id='interactive'></div>
     <button onclick="exIgenData()">New data</button>
-    <select id="exIperiodType" onchange='exIgenData()'>
+    <select id="exIperiodType" onchange='exIChangePeriodType()'>
       <option value="year" selected>Year</option>
       <option value="month">Month</option>
       <option value="week">Week</option>
+    </select>
+    <br/><br/>
+    <select id="exIchartStyle" onchange='exIchartStyleChanged()'>
+      <option value="line" selected>Lines</option>
+      <option value="area">Areas</option>
+      <option value="bar">Bars</option>
+    </select>
+    <select id="exIcomposition" onchange='exIcompositionChanged()'>
+      <option value="" selected>Overlay</option>
+      <option value="stack">Stacked</option>
+      <option value="spread">Spread</option>
+    </select>
+    <select id="exImetricExpression" onchange='exImetricExpressionChanged()'>
+      <option value="" selected>Counts</option>
+      <option value="proportion">Proportions</option>
+      <option value="normalized">Normalized</option>
     </select>
 
     <h3>Example - butterfly phenology 1</h3>
@@ -123,28 +139,26 @@
 
 
     // Example interactive
-
-    var data = genData({periodType: 'year'})
-    console.log(data)
+    var metricsInteractive =  [
+      { prop: 'prop1', label: 'prop1', colour: 'red', fill: 'red', opacity: 1, fillOpacity: 0.5, strokeWidth: 2 },
+      { prop: 'prop2', label: 'prop2', colour: 'blue',  fill: 'blue', opacity: 1, fillOpacity: 0.5 },
+    ]
     var optsInteractive = {
       selector: '#interactive',
-      data: data,
       //missingValues: 'bridge',
       //missingValues: 0,
+      periodType: 'year',
+      data: genData({periodType: 'year'}),
       minPeriodTrans: 1,
-      maxPeriodTrans: 52,
+      maxPeriodTrans: 53,
       taxa: ['dummy'],
       metricExpression: '',
       //yPadPercent: 5,
       minMaxY: null,
-      periodType: 'year',
       //lineInterpolator: 'curveMonotoneX',
       //lineInterpolator: 'curveCardinal',
       chartStyle: 'line',
-      metrics: [
-        { prop: 'prop1', label: 'prop1', colour: 'red' },
-        { prop: 'prop2', label: 'prop2', colour: 'blue' },
-      ],
+      metrics: metricsInteractive,
       showLegend: true,
       showTaxonLabel: false,
       interactivity: 'mousemove',
@@ -153,16 +167,38 @@
       expand: true,
       perRow: 1,
       margin: {left: 48, right: 0, top: 20, bottom: 15},
+      //minY: 0
     }
     interactive = brccharts.temporal(optsInteractive)
-
+    
     function exIgenData() {
-
       const periodType = d3.select("#exIperiodType").property("value")
-      console.log(periodType)
       const data = genData({periodType: periodType})
       console.log(data)
-      interactive.setChartOpts({data: data, periodType: periodType})
+      interactive.setChartOpts({data: data})
+    }
+    function exIChangePeriodType() {
+      const opts = {...optsInteractive}
+      const periodType = d3.select("#exIperiodType").property("value")
+      opts.data = genData({periodType: periodType})
+      opts.periodType =periodType
+      d3.select('#interactive').html('')
+      interactive = brccharts.temporal(opts)
+    }
+    function exIchartStyleChanged() {
+      const chartStyle = d3.select("#exIchartStyle").property("value")
+      optsInteractive.chartStyle = chartStyle
+      interactive.setChartOpts({chartStyle: chartStyle})
+    }
+    function exIcompositionChanged() {
+      const composition = d3.select("#exIcomposition").property("value")
+      optsInteractive.composition = composition
+      interactive.setChartOpts({composition: composition})
+    }
+    function exImetricExpressionChanged() {
+      const metricExpression = d3.select("#exImetricExpression").property("value")
+      optsInteractive.metricExpression = metricExpression
+      interactive.setChartOpts({metricExpression: metricExpression})
     }
 
     // Example butterfly 1

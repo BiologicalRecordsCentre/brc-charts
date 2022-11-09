@@ -4,7 +4,8 @@ import { addEventHandlers } from './highlightitem'
 export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
 
   let chartBars = []
-  const cumulativeHeight = new Array(dataFiltered.length).fill(0)
+  //const cumulativeHeight = new Array(dataFiltered.length).fill(0)
+  const displacement = {}
 
   const metrics = [...metricsPlus]
   if (composition === 'stack') {
@@ -12,25 +13,30 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
   }
   metrics.forEach((m, i) => {
     if (chartStyle === 'bar') {
-      const bars = dataFiltered.map((d,j) => {
-
-        let n, height
+      const bars = dataFiltered.map(d => {
+        let n, barHeight
         if (composition === 'stack') {
-          n = yScale(d[m.prop], i) - cumulativeHeight[j]
-          height = yScale(yminY, i) - yScale(d[m.prop], i)
-          cumulativeHeight[j] += height
+          const displace = displacement[d.period] 
+          if (typeof(displace) === 'undefined') {
+            n = yScale(d[m.prop], i)
+            barHeight = height - n
+            displacement[d.period] = d[m.prop]
+          } else {
+            n = yScale(d[m.prop] + displace, i)
+            barHeight = yScale(displace, i) - n
+            displacement[d.period] += d[m.prop]
+          }
         } else {
-          n = yScale(d[m.prop], i)
-          height = yScale(yminY, i) - n
+           n = yScale(d[m.prop], i)
+           barHeight = yScale(yminY, i) - n
         }
-
         return {
           colour: m.colour,
-          opacity: m.opacity,
+          opacity: m.fillOpacity,
           prop: m.prop,
           period: d.period,
           n: n,
-          height: height
+          height: barHeight
         }
       })
       chartBars = [...chartBars, ...bars]

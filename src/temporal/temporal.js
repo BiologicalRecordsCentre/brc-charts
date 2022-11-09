@@ -57,7 +57,7 @@ import { highlightItem } from './highlightitem'
  * (Optional - default is 'blue'.)
  * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
  * (Optional - default is 0.5.)
- * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+ * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
  * (Optional - default is 1.)
  * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
  * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
@@ -344,12 +344,13 @@ export function temporal({
         iFade = ++iFading
         strokeWidth = 1
       } else {
-        strokeWidth = m.linewidth ? m.linewidth : 1
+        strokeWidth = m.strokeWidth ? m.strokeWidth : 1
       }
       return {
         prop: m.prop,
         label: m.label ?  m.label : m.prop,
-        opacity: m.opacity !== 'undefined' ? m.opacity : 0.5,
+        opacity: m.opacity !== 'undefined' ? m.opacity : 1,
+        fillOpacity: m.fillOpacity !== 'undefined' ? m.fillOpacity : 0.5,
         colour: m.colour ? m.colour : 'blue',
         fill: m.fill,
         fading: iFade,
@@ -398,6 +399,7 @@ export function temporal({
   * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
   * @param {string} opts.composition - Indicates how to display multiple metrics.
   * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
+  * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'.
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -436,6 +438,10 @@ export function temporal({
     }
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
+    }
+    if ('periodType' in opts) {
+      periodType = opts.periodType
+      remakeChart = true
     }
     if ('minPeriod' in opts) {
       minPeriod = opts.minPeriod

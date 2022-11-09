@@ -57,9 +57,9 @@ export function generateLines(
       return a
     }, {})
 
-    // Construct data structure for line charts.
+    // Construct data structure for line/area charts.
     let pointSets
-    if (dataFiltered.length && chartStyle === 'line') {
+    if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
       pointSets = adjustForTrans(periods.map(y => {
         // Replace any missing values (for a given period)
         // with the missing value specified (can be a value
@@ -108,38 +108,30 @@ export function generateLines(
         path: lineValues(pnts, iMetric)
       })
 
-      if (m.fill) {
-        let pntsBase 
-        if (composition === 'stack' && iMetric > 0) {
-          // Add bottom line of area to match displacement
-          pntsBase = [...points].reverse().map(p => {
-            if (typeof(displacement[p.period]) !== 'undefined') {
-              return {
-                n: displacement[p.period],
-                period: p.period
-              }
-            } else {
-              return {
-                n: yminY,
-                period: p.period
-              }
+      console.log('chartLines', chartLines)
+
+      if (chartStyle === 'area') {
+        // Add bottom line of area to match displacement
+        // Always add the same number of points to a baseline
+        // as in the mainline - even if it is unstacked (straight line)
+        // in order to give nice transitions if switching from overlayed
+        // (or spread) to stacked and visa versa.
+        const pntsBase = [...points].reverse().map(p => {
+          if (typeof(displacement[p.period]) !== 'undefined') {
+            return {
+              n: displacement[p.period],
+              period: p.period
             }
-          })
-        } else {
-          // Just add points to take fill to minimum values and max and min period,
-          //i.e. straight line across bottom
-          const pFirst = {
-            period:  points[0].period,
-            n: yminY
+          } else {
+            return {
+              n: yminY,
+              period: p.period
+            }
           }
-          const pLast = {
-            period: points[points.length-1].period,
-            n: yminY
-          }
-          pntsBase = [pLast, pFirst]
-        }
+        })
+       
         chartLineFills.push({
-          opacity: m.opacity,
+          opacity: m.fillOpacity,
           fill: m.fill,
           prop: m.prop,
           part: i,
@@ -154,74 +146,25 @@ export function generateLines(
         })
       }
 
-      // Update displacement for stack displays
+      // Update displacement for stack displays.
       if (composition === 'stack') {
+        let lastPeriod = null
         points.forEach(p => {
           if (typeof(displacement[p.period]) === 'undefined') {
             displacement[p.period] = p.n
           } else {
-            displacement[p.period] += p.n
+            if (p.period !== lastPeriod) {
+              // Because the adjustForTrans function can create duplicate
+              // points for a given period (to create better transitions)
+              // we need avoid updating the displacement more than once
+              // for any given period.
+              displacement[p.period] += p.n
+            }
           }
+          lastPeriod = p.period
         })
       }
     })
-
-    // Construct data structure for main line fill
-    // if (m.fill) {
-
-    //   pointSets.forEach((points, i) => {
-
-    //     let baseline 
-    //     if (composition === 'stack' && iMetric > 0) {
-    //       // Add bottom line of area to match displacement
-    //       const basePoints = [...points]
-    //       basePoints.reverse()
-
-    //       console.log('basePoints', basePoints)
-
-    //       baseline = basePoints.map(p => {
-    //         if (typeof(displacement[p.period]) !== 'undefined') {
-    //           return {
-    //             n: displacement[p.period],
-    //             period: p.period
-    //           }
-    //         } else {
-    //           return {
-    //             n: yminY,
-    //             period: p.period
-    //           }
-    //         }
-    //       })
-    //     } else {
-    //       // Just add points to take fill to minimum values and max and min period,
-    //       //i.e. straight line across bottom
-    //       const pFirst = {
-    //         period:  points[0].period,
-    //         n: yminY
-    //       }
-    //       const pLast = {
-    //         period: points[points.length-1].period,
-    //         n: yminY
-    //       }
-    //       baseline = [pLast, pFirst]
-    //     }
-
-    //     chartLineFills.push({
-    //       opacity: m.opacity,
-    //       fill: m.fill,
-    //       prop: m.prop,
-    //       part: i,
-    //       yMin: yminY,
-    //       pathEnter: lineValues([...points, ...baseline].map(p => {
-    //         return {
-    //           n: yminY,
-    //           period: p.period
-    //         }
-    //       }), iMetric),
-    //       path: lineValues([...points, ...baseline], iMetric)
-    //     })
-    //   })
-    // }
 
     // Construct data structure for confidence band on line charts.
     if (m.bandUpper && m.bandLower ) {
@@ -366,7 +309,7 @@ export function generateLines(
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", d => d.path)
-      .attr("opacity", d => d.opacity)
+      .attr("opacity", d => d.strokeOpacity)
       .attr("stroke", d => d.colour)
       .attr("stroke-width", d => d.strokeWidth), pTrans))
 
@@ -393,7 +336,7 @@ export function generateLines(
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", d => d.path)
-      .attr("opacity", d => d.fillOpacity)
+      .attr("opacity", d => d.opacity)
       .attr("fill", d => d.fill), pTrans))
 
   addEventHandlers(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
@@ -419,6 +362,7 @@ export function generateLines(
         pntsSplit[pntsSplit.length - 1].push(p)
       }
     })
+
     // At this point pntsSplit could have empty arrays, e.g. if there
     // where consecutive 'breaks' so weed these out.
     pntsSplit = pntsSplit.filter(a => a.length > 0)
