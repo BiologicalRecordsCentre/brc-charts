@@ -377,6 +377,7 @@ export function temporal({
     metricsPlus.forEach(m => {
       if (m.fading) {
         m.colour = grey(m.fading)
+        m.fill = grey(m.fading)
       }
     })
   }
@@ -400,6 +401,8 @@ export function temporal({
   * @param {string} opts.composition - Indicates how to display multiple metrics.
   * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
   * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'.
+  * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines (see main interface for details).
+  * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated (see main interface for details).
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -483,12 +486,16 @@ export function temporal({
       dataTrendLines = opts.dataTrendLines
       remakeChart = true
     }
-    // if ('yAxisOpts' in opts) {
-    //   yAxisOpts = opts.yAxisOpts
-    //   remakeChart = true
-    // }
     if ('metricExpression' in opts) {
       metricExpression = opts.metricExpression
+      remakeChart = true
+    }
+    if ('lineInterpolator' in opts) {
+      lineInterpolator = opts.lineInterpolator
+      remakeChart = true
+    }
+    if ('missingValues' in opts) {
+      missingValues = opts.missingValues
       remakeChart = true
     }
     if ('chartStyle' in opts) {

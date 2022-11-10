@@ -8204,8 +8204,7 @@
   }
 
   function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
-    var chartBars = []; //const cumulativeHeight = new Array(dataFiltered.length).fill(0)
-
+    var chartBars = [];
     var displacement = {};
 
     var metrics = _toConsumableArray(metricsPlus);
@@ -8374,7 +8373,6 @@
           }), iMetric),
           path: lineValues(pnts, iMetric)
         });
-        console.log('chartLines', chartLines);
 
         if (chartStyle === 'area') {
           // Add bottom line of area to match displacement
@@ -8402,13 +8400,13 @@
             prop: m.prop,
             part: i,
             yMin: yminY,
-            pathEnter: lineValues([].concat(_toConsumableArray(pnts), _toConsumableArray(pntsBase)).map(function (p) {
+            pathEnter: lineValues(pnts, iMetric) + lineValues(pntsBase.map(function (p) {
               return {
                 n: yminY,
                 period: p.period
               };
-            }), iMetric),
-            path: lineValues([].concat(_toConsumableArray(pnts), _toConsumableArray(pntsBase)), iMetric)
+            }), iMetric).replace('M', 'L'),
+            path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
           });
         } // Update displacement for stack displays.
 
@@ -8709,17 +8707,41 @@
     }
   }
 
-  function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
+  function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
     var chartPoints = [];
     var chartErrorBars = [];
-    metricsPlus.forEach(function (m) {
+    var displacement = {};
+
+    var metrics = _toConsumableArray(metricsPlus);
+
+    if (composition === 'stack') {
+      metrics.reverse();
+    }
+
+    metrics.forEach(function (m, i) {
       // Construct data structure for points.
       // TODO - if at some point we parameterise display styles
       // for points bars, then it must be specified in here.
       if (m.points) {
         var points = dataFiltered.filter(function (d) {
-          return d[m.prop];
+          return typeof d[m.prop] !== 'undefined';
         }).map(function (d) {
+          var n;
+
+          if (composition === 'stack') {
+            var displace = displacement[d.period];
+
+            if (typeof displace === 'undefined') {
+              n = yScale(d[m.prop], i);
+              displacement[d.period] = d[m.prop];
+            } else {
+              n = yScale(d[m.prop] + displace, i);
+              displacement[d.period] += d[m.prop];
+            }
+          } else {
+            n = yScale(d[m.prop], i);
+          }
+
           var x;
 
           if (chartStyle === 'bar') {
@@ -8730,7 +8752,7 @@
 
           return {
             x: x,
-            y: yScale(d[m.prop]),
+            y: n,
             period: d.period,
             prop: m.prop
           };
@@ -9237,7 +9259,7 @@
     generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans);
     generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition);
     generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition);
-    generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity);
+    generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
     generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
     generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans);
 
@@ -9764,6 +9786,7 @@
       metricsPlus.forEach(function (m) {
         if (m.fading) {
           m.colour = grey(m.fading);
+          m.fill = grey(m.fading);
         }
       });
     }
@@ -9786,6 +9809,8 @@
       * @param {string} opts.composition - Indicates how to display multiple metrics.
       * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
       * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'.
+      * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines (see main interface for details).
+      * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated (see main interface for details).
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
@@ -9888,14 +9913,20 @@
       if ('dataTrendLines' in opts) {
         dataTrendLines = opts.dataTrendLines;
         remakeChart = true;
-      } // if ('yAxisOpts' in opts) {
-      //   yAxisOpts = opts.yAxisOpts
-      //   remakeChart = true
-      // }
-
+      }
 
       if ('metricExpression' in opts) {
         metricExpression = opts.metricExpression;
+        remakeChart = true;
+      }
+
+      if ('lineInterpolator' in opts) {
+        lineInterpolator = opts.lineInterpolator;
+        remakeChart = true;
+      }
+
+      if ('missingValues' in opts) {
+        missingValues = opts.missingValues;
         remakeChart = true;
       }
 

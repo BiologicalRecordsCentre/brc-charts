@@ -1,3 +1,39 @@
+.brc-chart-pie {
+  width: 100%
+}
+
+.brc-chart-pie-legend {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie-chart {
+  float:left;
+  overflow:hidden;
+}
+
+.brc-chart-pie path.brc-lowlight, .brc-chart-pie .legendSwatch.brc-lowlight, .brc-chart-pie .legendText.brc-lowlight {
+  opacity: 0.3 !important;
+}
+
+.brc-chart-pie .brc-item-image-hide {
+  display: none;
+}
+
+.brc-chart-pie .labelsPie.brc-lowlight, .brc-chart-pie .labelsPieHighlight.brc-lowlight {
+  opacity: 0;
+}
+
+.brc-chart-pie .labelsPie.brc-highlight, .brc-chart-pie .labelsPieHighlight.brc-highlight {
+  opacity: 1;
+  font-weight: bolder;
+  text-shadow: -1px 1px 2px #000,
+    1px 1px 2px #000,
+    1px -1px 0 #000,
+    -1px -1px 0 #000;
+}
+
+
 .blah {
     background: red;
 }
@@ -60,62 +96,7 @@ svg {
 #phen2-chart .mainChart {
     overflow: visible;
 }
-.brc-chart-pie {
-  width: 100%
-}
-
-.brc-chart-pie-legend {
-  float:left;
-  overflow:hidden;
-}
-
-.brc-chart-pie-chart {
-  float:left;
-  overflow:hidden;
-}
-
-.brc-chart-pie path.brc-lowlight, .brc-chart-pie .legendSwatch.brc-lowlight, .brc-chart-pie .legendText.brc-lowlight {
-  opacity: 0.3 !important;
-}
-
-.brc-chart-pie .brc-item-image-hide {
-  display: none;
-}
-
-.brc-chart-pie .labelsPie.brc-lowlight, .brc-chart-pie .labelsPieHighlight.brc-lowlight {
-  opacity: 0;
-}
-
-.brc-chart-pie .labelsPie.brc-highlight, .brc-chart-pie .labelsPieHighlight.brc-highlight {
-  opacity: 1;
-  font-weight: bolder;
-  text-shadow: -1px 1px 2px #000,
-    1px 1px 2px #000,
-    1px -1px 0 #000,
-    -1px -1px 0 #000;
-}
-
-
-/* .brc-chart-yearly path {
-    fill: none;
-} */
-
-.brc-chart-yearly {
-    overflow: visible;
-}
-.brc-chart-yearly .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-    stroke-opacity: 1;
-    fill-opacity: 1;
-}
-
-.brc-chart-yearly .lowlight {
-    opacity: 0.2;
-    stroke-opacity: 0.2;
-    fill-opacity: 0.2;
-}.brc-chart-accum path {
+.brc-chart-accum path {
     fill: none;
 }
 
@@ -155,21 +136,25 @@ svg {
 
 .brc-chart-accum .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-trend path {
+}/* .brc-chart-yearly path {
     fill: none;
-}
+} */
 
-.brc-chart-trend {
+.brc-chart-yearly {
     overflow: visible;
 }
-.brc-chart-trend .highlight {
+.brc-chart-yearly .highlight {
     /* stroke: black;
     stroke-width: 3; */
     opacity: 1;
+    stroke-opacity: 1;
+    fill-opacity: 1;
 }
 
-.brc-chart-trend .lowlight {
-    opacity: 0.1;
+.brc-chart-yearly .lowlight {
+    opacity: 0.2;
+    stroke-opacity: 0.2;
+    fill-opacity: 0.2;
 }
 .chart-overflow svg {
     overflow: visible;
@@ -230,12 +215,32 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}.brc-chart-trend path {
+    fill: none;
+}
+
+.brc-chart-trend {
+    overflow: visible;
+}
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-trend .lowlight {
+    opacity: 0.1;
 }.brc-chart-temporal {
     overflow: visible;
 }
 
 .brc-chart-temporal .temporal-graphic.lowlight {
-    opacity:0.1;
+    opacity:0.1 !important;
+}
+
+
+.brc-chart-temporal circle.temporal-graphic.highlight {
+    fill: red;
 }
 
 .brc-chart-temporal .temporal-line.highlight {

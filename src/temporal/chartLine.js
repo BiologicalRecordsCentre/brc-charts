@@ -108,8 +108,6 @@ export function generateLines(
         path: lineValues(pnts, iMetric)
       })
 
-      console.log('chartLines', chartLines)
-
       if (chartStyle === 'area') {
         // Add bottom line of area to match displacement
         // Always add the same number of points to a baseline
@@ -136,13 +134,13 @@ export function generateLines(
           prop: m.prop,
           part: i,
           yMin: yminY,
-          pathEnter: lineValues([...pnts, ...pntsBase].map(p => {
+          pathEnter: lineValues(pnts, iMetric) + lineValues(pntsBase.map(p => {
             return {
               n: yminY,
               period: p.period
             }
-          }), iMetric),
-          path: lineValues([...pnts, ...pntsBase], iMetric)
+          }), iMetric).replace('M', 'L'),
+          path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
         })
       }
 

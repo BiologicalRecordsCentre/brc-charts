@@ -3,7 +3,7 @@
 }
 
 .brc-chart-temporal .temporal-graphic.lowlight {
-    opacity:0.1;
+    opacity:0.1 !important;
 }
 
 .brc-chart-temporal .temporal-line.highlight {

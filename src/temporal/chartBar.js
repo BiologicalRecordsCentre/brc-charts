@@ -4,7 +4,6 @@ import { addEventHandlers } from './highlightitem'
 export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
 
   let chartBars = []
-  //const cumulativeHeight = new Array(dataFiltered.length).fill(0)
   const displacement = {}
 
   const metrics = [...metricsPlus]

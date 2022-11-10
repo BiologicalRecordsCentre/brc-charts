@@ -1,17 +1,38 @@
 import { transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
+export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
 
   let chartPoints = []
   let chartErrorBars = []
+  const displacement = {}
 
-  metricsPlus.forEach(m => {
+  const metrics = [...metricsPlus]
+  if (composition === 'stack') {
+    metrics.reverse()
+  }
+
+  metrics.forEach((m,i) => {
     // Construct data structure for points.
     // TODO - if at some point we parameterise display styles
     // for points bars, then it must be specified in here.
     if (m.points) {
-      const points = dataFiltered.filter(d => d[m.prop]).map(d => {
+      const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
+
+        let n
+        if (composition === 'stack') {
+          const displace = displacement[d.period] 
+          if (typeof(displace) === 'undefined') {
+            n = yScale(d[m.prop], i)
+            displacement[d.period] = d[m.prop]
+          } else {
+            n = yScale(d[m.prop] + displace, i)
+            displacement[d.period] += d[m.prop]
+          }
+        } else {
+           n = yScale(d[m.prop], i)
+        }
+
         let x
         if (chartStyle === 'bar') {
           x = xScale(d.period) + xScale.bandwidth(d.period) / 2
@@ -20,7 +41,7 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
         }
         return {
           x: x,
-          y: yScale(d[m.prop]),
+          y: n,
           period: d.period,
           prop: m.prop,
         }

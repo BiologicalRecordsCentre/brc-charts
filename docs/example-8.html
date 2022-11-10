@@ -7,53 +7,22 @@
     label {
       margin-right: 1em;
     }
-    /* body {
-      font-size: 0.8em !important;
-    } */
   </style>
 </head>
 <body>
   <div class="content">
 
     <h1>Using the BRC Charts Library</h1>
-    <h2>Temporal chart</h2>
+    <h2>Temporal chart examples</h2>
     <p>
-      This page of examples demonstrates the use and flexibility of the  <i>temporal</i> chart. 
-      It is designed to integrate the 
+      The <i>temporal</i> chart integrates the 
       <i>phen1</i> and <i>yearly</i> charts into a single integrated and flexible chart.
-      The fist example on this page is an interactive chart displaying fictitious 
-      data that is designed to demonstrate (and test) many of the features of the chart.
-      Other examples on this page replicate some of the examples previously used to illustrate
+      The examples on this page replicate some of the examples previously used to illustrate
       the <i>phen1</i> and <i>yearly</i> charts.
     </p>
     <p>
       To understand how the chart is used in any of these examples, dig into the code and the data.
     </p>
-
-    <h3>Example - interactive features</h3>
-    <div id='interactive'></div>
-    <button onclick="exIgenData()">New data</button>
-    <select id="exIperiodType" onchange='exIChangePeriodType()'>
-      <option value="year" selected>Year</option>
-      <option value="month">Month</option>
-      <option value="week">Week</option>
-    </select>
-    <br/><br/>
-    <select id="exIchartStyle" onchange='exIchartStyleChanged()'>
-      <option value="line" selected>Lines</option>
-      <option value="area">Areas</option>
-      <option value="bar">Bars</option>
-    </select>
-    <select id="exIcomposition" onchange='exIcompositionChanged()'>
-      <option value="" selected>Overlay</option>
-      <option value="stack">Stacked</option>
-      <option value="spread">Spread</option>
-    </select>
-    <select id="exImetricExpression" onchange='exImetricExpressionChanged()'>
-      <option value="" selected>Counts</option>
-      <option value="proportion">Proportions</option>
-      <option value="normalized">Normalized</option>
-    </select>
 
     <h3>Example - butterfly phenology 1</h3>
     <div id='butterfly1'></div>
@@ -128,79 +97,6 @@
 
   <script>
 
-    var bexBp1 = false
-    var bexBp2 = false
-    var bexBp3 = false
-    var bexBp4 = false
-    var bexLy2 = false
-    var bexLy2 = false
-    var bexLy3 = false
-    var bexLy4 = false
-
-
-    // Example interactive
-    var metricsInteractive =  [
-      { prop: 'prop1', label: 'prop1', colour: 'red', fill: 'red', opacity: 1, fillOpacity: 0.5, strokeWidth: 2 },
-      { prop: 'prop2', label: 'prop2', colour: 'blue',  fill: 'blue', opacity: 1, fillOpacity: 0.5 },
-    ]
-    var optsInteractive = {
-      selector: '#interactive',
-      //missingValues: 'bridge',
-      //missingValues: 0,
-      periodType: 'year',
-      data: genData({periodType: 'year'}),
-      minPeriodTrans: 1,
-      maxPeriodTrans: 53,
-      taxa: ['dummy'],
-      metricExpression: '',
-      //yPadPercent: 5,
-      minMaxY: null,
-      //lineInterpolator: 'curveMonotoneX',
-      //lineInterpolator: 'curveCardinal',
-      chartStyle: 'line',
-      metrics: metricsInteractive,
-      showLegend: true,
-      showTaxonLabel: false,
-      interactivity: 'mousemove',
-      width: 900,
-      height: 500,
-      expand: true,
-      perRow: 1,
-      margin: {left: 48, right: 0, top: 20, bottom: 15},
-      //minY: 0
-    }
-    interactive = brccharts.temporal(optsInteractive)
-    
-    function exIgenData() {
-      const periodType = d3.select("#exIperiodType").property("value")
-      const data = genData({periodType: periodType})
-      console.log(data)
-      interactive.setChartOpts({data: data})
-    }
-    function exIChangePeriodType() {
-      const opts = {...optsInteractive}
-      const periodType = d3.select("#exIperiodType").property("value")
-      opts.data = genData({periodType: periodType})
-      opts.periodType =periodType
-      d3.select('#interactive').html('')
-      interactive = brccharts.temporal(opts)
-    }
-    function exIchartStyleChanged() {
-      const chartStyle = d3.select("#exIchartStyle").property("value")
-      optsInteractive.chartStyle = chartStyle
-      interactive.setChartOpts({chartStyle: chartStyle})
-    }
-    function exIcompositionChanged() {
-      const composition = d3.select("#exIcomposition").property("value")
-      optsInteractive.composition = composition
-      interactive.setChartOpts({composition: composition})
-    }
-    function exImetricExpressionChanged() {
-      const metricExpression = d3.select("#exImetricExpression").property("value")
-      optsInteractive.metricExpression = metricExpression
-      interactive.setChartOpts({metricExpression: metricExpression})
-    }
-
     // Example butterfly 1
     d3.csv('./data/butterflies-16-20.csv', function(d){
         for (p in d) {
@@ -221,8 +117,8 @@
           lineInterpolator: 'curveMonotoneX',
           chartStyle: 'line',
           metrics: [
-            { prop: '2020', label: '2020', colour: 'red',  linewidth: 2, opacity: 1 },
-            { prop: '2019', label: '2019', colour: '#4188A3' },
+            { prop: '2020', label: '2020', colour: 'red',  strokeWidth: 2 },
+            { prop: '2019', label: '2019', colour: '#4188A3', strokeWidth: 2 },
             { prop: '2018', label: '2018', colour: 'fading' },
             { prop: '2017', label: '2017', colour: 'fading' },
             { prop: '2016', label: '2016', colour: 'fading' },
@@ -238,31 +134,31 @@
           expand: true,
           axisLeftLabel: 'Number of records per week',
         }
-        if (bexBp1) brccharts.temporal(phen)
+        brccharts.temporal(phen)
       })
 
     // Example butterfly 2
     var exBp2metrics1 = [
-      { prop: '2020', label: '2020', colour: 'magenta' },
+      { prop: '2020', label: '2020', colour: 'magenta', fill: 'magenta', fillOpacity: 0.5},
     ]
     var exBp2metrics2 = [
-      { prop: '2020', label: '2020', colour: 'red' },
-      { prop: '2019', label: '2019', colour: 'blue' },
+      { prop: '2020', label: '2020', colour: 'red', fill: 'red', fillOpacity: 0.5 },
+      { prop: '2019', label: '2019', colour: 'blue', fill: 'blue', fillOpacity: 0.5 },
     ]
 
     var exBp2metrics3=[]
     var colours=d3.scaleOrdinal(d3.schemeCategory10)
     for (i=2020; i>=2010; i--){
-      exBp2metrics3.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010)})
+      exBp2metrics3.push({prop: `${i}`, label: `${i}`, colour: colours(i-2010), fill: colours(i-2010), fillOpacity: 0.5 })
     }
 
     var exBp2metrics4=[]
     for (i=2018; i>=1990; i--){
-      exBp2metrics4.push({prop: `${i}`, label: `${i}`, colour: 'fading'})
+      exBp2metrics4.push({prop: `${i}`, label: `${i}`, colour: 'fading', fill: 'fading'})
     }
     exBp2metrics4 = [
-      { prop: '2020', label: '2020', colour: 'red' },
-      { prop: '2019', label: '2019', colour: '#4188A3' },
+      { prop: '2020', label: '2020', colour: 'red', fill: 'red', fillOpacity: 0.5  },
+      { prop: '2019', label: '2019', colour: '#4188A3', fill: '#4188A3', fillOpacity: 0.5  },
     ].concat(exBp2metrics4)
 
     var exBp2
@@ -279,7 +175,7 @@
         selector: '#butterfly2',
         data: data.filter(d => d.period < 53), //.filter(d => d.period > 25 && d.period < 36),
         //missingValues: 'bridge',
-        //missingValues: 0,
+        missingValues: 0,
         minPeriodTrans: 1,
         maxPeriodTrans: 52,
         taxa: ['Vanessa cardui'],
@@ -288,7 +184,7 @@
         //yPadPercent: 5,
         minMaxY: null,
         periodType: 'week',
-        //lineInterpolator: 'curveMonotoneX',
+        lineInterpolator: 'curveMonotoneX',
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'line',
         metrics: exBp2metrics1,
@@ -302,39 +198,39 @@
         perRow: 1,
         margin: {left: 48, right: 0, top: 20, bottom: 15},
         verticals: [
-        {
-          colour: '#f8f8f8',
-          start: 32,
-          width: 29
-        },
-        {
-          colour: '#f8f8f8',
-          start: 92,
-          width: 30
-        },
-        {
-          colour: '#f8f8f8',
-          start: 153,
-          width: 30
-        },
-        {
-          colour: '#f8f8f8',
-          start: 214,
-          width: 31
-        },
-        {
-          colour: '#f8f8f8',
-          start: 275,
-          width: 31
-        },
-        {
-          colour: '#f8f8f8',
-          start: 336,
-          width: 30
-        }
-      ]
+          {
+            colour: 'rgb(230,230,230)',
+            start: 32,
+            width: 29
+          },
+          {
+            colour: 'rgb(230,230,230)',
+            start: 92,
+            width: 30
+          },
+          {
+            colour: 'rgb(230,230,230)',
+            start: 153,
+            width: 30
+          },
+          {
+            colour: 'rgb(230,230,230)',
+            start: 214,
+            width: 31
+          },
+          {
+            colour: 'rgb(230,230,230)',
+            start: 275,
+            width: 31
+          },
+          {
+            colour: 'rgb(230,230,230)',
+            start: 336,
+            width: 30
+          }
+        ]
       }
-      if (bexBp2) exBp2 = brccharts.temporal(phen)
+      exBp2 = brccharts.temporal(phen)
     })
 
     let currentMetrics = exBp2metrics1
@@ -386,7 +282,7 @@
         m2.fill = m2.colour
         return m2
       })
-      exBp2.setChartOpts({metrics: metrics}).then(() => console.log('transition done'))
+      exBp2.setChartOpts({metrics: metrics, chartStyle: 'area'}).then(() => console.log('transition done'))
     }
     function exBp2SpreadChanged() {
       exBp2.setChartOpts({spread: d3.select("#exBp2CbSpread").property("checked")}).then(() => console.log('transition done'))
@@ -399,6 +295,7 @@
     }
 
     // Examples butterfly 3 and 4
+    var exBp3
     d3.csv('./data/butterflies-16-19-vs-20.csv', function(d){
       for (p in d) {
         if (p !== 'taxon') {
@@ -447,7 +344,7 @@
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'line'
       }
-      if (bexBp3) exBp3 = brccharts.temporal(phen)
+      exBp3 = brccharts.temporal(phen)
 
       var phen1 = {
         selector: '#butterfly4',
@@ -483,15 +380,16 @@
         periodType: 'week',
         //lineInterpolator: 'curveMonotoneX',
         //lineInterpolator: 'curveCardinal',
-        chartStyle: 'line'
+        chartStyle: 'area'
       }
-      if (bexBp4) brccharts.temporal(phen1)
+      brccharts.temporal(phen1)
     })
     function exBp3button1Click(type) {
       exBp3.setChartOpts({metricExpression: type}).then(() => console.log('transition done'))
     }
 
     // Examples ladybird 1,2, 3 and 4
+    var exLy4
     d3.csv('./data/ladybirds-ds.csv', function(d){
       for (p in d) {
         if (p !== 'taxon') {
@@ -525,11 +423,11 @@
         //lineInterpolator: 'curveCardinal',
         chartStyle: 'bar'
       }
-      if (bexLy2) brccharts.temporal(opts)
+      brccharts.temporal(opts)
 
       opts.chartStyle = 'line'
       opts.selector = '#ladybird2'
-      if (bexLy2) brccharts.temporal(opts)
+      brccharts.temporal(opts)
 
       var opts2 = {
         selector: '#ladybird3',
@@ -558,7 +456,7 @@
         periodType: 'year',
         chartStyle: 'bar'
       }
-      if (bexLy3) brccharts.temporal(opts2)
+      brccharts.temporal(opts2)
 
       var opts3 = {
         selector: '#ladybird4',
@@ -585,7 +483,7 @@
         chartStyle: 'bar',
         stacked: false
       }
-      if (bexLy4) exLy4 = brccharts.temporal(opts3)
+      exLy4 = brccharts.temporal(opts3)
     })
 
     function genData({
