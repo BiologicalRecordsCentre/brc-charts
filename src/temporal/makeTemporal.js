@@ -73,7 +73,9 @@ export function makeTemporal (
       d[m.prop] = d[m.prop] / denominator
     })
     // Record max data value in metric
-    m.maxValue = Math.max(...dataFiltered.map(d => d[m.prop]))
+    const errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFiltered.map(d => d[m.errorBarUpper]) : []
+    const bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(d => d[m.bandUpper]) : []
+    m.maxValue = Math.max(...vals, ...errorBarUppers, bandUppers)
   })
 
   const dataPointsFiltered = dataPoints
@@ -101,16 +103,28 @@ export function makeTemporal (
   }
 
   let missing = []
-  if (typeof missingValues === 'number') {
-    missing = [missingValues]
+  if (typeof(missingValues) !== 'undefined' && missingValues !== 'break' && missingValues !== 'bridge') {
+    missing = [Number(missingValues)]
   }
 
   let cumulativeTotals = []
+  const extensionValies = []
   if (composition === 'stack') {
     // For stacked displays, need to creat cumulative totals array
     cumulativeTotals = new Array(dataFiltered.length).fill(0)
     dataFiltered.forEach((d,i) => {
       metricsPlus.forEach(m => {
+        // In stacked displays, error bars/bands from metrics other
+        // than the one stacked on top can extend beyond the limit
+        // of the metric on top, so we create an array to hold all
+        // the possible values that could be the maximum value. 
+        if (v(d[m.bandUpper])) {
+          extensionValies.push(cumulativeTotals[i] + d[m.bandUpper])
+        }
+        if (v(d[m.errorBarUpper])) {
+          extensionValies.push(cumulativeTotals[i] + d[m.errorBarUpper])
+        }
+        // Increment the cumulative total
         cumulativeTotals[i] += d[m.prop]
       })
     })
@@ -120,7 +134,6 @@ export function makeTemporal (
     ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
     ...dataFiltered.filter(d => v(d[m.errorBarUpper])).map(d => d[m.errorBarUpper]),
-    ...missing
   ))
 
   const maxYA = maxY !== null ? [maxY] : []
@@ -128,11 +141,13 @@ export function makeTemporal (
     ...maxYA,
     ...maxMetricYs,
     ...cumulativeTotals,
+    ...extensionValies,
     ...dataPointsFiltered.map(d => d.y),
     ...dataPointsFiltered.filter(d => v(d.upper)).map(d => d.upper),
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
+
   const minMetricYs = metricsPlus.map(m => Math.min(
     ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),

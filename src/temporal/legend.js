@@ -17,7 +17,7 @@ export function makeLegend (
   // Loop through all the legend elements and work out their
   // positions based on swatch size, item label text size and
   // legend width.
-  const metricsReversed = gen.cloneData(metricsPlus).reverse()
+  const metricsReversed = metricsPlus //gen.cloneData(metricsPlus).reverse()
 
   let rows = 0
   let lineWidth = -swatchSize

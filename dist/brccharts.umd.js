@@ -571,15 +571,7 @@
 
     scaleFn.d3 = scaleD3;
     scaleFn.bandwidth = bandwidthFn;
-    return scaleFn; // return {
-    //   d3: scaleD3,
-    //   bandwidth: v => {
-    //     return bandwidthFn(v)
-    //   },
-    //   v: v => {
-    //     return scaleFn(v)
-    //   }
-    // }
+    return scaleFn;
   }
 
   function periodToDay(p, periodType, chartStyle) {
@@ -618,10 +610,9 @@
       var bottom = 0.2;
       var maxmax = Math.max.apply(Math, _toConsumableArray(metrics.map(function (m) {
         return m.maxValue;
-      }))); // Can happen if no data (e.g. taxon cleared)
-
-      var suLastMetric = isFinite(maxmax) ? metrics[0].maxValue / maxmax * (1 + overlap) : 0;
-      var suPenultimateMetric = isFinite(maxmax) ? metrics[1].maxValue / maxmax * (1 + overlap) - 1 : 0;
+      })));
+      var suLastMetric = isFinite(maxmax) ? metrics[metrics.length - 1].maxValue / maxmax * (1 + overlap) : 0;
+      var suPenultimateMetric = isFinite(maxmax) ? metrics[metrics.length - 2].maxValue / maxmax * (1 + overlap) - 1 : 0;
       var suLast = Math.max(suLastMetric, suPenultimateMetric);
       var suHeight = metrics.length - 1 + suLast + bottom;
       var spreadOffset = height / suHeight;
@@ -629,7 +620,7 @@
 
       fn = function fn(v, iMetric) {
         var d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0]);
-        return d3fn(v) + height - spreadHeight - bottom * spreadOffset - (metrics.length - iMetric - 1) * spreadOffset;
+        return d3fn(v) + height - spreadHeight - bottom * spreadOffset - iMetric * spreadOffset;
       }; // Axis scale
 
 
@@ -640,7 +631,7 @@
         for (var i = 0; i < metrics.length; i++) {
           _ysDomain.push(metrics[i].label);
 
-          ysRange.push(height - bottom * spreadOffset - (metrics.length - i - 1) * spreadOffset);
+          ysRange.push(height - bottom * spreadOffset - i * spreadOffset);
         }
 
         _ysDomain.push('');
@@ -8213,7 +8204,7 @@
       metrics.reverse();
     }
 
-    metrics.forEach(function (m, i) {
+    metricsPlus.forEach(function (m, i) {
       if (chartStyle === 'bar') {
         var bars = dataFiltered.map(function (d) {
           var n, barHeight;
@@ -8247,6 +8238,7 @@
         chartBars = [].concat(_toConsumableArray(chartBars), _toConsumableArray(bars));
       }
     });
+    chartBars.reverse();
     gTemporal.selectAll(".temporal-bar").data(chartBars, function (d) {
       return "bars-".concat(d.prop, "-").concat(d.period);
     }).join(function (enter) {
@@ -8306,17 +8298,11 @@
       return d3LineGen(points);
     };
 
-    var metrics = _toConsumableArray(metricsPlus);
-
-    if (composition === 'stack') {
-      metrics.reverse();
-    }
-
     var chartLines = [];
     var chartBands = [];
     var chartLineFills = [];
     var displacement = {};
-    metrics.forEach(function (m, iMetric) {
+    metricsPlus.forEach(function (m, iMetric) {
       // Create a collection of the periods in the dataset.
       var dataDict = dataFiltered.reduce(function (a, d) {
         a[d.period] = d[m.prop];
@@ -8373,6 +8359,7 @@
           }), iMetric),
           path: lineValues(pnts, iMetric)
         });
+        chartLines.reverse();
 
         if (chartStyle === 'area') {
           // Add bottom line of area to match displacement
@@ -8408,6 +8395,7 @@
             }), iMetric).replace('M', 'L'),
             path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
           });
+          chartLineFills.reverse();
         } // Update displacement for stack displays.
 
 
@@ -8491,6 +8479,7 @@
             bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
             bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
           });
+          chartBands.reverse();
         }
       }
     }); // Bands
@@ -8718,28 +8707,51 @@
       metrics.reverse();
     }
 
-    metrics.forEach(function (m, i) {
+    metricsPlus.forEach(function (m, i) {
       // Construct data structure for points.
-      // TODO - if at some point we parameterise display styles
-      // for points bars, then it must be specified in here.
-      if (m.points) {
-        var points = dataFiltered.filter(function (d) {
-          return typeof d[m.prop] !== 'undefined';
-        }).map(function (d) {
-          var n;
+      var bErrorBars = m.errorBarUpper && m.errorBarLower;
+      var bPoints = m.points;
+
+      if (bPoints || bErrorBars) {
+        //const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
+        var points = dataFiltered.map(function (d) {
+          var n, u, l;
 
           if (composition === 'stack') {
             var displace = displacement[d.period];
 
             if (typeof displace === 'undefined') {
-              n = yScale(d[m.prop], i);
+              if (bPoints) {
+                n = yScale(d[m.prop], i);
+              }
+
+              if (bErrorBars) {
+                u = yScale(d[m.errorBarUpper], i);
+                l = yScale(d[m.errorBarLower], i);
+              }
+
               displacement[d.period] = d[m.prop];
             } else {
-              n = yScale(d[m.prop] + displace, i);
+              if (bPoints) {
+                n = yScale(d[m.prop] + displace, i);
+              }
+
+              if (bErrorBars) {
+                u = yScale(d[m.errorBarUpper] + displace, i);
+                l = yScale(d[m.errorBarLower] + displace, i);
+              }
+
               displacement[d.period] += d[m.prop];
             }
           } else {
-            n = yScale(d[m.prop], i);
+            if (bPoints) {
+              n = yScale(d[m.prop], i);
+            }
+
+            if (bErrorBars) {
+              u = yScale(d[m.errorBarUpper], i);
+              l = yScale(d[m.errorBarLower], i);
+            }
           }
 
           var x;
@@ -8750,37 +8762,25 @@
             x = xScale(d.period);
           }
 
-          return {
+          var ret = {
             x: x,
-            y: n,
             period: d.period,
             prop: m.prop
           };
-        });
-        chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
-      } // Construct data structure for error bars.
-      // TODO - if at some point we parameterise display styles
-      // for error bars, then it must be specified in here.
 
-
-      if (m.errorBarUpper && m.errorBarLower) {
-        var errorBars = dataFiltered.map(function (d) {
-          var x;
-
-          if (chartStyle === 'bar') {
-            x = xScale(d.period) + xScale.bandwidth(d.period) / 2;
-          } else {
-            x = xScale(d.period);
+          if (bPoints) {
+            ret.y = n;
           }
 
-          return {
-            period: d.period,
-            pathEnter: "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height),
-            path: "M ".concat(x, " ").concat(yScale(d[m.errorBarLower]), " L ").concat(x, " ").concat(yScale(d[m.errorBarUpper])),
-            prop: m.prop
-          };
+          if (bErrorBars) {
+            ret.pathEnter = "M ".concat(x, " ").concat(height, " L ").concat(x, " ").concat(height);
+            ret.path = "M ".concat(x, " ").concat(l, " L ").concat(x, " ").concat(u);
+          }
+
+          return ret;
         });
-        chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(errorBars));
+        if (bPoints) chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
+        if (bErrorBars) chartErrorBars = [].concat(_toConsumableArray(chartErrorBars), _toConsumableArray(points));
       }
     }); // Error bars
 
@@ -9073,9 +9073,13 @@
         d[m.prop] = d[m.prop] / denominator;
       }); // Record max data value in metric
 
-      m.maxValue = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
-        return d[m.prop];
-      })));
+      var errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFiltered.map(function (d) {
+        return d[m.errorBarUpper];
+      }) : [];
+      var bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(function (d) {
+        return d[m.bandUpper];
+      }) : [];
+      m.maxValue = Math.max.apply(Math, _toConsumableArray(vals).concat(_toConsumableArray(errorBarUppers), [bandUppers]));
     });
     var dataPointsFiltered = dataPoints.filter(function (d) {
       return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
@@ -9103,22 +9107,37 @@
 
     var missing = [];
 
-    if (typeof missingValues === 'number') {
-      missing = [missingValues];
+    if (typeof missingValues !== 'undefined' && missingValues !== 'break' && missingValues !== 'bridge') {
+      missing = [Number(missingValues)];
     }
 
+    console.log('metricsPlus', metricsPlus);
     var cumulativeTotals = [];
+    var stackValues = [];
 
     if (composition === 'stack') {
       // For stacked displays, need to creat cumulative totals array
       cumulativeTotals = new Array(dataFiltered.length).fill(0);
       dataFiltered.forEach(function (d, i) {
+        //[...metricsPlus].reverse().forEach(m => {
         metricsPlus.forEach(function (m) {
+          console.log(m.prop); // Add the figure for cumulative
+
+          if (v(d[m.bandUpper])) {
+            stackValues.push(cumulativeTotals[i] + d[m.bandUpper]);
+          }
+
+          if (v(d[m.errorBarUpper])) {
+            stackValues.push(cumulativeTotals[i] + d[m.errorBarUpper]);
+          } // Increment the cumulative total
+
+
           cumulativeTotals[i] += d[m.prop];
         });
       });
     }
 
+    console.log('stackValues', Math.max.apply(Math, stackValues));
     var maxMetricYs = metricsPlus.map(function (m) {
       return Math.max.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
         return v(d[m.prop]);
@@ -9132,10 +9151,10 @@
         return v(d[m.errorBarUpper]);
       }).map(function (d) {
         return d[m.errorBarUpper];
-      })), _toConsumableArray(missing)));
+      }))));
     });
     var maxYA = maxY !== null ? [maxY] : [];
-    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), _toConsumableArray(dataPointsFiltered.map(function (d) {
+    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), stackValues, _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return v(d.upper);
@@ -9367,7 +9386,8 @@
     // positions based on swatch size, item label text size and
     // legend width.
 
-    var metricsReversed = cloneData(metricsPlus).reverse();
+    var metricsReversed = metricsPlus; //gen.cloneData(metricsPlus).reverse()
+
     var rows = 0;
     var lineWidth = -swatchSize;
     metricsReversed.forEach(function (m) {
@@ -9780,9 +9800,10 @@
           errorBarUpper: m.errorBarUpper,
           errorBarLower: m.errorBarLower
         };
-      }).reverse(); //console.log('metricsPlus', metricsPlus)
+      }); //.reverse()
+      //console.log('metricsPlus', metricsPlus)
 
-      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([iFading, 1]);
       metricsPlus.forEach(function (m) {
         if (m.fading) {
           m.colour = grey(m.fading);

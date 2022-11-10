@@ -6,11 +6,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
   let chartBars = []
   const displacement = {}
 
-  const metrics = [...metricsPlus]
-  if (composition === 'stack') {
-    metrics.reverse()
-  }
-  metrics.forEach((m, i) => {
+  metricsPlus.forEach((m, i) => {
     if (chartStyle === 'bar') {
       const bars = dataFiltered.map(d => {
         let n, barHeight
@@ -41,6 +37,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
       chartBars = [...chartBars, ...bars]
     }
   })
+  chartBars.reverse()
 
   gTemporal.selectAll(".temporal-bar")
     .data(chartBars, d => `bars-${d.prop}-${d.period}`)

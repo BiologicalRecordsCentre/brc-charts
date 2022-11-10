@@ -40,17 +40,12 @@ export function generateLines(
     return d3LineGen(points)
   }
 
-  const metrics = [...metricsPlus]
-  if (composition === 'stack') {
-    metrics.reverse()
-  }
-
   let chartLines = []
   let chartBands = []
   let chartLineFills = []
   const displacement = {}
 
-  metrics.forEach((m, iMetric) => {
+  metricsPlus.forEach((m, iMetric) => {
       // Create a collection of the periods in the dataset.
     const dataDict = dataFiltered.reduce((a,d) => {
       a[d.period]=d[m.prop]
@@ -107,6 +102,7 @@ export function generateLines(
         }), iMetric),
         path: lineValues(pnts, iMetric)
       })
+      chartLines.reverse()
 
       if (chartStyle === 'area') {
         // Add bottom line of area to match displacement
@@ -142,6 +138,7 @@ export function generateLines(
           }), iMetric).replace('M', 'L'),
           path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
         })
+        chartLineFills.reverse()
       }
 
       // Update displacement for stack displays.
@@ -226,6 +223,7 @@ export function generateLines(
           bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
           bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
         })
+        chartBands.reverse()
       }
     }
   })

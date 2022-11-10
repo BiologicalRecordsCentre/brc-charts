@@ -466,19 +466,9 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
   // Where the scale is used as an argument to a d3 axis scale function, an unadulterated scale
   // is required, so the d3 scale is added as a property to this scale function so that it can
   // be accessed.
-
   scaleFn.d3 = scaleD3
   scaleFn.bandwidth = bandwidthFn
   return scaleFn
-  // return {
-  //   d3: scaleD3,
-  //   bandwidth: v => {
-  //     return bandwidthFn(v)
-  //   },
-  //   v: v => {
-  //     return scaleFn(v)
-  //   }
-  // }
 }
 
 function periodToDay(p, periodType, chartStyle) {
@@ -511,15 +501,15 @@ function periodToWidth(p, periodType, xScale) {
 export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition) {
   
   let fn, fnAxis, tickFormat, spreadHeight
- 
+
   if (composition === 'spread' && metrics.length > 1) {
     
     // Work out height in 'sread units' - su.
     const overlap = 0.8
     const bottom = 0.2
-    const maxmax = Math.max(...metrics.map(m => m.maxValue)) // Can happen if no data (e.g. taxon cleared)
-    const suLastMetric = isFinite(maxmax) ? metrics[0].maxValue / maxmax * (1 + overlap) : 0
-    const suPenultimateMetric = isFinite(maxmax) ? metrics[1].maxValue / maxmax * (1 + overlap) - 1 : 0
+    const maxmax = Math.max(...metrics.map(m => m.maxValue))
+    const suLastMetric = isFinite(maxmax) ? metrics[metrics.length-1].maxValue / maxmax * (1 + overlap) : 0
+    const suPenultimateMetric = isFinite(maxmax) ? metrics[metrics.length-2].maxValue / maxmax * (1 + overlap) - 1 : 0
     const suLast = Math.max(suLastMetric, suPenultimateMetric)
     const suHeight = metrics.length - 1 + suLast + bottom 
     const spreadOffset = height / suHeight
@@ -527,7 +517,7 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition
 
     fn = (v, iMetric) => {
       const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0])
-      return d3fn(v) + height - spreadHeight - bottom * spreadOffset - (metrics.length - iMetric - 1)  * spreadOffset
+      return d3fn(v) + height - spreadHeight - bottom * spreadOffset - iMetric * spreadOffset
     }
 
     // Axis scale
@@ -536,7 +526,7 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition
     if (metrics.length){
       for (let i=0; i<metrics.length; i++) {
         ysDomain.push(metrics[i].label)
-        ysRange.push(height - bottom * spreadOffset - ((metrics.length - i - 1) * spreadOffset))
+        ysRange.push(height - bottom * spreadOffset - i * spreadOffset)
       }
       ysDomain.push('')
       ysRange.push(height)

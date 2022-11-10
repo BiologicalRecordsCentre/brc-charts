@@ -6,31 +6,51 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
   let chartPoints = []
   let chartErrorBars = []
   const displacement = {}
-
+  
   const metrics = [...metricsPlus]
   if (composition === 'stack') {
     metrics.reverse()
   }
 
-  metrics.forEach((m,i) => {
+  metricsPlus.forEach((m,i) => {
     // Construct data structure for points.
-    // TODO - if at some point we parameterise display styles
-    // for points bars, then it must be specified in here.
-    if (m.points) {
-      const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
+    const bErrorBars = m.errorBarUpper && m.errorBarLower
+    const bPoints = m.points
 
-        let n
+    if (bPoints || bErrorBars) {
+      //const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
+      const points = dataFiltered.map(d => {
+
+        let n, u, l
         if (composition === 'stack') {
           const displace = displacement[d.period] 
           if (typeof(displace) === 'undefined') {
-            n = yScale(d[m.prop], i)
+            if (bPoints) {
+              n = yScale(d[m.prop], i)
+            }
+            if (bErrorBars) {
+              u = yScale(d[m.errorBarUpper], i)
+              l = yScale(d[m.errorBarLower], i)
+            }
             displacement[d.period] = d[m.prop]
           } else {
-            n = yScale(d[m.prop] + displace, i)
+            if (bPoints) {
+              n = yScale(d[m.prop] + displace, i)
+            }
+            if (bErrorBars) {
+              u = yScale(d[m.errorBarUpper] + displace, i)
+              l = yScale(d[m.errorBarLower] + displace, i)
+            }
             displacement[d.period] += d[m.prop]
           }
         } else {
-           n = yScale(d[m.prop], i)
+          if (bPoints) {
+            n = yScale(d[m.prop], i)
+          }
+          if (bErrorBars) {
+            u = yScale(d[m.errorBarUpper], i)
+            l = yScale(d[m.errorBarLower], i)
+          }
         }
 
         let x
@@ -39,36 +59,27 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
         } else {
           x = xScale(d.period)
         }
-        return {
+
+        const ret = {
           x: x,
-          y: n,
           period: d.period,
           prop: m.prop,
         }
-      })
-      chartPoints = [...chartPoints, ...points]
-    }
 
-    // Construct data structure for error bars.
-    // TODO - if at some point we parameterise display styles
-    // for error bars, then it must be specified in here.
-    if (m.errorBarUpper && m.errorBarLower) {
-      const errorBars = dataFiltered.map(d => {
-        let x
-        if (chartStyle === 'bar') {
-          x = xScale(d.period) + xScale.bandwidth(d.period) / 2
-        } else {
-          x = xScale(d.period)
+        if (bPoints) {
+          ret.y = n
         }
-        return {
-          period: d.period,
-          pathEnter:  `M ${x} ${height} L ${x} ${height}`,
-          path: `M ${x} ${yScale(d[m.errorBarLower])} L ${x} ${yScale(d[m.errorBarUpper])}`,
-          prop: m.prop,
+
+        if (bErrorBars) {
+          ret.pathEnter = `M ${x} ${height} L ${x} ${height}`
+          ret.path = `M ${x} ${l} L ${x} ${u}`
         }
+
+        return ret
       })
-      chartErrorBars = [...chartErrorBars, ...errorBars]
-    } 
+      if (bPoints) chartPoints = [...chartPoints, ...points]
+      if (bErrorBars) chartErrorBars =  [...chartErrorBars, ...points]
+    }
   })
 
    // Error bars

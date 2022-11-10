@@ -366,13 +366,13 @@ export function temporal({
         errorBarUpper: m.errorBarUpper,
         errorBarLower: m.errorBarLower
       }
-    }).reverse()
+    }) //.reverse()
 
     //console.log('metricsPlus', metricsPlus)
 
     const grey = d3.scaleLinear()
       .range(['#808080', '#E0E0E0'])
-      .domain([1, iFading])
+      .domain([iFading, 1])
 
     metricsPlus.forEach(m => {
       if (m.fading) {
