@@ -601,7 +601,7 @@
     }
   }
 
-  function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition) {
+  function spreadScale(minY, maxY, yPadding, metrics, height, composition) {
     var fn, fnAxis, tickFormat, spreadHeight;
 
     if (composition === 'spread' && metrics.length > 1) {
@@ -619,7 +619,7 @@
       spreadHeight = (1 + overlap) * spreadOffset;
 
       fn = function fn(v, iMetric) {
-        var d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0]);
+        var d3fn = d3.scaleLinear().domain([minY - yPadding, maxY + yPadding]).range([spreadHeight, 0]);
         return d3fn(v) + height - spreadHeight - bottom * spreadOffset - iMetric * spreadOffset;
       }; // Axis scale
 
@@ -644,7 +644,7 @@
       fnAxis = d3.scaleOrdinal().domain(_ysDomain).range(ysRange);
       tickFormat = 'c';
     } else {
-      var d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0]);
+      var d3fn = d3.scaleLinear().domain([minY - yPadding, maxY + yPadding]).range([height, 0]);
 
       fn = function fn(v) {
         return d3fn(v);
@@ -652,9 +652,9 @@
 
       fnAxis = d3fn;
 
-      if (ymaxY - yminY > 20) {
+      if (maxY - minY > 20) {
         tickFormat = 'd';
-      } else if (ymaxY - yminY > 1) {
+      } else if (maxY - minY > 1) {
         tickFormat = '.1f';
       } else {
         tickFormat = '.2f';
@@ -667,6 +667,13 @@
     fn.tickFormat = tickFormat;
     fn.height = spreadHeight;
     return fn;
+  }
+  function addG(id, g) {
+    if (g.select("#".concat(id)).size()) {
+      return g.select("#".concat(id));
+    } else {
+      return g.append('g').attr('id', id);
+    }
   }
 
   function addEventHandlers(svg, sel, isArc, interactivity, dataPrev, imageWidth, callback) {
@@ -8197,13 +8204,6 @@
   function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
     var chartBars = [];
     var displacement = {};
-
-    var metrics = _toConsumableArray(metricsPlus);
-
-    if (composition === 'stack') {
-      metrics.reverse();
-    }
-
     metricsPlus.forEach(function (m, i) {
       if (chartStyle === 'bar') {
         var bars = dataFiltered.map(function (d) {
@@ -8278,6 +8278,12 @@
   }
 
   function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition) {
+    // Add g elements in increasing order of display priority
+    var gLinesAreas = addG('gLinesAreas', gTemporal);
+    var gLinesBands = addG('gLinesBands', gTemporal);
+    var gLinesBandLines = addG('gLinesBandLines', gTemporal);
+    var gLinesLines = addG('gLinesLines', gTemporal);
+
     var lineValues = function lineValues(points, iPart) {
       // console.log(iPart, points)
       // points.forEach(d => {
@@ -8301,24 +8307,23 @@
     var chartLines = [];
     var chartBands = [];
     var chartLineFills = [];
-    var displacement = {};
+    console.log('metricsPlus', metricsPlus);
     metricsPlus.forEach(function (m, iMetric) {
-      // Create a collection of the periods in the dataset.
-      var dataDict = dataFiltered.reduce(function (a, d) {
-        a[d.period] = d[m.prop];
-        return a;
-      }, {}); // Construct data structure for line/area charts.
-
+      // Construct data structure for line/area charts.
       var pointSets;
 
       if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
-        pointSets = adjustForTrans(periods.map(function (y) {
+        pointSets = adjustForTrans(periods.map(function (p) {
           // Replace any missing values (for a given period)
           // with the missing value specified (can be a value
           // or 'bridge' or 'break')
+          var d = dataFiltered.find(function (d) {
+            return d.period === p;
+          });
           return {
-            period: y,
-            n: typeof dataDict[y] !== 'undefined' ? dataDict[y] : missingValues
+            period: p,
+            n: d ? d[m.prop] : missingValues,
+            displacement: d ? d.displacement[iMetric] : null
           };
         }));
       } else {
@@ -8330,15 +8335,11 @@
 
         if (composition === 'stack') {
           pnts = points.map(function (p) {
-            if (typeof displacement[p.period] !== 'undefined') {
-              var ret = {
-                n: p.n + displacement[p.period],
-                period: p.period
-              };
-              return ret;
-            } else {
-              return _objectSpread2({}, p);
-            }
+            return {
+              n: p.n + p.displacement,
+              period: p.period,
+              displacement: p.displacement
+            };
           });
         } else {
           pnts = points;
@@ -8349,6 +8350,7 @@
           opacity: m.opacity,
           strokeWidth: m.strokeWidth,
           prop: m.prop,
+          index: m.index,
           part: i,
           yMin: yminY,
           pathEnter: lineValues(pnts.map(function (p) {
@@ -8359,7 +8361,9 @@
           }), iMetric),
           path: lineValues(pnts, iMetric)
         });
-        chartLines.reverse();
+        chartLines.sort(function (a, b) {
+          return b.index - a.index;
+        });
 
         if (chartStyle === 'area') {
           // Add bottom line of area to match displacement
@@ -8368,23 +8372,17 @@
           // in order to give nice transitions if switching from overlayed
           // (or spread) to stacked and visa versa.
           var pntsBase = _toConsumableArray(points).reverse().map(function (p) {
-            if (typeof displacement[p.period] !== 'undefined') {
-              return {
-                n: displacement[p.period],
-                period: p.period
-              };
-            } else {
-              return {
-                n: yminY,
-                period: p.period
-              };
-            }
+            return {
+              n: composition === 'stack' && p.displacement > yminY ? p.displacement : yminY,
+              period: p.period
+            };
           });
 
           chartLineFills.push({
             opacity: m.fillOpacity,
             fill: m.fill,
             prop: m.prop,
+            index: m.index,
             part: i,
             yMin: yminY,
             pathEnter: lineValues(pnts, iMetric) + lineValues(pntsBase.map(function (p) {
@@ -8395,50 +8393,32 @@
             }), iMetric).replace('M', 'L'),
             path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
           });
-          chartLineFills.reverse();
-        } // Update displacement for stack displays.
-
-
-        if (composition === 'stack') {
-          var lastPeriod = null;
-          points.forEach(function (p) {
-            if (typeof displacement[p.period] === 'undefined') {
-              displacement[p.period] = p.n;
-            } else {
-              if (p.period !== lastPeriod) {
-                // Because the adjustForTrans function can create duplicate
-                // points for a given period (to create better transitions)
-                // we need avoid updating the displacement more than once
-                // for any given period.
-                displacement[p.period] += p.n;
-              }
-            }
-
-            lastPeriod = p.period;
+          chartLineFills.sort(function (a, b) {
+            return b.index - a.index;
           });
         }
       }); // Construct data structure for confidence band on line charts.
 
       if (m.bandUpper && m.bandLower) {
-        var ddUpper = dataFiltered.reduce(function (a, d) {
-          a[d.period] = d[m.bandUpper];
-          return a;
-        }, {});
-        var ddLower = dataFiltered.reduce(function (a, d) {
-          a[d.period] = d[m.bandLower];
-          return a;
-        }, {});
-        var upperLine = periods.map(function (y) {
+        var upperLine = periods.map(function (p) {
+          var d = dataFiltered.find(function (d) {
+            return d.period === p;
+          });
           return {
-            period: y,
-            n: ddUpper[y] ? ddUpper[y] : missingValues
+            period: p,
+            n: d ? d[m.bandUpper] : missingValues,
+            displacement: d ? d.displacement[iMetric] : null
           };
         });
 
-        var lowerLine = _toConsumableArray(periods).map(function (y) {
+        var lowerLine = _toConsumableArray(periods).map(function (p) {
+          var d = dataFiltered.find(function (d) {
+            return d.period === p;
+          });
           return {
-            period: y,
-            n: ddLower[y] ? ddLower[y] : missingValues
+            period: p,
+            n: d ? d[m.bandLower] : missingValues,
+            displacement: d ? d.displacement[iMetric] : null
           };
         });
 
@@ -8446,9 +8426,22 @@
         var pointsUpperSet = adjustForTrans(upperLine);
 
         for (var i = 0; i < pointsLowerSet.length; i++) {
-          var pointsLower = pointsLowerSet[i];
-          var pointsUpper = pointsUpperSet[i];
-          var pointsBand = [].concat(_toConsumableArray(pointsLowerSet[i]), _toConsumableArray(pointsUpperSet[i].reverse()));
+          var displace = function displace(pnts) {
+            if (composition === 'stack') {
+              return pnts.map(function (p) {
+                return {
+                  n: p.n + p.displacement,
+                  period: p.period,
+                  displacement: p.displacement
+                };
+              });
+            } else {
+              return pnts;
+            }
+          };
+
+          var pointsLower = displace(pointsLowerSet[i]);
+          var pointsUpper = displace(pointsUpperSet[i]);
           var pointsLowerEnter = pointsLower.map(function (p) {
             return {
               n: yminY,
@@ -8469,22 +8462,19 @@
             strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
             prop: m.prop,
             part: i,
-            bandPath: lineValues(pointsBand, iMetric),
-            bandPathEnter: lineValues(pointsBand.map(function (p) {
-              return {
-                n: yminY,
-                period: p.period
-              };
-            }), iMetric),
+            bandPath: lineValues(pointsUpper, iMetric) + lineValues(_toConsumableArray(pointsLower).reverse(), iMetric).replace('M', 'L'),
+            bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues(_toConsumableArray(pointsLowerEnter).reverse(), iMetric).replace('M', 'L'),
             bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
             bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
           });
-          chartBands.reverse();
+          chartBands.sort(function (a, b) {
+            return b.index - a.index;
+          });
         }
       }
     }); // Bands
 
-    gTemporal.selectAll(".temporal-band").data(chartBands, function (d) {
+    gLinesBands.selectAll(".temporal-band").data(chartBands, function (d) {
       return "band-".concat(d.prop, "-").concat(d.part);
     }).join(function (enter) {
       return enter.append("path").attr("class", function (d) {
@@ -8513,10 +8503,10 @@
         return d.fill;
       }), pTrans);
     });
-    addEventHandlers$3(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity); // Band lines
+    addEventHandlers$3(gLinesBands.selectAll(".temporal-band"), 'prop', svgChart, interactivity); // Band lines
 
     var _loop = function _loop(iLine) {
-      gTemporal.selectAll(".temporal-band-border-".concat(iLine)).data(chartBands, function (d) {
+      gLinesBandLines.selectAll(".temporal-band-border-".concat(iLine)).data(chartBands, function (d) {
         return "band-line-".concat(d.prop, "-").concat(iLine, "-").concat(d.part);
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
@@ -8549,9 +8539,9 @@
           return d.strokeWidth;
         }), pTrans);
       });
-      addEventHandlers$3(gTemporal.selectAll(".temporal-band-border-".concat(iLine)), 'prop', svgChart, interactivity); // Main lines
+      addEventHandlers$3(gLinesBandLines.selectAll(".temporal-band-border-".concat(iLine)), 'prop', svgChart, interactivity); // Main lines
 
-      gTemporal.selectAll(".temporal-line").data(chartLines, function (d) {
+      gLinesLines.selectAll(".temporal-line").data(chartLines, function (d) {
         return "line-".concat(d.prop, "-").concat(d.part);
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
@@ -8584,9 +8574,9 @@
           return d.strokeWidth;
         }), pTrans);
       });
-      addEventHandlers$3(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity); // Main line fill
+      addEventHandlers$3(gLinesLines.selectAll(".temporal-line"), 'prop', svgChart, interactivity); // Main line fill
 
-      gTemporal.selectAll(".temporal-line-fill").data(chartLineFills, function (d) {
+      gLinesAreas.selectAll(".temporal-line-fill").data(chartLineFills, function (d) {
         return "band-".concat(d.prop, "-").concat(d.part);
       }).join(function (enter) {
         return enter.append("path").attr("class", function (d) {
@@ -8615,7 +8605,7 @@
           return d.fill;
         }), pTrans);
       });
-      addEventHandlers$3(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity);
+      addEventHandlers$3(gLinesAreas.selectAll(".temporal-band"), 'prop', svgChart, interactivity);
     };
 
     for (var iLine = 0; iLine < 2; iLine++) {
@@ -8660,6 +8650,7 @@
           if (pnts[i].n === 'bridge' && i > 0) {
             pnts[i].n = pnts[i - 1].n;
             pnts[i].period = pnts[i - 1].period;
+            pnts[i].displacement = pnts[i - 1].displacement;
           }
         }
 
@@ -8667,6 +8658,7 @@
           if (pnts[_i].n === 'bridge') {
             pnts[_i].n = pnts[_i + 1].n;
             pnts[_i].period = pnts[_i + 1].period;
+            pnts[_i].displacement = pnts[_i + 1].displacement;
           }
         } // When minPeriodTrans and MaxPeriodTrans are set, then each trend line
         // must have the same number of points in (MaxPeriodTrans - minPeriodTrans + 1 points).
@@ -8678,7 +8670,8 @@
           for (var _i2 = minPeriodTrans; _i2 < pnts[0].period; _i2++) {
             ret.unshift({
               n: pnts[0].n,
-              period: pnts[0].period
+              period: pnts[0].period,
+              displacement: pnts[0].displacement
             });
           }
         }
@@ -8687,7 +8680,8 @@
           for (var _i3 = pnts[pnts.length - 1].period + 1; _i3 <= maxPeriodTrans; _i3++) {
             ret.push({
               n: pnts[pnts.length - 1].n,
-              period: pnts[pnts.length - 1].period
+              period: pnts[pnts.length - 1].period,
+              displacement: pnts[pnts.length - 1].displacement
             });
           }
         }
@@ -8697,6 +8691,9 @@
   }
 
   function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
+    // Add g elements in increasing order of display priority
+    var gErrors = addG('gPointsAndErrorsErrors', gTemporal);
+    var gPoints = addG('gPointsAndErrorsPoints', gTemporal);
     var chartPoints = [];
     var chartErrorBars = [];
     var displacement = {};
@@ -8713,7 +8710,6 @@
       var bPoints = m.points;
 
       if (bPoints || bErrorBars) {
-        //const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
         var points = dataFiltered.map(function (d) {
           var n, u, l;
 
@@ -8784,7 +8780,7 @@
       }
     }); // Error bars
 
-    gTemporal.selectAll('.temporal-error-bars').data(chartErrorBars, function (d) {
+    gErrors.selectAll('.temporal-error-bars').data(chartErrorBars, function (d) {
       return "error-bars-".concat(d.prop, "-").concat(d.period);
     }).join(function (enter) {
       return enter.append('path').attr("class", function (d) {
@@ -8809,9 +8805,9 @@
         return d.path;
       }).style('opacity', 1), pTrans);
     });
-    addEventHandlers$3(gTemporal.selectAll(".temporal-error-bars"), 'prop', svgChart, interactivity); // Points
+    addEventHandlers$3(gErrors.selectAll(".temporal-error-bars"), 'prop', svgChart, interactivity); // Points
 
-    gTemporal.selectAll('.temporal-point').data(chartPoints, function (d) {
+    gPoints.selectAll('.temporal-point').data(chartPoints, function (d) {
       return "point-".concat(d.prop, "-").concat(d.period);
     }).join(function (enter) {
       return enter.append('circle').attr("class", function (d) {
@@ -8838,7 +8834,7 @@
         return d.y;
       }).style('opacity', 1), pTrans);
     });
-    addEventHandlers$3(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity);
+    addEventHandlers$3(gPoints.selectAll(".temporal-point"), 'prop', svgChart, interactivity);
   }
 
   function generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans) {
@@ -9054,17 +9050,18 @@
     // hightest values (required in spread display)
 
     metricsPlus.forEach(function (m) {
-      var vals = dataFiltered.map(function (d) {
-        return d[m.prop];
-      });
       var denominator;
 
       if (metricExpression === 'proportion') {
-        denominator = vals.reduce(function (a, v) {
+        denominator = dataFiltered.map(function (d) {
+          return d[m.prop];
+        }).reduce(function (a, v) {
           return a + v;
         }, 0);
       } else if (metricExpression === 'normalized') {
-        denominator = Math.max.apply(Math, _toConsumableArray(vals));
+        denominator = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+          return d[m.prop];
+        })));
       } else {
         denominator = 1;
       }
@@ -9079,7 +9076,19 @@
       var bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(function (d) {
         return d[m.bandUpper];
       }) : [];
-      m.maxValue = Math.max.apply(Math, _toConsumableArray(vals).concat(_toConsumableArray(errorBarUppers), [bandUppers]));
+      m.maxValue = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        return d[m.prop];
+      })).concat(_toConsumableArray(errorBarUppers), _toConsumableArray(bandUppers)));
+    }); // Add data displacement values for cummulative displays such as stacked
+
+    dataFiltered.forEach(function (d) {
+      metricsPlus.forEach(function (m, i) {
+        if (i === 0) {
+          d.displacement = [0];
+        } else {
+          d.displacement.push(d.displacement[i - 1] + d[metricsPlus[i - 1].prop]);
+        }
+      });
     });
     var dataPointsFiltered = dataPoints.filter(function (d) {
       return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
@@ -9103,32 +9112,38 @@
 
     function v(d) {
       return typeof d === 'number';
-    }
+    } // This next section is all about working out the minimum and maximum Y values
+    // (minYscale and maxYscale) which are required for generating the Y scale. It is 
+    // complicated because it depends on the type of data used and the display
+    // composition.
+
 
     var missing = [];
 
     if (typeof missingValues !== 'undefined' && missingValues !== 'break' && missingValues !== 'bridge') {
+      // Myabe need to be more nuanced here - only adding missing value if it is actually used
+      // to replace missing values in dataset.
       missing = [Number(missingValues)];
     }
 
-    console.log('metricsPlus', metricsPlus);
     var cumulativeTotals = [];
-    var stackValues = [];
+    var extensionValies = [];
 
     if (composition === 'stack') {
       // For stacked displays, need to creat cumulative totals array
       cumulativeTotals = new Array(dataFiltered.length).fill(0);
       dataFiltered.forEach(function (d, i) {
-        //[...metricsPlus].reverse().forEach(m => {
         metricsPlus.forEach(function (m) {
-          console.log(m.prop); // Add the figure for cumulative
-
+          // In stacked displays, error bars/bands from metrics other
+          // than the one stacked on top can extend beyond the limit
+          // of the metric on top, so we create an array to hold all
+          // the possible values that could be the maximum value. 
           if (v(d[m.bandUpper])) {
-            stackValues.push(cumulativeTotals[i] + d[m.bandUpper]);
+            extensionValies.push(cumulativeTotals[i] + d[m.bandUpper]);
           }
 
           if (v(d[m.errorBarUpper])) {
-            stackValues.push(cumulativeTotals[i] + d[m.errorBarUpper]);
+            extensionValies.push(cumulativeTotals[i] + d[m.errorBarUpper]);
           } // Increment the cumulative total
 
 
@@ -9137,7 +9152,6 @@
       });
     }
 
-    console.log('stackValues', Math.max.apply(Math, stackValues));
     var maxMetricYs = metricsPlus.map(function (m) {
       return Math.max.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
         return v(d[m.prop]);
@@ -9154,7 +9168,7 @@
       }))));
     });
     var maxYA = maxY !== null ? [maxY] : [];
-    var ymaxY = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), stackValues, _toConsumableArray(dataPointsFiltered.map(function (d) {
+    var maxYscale = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), extensionValies, _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return v(d.upper);
@@ -9181,7 +9195,7 @@
       })), _toConsumableArray(missing)));
     });
     var minYA = minY !== null ? [minY] : [];
-    var yminY = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
+    var minYscale = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return d.lower;
@@ -9194,8 +9208,8 @@
     }))));
 
     if (minMaxY !== null) {
-      if (ymaxY < minMaxY) {
-        ymaxY = minMaxY;
+      if (maxYscale < minMaxY) {
+        maxYscale = minMaxY;
       }
     } // Value scales
 
@@ -9207,9 +9221,9 @@
     }
 
     var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
-    var yPadding = (ymaxY - yminY) * yPadPercent / 100;
+    var yPadding = (maxYscale - minYscale) * yPadPercent / 100;
     var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
-    var yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, composition); // Top axis
+    var yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition); // Top axis
 
     var tAxis;
 
@@ -9273,14 +9287,23 @@
     } // d3 transition object
 
 
-    var t = svgTemporal.transition().duration(duration); // Generate/regenerate chart elements
+    var t = svgTemporal.transition().duration(duration); // Add specific g elements to gTemporal for different chart element groups
+    // The order they are added affects there position in the display stack
+    // Those added last are displayed on top.
 
-    generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans);
-    generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition);
-    generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition);
-    generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
-    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
-    generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans);
+    var gVerticals = addG('gSupVerticals', gTemporal);
+    var gBars = addG('gTemporalBars', gTemporal);
+    var gLines = addG('gTemporalLines', gTemporal);
+    var gPointsAndErrors = addG('gTemporalPointsAndErrors', gTemporal);
+    var gSupTrendLines = addG('gTemporalSupTrendLines', gTemporal);
+    var gSupPointsAndErrors = addG('gTemporalSupPointsAndErrors', gTemporal); // Generate/regenerate chart elements
+
+    generateBars(dataFiltered, metricsPlus, gBars, t, xScale, yScale, height, pTrans, minYscale, svgChart, interactivity, chartStyle, composition);
+    generateLines(dataFiltered, metricsPlus, gLines, t, xScale, yScale, height, pTrans, minYscale, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition);
+    generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
+    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
+    generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans);
+    generateSupVerticals(verticals, gVerticals, t, xScale, height, pTrans);
 
     if (init) {
       // Constants for positioning
@@ -9770,7 +9793,7 @@
       // Look for 'fading' colour in taxa and colour appropriately 
       // in fading shades of grey.
       var iFading = 0;
-      metricsPlus = metrics.map(function (m) {
+      metricsPlus = metrics.map(function (m, i) {
         var iFade, strokeWidth;
 
         if (m.colour === 'fading') {
@@ -9781,6 +9804,7 @@
         }
 
         return {
+          index: i,
           prop: m.prop,
           label: m.label ? m.label : m.prop,
           opacity: m.opacity !== 'undefined' ? m.opacity : 1,
@@ -9800,10 +9824,8 @@
           errorBarUpper: m.errorBarUpper,
           errorBarLower: m.errorBarLower
         };
-      }); //.reverse()
-      //console.log('metricsPlus', metricsPlus)
-
-      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([iFading, 1]);
+      });
+      var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
       metricsPlus.forEach(function (m) {
         if (m.fading) {
           m.colour = grey(m.fading);

@@ -338,7 +338,7 @@ export function temporal({
     // in fading shades of grey.
     
     let iFading = 0
-    metricsPlus = metrics.map(m => {
+    metricsPlus = metrics.map((m,i) => {
       let iFade, strokeWidth
       if (m.colour === 'fading') {
         iFade = ++iFading
@@ -347,6 +347,7 @@ export function temporal({
         strokeWidth = m.strokeWidth ? m.strokeWidth : 1
       }
       return {
+        index: i,
         prop: m.prop,
         label: m.label ?  m.label : m.prop,
         opacity: m.opacity !== 'undefined' ? m.opacity : 1,
@@ -366,13 +367,11 @@ export function temporal({
         errorBarUpper: m.errorBarUpper,
         errorBarLower: m.errorBarLower
       }
-    }) //.reverse()
-
-    //console.log('metricsPlus', metricsPlus)
+    })
 
     const grey = d3.scaleLinear()
       .range(['#808080', '#E0E0E0'])
-      .domain([iFading, 1])
+      .domain([1, iFading])
 
     metricsPlus.forEach(m => {
       if (m.fading) {

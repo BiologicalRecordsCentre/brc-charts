@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, spreadScale, safeId, transPromise } from '../general'
+import { addG, xAxisYear, xAxisMonthText, xAxisMonthNoText, temporalScale, spreadScale, safeId, transPromise } from '../general'
 import { generateBars } from './chartBar'
 import { generateLines } from './chartLine'
 import { generatePointsAndErrors } from './chartPointAndError'
@@ -56,16 +56,14 @@ export function makeTemporal (
   const dataFiltered = JSON.parse(JSON.stringify(data))
     .filter(d => d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod)
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
-  
   // Adjust metric values and record, in metric structure,
   // hightest values (required in spread display)
   metricsPlus.forEach(m => {
-    const vals = dataFiltered.map(d => d[m.prop])
     let denominator 
     if (metricExpression === 'proportion') {
-      denominator = vals.reduce((a, v) => a + v, 0)
+      denominator = dataFiltered.map(d => d[m.prop]).reduce((a, v) => a + v, 0)
     } else if (metricExpression === 'normalized') {
-      denominator = Math.max(...vals)
+      denominator = Math.max(...dataFiltered.map(d => d[m.prop]))
     } else {
       denominator = 1
     }
@@ -75,7 +73,17 @@ export function makeTemporal (
     // Record max data value in metric
     const errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFiltered.map(d => d[m.errorBarUpper]) : []
     const bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(d => d[m.bandUpper]) : []
-    m.maxValue = Math.max(...vals, ...errorBarUppers, bandUppers)
+    m.maxValue = Math.max(...dataFiltered.map(d => d[m.prop]), ...errorBarUppers, ...bandUppers)
+  })
+   // Add data displacement values for cummulative displays such as stacked
+  dataFiltered.forEach(d => {
+    metricsPlus.forEach((m,i) => {
+      if (i === 0) {
+        d.displacement = [0]
+      } else {
+        d.displacement.push(d.displacement[i-1] + d[metricsPlus[i-1].prop])
+      }
+    })
   })
 
   const dataPointsFiltered = dataPoints
@@ -102,11 +110,16 @@ export function makeTemporal (
     return typeof(d) === 'number'
   }
 
+  // This next section is all about working out the minimum and maximum Y values
+  // (minYscale and maxYscale) which are required for generating the Y scale. It is 
+  // complicated because it depends on the type of data used and the display
+  // composition.
   let missing = []
   if (typeof(missingValues) !== 'undefined' && missingValues !== 'break' && missingValues !== 'bridge') {
+    // Myabe need to be more nuanced here - only adding missing value if it is actually used
+    // to replace missing values in dataset.
     missing = [Number(missingValues)]
   }
-
   let cumulativeTotals = []
   const extensionValies = []
   if (composition === 'stack') {
@@ -129,15 +142,13 @@ export function makeTemporal (
       })
     })
   }
-
   const maxMetricYs = metricsPlus.map(m => Math.max(
     ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
     ...dataFiltered.filter(d => v(d[m.errorBarUpper])).map(d => d[m.errorBarUpper]),
   ))
-
   const maxYA = maxY !== null ? [maxY] : []
-  let ymaxY = Math.max(
+  let maxYscale = Math.max(
     ...maxYA,
     ...maxMetricYs,
     ...cumulativeTotals,
@@ -147,16 +158,14 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
-
   const minMetricYs = metricsPlus.map(m => Math.min(
     ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),
     ...dataFiltered.filter(d => v(d[m.errorBarLower])).map(d => d[m.errorBarLower]),
     ...missing
   ))
-
   const minYA = minY !== null ? [minY] : []
-  let yminY = Math.min(
+  let minYscale = Math.min(
     ...minYA,
     ...minMetricYs,
     ...dataPointsFiltered.map(d => d.y),
@@ -164,10 +173,9 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
-
   if (minMaxY !== null) {
-    if (ymaxY < minMaxY) {
-      ymaxY = minMaxY
+    if (maxYscale < minMaxY) {
+      maxYscale = minMaxY
     }
   }
 
@@ -178,10 +186,9 @@ export function makeTemporal (
   }
 
   const xPadding = (maxPeriod-minPeriod) * xPadPercent/100
-  const yPadding = (ymaxY-yminY) * yPadPercent/100
-
+  const yPadding = (maxYscale-minYscale) * yPadPercent/100
   const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
-  const yScale = spreadScale(yminY, ymaxY, yPadding, metricsPlus, height, composition)
+  const yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition)
 
   // Top axis
   let tAxis
@@ -250,13 +257,23 @@ export function makeTemporal (
   // d3 transition object
   const t = svgTemporal.transition().duration(duration)
 
+  // Add specific g elements to gTemporal for different chart element groups
+  // The order they are added affects there position in the display stack
+  // Those added last are displayed on top.
+  const gVerticals = addG('gSupVerticals', gTemporal)
+  const gBars = addG('gTemporalBars', gTemporal)
+  const gLines = addG('gTemporalLines', gTemporal)
+  const gPointsAndErrors = addG('gTemporalPointsAndErrors', gTemporal)
+  const gSupTrendLines = addG('gTemporalSupTrendLines', gTemporal)
+  const gSupPointsAndErrors = addG('gTemporalSupPointsAndErrors', gTemporal)
+
   // Generate/regenerate chart elements
-  generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans)
-  generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY,  svgChart, interactivity, chartStyle, composition)
-  generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition)
-  generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition)
-  generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
-  generateSupPointsAndErrors(dataPointsFiltered, gTemporal, t, xScale, yScale, height, pTrans)
+  generateBars(dataFiltered, metricsPlus, gBars, t, xScale, yScale, height, pTrans, minYscale,  svgChart, interactivity, chartStyle, composition)
+  generateLines(dataFiltered, metricsPlus, gLines, t, xScale, yScale, height, pTrans, minYscale, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition)
+  generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition)
+  generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
+  generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans)
+  generateSupVerticals(verticals, gVerticals, t, xScale, height, pTrans)
 
   if (init) {
 

@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { transPromise } from '../general'
+import { addG, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
 export function generateLines(
@@ -23,6 +23,11 @@ export function generateLines(
   composition
 ) {
 
+  // Add g elements in increasing order of display priority
+  const gLinesAreas = addG('gLinesAreas', gTemporal)
+  const gLinesBands = addG('gLinesBands', gTemporal)
+  const gLinesBandLines = addG('gLinesBandLines', gTemporal)
+  const gLinesLines = addG('gLinesLines', gTemporal)
 
   const lineValues = (points, iPart) => {
     // console.log(iPart, points)
@@ -43,25 +48,23 @@ export function generateLines(
   let chartLines = []
   let chartBands = []
   let chartLineFills = []
-  const displacement = {}
 
+  console.log('metricsPlus', metricsPlus)
+ 
   metricsPlus.forEach((m, iMetric) => {
-      // Create a collection of the periods in the dataset.
-    const dataDict = dataFiltered.reduce((a,d) => {
-      a[d.period]=d[m.prop]
-      return a
-    }, {})
 
     // Construct data structure for line/area charts.
     let pointSets
     if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
-      pointSets = adjustForTrans(periods.map(y => {
+      pointSets = adjustForTrans(periods.map(p => {
         // Replace any missing values (for a given period)
         // with the missing value specified (can be a value
         // or 'bridge' or 'break')
+        const d = dataFiltered.find(d => d.period === p)
         return {
-          period: y,
-          n: typeof(dataDict[y]) !== 'undefined' ? dataDict[y] : missingValues,
+          period: p,
+          n: d ? d[m.prop] : missingValues,
+          displacement: d ? d.displacement[iMetric] : null
         }
       }))
     } else {
@@ -69,29 +72,24 @@ export function generateLines(
     }
 
     pointSets.forEach((points, i) => {
-
       let pnts
       if (composition === 'stack') {
         pnts = points.map(p => {
-          if (typeof(displacement[p.period]) !== 'undefined') {
-            const ret = {
-              n: p.n + displacement[p.period],
-              period: p.period
-            }
-            return ret
-          } else {
-            return {...p}
+          return {
+            n: p.n + p.displacement,
+            period: p.period,
+            displacement: p.displacement
           }
         })
       } else {
         pnts = points
       }
-
       chartLines.push({
         colour: m.colour,
         opacity: m.opacity,
         strokeWidth: m.strokeWidth,
         prop: m.prop,
+        index: m.index,
         part: i,
         yMin: yminY,
         pathEnter: lineValues(pnts.map(p => {
@@ -102,7 +100,7 @@ export function generateLines(
         }), iMetric),
         path: lineValues(pnts, iMetric)
       })
-      chartLines.reverse()
+      chartLines.sort((a,b) => b.index - a.index)
 
       if (chartStyle === 'area') {
         // Add bottom line of area to match displacement
@@ -111,23 +109,16 @@ export function generateLines(
         // in order to give nice transitions if switching from overlayed
         // (or spread) to stacked and visa versa.
         const pntsBase = [...points].reverse().map(p => {
-          if (typeof(displacement[p.period]) !== 'undefined') {
-            return {
-              n: displacement[p.period],
-              period: p.period
-            }
-          } else {
-            return {
-              n: yminY,
-              period: p.period
-            }
+          return {
+            n: composition === 'stack' && p.displacement > yminY ? p.displacement : yminY,
+            period: p.period
           }
         })
-       
         chartLineFills.push({
           opacity: m.fillOpacity,
           fill: m.fill,
           prop: m.prop,
+          index: m.index,
           part: i,
           yMin: yminY,
           pathEnter: lineValues(pnts, iMetric) + lineValues(pntsBase.map(p => {
@@ -138,49 +129,27 @@ export function generateLines(
           }), iMetric).replace('M', 'L'),
           path: lineValues(pnts, iMetric) + lineValues(pntsBase, iMetric).replace('M', 'L')
         })
-        chartLineFills.reverse()
-      }
-
-      // Update displacement for stack displays.
-      if (composition === 'stack') {
-        let lastPeriod = null
-        points.forEach(p => {
-          if (typeof(displacement[p.period]) === 'undefined') {
-            displacement[p.period] = p.n
-          } else {
-            if (p.period !== lastPeriod) {
-              // Because the adjustForTrans function can create duplicate
-              // points for a given period (to create better transitions)
-              // we need avoid updating the displacement more than once
-              // for any given period.
-              displacement[p.period] += p.n
-            }
-          }
-          lastPeriod = p.period
-        })
+        chartLineFills.sort((a,b) => b.index - a.index)
       }
     })
 
     // Construct data structure for confidence band on line charts.
     if (m.bandUpper && m.bandLower ) {
-      const ddUpper = dataFiltered.reduce((a,d) => {
-        a[d.period]=d[m.bandUpper]
-        return a
-      }, {})
-      const ddLower = dataFiltered.reduce((a,d) => {
-        a[d.period]=d[m.bandLower]
-        return a
-      }, {})
-      const upperLine = periods.map(y => {
+
+      const upperLine = periods.map(p => {
+        const d = dataFiltered.find(d => d.period === p)
         return {
-          period: y,
-          n: ddUpper[y] ? ddUpper[y] : missingValues,
+          period: p,
+          n: d ? d[m.bandUpper] : missingValues,
+          displacement: d ? d.displacement[iMetric] : null
         }
       })
-      const lowerLine = [...periods].map(y => {
+      const lowerLine = [...periods].map(p => {
+        const d = dataFiltered.find(d => d.period === p)
         return {
-          period: y,
-          n: ddLower[y] ? ddLower[y] : missingValues,
+          period: p,
+          n: d ? d[m.bandLower] : missingValues,
+          displacement: d ? d.displacement[iMetric] : null
         }
       })
 
@@ -188,10 +157,23 @@ export function generateLines(
       const pointsUpperSet = adjustForTrans(upperLine)
       for (let i=0; i<pointsLowerSet.length; i++) {
 
-        const pointsLower = pointsLowerSet[i]
-        const pointsUpper = pointsUpperSet[i]
-        const pointsBand = [...pointsLowerSet[i], ...pointsUpperSet[i].reverse()]
+        const displace = (pnts) => {
+          if (composition === 'stack') {
+            return pnts.map(p => {
+              return {
+                n: p.n + p.displacement, 
+                period: p.period,
+                displacement: p.displacement
+              }
+            })
+          } else {
+            return pnts
+          }
+        }
 
+        const pointsLower = displace(pointsLowerSet[i])
+        const pointsUpper = displace(pointsUpperSet[i])
+   
         const pointsLowerEnter = pointsLower.map(p => {
           return {
             n: yminY,
@@ -213,23 +195,18 @@ export function generateLines(
           strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
           prop: m.prop,
           part: i,
-          bandPath: lineValues(pointsBand, iMetric),
-          bandPathEnter: lineValues(pointsBand.map(p => {
-            return {
-              n: yminY,
-              period: p.period
-            }
-          }), iMetric),
+          bandPath: lineValues(pointsUpper, iMetric) + lineValues([...pointsLower].reverse(), iMetric).replace('M', 'L'),
+          bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues([...pointsLowerEnter].reverse(), iMetric).replace('M', 'L'),
           bandBorders: [lineValues(pointsLower, iMetric), lineValues(pointsUpper, iMetric)],
           bandBordersEnter: [lineValues(pointsLowerEnter, iMetric), lineValues(pointsUpperEnter, iMetric)]
         })
-        chartBands.reverse()
+        chartBands.sort((a,b) => b.index - a.index)
       }
     }
   })
 
   // Bands
-  gTemporal.selectAll(".temporal-band")
+  gLinesBands.selectAll(".temporal-band")
     .data(chartBands, d => `band-${d.prop}-${d.part}`)
     .join(
       enter => enter.append("path")
@@ -252,11 +229,11 @@ export function generateLines(
       .attr("opacity", d => d.fillOpacity)
       .attr("fill", d => d.fill), pTrans))
 
-  addEventHandlers(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
+  addEventHandlers(gLinesBands.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
 
   // Band lines
   for (let iLine=0; iLine<2; iLine++) { 
-    gTemporal.selectAll(`.temporal-band-border-${iLine}`)
+    gLinesBandLines.selectAll(`.temporal-band-border-${iLine}`)
       .data(chartBands, d => `band-line-${d.prop}-${iLine}-${d.part}`)
       .join(
         enter => enter.append("path")
@@ -281,10 +258,10 @@ export function generateLines(
           .attr("stroke", d => d.stroke)
           .attr("stroke-width", d => d.strokeWidth), pTrans))
   
-    addEventHandlers(gTemporal.selectAll(`.temporal-band-border-${iLine}`), 'prop', svgChart, interactivity)
+    addEventHandlers(gLinesBandLines.selectAll(`.temporal-band-border-${iLine}`), 'prop', svgChart, interactivity)
 
   // Main lines
-  gTemporal.selectAll(".temporal-line")
+  gLinesLines.selectAll(".temporal-line")
     .data(chartLines,  d => `line-${d.prop}-${d.part}`)
     .join(
       enter => enter.append("path")
@@ -309,10 +286,10 @@ export function generateLines(
       .attr("stroke", d => d.colour)
       .attr("stroke-width", d => d.strokeWidth), pTrans))
 
-  addEventHandlers(gTemporal.selectAll(".temporal-line"), 'prop', svgChart, interactivity)
+  addEventHandlers(gLinesLines.selectAll(".temporal-line"), 'prop', svgChart, interactivity)
 
   // Main line fill
-  gTemporal.selectAll(".temporal-line-fill")
+  gLinesAreas.selectAll(".temporal-line-fill")
     .data(chartLineFills, d => `band-${d.prop}-${d.part}`)
     .join(
       enter => enter.append("path")
@@ -335,7 +312,7 @@ export function generateLines(
       .attr("opacity", d => d.opacity)
       .attr("fill", d => d.fill), pTrans))
 
-  addEventHandlers(gTemporal.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
+  addEventHandlers(gLinesAreas.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
   }
 
   function adjustForTrans(pntsIn) {
@@ -377,12 +354,14 @@ export function generateLines(
         if (pnts[i].n === 'bridge' && i > 0) {
           pnts[i].n = pnts[i-1].n
           pnts[i].period = pnts[i-1].period
+          pnts[i].displacement = pnts[i-1].displacement
         }
       }
       for (let i = pnts.length-1; i >= 0; i--) {
         if (pnts[i].n === 'bridge') {
           pnts[i].n = pnts[i+1].n
           pnts[i].period = pnts[i+1].period
+          pnts[i].displacement = pnts[i+1].displacement
         }
       }
 
@@ -395,7 +374,8 @@ export function generateLines(
         for(let i=minPeriodTrans; i<pnts[0].period; i++) {
           ret.unshift({
             n: pnts[0].n,
-            period: pnts[0].period
+            period: pnts[0].period,
+            displacement: pnts[0].displacement
           })
         }
       }
@@ -403,7 +383,8 @@ export function generateLines(
         for(let i=pnts[pnts.length-1].period + 1; i <= maxPeriodTrans; i++) {
           ret.push({
             n: pnts[pnts.length-1].n,
-            period: pnts[pnts.length-1].period
+            period: pnts[pnts.length-1].period,
+            displacement: pnts[pnts.length-1].displacement
           })
         }
       }

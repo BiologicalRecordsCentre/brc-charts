@@ -1,7 +1,11 @@
-import { transPromise } from '../general'
+import { addG, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
 export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
+
+  // Add g elements in increasing order of display priority
+  const gErrors = addG('gPointsAndErrorsErrors', gTemporal)
+  const gPoints = addG('gPointsAndErrorsPoints', gTemporal)
 
   let chartPoints = []
   let chartErrorBars = []
@@ -18,7 +22,6 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
     const bPoints = m.points
 
     if (bPoints || bErrorBars) {
-      //const points = dataFiltered.filter(d => typeof(d[m.prop]) !== 'undefined').map(d => {
       const points = dataFiltered.map(d => {
 
         let n, u, l
@@ -83,7 +86,7 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
   })
 
    // Error bars
-  gTemporal.selectAll('.temporal-error-bars')
+  gErrors.selectAll('.temporal-error-bars')
     .data(chartErrorBars, d => `error-bars-${d.prop}-${d.period}`)
     .join(
       enter => enter.append('path')
@@ -108,10 +111,10 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
       .attr("d", d => d.path)
       .style('opacity', 1), pTrans))
 
-  addEventHandlers(gTemporal.selectAll(".temporal-error-bars"), 'prop', svgChart, interactivity)
+  addEventHandlers(gErrors.selectAll(".temporal-error-bars"), 'prop', svgChart, interactivity)
 
   // Points
-  gTemporal.selectAll('.temporal-point')
+  gPoints.selectAll('.temporal-point')
     .data(chartPoints, d => `point-${d.prop}-${d.period}`)
     .join(
       enter => enter.append('circle')
@@ -138,5 +141,5 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
       .attr('cy', d => d.y)
       .style('opacity', 1), pTrans))
 
-  addEventHandlers(gTemporal.selectAll(".temporal-point"), 'prop', svgChart, interactivity)
+  addEventHandlers(gPoints.selectAll(".temporal-point"), 'prop', svgChart, interactivity)
 }

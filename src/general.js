@@ -498,7 +498,7 @@ function periodToWidth(p, periodType, xScale) {
   }
 }
 
-export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition) {
+export function spreadScale(minY, maxY, yPadding, metrics, height, composition) {
   
   let fn, fnAxis, tickFormat, spreadHeight
 
@@ -516,7 +516,7 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition
     spreadHeight = (1 + overlap) * spreadOffset 
 
     fn = (v, iMetric) => {
-      const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([spreadHeight, 0])
+      const d3fn = d3.scaleLinear().domain([minY - yPadding, maxY + yPadding]).range([spreadHeight, 0])
       return d3fn(v) + height - spreadHeight - bottom * spreadOffset - iMetric * spreadOffset
     }
 
@@ -536,14 +536,14 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition
     fnAxis = d3.scaleOrdinal().domain(ysDomain).range(ysRange)
     tickFormat = 'c'
   } else {
-    const d3fn = d3.scaleLinear().domain([yminY - yPadding, ymaxY + yPadding]).range([height, 0])
+    const d3fn = d3.scaleLinear().domain([minY - yPadding, maxY + yPadding]).range([height, 0])
     fn = v => {
       return d3fn(v)
     }
     fnAxis = d3fn
-    if (ymaxY-yminY > 20) {
+    if (maxY-minY > 20) {
       tickFormat = 'd'
-    } else if (ymaxY-yminY > 1) {
+    } else if (maxY-minY > 1) {
       tickFormat = '.1f' 
     } else {
       tickFormat = '.2f'
@@ -555,4 +555,12 @@ export function spreadScale(yminY, ymaxY, yPadding, metrics, height, composition
   fn.tickFormat = tickFormat
   fn.height = spreadHeight
   return fn
+}
+
+export function addG (id, g) {
+  if (g.select(`#${id}`).size()) { 
+    return g.select(`#${id}`)
+  } else {
+    return g.append('g').attr('id', id)
+  }
 }
