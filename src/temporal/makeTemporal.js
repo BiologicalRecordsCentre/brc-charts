@@ -58,6 +58,7 @@ export function makeTemporal (
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
   // Adjust metric values and record, in metric structure,
   // hightest values (required in spread display)
+
   metricsPlus.forEach(m => {
     let denominator 
     if (metricExpression === 'proportion') {
@@ -86,14 +87,15 @@ export function makeTemporal (
     })
   })
 
+  // Filter dataPoints data on taxon (if specified) and to within min and max period.
   const dataPointsFiltered = dataPoints
-    .filter(d => d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod)
+    .filter(d =>  (d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod)
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
-  // Filter dataTrendLinesFiltered data on taxon and also from an array 
-  // of gradients and intercepts to an array of arrays of two point lines
+  // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
+  // array of gradients and intercepts to an array of arrays of two point lines
   const dataTrendLinesFiltered = dataTrendLines
-    .filter(d => d.taxon === taxon)
+    .filter(d => d.taxon ? d.taxon === taxon : true)
     .map(d => {
       return {
         taxon: d.taxon,
@@ -104,6 +106,11 @@ export function makeTemporal (
         y2: d.gradient * maxPeriod + d.intercept
       }
     })
+
+  // Filter verticals on taxon (if specified) and to within min and max period.
+  const verticalsFiltered = verticals
+    .filter(d =>  (d.taxon ? d.taxon === taxon : true) && d.start >= minPeriod && d.start <= maxPeriod)
+    .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
   //Set the min and maximum values for the y axis
   function v(d) {
@@ -194,7 +201,7 @@ export function makeTemporal (
   let tAxis
   if (axisTop === 'on') {
     tAxis = d3.axisTop()
-      .scale(xScale.d3) // Needs a d3 scale obj
+      .scale(d3.scaleLinear().domain([0,1]).range([0, width])) // Needs a d3 scale obj
       .tickValues([])
       .tickSizeOuter(0)
   }
@@ -273,7 +280,7 @@ export function makeTemporal (
   generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition)
   generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
   generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans)
-  generateSupVerticals(verticals, gVerticals, t, xScale, height, pTrans)
+  generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans)
 
   if (init) {
 

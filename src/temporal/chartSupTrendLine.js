@@ -9,12 +9,12 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
     // y = mx + c
     const minx = minPeriod - xPadding
     const maxx = maxPeriod + xPadding
-    const x1 = xScale.v(minx)
+    const x1 = xScale(minx)
     let x2
     if (chartStyle === 'bar') {
-      x2 = xScale.v(maxx) + xScale.d3.bandwidth(maxx)
+      x2 = xScale(maxx) + xScale.bandwidth(maxx)
     } else {
-      x2 = xScale.v(maxx)
+      x2 = xScale(maxx)
     }
     return {
       colour: d.colour ? d.colour : 'red',

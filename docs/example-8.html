@@ -18,7 +18,7 @@
       The <i>temporal</i> chart integrates the 
       <i>phen1</i> and <i>yearly</i> charts into a single integrated and flexible chart.
       The examples on this page replicate some of the examples previously used to illustrate
-      the <i>phen1</i> and <i>yearly</i> charts.
+      the <i>phen1</i> and <i>yearly</i> charts plus some extra.
     </p>
     <p>
       To understand how the chart is used in any of these examples, dig into the code and the data.
@@ -84,6 +84,18 @@
     <button onclick="exLy4.setChartOpts({chartStyle: 'bar'})">Bars</button>
     <br/><br/>
     <div id="ladybird4"></div>
+
+    <h4>Example - BSBI atlas</h4>
+    <p>
+      These examples demonstrate how the temporal chart can be used to create some of the
+      charts used on the BSBI Atlas website.
+    </p>
+    <h5>Apparency by latitude</h5>
+    <div id="bsbi1"></div>
+    <h5>Smoothed trend</h5>
+    <div id="bsbi2"></div>
+    <h5>Linear trends</h5>
+    <div id="bsbi3"></div>
 
   <!--Page CSS-->
   <link rel="stylesheet" href="example.css" />
@@ -486,49 +498,160 @@
       exLy4 = brccharts.temporal(opts3)
     })
 
-    function genData({
-      periodType = 'year',
-      nMin = 0,
-      nMax = 2000,
-      nProp = 2,
-      taxon = 'dummy'
-    } = {}) {
-
-      let periodMax, periodMin
-      if (periodType === 'month') {
-        periodMax = 12
-        periodMin = 1
-      } else if (periodType === 'week') {
-        periodMax = 52
-        periodMin = 1
-      } else {
-        periodMax = 2020
-        periodMin = 1990
-      }
-      const nRange = nMax-nMin
-      const pRange = periodMax-periodMin
-      const ret = []
-      let nPrev = {}
-      for (i=periodMin; i<=periodMax; i++) {
-        const p = {taxon: taxon, period: i}
-        for (j=1; j<=nProp; j++) {
-          const prop = `prop${j}`
-          let n;
-          if (i===periodMin) {
-            n = Math.random() * nRange
-          } else {
-            dn = Math.random() * nRange/10
-            n = Math.random() > 0.5 ? nPrev[prop] + dn : nPrev[prop] - dn
-          }
-          if (n < nMin) n = nMin
-          if (n > nMax) n = nMax
-          nPrev[prop] = n
-          p[prop] = n
+    // Examples BSBI 1
+    d3.csv('./data/2cd4p9h_etk.csv', function(d){
+      for (p in d) {
+        if (p !== 'type') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
         }
-        ret.push(p)
+        d.taxon = 'dummy'
+        d.period = d.week
       }
-      return ret
-    }
+      return d
+    }).then(function(data){
+      //console.log(data.filter(d => d.type === 'count'))
+      var opts = {
+        selector: '#bsbi1',
+        data: data.filter(d => d.type === 'count'),
+        taxa: ['dummy'],
+        metrics: [
+          { prop: '50', label: '50', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '51', label: '51', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '52', label: '52', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '53', label: '53', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '54', label: '54', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '55', label: '55', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '56', label: '56', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '57', label: '57', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '58', label: '58', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '59', label: '59', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+          { prop: '60', label: '60', colour: 'rgb(0,128,0)', fill: 'rgb(221,255,221)'},
+        ],
+        showLegend: false,
+        showTaxonLabel: false,
+        interactivity: 'mousemove',
+        width: 350,
+        height: 400,
+        perRow: 1,
+        expand: false,
+        //missingValues: 'break', 
+        metricExpression: '',
+        minMaxY: null,
+        minY: 0,
+        lineInterpolator: 'curveMonotoneX',
+        chartStyle: 'area',
+        composition: 'spread',
+        periodType: 'week',
+        axisLeftLabel: 'Latitude band',
+        margin: {left: 40, right: 0, top: 0, bottom: 15},
+      }
+      brccharts.temporal(opts)
+    })
+
+    // Examples BSBI 2 & 3
+    const pBsbiGam = d3.csv('./data/trends/cornish-heath-gb-gam.csv', function(d){
+      for (p in d) {
+        if (p !== 'ddbid') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+        }
+        d.taxon = 'dummy'
+        d.period = d.year
+      }
+      return d
+    })
+
+    const pBsbiMeans = d3.csv('./data/trends/cornish-heath-gb-mean-sd.csv', function(d){
+      for (p in d) {
+        if (p !== 'ddbid') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+        }
+        d.period = d.year
+        d.taxon = 'dummy'
+        d.y = d.mean
+        d.upper = d.mean + d.std
+        d.lower = d.mean - d.std
+      }
+      return d
+    })
+
+    const pBsbiLinmod = d3.csv('./data/trends/cornish-heath-gb-linmod.csv', function(d){
+      for (p in d) {
+        if (p !== 'ddbid') {
+          d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+        }
+        d.taxon = 'dummy'
+        d.colour = 'blue'
+        d.width = 2
+        d.opacity = 0.05
+      }
+      return d
+    })
+    
+    Promise.all([pBsbiGam, pBsbiMeans]).then(function(data){
+      var opts = {
+        selector: '#bsbi2',
+        data: data[0],
+        dataPoints: data[1],
+        taxa: ['dummy'],
+        metrics: [
+          { prop: 'x50', strokeWidth: 2, bandUpper: 'x95', bandLower: 'x5', colour: 'blue', bandFill: 'silver', bandFillOpacity: 0.1, bandStrokeOpacity: 0.3},
+        ],
+        showLegend: false,
+        showTaxonLabel: false,
+        interactivity: 'none',
+        width: 350,
+        height: 250,
+        perRow: 1,
+        expand: false,
+        //missingValues: 'break', 
+        metricExpression: '',
+        minMaxY: null,
+        periodType: 'year',
+        lineInterpolator: 'curveMonotoneX',
+        chartStyle: 'line',
+        //composition: '',
+        axisLeftLabel: 'Relative frequency',
+        axisTop: 'on',
+        axisRight: 'on',
+        margin: {left: 45, right: 0, top: 0, bottom: 15},
+        xPadPercent: 5,
+        yPadPercent: 5
+      }
+      brccharts.temporal(opts)
+    })
+
+    Promise.all([pBsbiLinmod, pBsbiMeans]).then(function(data){
+      var opts = {
+        selector: '#bsbi3',
+        dataTrendLines: data[0],
+        dataPoints: data[1],
+        taxa: ['dummy'],
+        showLegend: false,
+        showTaxonLabel: false,
+        interactivity: 'none',
+        width: 350,
+        height: 250,
+        perRow: 1,
+        expand: false,
+        //missingValues: 'break', 
+        metricExpression: '',
+        minMaxY: null,
+        periodType: 'year',
+        lineInterpolator: 'curveMonotoneX',
+        chartStyle: 'line',
+        //composition: '',
+        axisLeftLabel: 'Relative frequency',
+        axisTop: 'on',
+        axisRight: 'on',
+        margin: {left: 45, right: 0, top: 0, bottom: 15},
+        xPadPercent: 5,
+        yPadPercent: 5,
+        minPeriod: 1949, 
+        maxPeriod: 2020
+      }
+      brccharts.temporal(opts)
+    })
+
   </script>
 </body>
 </html>

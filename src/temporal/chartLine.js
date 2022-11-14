@@ -49,7 +49,7 @@ export function generateLines(
   let chartBands = []
   let chartLineFills = []
 
-  console.log('metricsPlus', metricsPlus)
+  //console.log('metricsPlus', metricsPlus)
  
   metricsPlus.forEach((m, iMetric) => {
 
@@ -312,7 +312,7 @@ export function generateLines(
       .attr("opacity", d => d.opacity)
       .attr("fill", d => d.fill), pTrans))
 
-  addEventHandlers(gLinesAreas.selectAll(".temporal-band"), 'prop', svgChart, interactivity)
+  addEventHandlers(gLinesAreas.selectAll(".temporal-line-fill"), 'prop', svgChart, interactivity)
   }
 
   function adjustForTrans(pntsIn) {

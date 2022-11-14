@@ -8306,8 +8306,8 @@
 
     var chartLines = [];
     var chartBands = [];
-    var chartLineFills = [];
-    console.log('metricsPlus', metricsPlus);
+    var chartLineFills = []; //console.log('metricsPlus', metricsPlus)
+
     metricsPlus.forEach(function (m, iMetric) {
       // Construct data structure for line/area charts.
       var pointSets;
@@ -8605,7 +8605,7 @@
           return d.fill;
         }), pTrans);
       });
-      addEventHandlers$3(gLinesAreas.selectAll(".temporal-band"), 'prop', svgChart, interactivity);
+      addEventHandlers$3(gLinesAreas.selectAll(".temporal-line-fill"), 'prop', svgChart, interactivity);
     };
 
     for (var iLine = 0; iLine < 2; iLine++) {
@@ -8916,13 +8916,13 @@
       // y = mx + c
       var minx = minPeriod - xPadding;
       var maxx = maxPeriod + xPadding;
-      var x1 = xScale.v(minx);
+      var x1 = xScale(minx);
       var x2;
 
       if (chartStyle === 'bar') {
-        x2 = xScale.v(maxx) + xScale.d3.bandwidth(maxx);
+        x2 = xScale(maxx) + xScale.bandwidth(maxx);
       } else {
-        x2 = xScale.v(maxx);
+        x2 = xScale(maxx);
       }
 
       return {
@@ -9089,16 +9089,17 @@
           d.displacement.push(d.displacement[i - 1] + d[metricsPlus[i - 1].prop]);
         }
       });
-    });
+    }); // Filter dataPoints data on taxon (if specified) and to within min and max period.
+
     var dataPointsFiltered = dataPoints.filter(function (d) {
-      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+      return (d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
-    }); // Filter dataTrendLinesFiltered data on taxon and also from an array 
-    // of gradients and intercepts to an array of arrays of two point lines
+    }); // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
+    // array of gradients and intercepts to an array of arrays of two point lines
 
     var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
-      return d.taxon === taxon;
+      return d.taxon ? d.taxon === taxon : true;
     }).map(function (d) {
       return {
         taxon: d.taxon,
@@ -9108,6 +9109,12 @@
         y1: d.gradient * minPeriod + d.intercept,
         y2: d.gradient * maxPeriod + d.intercept
       };
+    }); // Filter verticals on taxon (if specified) and to within min and max period.
+
+    var verticalsFiltered = verticals.filter(function (d) {
+      return (d.taxon ? d.taxon === taxon : true) && d.start >= minPeriod && d.start <= maxPeriod;
+    }).sort(function (a, b) {
+      return a.period > b.period ? 1 : -1;
     }); //Set the min and maximum values for the y axis
 
     function v(d) {
@@ -9228,7 +9235,7 @@
     var tAxis;
 
     if (axisTop === 'on') {
-      tAxis = d3.axisTop().scale(xScale.d3) // Needs a d3 scale obj
+      tAxis = d3.axisTop().scale(d3.scaleLinear().domain([0, 1]).range([0, width])) // Needs a d3 scale obj
       .tickValues([]).tickSizeOuter(0);
     } // Bottom axis
 
@@ -9303,7 +9310,7 @@
     generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
     generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
     generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans);
-    generateSupVerticals(verticals, gVerticals, t, xScale, height, pTrans);
+    generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans);
 
     if (init) {
       // Constants for positioning
@@ -9548,7 +9555,7 @@
    * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
-   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>period</b> - a number indicating a week or a year.
    * <li> <b>y</b> - y value for a given period. 
    * <li> <b>upper</b> - a value for upper confidence band.
@@ -9557,9 +9564,9 @@
    * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
-   * <li> <b>taxon</b> - name of a taxon.
+   * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>gradient</b> - a gradient for the line.
-   * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+   * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line. 
    * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
    * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -9567,6 +9574,7 @@
    * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
+   * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
    * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
@@ -9857,6 +9865,7 @@
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
+      * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -9950,6 +9959,11 @@
 
       if ('dataPoints' in opts) {
         dataPoints = opts.dataPoints;
+        remakeChart = true;
+      }
+
+      if ('verticals' in opts) {
+        verticals = opts.verticals;
         remakeChart = true;
       }
 

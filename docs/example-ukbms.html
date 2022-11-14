@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library UKBMS test</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    
+    <!--D3 JS required exernal dependency of BRC Charts library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS-->
+    <script src="./../dist/brccharts.min.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+
+    <h3>Options for both charts</h3>
+    <label for="chart-width">Chart width:</label>
+    <input type="number" id="chart-width" min="200" max="800" value="300" onchange="generateCharts()">
+    <label for="chart-height">Chart height:</label>
+    <input type="number" id="chart-height" min="200" max="800" value="220" onchange="generateCharts()">
+    <br/><br/>
+    <label for="cbTopAxis" style="margin: 0 0 0 0.5em">Top Axis</label>
+    <input type="checkbox" id="cbTopAxis" onchange="generateCharts()">
+    <label for="cbRightAxis" style="margin: 0 0 0 0.5em">Right Axis</label>
+    <input type="checkbox" id="cbRightAxis" onchange="generateCharts()">
+    <br/><br/>
+    <select id='taxa' onchange='taxonChanged()'></select>
+
+    <h3>Trend charts, e.g. abundance indices</h3>
+    <div id="yearly"></div>
+    <label for="cbYearlyPoints" style="margin: 0 0 0 0.5em">Show points</label>
+    <input type="checkbox" id="cbYearlyPoints" onchange="yearlyMetricsChanged()">
+    <label for="cbYearlyBand" style="margin: 0 0 0 0.5em">Show confidence band</label>
+    <input type="checkbox" id="cbYearlyBand" onchange="yearlyMetricsChanged()">
+    <label for="cbYearlyErrorBars" style="margin: 0 0 0 0.5em">Show error bars</label>
+    <input type="checkbox" id="cbYearlyErrorBars" onchange="yearlyMetricsChanged()">
+    <label for="cbYearlyDecorations" style="margin: 0 0 0 0.5em">Show decorations</label>
+    <input type="checkbox" id="cbYearlyDecorations" onchange="yearlyDecorationssChanged()">
+    <br/><br/>
+    <select id="lineInterpolatorYearly" onchange='yearlyLineInterpolatorChanged()'>
+      <option value="" selected>No line smooth</option>
+      <option value="curveCardinal">curveCardinal</option>
+      <option value="curveMonotoneX">curveMonotoneX</option>
+    </select>
+    <select id="yearlyMissingValues" onchange='yearlyMissingValuesChanged()'>
+      <option value="break" selected>Break on gaps</option>
+      <option value="bridge">Bridge gaps</option>
+      <option value="0">Replace with 0</option>
+    </select>
+
+    <h3>Phenology charts, e.g. flight periods</h3>
+    <div id="weekly"></div>
+     
+    <!-- <button onclick="actionButton('clear')">Clear</button> -->
+
+    <script>
+      let apiWeekly, apiYearly, indices, phenology
+
+      let optsYearly = {
+        selector: '#yearly',
+        taxa:  ['Small Tortoiseshell'],
+        minMaxY: null,
+        perRow: 1,
+        //axisRight: 'on',
+        //axisTop: 'on',
+        showLegend: false,
+        interactivity: 'mousemove', 
+        showTaxonLabel: false,
+        chartStyle: 'line',
+        axisLeftLabel: 'Relative frequency',
+        margin: {left: 50, right: 50, bottom: 20, top: 20},
+        xPadPercent: 3,
+        yPadPercent: 3,
+        minPeriodTrans: 1975,
+        maxPeriodTrans: 2022,
+        //duration: 10000,
+        // minPeriod: 1949,
+        // maxPeriod: 2019,
+        //minY: 1,
+        //maxY: 3,
+        missingValues: 'break', //1.3
+        //lineInterpolator: 'curveCardinal'
+        metrics: [
+          {
+            prop: 'TRMOBS', 
+            colour: 'black', 
+            opacity: 1,
+            lineWidth: 1,
+            //bandUpper: 'UPP_TRMOBS', 
+            //bandLower: 'LOW_TRMOBS', 
+            bandFill: 'silver', 
+            bandStroke: 'rgb(200,200,200)',
+            bandOpacity: 0.3,
+            bandStrokeOpacity: 1,
+            bandStrokeWidth: 1,
+            //errorBarUpper: 'UPP_TRMOBS',
+            //errorBarLower: 'LOW_TRMOBS'
+          }
+        ]
+      }; // Semi-colon important
+
+      // Weekly
+      var optsWeekly = {
+        selector: '#weekly',
+        taxa:  ['Small Tortoiseshell'],
+        minMaxY: null,
+        perRow: 1,
+        metrics: [],
+        showLegend: false,
+        interactivity: 'mousemove', 
+        showTaxonLabel: false,
+        chartStyle: 'line',
+        axisLeftLabel: 'Relative frequency',
+        margin: {left: 50, right: 50, bottom: 20, top: 20},
+        xPadPercent: 3,
+        yPadPercent: 3,
+        minPeriodTrans: 1975,
+        maxPeriodTrans: 2022,
+        //duration: 10000,
+        // minPeriod: 1949,
+        // maxPeriod: 2019,
+        //minY: 1,
+        //maxY: 3,
+        missingValues: 'break', //1.3
+        //lineInterpolator: 'curveCardinal'
+        axisLeftLabel: 'NM',
+        periodType: 'week',
+        monthScaleRange: [4,9],
+        //dataOffsetDays: 92,
+        //minPeriod: 20,
+        //maxPeriod: 30,
+        lineInterpolator:  'curveCardinal',
+        metrics: [
+          {
+            prop: 'meanNM', 
+            colour: 'blue', 
+            opacity: 1,
+            lineWidth: 1,
+            // bandUpper: 'upper', 
+            // bandLower: 'lower', 
+            bandFill: 'silver', 
+            bandStroke: 'rgb(200,200,200)',
+            bandOpacity: 0.3,
+            bandStrokeOpacity: 1,
+            bandStrokeWidth: 1,
+            points: true,
+            //errorBarUpper: 'upper',
+            //errorBarLower: 'lower'
+          }
+        ]
+      };
+
+      (async () => {
+
+        // Load example data
+        pd1 = d3.csv('/work/ukbms/UK_all_spp_coll_ind.csv')
+        pd2 = d3.csv('/work/ukbms/UK_all_spp_NM_curves.csv')
+        pd3 = d3.csv('/work/ukbms/UKBMS_spp_names.csv')
+        const data = await Promise.all([pd1, pd2, pd3])
+
+        // Create names lookup object keyed on bmscode
+        const names = {}
+        data[2].forEach(d => {
+          names[d.BMSCODE]= {
+            scientific: d.SCI_NAME,
+            common: d.COMMON_NAME
+          }
+        })
+
+        // Update taxa dropdown
+        d3.select('#taxa').selectAll('.taxon')
+          .data(data[2])
+          .enter()
+            .append('option')
+            .classed('taxon', true)
+            .text(d => d.COMMON_NAME)
+            .attr('value', d => d.COMMON_NAME)
+ 
+        // Create indices data (converting names)
+        indices = data[0].map(d => {
+          return {
+            TRMOBS: Number(d.TRMOBS),
+            LOW_TRMOBS: Number(d.LOW_TRMOBS),
+            UPP_TRMOBS: Number(d.UPP_TRMOBS),
+            taxon: names[d.SPECIES].common,
+            period: Number(d.YEAR)
+          }
+        })
+
+        // Create phenology data (converting names)
+        // Amalgamate data over years
+        const phenAmalgamate = []
+        data[1].map(d => {
+          const existing = phenAmalgamate.find(pa => pa.SPECIES === d.SPECIES && pa.WEEKNO === d.WEEKNO)
+          if (existing) {
+            existing.NM.push(d.NM)
+          } else {
+            phenAmalgamate.push({
+              SPECIES: d.SPECIES,
+              WEEKNO: d.WEEKNO,
+              NM: [d.NM]
+            })
+          }
+        })
+        phenology = phenAmalgamate.map(d => {
+          // The values for weekno are in UKBMS season weeks not calendar weeks 
+          // with week 1 starting on the 1st of April (day 1 of week 1) and then 
+          // running for the 26 weeks of the recording season
+          return {
+            taxon: names[d.SPECIES].common,
+            period: Number(d.WEEKNO) + 13,
+            meanNM: d.NM.map(d => Number(d)).reduce((a, b) => a + b, 0)/d.NM.length,
+            upper: Math.max(...d.NM),
+            lower: Math.min(...d.NM)
+          }
+        })
+ 
+        // Generate charts
+        generateCharts()
+      })()
+
+      function taxonChanged() {
+        const taxon = d3.select("#taxa").property("value")
+        
+        // Change taxon
+        apiYearly.setTaxon(taxon)
+        apiWeekly.setTaxon(taxon)
+
+        // Optionally reset min and max year
+        const filteredData = indices.filter(d => d.taxon === taxon)
+        apiYearly.setChartOpts({
+          minPeriod:  Math.min(...filteredData.map(d => d.period)), 
+          maxPeriod: Math.max(...filteredData.map(d => d.period))
+        })
+      }
+
+      function actionButton(id) {
+        console.log('actionButton', id)
+      }
+
+      function generateCharts() {
+        generateYearly()
+        generateWeekly()
+      }
+
+      function yearlyMetricsChanged () {
+        if ( d3.select("#cbYearlyPoints").property("checked")) {
+          optsYearly.metrics.forEach(m => {
+            m.points= 'TRMOBS'
+          })
+        } else {
+          optsYearly.metrics.forEach(m => {
+            delete m.points
+          })
+        }
+        if ( d3.select("#cbYearlyBand").property("checked")) {
+          optsYearly.metrics.forEach(m => {
+            m.bandUpper= 'UPP_TRMOBS'
+            m.bandLower= 'LOW_TRMOBS'
+          })
+        } else {
+          optsYearly.metrics.forEach(m => {
+            delete m.bandUpper
+            delete m.bandLower
+          })
+        }
+        if ( d3.select("#cbYearlyErrorBars").property("checked")) {
+          optsYearly.metrics.forEach(m => {
+            m.errorBarUpper= 'UPP_TRMOBS'
+            m.errorBarLower= 'LOW_TRMOBS'
+          })
+        } else {
+          optsYearly.metrics.forEach(m => {
+            delete m.errorBarUpper
+            delete m.errorBarLower
+          })
+        }
+        apiYearly.setChartOpts({metrics: optsYearly.metrics})
+      }
+
+      function yearlyLineInterpolatorChanged () {
+        optsYearly.lineInterpolator = d3.select("#lineInterpolatorYearly").property("value")
+        apiYearly.setChartOpts({lineInterpolator: optsYearly.lineInterpolator})
+      }
+      
+      function yearlyMissingValuesChanged() {
+        optsYearly.missingValues =  d3.select("#yearlyMissingValues").property("value")
+        apiYearly.setChartOpts({missingValues: optsYearly.missingValues})
+      }
+
+      function yearlyDecorationssChanged() {
+        const decorations =  d3.select("#cbYearlyDecorations").property("checked")
+        if (decorations) {
+          optsYearly.verticals = [
+            {
+              colour: 'rgb(255, 228, 196)',
+              start: 2012,
+              width: 9,
+            },
+            {
+              colour: 'silver',
+              start: 2012
+            },
+            {
+              colour: 'silver',
+              start: 2021
+            }
+          ]
+          optsYearly.dataTrendLines = [
+            {
+              gradient: 0,
+              intercept: 2,
+              colour: 'silver',
+              width: 1,
+              opacity: 1
+            }
+          ]
+        } else {
+          optsYearly.verticals = []
+          optsYearly.dataTrendLines = []
+        }
+
+        apiYearly.setChartOpts({verticals: optsYearly.verticals, dataTrendLines:optsYearly.dataTrendLines })
+      }
+      
+      function generateYearly () {
+        optsYearly.width = Number(d3.select("#chart-width").property("value"))
+        optsYearly.height = Number(d3.select("#chart-height").property("value"))
+        optsYearly.axisTop = d3.select("#cbTopAxis").property("checked") ? 'on' : ''
+        optsYearly.axisRight = d3.select("#cbRightAxis").property("checked") ? 'on' : ''
+        optsYearly.data = indices
+        
+        d3.select('#yearly').html('')
+        apiYearly = brccharts.temporal(optsYearly)
+      }
+
+      function yearlyOptionsChanged() {
+
+        const errorBars = d3.select("#cbYearlyErrorBars").property("checked")
+        const errorBand = d3.select("#cbYearlyErrorBand").property("checked")
+      }
+    
+      function generateWeekly () {
+
+        optsWeekly.width = Number(d3.select("#chart-width").property("value"))
+        optsWeekly.height = Number(d3.select("#chart-height").property("value"))
+        optsWeekly.axisTop = d3.select("#cbTopAxis").property("checked") ? 'on' : ''
+        optsWeekly.axisRight = d3.select("#cbRightAxis").property("checked") ? 'on' : ''
+        optsWeekly.data = phenology
+
+        d3.select('#weekly').html('')
+        apiWeekly = brccharts.temporal(optsWeekly)
+      }
+    
+    </script>
+  </div>
+</body>
+</html>

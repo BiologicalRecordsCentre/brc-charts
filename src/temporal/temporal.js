@@ -93,7 +93,7 @@ import { highlightItem } from './highlightitem'
  * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
- * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>period</b> - a number indicating a week or a year.
  * <li> <b>y</b> - y value for a given period. 
  * <li> <b>upper</b> - a value for upper confidence band.
@@ -102,9 +102,9 @@ import { highlightItem } from './highlightitem'
  * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
- * <li> <b>taxon</b> - name of a taxon.
+ * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>gradient</b> - a gradient for the line.
- * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+ * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line. 
  * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
  * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -112,6 +112,7 @@ import { highlightItem } from './highlightitem'
  * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
+ * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
  * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
@@ -405,6 +406,7 @@ export function temporal({
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
+  * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -479,6 +481,10 @@ export function temporal({
     }
     if ('dataPoints' in opts) {
       dataPoints = opts.dataPoints
+      remakeChart = true
+    }
+    if ('verticals' in opts) {
+      verticals = opts.verticals
       remakeChart = true
     }
     if ('dataTrendLines' in opts) {
