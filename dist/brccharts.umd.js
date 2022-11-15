@@ -8201,10 +8201,15 @@
     }
   }
 
-  function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
+  function generateBars(dataFilteredAll, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
     var chartBars = [];
     var displacement = {};
     metricsPlus.forEach(function (m, i) {
+      //####
+      var dataFiltered = dataFilteredAll.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      });
+
       if (chartStyle === 'bar') {
         var bars = dataFiltered.map(function (d) {
           var n, barHeight;
@@ -8229,7 +8234,7 @@
           return {
             colour: m.colour,
             opacity: m.fillOpacity,
-            prop: m.prop,
+            prop: "".concat(m.prop, "-").concat(m.index),
             period: d.period,
             n: n,
             height: barHeight
@@ -8277,7 +8282,7 @@
     addEventHandlers$3(gTemporal.selectAll(".temporal-bar"), 'prop', svgChart, interactivity);
   }
 
-  function generateLines(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition) {
+  function generateLines(dataFilteredAll, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition) {
     // Add g elements in increasing order of display priority
     var gLinesAreas = addG('gLinesAreas', gTemporal);
     var gLinesBands = addG('gLinesBands', gTemporal);
@@ -8309,7 +8314,11 @@
     var chartLineFills = []; //console.log('metricsPlus', metricsPlus)
 
     metricsPlus.forEach(function (m, iMetric) {
-      // Construct data structure for line/area charts.
+      //####
+      var dataFiltered = dataFilteredAll.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }); // Construct data structure for line/area charts.
+
       var pointSets;
 
       if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
@@ -8349,7 +8358,7 @@
           colour: m.colour,
           opacity: m.opacity,
           strokeWidth: m.strokeWidth,
-          prop: m.prop,
+          prop: "".concat(m.prop, "-").concat(m.index),
           index: m.index,
           part: i,
           yMin: yminY,
@@ -8381,7 +8390,7 @@
           chartLineFills.push({
             opacity: m.fillOpacity,
             fill: m.fill,
-            prop: m.prop,
+            prop: "".concat(m.prop, "-").concat(m.index),
             index: m.index,
             part: i,
             yMin: yminY,
@@ -8460,7 +8469,7 @@
             fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
             strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
             strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-            prop: m.prop,
+            prop: "".concat(m.prop, "-").concat(m.index),
             part: i,
             bandPath: lineValues(pointsUpper, iMetric) + lineValues(_toConsumableArray(pointsLower).reverse(), iMetric).replace('M', 'L'),
             bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues(_toConsumableArray(pointsLowerEnter).reverse(), iMetric).replace('M', 'L'),
@@ -8690,7 +8699,7 @@
     }
   }
 
-  function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
+  function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
     // Add g elements in increasing order of display priority
     var gErrors = addG('gPointsAndErrorsErrors', gTemporal);
     var gPoints = addG('gPointsAndErrorsPoints', gTemporal);
@@ -8705,7 +8714,11 @@
     }
 
     metricsPlus.forEach(function (m, i) {
-      // Construct data structure for points.
+      //####
+      var dataFiltered = dataFilteredAll.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }); // Construct data structure for points.
+
       var bErrorBars = m.errorBarUpper && m.errorBarLower;
       var bPoints = m.points;
 
@@ -8761,7 +8774,7 @@
           var ret = {
             x: x,
             period: d.period,
-            prop: m.prop
+            prop: "".concat(m.prop, "-").concat(m.index)
           };
 
           if (bPoints) {
@@ -9043,64 +9056,79 @@
     // Filter to named taxon and to min and max period and sort in period order
     // Adjust metrics data to accoutn for metricExpress value.
     var dataFiltered = JSON.parse(JSON.stringify(data)).filter(function (d) {
-      return d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod;
+      return taxon ? d.taxon === taxon : true;
+    }) //######
+    //.filter(d => d.taxon === taxon) //######
+    .filter(function (d) {
+      return d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
     }); // Adjust metric values and record, in metric structure,
     // hightest values (required in spread display)
 
     metricsPlus.forEach(function (m) {
+      //##########
+      // If taxon named in metric, further filter data to the named taxon.
+      var dataFilteredMetric = dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      });
       var denominator;
 
       if (metricExpression === 'proportion') {
-        denominator = dataFiltered.map(function (d) {
+        denominator = dataFilteredMetric.map(function (d) {
           return d[m.prop];
         }).reduce(function (a, v) {
           return a + v;
         }, 0);
       } else if (metricExpression === 'normalized') {
-        denominator = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+        denominator = Math.max.apply(Math, _toConsumableArray(dataFilteredMetric.map(function (d) {
           return d[m.prop];
         })));
       } else {
         denominator = 1;
       }
 
-      dataFiltered.forEach(function (d) {
+      dataFilteredMetric.forEach(function (d) {
         d[m.prop] = d[m.prop] / denominator;
       }); // Record max data value in metric
 
-      var errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFiltered.map(function (d) {
+      var errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFilteredMetric.map(function (d) {
         return d[m.errorBarUpper];
       }) : [];
-      var bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(function (d) {
+      var bandUppers = m.bandUpper && m.bandLower ? dataFilteredMetric.map(function (d) {
         return d[m.bandUpper];
       }) : [];
-      m.maxValue = Math.max.apply(Math, _toConsumableArray(dataFiltered.map(function (d) {
+      m.maxValue = Math.max.apply(Math, _toConsumableArray(dataFilteredMetric.map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(errorBarUppers), _toConsumableArray(bandUppers)));
     }); // Add data displacement values for cummulative displays such as stacked
 
     dataFiltered.forEach(function (d) {
       metricsPlus.forEach(function (m, i) {
-        if (i === 0) {
-          d.displacement = [0];
-        } else {
-          d.displacement.push(d.displacement[i - 1] + d[metricsPlus[i - 1].prop]);
+        if (!m.taxon || d.taxon === m.taxon) {
+          //####
+          //if (i === 0) {
+          if (!d.displacement) {
+            d.displacement = [0];
+          } else {
+            d.displacement.push(d.displacement[i - 1] + d[metricsPlus[i - 1].prop]);
+          }
         }
       });
     }); // Filter dataPoints data on taxon (if specified) and to within min and max period.
 
-    var dataPointsFiltered = dataPoints.filter(function (d) {
-      return (d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod;
+    var dataPointsFiltered = dataPoints //#####
+    .filter(function (d) {
+      return (taxon && d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
     }); // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
     // array of gradients and intercepts to an array of arrays of two point lines
 
     var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
-      return d.taxon ? d.taxon === taxon : true;
-    }).map(function (d) {
+      return taxon && d.taxon ? d.taxon === taxon : true;
+    }) //###
+    .map(function (d) {
       return {
         taxon: d.taxon,
         colour: d.colour,
@@ -9111,8 +9139,9 @@
       };
     }); // Filter verticals on taxon (if specified) and to within min and max period.
 
-    var verticalsFiltered = verticals.filter(function (d) {
-      return (d.taxon ? d.taxon === taxon : true) && d.start >= minPeriod && d.start <= maxPeriod;
+    var verticalsFiltered = verticals //######
+    .filter(function (d) {
+      return d.taxon && taxon ? d.taxon === taxon : true;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
     }); //Set the min and maximum values for the y axis
@@ -9134,48 +9163,58 @@
     }
 
     var cumulativeTotals = [];
-    var extensionValies = [];
+    var extensionValues = [];
 
     if (composition === 'stack') {
-      // For stacked displays, need to creat cumulative totals array
+      // For stacked displays, need to create cumulative totals array
       cumulativeTotals = new Array(dataFiltered.length).fill(0);
       dataFiltered.forEach(function (d, i) {
         metricsPlus.forEach(function (m) {
           // In stacked displays, error bars/bands from metrics other
           // than the one stacked on top can extend beyond the limit
           // of the metric on top, so we create an array to hold all
-          // the possible values that could be the maximum value. 
-          if (v(d[m.bandUpper])) {
-            extensionValies.push(cumulativeTotals[i] + d[m.bandUpper]);
+          // the possible values that could be the maximum value.
+          if (!m.taxon || d.taxon === m.taxon) {
+            //####
+            if (v(d[m.bandUpper])) {
+              extensionValues.push(cumulativeTotals[i] + d[m.bandUpper]);
+            }
+
+            if (v(d[m.errorBarUpper])) {
+              extensionValues.push(cumulativeTotals[i] + d[m.errorBarUpper]);
+            } // Increment the cumulative total
+
+
+            cumulativeTotals[i] += d[m.prop];
           }
-
-          if (v(d[m.errorBarUpper])) {
-            extensionValies.push(cumulativeTotals[i] + d[m.errorBarUpper]);
-          } // Increment the cumulative total
-
-
-          cumulativeTotals[i] += d[m.prop];
         });
       });
-    }
+    } //##########
+
 
     var maxMetricYs = metricsPlus.map(function (m) {
       return Math.max.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.prop]);
       }).map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.bandUpper]);
       }).map(function (d) {
         return d[m.bandUpper];
       })), _toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.errorBarUpper]);
       }).map(function (d) {
         return d[m.errorBarUpper];
       }))));
     });
     var maxYA = maxY !== null ? [maxY] : [];
-    var maxYscale = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), extensionValies, _toConsumableArray(dataPointsFiltered.map(function (d) {
+    var maxYscale = Math.max.apply(Math, maxYA.concat(_toConsumableArray(maxMetricYs), _toConsumableArray(cumulativeTotals), extensionValues, _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
     })), _toConsumableArray(dataPointsFiltered.filter(function (d) {
       return v(d.upper);
@@ -9185,17 +9224,24 @@
       return d.y1;
     })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
       return d.y2;
-    }))));
+    })))); //############
+
     var minMetricYs = metricsPlus.map(function (m) {
       return Math.min.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.prop]);
       }).map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.bandLower]);
       }).map(function (d) {
         return d[m.bandLower];
       })), _toConsumableArray(dataFiltered.filter(function (d) {
+        return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
         return v(d[m.errorBarLower]);
       }).map(function (d) {
         return d[m.errorBarLower];
@@ -9411,16 +9457,21 @@
   }
 
   function makeLegend$3(svgChart, metricsPlus, legendWidth, legendFontSize, headPad, showCounts, interactivity) {
-    var swatchSize = 15;
+    // Swatch size based on font size
+    var tmpText = svgChart.append('text').text('X').style('font-size', legendFontSize);
+    var swatchSize = tmpText.node().getBBox().height;
+    tmpText.remove();
     var swatchFact = 1.3; // Loop through all the legend elements and work out their
     // positions based on swatch size, item label text size and
     // legend width.
 
-    var metricsReversed = metricsPlus; //gen.cloneData(metricsPlus).reverse()
-
+    var legendItems = cloneData(metricsPlus);
+    legendItems.forEach(function (m) {
+      m.prop = "".concat(m.prop, "-").concat(m.index);
+    });
     var rows = 0;
     var lineWidth = -swatchSize;
-    metricsReversed.forEach(function (m) {
+    legendItems.forEach(function (m) {
       var tmpText = svgChart.append('text') //.style('display', 'none')
       .text(m.label).style('font-size', legendFontSize);
       var widthText = tmpText.node().getBBox().width;
@@ -9435,7 +9486,7 @@
       m.y = rows * swatchSize * swatchFact;
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText;
     });
-    var ls = svgChart.selectAll('.brc-legend-item-rect').data(metricsReversed, function (m) {
+    var ls = svgChart.selectAll('.brc-legend-item-rect').data(legendItems, function (m) {
       return safeId(m.label);
     }).join(function (enter) {
       var rect = enter.append("rect").attr("class", function (m) {
@@ -9449,7 +9500,7 @@
     }).attr('fill', function (m) {
       return m.colour;
     }).attr('height', showCounts === 'bar' ? swatchSize : 2);
-    var lt = svgChart.selectAll('.brc-legend-item-text').data(metricsReversed, function (m) {
+    var lt = svgChart.selectAll('.brc-legend-item-text').data(legendItems, function (m) {
       return safeId(m.label);
     }).join(function (enter) {
       var text = enter.append("text").attr("class", function (m) {
@@ -9779,8 +9830,8 @@
 
       var subChartPad = 10;
       var pTrans = [];
-      var svgsTaxa = taxa.map(function (t) {
-        return makeTemporal(svgChart, t, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
+      var svgsTaxa = taxa.map(function (taxon) {
+        return makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
         axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
@@ -9830,7 +9881,8 @@
           bandStrokeOpacity: m.bandStrokeOpacity,
           points: m.points,
           errorBarUpper: m.errorBarUpper,
-          errorBarLower: m.errorBarLower
+          errorBarLower: m.errorBarLower,
+          taxon: m.taxon ? m.taxon : null
         };
       });
       var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);

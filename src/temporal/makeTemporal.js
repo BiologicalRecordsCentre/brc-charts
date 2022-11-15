@@ -54,48 +54,59 @@ export function makeTemporal (
   // Filter to named taxon and to min and max period and sort in period order
   // Adjust metrics data to accoutn for metricExpress value.
   const dataFiltered = JSON.parse(JSON.stringify(data))
-    .filter(d => d.taxon === taxon && d.period >= minPeriod && d.period <= maxPeriod)
+    .filter(d => taxon ? d.taxon === taxon : true) //######
+    //.filter(d => d.taxon === taxon) //######
+    .filter(d => (d.period >= minPeriod && d.period <= maxPeriod))
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
   // Adjust metric values and record, in metric structure,
   // hightest values (required in spread display)
 
   metricsPlus.forEach(m => {
+    //##########
+    // If taxon named in metric, further filter data to the named taxon.
+    const dataFilteredMetric = dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true)
+
     let denominator 
     if (metricExpression === 'proportion') {
-      denominator = dataFiltered.map(d => d[m.prop]).reduce((a, v) => a + v, 0)
+      denominator = dataFilteredMetric.map(d => d[m.prop]).reduce((a, v) => a + v, 0)
     } else if (metricExpression === 'normalized') {
-      denominator = Math.max(...dataFiltered.map(d => d[m.prop]))
+      denominator = Math.max(...dataFilteredMetric.map(d => d[m.prop]))
     } else {
       denominator = 1
     }
-    dataFiltered.forEach(d => {
+    dataFilteredMetric.forEach(d => {
       d[m.prop] = d[m.prop] / denominator
     })
     // Record max data value in metric
-    const errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFiltered.map(d => d[m.errorBarUpper]) : []
-    const bandUppers = m.bandUpper && m.bandLower ? dataFiltered.map(d => d[m.bandUpper]) : []
-    m.maxValue = Math.max(...dataFiltered.map(d => d[m.prop]), ...errorBarUppers, ...bandUppers)
+    const errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFilteredMetric.map(d => d[m.errorBarUpper]) : []
+    const bandUppers = m.bandUpper && m.bandLower ? dataFilteredMetric.map(d => d[m.bandUpper]) : []
+    m.maxValue = Math.max(...dataFilteredMetric.map(d => d[m.prop]), ...errorBarUppers, ...bandUppers)
   })
-   // Add data displacement values for cummulative displays such as stacked
+
+  // Add data displacement values for cummulative displays such as stacked
   dataFiltered.forEach(d => {
     metricsPlus.forEach((m,i) => {
-      if (i === 0) {
-        d.displacement = [0]
-      } else {
-        d.displacement.push(d.displacement[i-1] + d[metricsPlus[i-1].prop])
+      if (!m.taxon || d.taxon === m.taxon) { //####
+        //if (i === 0) {
+        if (!d.displacement) {
+          d.displacement = [0]
+        } else {
+          d.displacement.push(d.displacement[i-1] + d[metricsPlus[i-1].prop])
+        }
       }
     })
   })
 
   // Filter dataPoints data on taxon (if specified) and to within min and max period.
   const dataPointsFiltered = dataPoints
-    .filter(d =>  (d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod)
+    //#####
+    .filter(d =>  (taxon && d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod)
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
   // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
   // array of gradients and intercepts to an array of arrays of two point lines
   const dataTrendLinesFiltered = dataTrendLines
-    .filter(d => d.taxon ? d.taxon === taxon : true)
+    .filter(d => taxon && d.taxon ? d.taxon === taxon : true) //###
     .map(d => {
       return {
         taxon: d.taxon,
@@ -109,7 +120,8 @@ export function makeTemporal (
 
   // Filter verticals on taxon (if specified) and to within min and max period.
   const verticalsFiltered = verticals
-    .filter(d =>  (d.taxon ? d.taxon === taxon : true) && d.start >= minPeriod && d.start <= maxPeriod)
+    //######
+    .filter(d =>  (d.taxon && taxon ? d.taxon === taxon : true))
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
   //Set the min and maximum values for the y axis
@@ -128,47 +140,52 @@ export function makeTemporal (
     missing = [Number(missingValues)]
   }
   let cumulativeTotals = []
-  const extensionValies = []
+  const extensionValues = []
   if (composition === 'stack') {
-    // For stacked displays, need to creat cumulative totals array
+    // For stacked displays, need to create cumulative totals array
     cumulativeTotals = new Array(dataFiltered.length).fill(0)
     dataFiltered.forEach((d,i) => {
       metricsPlus.forEach(m => {
         // In stacked displays, error bars/bands from metrics other
         // than the one stacked on top can extend beyond the limit
         // of the metric on top, so we create an array to hold all
-        // the possible values that could be the maximum value. 
-        if (v(d[m.bandUpper])) {
-          extensionValies.push(cumulativeTotals[i] + d[m.bandUpper])
+        // the possible values that could be the maximum value.
+        if (!m.taxon || d.taxon === m.taxon) { //####
+          if (v(d[m.bandUpper])) {
+            extensionValues.push(cumulativeTotals[i] + d[m.bandUpper])
+          }
+          if (v(d[m.errorBarUpper])) {
+            extensionValues.push(cumulativeTotals[i] + d[m.errorBarUpper])
+          }
+          // Increment the cumulative total
+          cumulativeTotals[i] += d[m.prop]
         }
-        if (v(d[m.errorBarUpper])) {
-          extensionValies.push(cumulativeTotals[i] + d[m.errorBarUpper])
-        }
-        // Increment the cumulative total
-        cumulativeTotals[i] += d[m.prop]
       })
     })
   }
+
+  //##########
   const maxMetricYs = metricsPlus.map(m => Math.max(
-    ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
-    ...dataFiltered.filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
-    ...dataFiltered.filter(d => v(d[m.errorBarUpper])).map(d => d[m.errorBarUpper]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.prop])).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.errorBarUpper])).map(d => d[m.errorBarUpper]),
   ))
   const maxYA = maxY !== null ? [maxY] : []
   let maxYscale = Math.max(
     ...maxYA,
     ...maxMetricYs,
     ...cumulativeTotals,
-    ...extensionValies,
+    ...extensionValues,
     ...dataPointsFiltered.map(d => d.y),
     ...dataPointsFiltered.filter(d => v(d.upper)).map(d => d.upper),
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
+  //############
   const minMetricYs = metricsPlus.map(m => Math.min(
-    ...dataFiltered.filter(d => v(d[m.prop])).map(d => d[m.prop]),
-    ...dataFiltered.filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),
-    ...dataFiltered.filter(d => v(d[m.errorBarLower])).map(d => d[m.errorBarLower]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.prop])).map(d => d[m.prop]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),
+    ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.errorBarLower])).map(d => d[m.errorBarLower]),
     ...missing
   ))
   const minYA = minY !== null ? [minY] : []

@@ -1,7 +1,7 @@
 import { addG, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
+export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition) {
 
   // Add g elements in increasing order of display priority
   const gErrors = addG('gPointsAndErrorsErrors', gTemporal)
@@ -17,6 +17,10 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
   }
 
   metricsPlus.forEach((m,i) => {
+
+    //####
+    const dataFiltered = dataFilteredAll.filter(d => m.taxon ? d.taxon === m.taxon : true)
+
     // Construct data structure for points.
     const bErrorBars = m.errorBarUpper && m.errorBarLower
     const bPoints = m.points
@@ -66,7 +70,7 @@ export function generatePointsAndErrors(dataFiltered, metricsPlus, gTemporal, t,
         const ret = {
           x: x,
           period: d.period,
-          prop: m.prop,
+          prop: `${m.prop}-${m.index}`,
         }
 
         if (bPoints) {

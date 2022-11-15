@@ -3,12 +3,12 @@
 }
 
 .brc-chart-temporal .temporal-graphic.lowlight {
-    opacity:0.1 !important;
+    opacity: 0.2 !important;
 }
 
 .brc-chart-temporal .temporal-line.highlight {
     stroke: black;
-    stroke-width: 3;
+    stroke-width: 2;
     opacity: 1;
 }
 

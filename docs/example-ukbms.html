@@ -7,6 +7,18 @@
     body {
       font-family: Arial, Helvetica, sans-serif;
     }
+    input[type="checkbox"] {
+      margin-left: 1em;
+    }
+    .content .brc-chart-temporal {
+      overflow: visible;
+    }
+    .content .brc-chart-temporal .temporal-graphic.lowlight {
+      opacity:0.1 !important;
+    }
+    .content .brc-chart-temporal .temporal-line.highlight {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -25,23 +37,30 @@
     <label for="chart-height">Chart height:</label>
     <input type="number" id="chart-height" min="200" max="800" value="220" onchange="generateCharts()">
     <br/><br/>
-    <label for="cbTopAxis" style="margin: 0 0 0 0.5em">Top Axis</label>
     <input type="checkbox" id="cbTopAxis" onchange="generateCharts()">
-    <label for="cbRightAxis" style="margin: 0 0 0 0.5em">Right Axis</label>
+    <label for="cbTopAxis">Top Axis</label>
     <input type="checkbox" id="cbRightAxis" onchange="generateCharts()">
+    <label for="cbRightAxis">Right Axis</label>
     <br/><br/>
     <select id='taxa' onchange='taxonChanged()'></select>
+    <input type="radio" id="add-mode-replace" name="add-mode" value="replace" checked="checked" onchange="addModeChanged()">
+    <label for="html">Replace</label>
+    <input type="radio" id="add-mode-add" name="add-mode" value="add" onchange="addModeChanged()">
+    <label for="css">Add</label>
+    <input type="radio" id="add-mode-side" name="add-mode" value="side" onchange="addModeChanged()">
+    <label for="css">Side by side</label>
 
     <h3>Trend charts, e.g. abundance indices</h3>
     <div id="yearly"></div>
-    <label for="cbYearlyPoints" style="margin: 0 0 0 0.5em">Show points</label>
+    
     <input type="checkbox" id="cbYearlyPoints" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyBand" style="margin: 0 0 0 0.5em">Show confidence band</label>
+    <label for="cbYearlyPoints">Show points</label>
     <input type="checkbox" id="cbYearlyBand" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyErrorBars" style="margin: 0 0 0 0.5em">Show error bars</label>
+    <label for="cbYearlyBand">Show confidence band</label>
     <input type="checkbox" id="cbYearlyErrorBars" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyDecorations" style="margin: 0 0 0 0.5em">Show decorations</label>
+    <label for="cbYearlyErrorBars">Show error bars</label>
     <input type="checkbox" id="cbYearlyDecorations" onchange="yearlyDecorationssChanged()">
+    <label for="cbYearlyDecorations">Show decorations</label>
     <br/><br/>
     <select id="lineInterpolatorYearly" onchange='yearlyLineInterpolatorChanged()'>
       <option value="" selected>No line smooth</option>
@@ -62,14 +81,31 @@
     <script>
       let apiWeekly, apiYearly, indices, phenology
 
+      const yearlyMetricsTemplate = {
+        taxon: 'Small Tortoiseshell',
+        label: 'Small Tortoiseshell',
+        prop: 'TRMOBS', 
+        colour: 'black', 
+        opacity: 1,
+        lineWidth: 1,
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: 0.3,
+        bandStrokeOpacity: 1,
+        bandStrokeWidth: 1,
+      }
+ 
       let optsYearly = {
         selector: '#yearly',
-        taxa:  ['Small Tortoiseshell'],
+        //taxa:  ['Small Tortoiseshell'],
+        //taxa:  [],
+        taxa: [null],
         minMaxY: null,
-        perRow: 1,
+        perRow: 2,
         //axisRight: 'on',
         //axisTop: 'on',
         showLegend: false,
+        legendFontSize: '11',
         interactivity: 'mousemove', 
         showTaxonLabel: false,
         chartStyle: 'line',
@@ -86,32 +122,35 @@
         //maxY: 3,
         missingValues: 'break', //1.3
         //lineInterpolator: 'curveCardinal'
-        metrics: [
-          {
-            prop: 'TRMOBS', 
-            colour: 'black', 
-            opacity: 1,
-            lineWidth: 1,
-            //bandUpper: 'UPP_TRMOBS', 
-            //bandLower: 'LOW_TRMOBS', 
-            bandFill: 'silver', 
-            bandStroke: 'rgb(200,200,200)',
-            bandOpacity: 0.3,
-            bandStrokeOpacity: 1,
-            bandStrokeWidth: 1,
-            //errorBarUpper: 'UPP_TRMOBS',
-            //errorBarLower: 'LOW_TRMOBS'
-          }
-        ]
+        metrics: [yearlyMetricsTemplate]
       }; // Semi-colon important
 
       // Weekly
+      const weeklyMetricsTemplate = {
+        taxon: 'Small Tortoiseshell',
+        label: 'Small Tortoiseshell',
+        prop: 'meanNM', 
+        colour: 'black', 
+        opacity: 1,
+        lineWidth: 1,
+        // bandUpper: 'upper', 
+        // bandLower: 'lower', 
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: 0.3,
+        bandStrokeOpacity: 1,
+        bandStrokeWidth: 1,
+        points: true,
+        //errorBarUpper: 'upper',
+        //errorBarLower: 'lower'
+      }
+
       var optsWeekly = {
         selector: '#weekly',
-        taxa:  ['Small Tortoiseshell'],
+        //taxa:  ['Small Tortoiseshell'],
+        taxa: [null],
         minMaxY: null,
-        perRow: 1,
-        metrics: [],
+        perRow: 2,
         showLegend: false,
         interactivity: 'mousemove', 
         showTaxonLabel: false,
@@ -136,24 +175,7 @@
         //minPeriod: 20,
         //maxPeriod: 30,
         lineInterpolator:  'curveCardinal',
-        metrics: [
-          {
-            prop: 'meanNM', 
-            colour: 'blue', 
-            opacity: 1,
-            lineWidth: 1,
-            // bandUpper: 'upper', 
-            // bandLower: 'lower', 
-            bandFill: 'silver', 
-            bandStroke: 'rgb(200,200,200)',
-            bandOpacity: 0.3,
-            bandStrokeOpacity: 1,
-            bandStrokeWidth: 1,
-            points: true,
-            //errorBarUpper: 'upper',
-            //errorBarLower: 'lower'
-          }
-        ]
+        metrics: [weeklyMetricsTemplate]
       };
 
       (async () => {
@@ -172,6 +194,11 @@
             common: d.COMMON_NAME
           }
         })
+        data[2].unshift(
+          {
+            COMMON_NAME: ''
+          }
+        )
 
         // Update taxa dropdown
         d3.select('#taxa').selectAll('.taxon')
@@ -181,6 +208,8 @@
             .classed('taxon', true)
             .text(d => d.COMMON_NAME)
             .attr('value', d => d.COMMON_NAME)
+
+        d3.select('.taxon[value="Small Tortoiseshell"').attr('selected', 'selected')
  
         // Create indices data (converting names)
         indices = data[0].map(d => {
@@ -227,21 +256,88 @@
 
       function taxonChanged() {
         const taxon = d3.select("#taxa").property("value")
-        
-        // Change taxon
-        apiYearly.setTaxon(taxon)
-        apiWeekly.setTaxon(taxon)
+        const addMode = d3.select('input[name="add-mode"]:checked').property("value")
+        const colours=d3.scaleOrdinal(d3.schemeCategory10)
 
-        // Optionally reset min and max year
-        const filteredData = indices.filter(d => d.taxon === taxon)
-        apiYearly.setChartOpts({
-          minPeriod:  Math.min(...filteredData.map(d => d.period)), 
-          maxPeriod: Math.max(...filteredData.map(d => d.period))
-        })
+        if (taxon === '') {
+          optsYearly.metrics = []
+          optsWeekly.metrics = []
+          if (addMode === 'side') {
+            optsYearly.taxa = ['x']
+            optsWeekly.taxa = ['x']
+          }
+        } else {
+
+          let ym = {...yearlyMetricsTemplate}
+          let wm = {...weeklyMetricsTemplate}
+          if (addMode === 'side') { 
+            delete ym.taxon
+            delete wm.taxon
+          } else {
+            ym.taxon = taxon
+            ym.label = taxon
+            wm.taxon = taxon
+            wm.label = taxon
+          }
+
+          if (addMode === 'side') {
+            if (optsYearly.taxa.length === 1 && optsYearly.taxa[0] === 'x') {
+              optsYearly.taxa = [taxon]
+            } else {
+              optsYearly.taxa.push(taxon)
+            }
+            optsYearly.metrics = [ym]
+            optsWeekly.metrics = [wm]
+          } else if (addMode === 'add') {
+            ym.colour = d3.schemeCategory10[optsYearly.metrics.length]
+            wm.colour = d3.schemeCategory10[optsWeekly.metrics.length]
+            optsYearly.metrics.push(ym)
+            optsWeekly.metrics.push(wm)
+          } else {
+            optsYearly.metrics = [ym]
+            optsWeekly.metrics = [wm]
+          }
+        }
+
+        if (addMode === 'side') {
+          console.log('regen charts', optsYearly)
+          generateCharts()
+        } else {
+          apiYearly.setChartOpts({metrics: optsYearly.metrics})
+          apiWeekly.setChartOpts({metrics: optsWeekly.metrics})
+
+          // Optionally reset min and max year
+          const filteredData = indices.filter(d => d.taxon === taxon)
+          apiYearly.setChartOpts({
+            minPeriod:  Math.min(...filteredData.map(d => d.period)), 
+            maxPeriod: Math.max(...filteredData.map(d => d.period))
+          })
+        }
       }
 
       function actionButton(id) {
         console.log('actionButton', id)
+      }
+
+      
+      function addModeChanged() {
+        const addMode = d3.select('input[name="add-mode"]:checked').property("value")
+        optsYearly.showLegend = addMode === 'add'
+        optsWeekly.showLegend = addMode === 'add'
+
+        if (addMode === 'side') {
+          //optsYearly.data = []
+          //optsWeekly.data = []
+          optsYearly.taxa = ['x']
+          optsWeekly.taxa = ['x']
+        } else {
+          optsYearly.taxa = [null]
+          optsWeekly.taxa = [null]
+        }
+
+        optsYearly.metrics = []
+        optsWeekly.metrics = []
+        generateCharts()
       }
 
       function generateCharts() {
@@ -254,32 +350,42 @@
           optsYearly.metrics.forEach(m => {
             m.points= 'TRMOBS'
           })
+          yearlyMetricsTemplate.points = 'TRMOBS'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.points
           })
+          delete yearlyMetricsTemplate.points
         }
         if ( d3.select("#cbYearlyBand").property("checked")) {
           optsYearly.metrics.forEach(m => {
             m.bandUpper= 'UPP_TRMOBS'
             m.bandLower= 'LOW_TRMOBS'
           })
+          yearlyMetricsTemplate.bandUpper= 'UPP_TRMOBS'
+          yearlyMetricsTemplate.bandLower= 'LOW_TRMOBS'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.bandUpper
             delete m.bandLower
           })
+          delete yearlyMetricsTemplate.bandUpper
+          delete yearlyMetricsTemplate.bandLower
         }
         if ( d3.select("#cbYearlyErrorBars").property("checked")) {
           optsYearly.metrics.forEach(m => {
             m.errorBarUpper= 'UPP_TRMOBS'
             m.errorBarLower= 'LOW_TRMOBS'
           })
+          yearlyMetricsTemplate.errorBarUpper= 'UPP_TRMOBS'
+          yearlyMetricsTemplate.errorBarLower= 'LOW_TRMOBS'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.errorBarUpper
             delete m.errorBarLower
           })
+          delete yearlyMetricsTemplate.errorBarUpper
+          delete yearlyMetricsTemplate.errorBarLower
         }
         apiYearly.setChartOpts({metrics: optsYearly.metrics})
       }

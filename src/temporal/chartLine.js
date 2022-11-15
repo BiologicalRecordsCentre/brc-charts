@@ -3,7 +3,7 @@ import { addG, transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
 export function generateLines(
-  dataFiltered, 
+  dataFilteredAll, 
   metricsPlus, 
   gTemporal, 
   t, 
@@ -53,6 +53,9 @@ export function generateLines(
  
   metricsPlus.forEach((m, iMetric) => {
 
+    //####
+    const dataFiltered = dataFilteredAll.filter(d => m.taxon ? d.taxon === m.taxon : true)
+
     // Construct data structure for line/area charts.
     let pointSets
     if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
@@ -88,7 +91,7 @@ export function generateLines(
         colour: m.colour,
         opacity: m.opacity,
         strokeWidth: m.strokeWidth,
-        prop: m.prop,
+        prop: `${m.prop}-${m.index}`,
         index: m.index,
         part: i,
         yMin: yminY,
@@ -117,7 +120,7 @@ export function generateLines(
         chartLineFills.push({
           opacity: m.fillOpacity,
           fill: m.fill,
-          prop: m.prop,
+          prop: `${m.prop}-${m.index}`,
           index: m.index,
           part: i,
           yMin: yminY,
@@ -193,7 +196,7 @@ export function generateLines(
           fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
           strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
           strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-          prop: m.prop,
+          prop: `${m.prop}-${m.index}`,
           part: i,
           bandPath: lineValues(pointsUpper, iMetric) + lineValues([...pointsLower].reverse(), iMetric).replace('M', 'L'),
           bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues([...pointsLowerEnter].reverse(), iMetric).replace('M', 'L'),

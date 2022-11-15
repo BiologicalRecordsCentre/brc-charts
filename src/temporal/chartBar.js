@@ -1,12 +1,16 @@
 import { transPromise } from '../general'
 import { addEventHandlers } from './highlightitem'
 
-export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
+export function generateBars(dataFilteredAll, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, yminY, svgChart, interactivity, chartStyle, composition) {
 
   let chartBars = []
   const displacement = {}
 
   metricsPlus.forEach((m, i) => {
+
+    //####
+    const dataFiltered = dataFilteredAll.filter(d => m.taxon ? d.taxon === m.taxon : true)
+
     if (chartStyle === 'bar') {
       const bars = dataFiltered.map(d => {
         let n, barHeight
@@ -28,7 +32,7 @@ export function generateBars(dataFiltered, metricsPlus, gTemporal, t, xScale, yS
         return {
           colour: m.colour,
           opacity: m.fillOpacity,
-          prop: m.prop,
+          prop:`${m.prop}-${m.index}`,
           period: d.period,
           n: n,
           height: barHeight

@@ -11,17 +11,25 @@ export function makeLegend (
   interactivity
 ) {
   
-  const swatchSize = 15
+  // Swatch size based on font size
+  const tmpText = svgChart.append('text') 
+    .text('X')
+    .style('font-size', legendFontSize)
+  const swatchSize = tmpText.node().getBBox().height
+  tmpText.remove()
   const swatchFact = 1.3
 
   // Loop through all the legend elements and work out their
   // positions based on swatch size, item label text size and
   // legend width.
-  const metricsReversed = metricsPlus //gen.cloneData(metricsPlus).reverse()
+  const legendItems = gen.cloneData(metricsPlus)
+  legendItems.forEach(m => {
+    m.prop = `${m.prop}-${m.index}`
+  })
 
   let rows = 0
   let lineWidth = -swatchSize
-  metricsReversed.forEach(m => {
+  legendItems.forEach(m => {
     const tmpText = svgChart.append('text') //.style('display', 'none')
       .text(m.label)
       .style('font-size', legendFontSize)
@@ -40,7 +48,7 @@ export function makeLegend (
   })
 
   const ls = svgChart.selectAll('.brc-legend-item-rect')
-    .data(metricsReversed, m => gen.safeId(m.label))
+    .data(legendItems, m => gen.safeId(m.label))
     .join(enter => {
         const rect = enter.append("rect")
           .attr("class", m=> `brc-legend-item brc-legend-item-rect temporal-graphic temporal-${m.prop}`)
@@ -54,7 +62,7 @@ export function makeLegend (
     .attr('height', showCounts === 'bar' ? swatchSize : 2)
 
   const lt = svgChart.selectAll('.brc-legend-item-text')
-    .data(metricsReversed, m => gen.safeId(m.label))
+    .data(legendItems, m => gen.safeId(m.label))
     .join(enter => {
         const text = enter.append("text")
           .attr("class", m=> `brc-legend-item brc-legend-item-text temporal-graphic temporal-${m.prop}`)

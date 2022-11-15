@@ -262,9 +262,9 @@ export function temporal({
     const subChartPad = 10
     const pTrans = []
 
-    const svgsTaxa = taxa.map(t => makeTemporal (
+    const svgsTaxa = taxa.map(taxon => makeTemporal (
       svgChart,
-      t,
+      taxon,
       taxa,
       data,
       dataPoints,
@@ -366,7 +366,8 @@ export function temporal({
         bandStrokeOpacity: m.bandStrokeOpacity,
         points: m.points,
         errorBarUpper: m.errorBarUpper,
-        errorBarLower: m.errorBarLower
+        errorBarLower: m.errorBarLower,
+        taxon: m.taxon ? m.taxon : null
       }
     })
 
