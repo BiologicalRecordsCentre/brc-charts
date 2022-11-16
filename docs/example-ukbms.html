@@ -10,14 +10,20 @@
     input[type="checkbox"] {
       margin-left: 1em;
     }
-    .content .brc-chart-temporal {
+    .brc-chart-temporal {
       overflow: visible;
     }
-    .content .brc-chart-temporal .temporal-graphic.lowlight {
-      opacity:0.1 !important;
+    .temporal-graphic.lowlight {
+      opacity:0 !important;
     }
-    .content .brc-chart-temporal .temporal-line.highlight {
+    .brc-legend-item.temporal-graphic.lowlight {
+      opacity:0.3 !important;
+    }
+
+
+    .temporal-line.highlight {
       opacity: 1;
+      stroke: 'black';
     }
   </style>
 </head>
@@ -31,7 +37,11 @@
     <script src="./../dist/brccharts.min.umd.js"></script>
     <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
 
-    <h3>Options for both charts</h3>
+    <h3>Chart options</h3>
+    <p>
+      The options on this page are <b>not proposed as a user-facing GUI</b>. They just
+      provide a convenient means of evaluating different display and layout options. See below for more information on the options and data.
+    </p>
     <label for="chart-width">Chart width:</label>
     <input type="number" id="chart-width" min="200" max="800" value="300" onchange="generateCharts()">
     <label for="chart-height">Chart height:</label>
@@ -42,41 +52,132 @@
     <input type="checkbox" id="cbRightAxis" onchange="generateCharts()">
     <label for="cbRightAxis">Right Axis</label>
     <br/><br/>
-    <select id='taxa' onchange='taxonChanged()'></select>
-    <input type="radio" id="add-mode-replace" name="add-mode" value="replace" checked="checked" onchange="addModeChanged()">
-    <label for="html">Replace</label>
-    <input type="radio" id="add-mode-add" name="add-mode" value="add" onchange="addModeChanged()">
-    <label for="css">Add</label>
-    <input type="radio" id="add-mode-side" name="add-mode" value="side" onchange="addModeChanged()">
-    <label for="css">Side by side</label>
-
-    <h3>Trend charts, e.g. abundance indices</h3>
-    <div id="yearly"></div>
-    
-    <input type="checkbox" id="cbYearlyPoints" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyPoints">Show points</label>
-    <input type="checkbox" id="cbYearlyBand" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyBand">Show confidence band</label>
-    <input type="checkbox" id="cbYearlyErrorBars" onchange="yearlyMetricsChanged()">
-    <label for="cbYearlyErrorBars">Show error bars</label>
-    <input type="checkbox" id="cbYearlyDecorations" onchange="yearlyDecorationssChanged()">
-    <label for="cbYearlyDecorations">Show decorations</label>
+    <input type="checkbox" id="cbPoints" onchange="metricsChanged()">
+    <label for="cbPoints">Points</label>
+    <input type="checkbox" id="cbBand" onchange="metricsChanged()">
+    <label for="cbBand">Range band</label>
+    <input type="checkbox" id="cbErrorBars" onchange="metricsChanged()">
+    <label for="cbErrorBars">Range bars</label>
+    <input type="checkbox" id="cbFill" onchange="styleChanged()">
+    <label for="cbFill">Fill</label>
+    <input type="checkbox" id="cbDecorations" onchange="decorationsChanged()">
+    <label for="cbDecorations">Decorations</label>
     <br/><br/>
-    <select id="lineInterpolatorYearly" onchange='yearlyLineInterpolatorChanged()'>
+    <select id="lineInterpolatorYearly" onchange='lineInterpolatorChanged()'>
       <option value="" selected>No line smooth</option>
       <option value="curveCardinal">curveCardinal</option>
       <option value="curveMonotoneX">curveMonotoneX</option>
     </select>
-    <select id="yearlyMissingValues" onchange='yearlyMissingValuesChanged()'>
+    <select id="yearlyMissingValues" onchange='missingValuesChanged()'>
       <option value="break" selected>Break on gaps</option>
       <option value="bridge">Bridge gaps</option>
       <option value="0">Replace with 0</option>
     </select>
+    <label for="spread-overlap" style="margin-left: 1em;">Spread overlap:</label>
+    <input type="number" id="spread-overlap" min="0" max="1" value="0.8" step="0.1" onchange="spreadOverlapChanged()">
 
-    <h3>Phenology charts, e.g. flight periods</h3>
+    <br/><br/>
+    <select id='taxa' onchange='taxonChanged()'></select>
+    <input type="radio" id="add-mode-replace" name="add-mode" value="replace" checked="checked" onchange="addModeChanged()">
+    <label for="html">Replace</label>
+    <input type="radio" id="add-mode-add" name="add-mode" value="add" onchange="addModeChanged()">
+    <label for="css">Overlay</label>
+    <input type="radio" id="add-mode-spread" name="add-mode" value="spread" onchange="addModeChanged()">
+    <label for="css">Spread</label>
+    <input type="radio" id="add-mode-side" name="add-mode" value="side" onchange="addModeChanged()">
+    <label for="css">Multiple</label>
+
+    <!-- <button onclick="buttonTest()">Test</button> -->
+
+    <h3>Indices</h3>
+    <div id="yearly"></div>
+    
+    <h3>Flight periods</h3>
     <div id="weekly"></div>
      
-    <!-- <button onclick="actionButton('clear')">Clear</button> -->
+    <p>
+      <b>Range bands</b> and <b>range bars</b> can be used to display any sort of range. Here they both
+      display the same metrics from the source data. For the index data, the upper and lower limits are
+      specified directly in the data. For the flight period data, for illustrative purposes, the upper and lower limits reflect the
+      hightest and lowest values of the data for any given week. (The metric is the mean of the values at
+      any given week.)
+    </p>
+    <P>
+      <b>Fill</b> can be used to colour the area under a line.
+    </P>
+    <p>
+      <b>Decorations</b> illustrates the capacity of the chart to include lines and vertical bands.
+      Here we merely use them on the indices chart to provide a horizontal line at the index value 2 and
+      a vertical band covering the years 2012-2021 (to match some decorations on the source illustrations).
+      Lines of any gradient can be drawn, so this feature could be used to add a trend line to a chart.
+    </p>
+    <p>
+      <b>Line smoothing</b> can use any of the D3 curve type interpolators (see for 
+      example <a href="https://www.d3indepth.com/examples-merged/shapes/curve-explorer/">D3 curve explorer</a>).
+      Only three are provided here - curveLinear ('no line smooth'), curveCardinal and curveMonotoneX - but 
+      any of those provided by D3 can be used when configuring a chart. Each has different characteristics 
+      which are well <a href="https://github.com/d3/d3-shape/blob/v3.1.0/README.md#curves">explained here</a>.
+    </p>
+    <p>
+      Different ways of treating <b>gaps in data</b> are offered. Gaps in data (i.e. no data for a particular
+      year in the index data or a particular week in the flight period data) can be explicitly shown,
+      bridged or replaced with zeros (or any specified value). I think the only gaps in these data
+      are in the indices data for a couple of taxa (Mountain Ringlet and Lulworth Skipper).
+    </p>
+    <p>
+      The <b>layout options</b> after the taxon selector provide a means for evaluating different
+      options for showing data for more than one metric or taxon. For the purposes of this evaluation
+      multiple only multiple taxa are shown together on a single chart. But in exactly the same
+      way, multiple metrics for a single taxon or otherwise unrelated metrics could be displayed 
+      together (e.g. first brood vs second brood flight periods or species index vs some compound index).
+      Four layouts are demonstrated here:
+    </p>
+    <ul>
+      <li><b>Replace</b>: a single chart is used to display individual taxa and the chart
+      transitions nicely between them as the selected taxon is changed.</li>
+      <li><b>Overlay</b>: a single chart is used to display any number of taxa together.</li>
+      <li><b>Spread</b>: a single chart is used to display any number of taxa together, but the 
+      taxa are vertically spread across the y axis.</li>
+      <li><b>Multiple</b>: multiple charts are used to display multiple taxa side-by-side.</li>
+    </ul>
+    <p>
+      Overlayed charts might be an option for simple charts, e.g. just a simple line chart,
+      but they can look very busy when error bands or bars are shown. A feature to mitigate
+      this is the interactive highlighting. As you move your mouse over a legend item (or the 
+      chart itself) - the graphics for the taxon under the mouse is highlighted and the rest
+      lowlighted. (The highlight/lowlight styles are configurable.) This behaviour can be switched
+      off or changed to occur on a mouse click instead of a mouse move.
+    </p>
+    <p>
+      Charts that are spread across the y axis can work well in certain circumstances. (Once this
+      options is selected in this GUI, you must select at least two taxa for it to work properly.)
+      The y-axis annotation is replaced with the name of the selected taxa. It can be a good
+      option to compare the shapes of the distributions when the actual y values don't much matter. 
+      It's quite a good option for comparing flight periods here. When spread, graphics
+      for taxa can potentially overlap with the one above them. This can be a good space saving
+      technique in some circumstances. The amount of overlap can be changed using the 
+      <b>spread overlap</b> control - use zero for no overlap and 1 for maximum overlap.
+    </p>
+    <p>
+      On this page, the multiple option lays out charts two per row. But this is configurable
+      and you can have more than two on each row. Optionally the charts can be configured to fill
+      the amount of space available to them.
+    </p>
+    <p>
+      The Indices chart here has been configured so that the minimum and maximum values
+      on the y axis are derived from the data, but the flight period chart has been configured
+      so that the minimum value on the y axis is always 0. Maximum y axis values can also be 
+      configured (though here they are derived from the data).
+    </p>
+    <p>
+      Both charts on this page are derived from the <i>temporal</i> chart of the BRC charts
+      Javascript library. You can also see other examples of the temporal chart in action
+      on these pages:
+    </p>
+    <ul>
+      <li><a href="./example-8.html">Temporal charts<a></li>
+      <li><a href="./example-9.html">Temporal charts interactive<a></li>
+    </ul>
 
     <script>
       let apiWeekly, apiYearly, indices, phenology
@@ -86,6 +187,8 @@
         label: 'Small Tortoiseshell',
         prop: 'TRMOBS', 
         colour: 'black', 
+        fill: 'black',
+        fillOpacity: 0.3,
         opacity: 1,
         lineWidth: 1,
         bandFill: 'silver', 
@@ -97,32 +200,26 @@
  
       let optsYearly = {
         selector: '#yearly',
-        //taxa:  ['Small Tortoiseshell'],
-        //taxa:  [],
         taxa: [null],
         minMaxY: null,
         perRow: 2,
-        //axisRight: 'on',
-        //axisTop: 'on',
         showLegend: false,
-        legendFontSize: '11',
+        legendFontSize: 11,
         interactivity: 'mousemove', 
         showTaxonLabel: false,
         chartStyle: 'line',
         axisLeftLabel: 'Relative frequency',
-        margin: {left: 50, right: 50, bottom: 20, top: 20},
+        margin: {left: 50, right: 0, bottom: 20, top: 20},
         xPadPercent: 3,
         yPadPercent: 3,
         minPeriodTrans: 1975,
         maxPeriodTrans: 2022,
-        //duration: 10000,
-        // minPeriod: 1949,
-        // maxPeriod: 2019,
+        //minPeriod: 1949,
+        //maxPeriod: 2019,
         //minY: 1,
         //maxY: 3,
-        missingValues: 'break', //1.3
-        //lineInterpolator: 'curveCardinal'
-        metrics: [yearlyMetricsTemplate]
+        metrics: [yearlyMetricsTemplate],
+        overrideHighlight: true
       }; // Semi-colon important
 
       // Weekly
@@ -131,51 +228,45 @@
         label: 'Small Tortoiseshell',
         prop: 'meanNM', 
         colour: 'black', 
+        fill: 'black',
+        fillOpacity: 0.3,
         opacity: 1,
         lineWidth: 1,
-        // bandUpper: 'upper', 
-        // bandLower: 'lower', 
         bandFill: 'silver', 
         bandStroke: 'rgb(200,200,200)',
         bandOpacity: 0.3,
         bandStrokeOpacity: 1,
         bandStrokeWidth: 1,
-        points: true,
-        //errorBarUpper: 'upper',
-        //errorBarLower: 'lower'
       }
 
       var optsWeekly = {
         selector: '#weekly',
-        //taxa:  ['Small Tortoiseshell'],
         taxa: [null],
         minMaxY: null,
         perRow: 2,
         showLegend: false,
+        legendFontSize: 11,
         interactivity: 'mousemove', 
         showTaxonLabel: false,
         chartStyle: 'line',
         axisLeftLabel: 'Relative frequency',
-        margin: {left: 50, right: 50, bottom: 20, top: 20},
+        margin: {left: 50, right: 0, bottom: 20, top: 20},
         xPadPercent: 3,
         yPadPercent: 3,
         minPeriodTrans: 1975,
         maxPeriodTrans: 2022,
-        //duration: 10000,
         // minPeriod: 1949,
         // maxPeriod: 2019,
         //minY: 1,
         //maxY: 3,
-        missingValues: 'break', //1.3
-        //lineInterpolator: 'curveCardinal'
+        minY: 0,
         axisLeftLabel: 'NM',
         periodType: 'week',
         monthScaleRange: [4,9],
-        //dataOffsetDays: 92,
         //minPeriod: 20,
         //maxPeriod: 30,
-        lineInterpolator:  'curveCardinal',
-        metrics: [weeklyMetricsTemplate]
+        metrics: [weeklyMetricsTemplate],
+        overrideHighlight: true
       };
 
       (async () => {
@@ -245,8 +336,8 @@
             taxon: names[d.SPECIES].common,
             period: Number(d.WEEKNO) + 13,
             meanNM: d.NM.map(d => Number(d)).reduce((a, b) => a + b, 0)/d.NM.length,
-            upper: Math.max(...d.NM),
-            lower: Math.min(...d.NM)
+            upperNM: Math.max(...d.NM),
+            lowerNM: Math.min(...d.NM)
           }
         })
  
@@ -256,6 +347,11 @@
 
       function taxonChanged() {
         const taxon = d3.select("#taxa").property("value")
+
+        // Return if already in metrics or opts.taxa
+        if (optsYearly.metrics.find(m => m.taxon === taxon)) return
+        if (optsYearly.taxa.find(t => t === taxon)) return
+
         const addMode = d3.select('input[name="add-mode"]:checked').property("value")
         const colours=d3.scaleOrdinal(d3.schemeCategory10)
 
@@ -263,11 +359,10 @@
           optsYearly.metrics = []
           optsWeekly.metrics = []
           if (addMode === 'side') {
-            optsYearly.taxa = ['x']
-            optsWeekly.taxa = ['x']
+            optsYearly.taxa = ['.']
+            optsWeekly.taxa = ['.']
           }
         } else {
-
           let ym = {...yearlyMetricsTemplate}
           let wm = {...weeklyMetricsTemplate}
           if (addMode === 'side') { 
@@ -281,16 +376,23 @@
           }
 
           if (addMode === 'side') {
-            if (optsYearly.taxa.length === 1 && optsYearly.taxa[0] === 'x') {
+            if (optsYearly.taxa.length === 1 && optsYearly.taxa[0] === '.') {
               optsYearly.taxa = [taxon]
             } else {
               optsYearly.taxa.push(taxon)
             }
+            if (optsWeekly.taxa.length === 1 && optsWeekly.taxa[0] === '.') {
+              optsWeekly.taxa = [taxon]
+            } else {
+              optsWeekly.taxa.push(taxon)
+            }
             optsYearly.metrics = [ym]
             optsWeekly.metrics = [wm]
-          } else if (addMode === 'add') {
+          } else if (addMode === 'add' || addMode === 'spread') {
             ym.colour = d3.schemeCategory10[optsYearly.metrics.length]
             wm.colour = d3.schemeCategory10[optsWeekly.metrics.length]
+            ym.fill = d3.schemeCategory10[optsYearly.metrics.length]
+            wm.fill = d3.schemeCategory10[optsWeekly.metrics.length]
             optsYearly.metrics.push(ym)
             optsWeekly.metrics.push(wm)
           } else {
@@ -300,7 +402,6 @@
         }
 
         if (addMode === 'side') {
-          console.log('regen charts', optsYearly)
           generateCharts()
         } else {
           apiYearly.setChartOpts({metrics: optsYearly.metrics})
@@ -315,28 +416,34 @@
         }
       }
 
-      function actionButton(id) {
-        console.log('actionButton', id)
-      }
-
-      
       function addModeChanged() {
         const addMode = d3.select('input[name="add-mode"]:checked').property("value")
+        d3.select("#taxa").property("value", "")
+
         optsYearly.showLegend = addMode === 'add'
         optsWeekly.showLegend = addMode === 'add'
 
-        if (addMode === 'side') {
-          //optsYearly.data = []
-          //optsWeekly.data = []
-          optsYearly.taxa = ['x']
-          optsWeekly.taxa = ['x']
-        } else {
-          optsYearly.taxa = [null]
-          optsWeekly.taxa = [null]
-        }
+        optsYearly.showTaxonLabel = addMode === 'side'
+        optsWeekly.showTaxonLabel = addMode === 'side'
+
+        optsYearly.taxa = addMode === 'side' ? ['.'] : [null]
+        optsWeekly.taxa = addMode === 'side' ? ['.'] : [null]
+
+        optsYearly.composition = addMode === 'spread' ? 'spread' : ''
+        optsWeekly.composition = addMode === 'spread' ? 'spread' : ''
+
+        optsYearly.yPadPercent = addMode === 'spread' ? 0 : 3
+        optsWeekly.yPadPercent = addMode === 'spread' ? 0 : 3
+
+        optsYearly.axisLeftLabel = addMode === 'spread' ? '' : 'Number of records per week'
+        optsWeekly.axisLeftLabel = addMode === 'spread' ? '' : 'NM'
+
+        optsYearly.margin = addMode === 'spread' ? {left: 140, right: 0, bottom: 20, top: 20} : {left: 50, right: 0, bottom: 20, top: 20}
+        optsWeekly.margin = addMode === 'spread' ? {left: 140, right: 0, bottom: 20, top: 20} : {left: 50, right: 0, bottom: 20, top: 20}
 
         optsYearly.metrics = []
         optsWeekly.metrics = []
+
         generateCharts()
       }
 
@@ -345,63 +452,100 @@
         generateWeekly()
       }
 
-      function yearlyMetricsChanged () {
-        if ( d3.select("#cbYearlyPoints").property("checked")) {
+      function metricsChanged () {
+        if ( d3.select("#cbPoints").property("checked")) {
           optsYearly.metrics.forEach(m => {
             m.points= 'TRMOBS'
           })
+          optsWeekly.metrics.forEach(m => {
+            m.points= 'meanNM'
+          })
           yearlyMetricsTemplate.points = 'TRMOBS'
+          weeklyMetricsTemplate.points = 'meanNM'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.points
           })
-          delete yearlyMetricsTemplate.points
+          optsWeekly.metrics.forEach(m => {
+            delete m.points
+          })
+          delete weeklyMetricsTemplate.points
         }
-        if ( d3.select("#cbYearlyBand").property("checked")) {
+        if ( d3.select("#cbBand").property("checked")) {
           optsYearly.metrics.forEach(m => {
             m.bandUpper= 'UPP_TRMOBS'
             m.bandLower= 'LOW_TRMOBS'
           })
+          optsWeekly.metrics.forEach(m => {
+            m.bandUpper= 'upperNM'
+            m.bandLower= 'lowerNM'
+          })
           yearlyMetricsTemplate.bandUpper= 'UPP_TRMOBS'
           yearlyMetricsTemplate.bandLower= 'LOW_TRMOBS'
+          weeklyMetricsTemplate.bandUpper= 'upperNM'
+          weeklyMetricsTemplate.bandLower= 'lowerNM'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.bandUpper
             delete m.bandLower
           })
+          optsWeekly.metrics.forEach(m => {
+            delete m.bandUpper
+            delete m.bandLower
+          })
           delete yearlyMetricsTemplate.bandUpper
           delete yearlyMetricsTemplate.bandLower
+          delete weeklyMetricsTemplate.bandUpper
+          delete weeklyMetricsTemplate.bandLower
         }
-        if ( d3.select("#cbYearlyErrorBars").property("checked")) {
+        if ( d3.select("#cbErrorBars").property("checked")) {
           optsYearly.metrics.forEach(m => {
             m.errorBarUpper= 'UPP_TRMOBS'
             m.errorBarLower= 'LOW_TRMOBS'
           })
+          optsWeekly.metrics.forEach(m => {
+            m.errorBarUpper= 'upperNM'
+            m.errorBarLower= 'lowerNM'
+          })
           yearlyMetricsTemplate.errorBarUpper= 'UPP_TRMOBS'
           yearlyMetricsTemplate.errorBarLower= 'LOW_TRMOBS'
+          weeklyMetricsTemplate.errorBarUpper= 'upperNM'
+          weeklyMetricsTemplate.errorBarLower= 'lowerNM'
         } else {
           optsYearly.metrics.forEach(m => {
             delete m.errorBarUpper
             delete m.errorBarLower
           })
+          optsWeekly.metrics.forEach(m => {
+            delete m.errorBarUpper
+            delete m.errorBarLower
+          })
           delete yearlyMetricsTemplate.errorBarUpper
           delete yearlyMetricsTemplate.errorBarLower
+          delete weeklyMetricsTemplate.errorBarUpper
+          delete weeklyMetricsTemplate.errorBarLower
         }
+
         apiYearly.setChartOpts({metrics: optsYearly.metrics})
+        apiWeekly.setChartOpts({metrics: optsWeekly.metrics})
       }
 
-      function yearlyLineInterpolatorChanged () {
+      function lineInterpolatorChanged () {
         optsYearly.lineInterpolator = d3.select("#lineInterpolatorYearly").property("value")
         apiYearly.setChartOpts({lineInterpolator: optsYearly.lineInterpolator})
+        optsWeekly.lineInterpolator = d3.select("#lineInterpolatorYearly").property("value")
+        apiWeekly.setChartOpts({lineInterpolator: optsWeekly.lineInterpolator})
       }
       
-      function yearlyMissingValuesChanged() {
+      function missingValuesChanged() {
         optsYearly.missingValues =  d3.select("#yearlyMissingValues").property("value")
         apiYearly.setChartOpts({missingValues: optsYearly.missingValues})
+        optsWeekly.missingValues =  d3.select("#yearlyMissingValues").property("value")
+        apiWeekly.setChartOpts({missingValues: optsWeekly.missingValues})
       }
 
-      function yearlyDecorationssChanged() {
-        const decorations =  d3.select("#cbYearlyDecorations").property("checked")
+      function decorationsChanged() {
+        const decorations =  d3.select("#cbDecorations").property("checked")
         if (decorations) {
           optsYearly.verticals = [
             {
@@ -448,7 +592,7 @@
 
       function yearlyOptionsChanged() {
 
-        const errorBars = d3.select("#cbYearlyErrorBars").property("checked")
+        const errorBars = d3.select("#cbErrorBars").property("checked")
         const errorBand = d3.select("#cbYearlyErrorBand").property("checked")
       }
     
@@ -462,6 +606,27 @@
 
         d3.select('#weekly').html('')
         apiWeekly = brccharts.temporal(optsWeekly)
+      }
+
+      function styleChanged() {
+        const style = d3.select("#cbFill").property("checked") ? 'area' : 'line'
+        optsYearly.chartStyle = style
+        optsWeekly.chartStyle = style
+        apiYearly.setChartOpts({chartStyle: style})
+        apiWeekly.setChartOpts({chartStyle: style})
+      }
+
+      function spreadOverlapChanged() {
+        const overlap = d3.select("#spread-overlap").property("value")
+        optsYearly.spreadOverlap = overlap
+        optsWeekly.spreadOverlap = overlap
+        apiYearly.setChartOpts({spreadOverlap: overlap})
+        apiWeekly.setChartOpts({spreadOverlap: overlap})
+      }
+
+      function buttonTest() {
+        console.log('button')
+        d3.selectAll('.temporal-graphic').classed('override-highlight', true)
       }
     
     </script>

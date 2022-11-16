@@ -74,7 +74,7 @@
     <button onclick="exLy4.setTaxon('Coccinella septempunctata')">Coccinella septempunctata</button>
     <button onclick="exLy4.setTaxon('Anatis ocellata')">Anatis ocellata</button>
     <button onclick="exLy4.setTaxon('Harmonia axyridis')">Harmonia axyridis</button>
-    <button onclick="exLy4.setTaxon('x')">Clear</button>
+    <button onclick="exLy4.setTaxon('.')">Clear</button>
     <br/><br/>
     <button onclick="exLy4.setChartOpts({metricExpression: ''})">Counts</button>
     <button onclick="exLy4.setChartOpts({metricExpression: 'proportion'})">Proportions</button>
@@ -253,7 +253,7 @@
       exBp2.setTaxon('Vanessa cardui').then(() => console.log('transition done'))
     }
     function exBp2button3Click() {
-      exBp2.setTaxon('x').then(() => console.log('transition done'))
+      exBp2.setTaxon('.').then(() => console.log('transition done'))
     }
     function exBp2button4Click() {
       currentMetrics = exBp2metrics1

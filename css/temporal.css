@@ -2,11 +2,11 @@
     overflow: visible;
 }
 
-.brc-chart-temporal .temporal-graphic.lowlight {
+.brc-chart-temporal.use-highlighting .temporal-graphic.lowlight {
     opacity: 0.2 !important;
 }
 
-.brc-chart-temporal .temporal-line.highlight {
+.brc-chart-temporal.use-highlighting .temporal-line.highlight {
     stroke: black;
     stroke-width: 2;
     opacity: 1;

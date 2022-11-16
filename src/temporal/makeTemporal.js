@@ -48,6 +48,7 @@ export function makeTemporal (
   verticals,
   metricExpression,
   composition,
+  spreadOverlap,
   pTrans
 ) {
   // Pre-process data.
@@ -211,8 +212,9 @@ export function makeTemporal (
 
   const xPadding = (maxPeriod-minPeriod) * xPadPercent/100
   const yPadding = (maxYscale-minYscale) * yPadPercent/100
+
   const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
-  const yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition)
+  const yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition, spreadOverlap)
 
   // Top axis
   let tAxis

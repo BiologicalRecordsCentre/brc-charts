@@ -130,11 +130,6 @@ import { highlightItem } from './highlightitem'
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
  * @param {number} opts.maxPeriodTrans - If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
  * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
- //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
- //* @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
- //* @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
- //* @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
- //* @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
  * @param {number} opts.minY - Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
  * @param {number} opts.maxY - Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
  * @param {number} opts.minMaxY - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
@@ -150,6 +145,10 @@ import { highlightItem } from './highlightitem'
  * @param {string} opts.composition - Indicates how to display multiple metrics. If set to empty string then the metrics
  * values are overlaid on each other, setting to 'stack' stacks the graphics and setting to 'spread' spreads them
  * vertically across the chart. (Default - ''.)
+ * @param {boolean} opts.overrideHighlight - if set to true, the default styles for highlighting and lowlighting are not applied and you
+ * can provide your own CSS to do it. Target .temporal-graphic.lowlight and .temporal-graphic.highlight. (Default - false.)
+ * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
+ * metrics on a chart of composition type 'spread'. (Default - 0.8.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -208,7 +207,9 @@ export function temporal({
   lineInterpolator = 'curveLinear',
   verticals = [],
   metricExpression = '',
-  composition = ''
+  composition = '',
+  overrideHighlight = false,
+  spreadOverlap = 0.8,
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -233,7 +234,8 @@ export function temporal({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-temporal')
-  
+  svgChart.classed('use-highlighting', !overrideHighlight)
+
   preProcessMetrics()
   makeChart()
   // Texts must come after chartbecause 
@@ -303,6 +305,7 @@ export function temporal({
       verticals,
       metricExpression,
       composition,
+      spreadOverlap,
       pTrans
     ))
 
@@ -401,6 +404,8 @@ export function temporal({
   * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
   * @param {string} opts.composition - Indicates how to display multiple metrics.
   * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
+  * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
+  * metrics on a chart of composition type 'spread'.
   * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'.
   * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines (see main interface for details).
   * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated (see main interface for details).
@@ -408,6 +413,7 @@ export function temporal({
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+  
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
   * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -478,6 +484,10 @@ export function temporal({
     }
     if ('composition' in opts) {
       composition = opts.composition
+      remakeChart = true
+    }
+    if ('spreadOverlap' in opts) {
+      spreadOverlap = opts.spreadOverlap
       remakeChart = true
     }
     if ('dataPoints' in opts) {

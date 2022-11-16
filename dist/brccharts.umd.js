@@ -601,12 +601,12 @@
     }
   }
 
-  function spreadScale(minY, maxY, yPadding, metrics, height, composition) {
+  function spreadScale(minY, maxY, yPadding, metrics, height, composition, spreadOverlap) {
     var fn, fnAxis, tickFormat, spreadHeight;
 
     if (composition === 'spread' && metrics.length > 1) {
       // Work out height in 'sread units' - su.
-      var overlap = 0.8;
+      var overlap = Number(spreadOverlap);
       var bottom = 0.2;
       var maxmax = Math.max.apply(Math, _toConsumableArray(metrics.map(function (m) {
         return m.maxValue;
@@ -9051,7 +9051,7 @@
   }
 
   function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, pTrans) {
+  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans) {
     // Pre-process data.
     // Filter to named taxon and to min and max period and sort in period order
     // Adjust metrics data to accoutn for metricExpress value.
@@ -9276,7 +9276,7 @@
     var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
     var yPadding = (maxYscale - minYscale) * yPadPercent / 100;
     var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
-    var yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition); // Top axis
+    var yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition, spreadOverlap); // Top axis
 
     var tAxis;
 
@@ -9643,11 +9643,6 @@
    * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
    * @param {number} opts.maxPeriodTrans - If set, this indicates the highest possible period. It is only useful if transitioning between datasets with different
    * temporal ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)
-   //* @param {string} opts.yAxisOpts - Specifies options for scaling and displaying left axis.
-   //* @param {string} opts.yAxisOpts.numFormat - Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)
-   //* @param {number} opts.yAxisOpts.minMax - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
-   //* @param {number} opts.yAxisOpts.fixedMin - Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)
-   //* @param {number} opts.yAxisOpts.padding - Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)
    * @param {number} opts.minY - Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)
    * @param {number} opts.maxY - Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)
    * @param {number} opts.minMaxY - Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)
@@ -9663,6 +9658,10 @@
    * @param {string} opts.composition - Indicates how to display multiple metrics. If set to empty string then the metrics
    * values are overlaid on each other, setting to 'stack' stacks the graphics and setting to 'spread' spreads them
    * vertically across the chart. (Default - ''.)
+   * @param {boolean} opts.overrideHighlight - if set to true, the default styles for highlighting and lowlighting are not applied and you
+   * can provide your own CSS to do it. Target .temporal-graphic.lowlight and .temporal-graphic.highlight. (Default - false.)
+   * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
+   * metrics on a chart of composition type 'spread'. (Default - 0.8.)
    * @returns {module:temporal~api} api - Returns an API for the chart.
    */
 
@@ -9778,7 +9777,11 @@
         _ref$metricExpression = _ref.metricExpression,
         metricExpression = _ref$metricExpression === void 0 ? '' : _ref$metricExpression,
         _ref$composition = _ref.composition,
-        composition = _ref$composition === void 0 ? '' : _ref$composition;
+        composition = _ref$composition === void 0 ? '' : _ref$composition,
+        _ref$overrideHighligh = _ref.overrideHighlight,
+        overrideHighlight = _ref$overrideHighligh === void 0 ? false : _ref$overrideHighligh,
+        _ref$spreadOverlap = _ref.spreadOverlap,
+        spreadOverlap = _ref$spreadOverlap === void 0 ? 0.8 : _ref$spreadOverlap;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (chartStyle === 'bar') {
@@ -9795,6 +9798,7 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-temporal');
+    svgChart.classed('use-highlighting', !overrideHighlight);
     preProcessMetrics();
     makeChart(); // Texts must come after chartbecause 
     // the chart width is required
@@ -9832,7 +9836,7 @@
       var pTrans = [];
       var svgsTaxa = taxa.map(function (taxon) {
         return makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, pTrans);
+        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -9911,6 +9915,8 @@
       * the total of the metric or 'normalized' to normalize the values. (Default - ''.)
       * @param {string} opts.composition - Indicates how to display multiple metrics.
       * @param {string} opts.chartStyle - The type of the graphic 'bar' for a barchart and 'line' for a line graph.
+      * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
+      * metrics on a chart of composition type 'spread'.
       * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'.
       * @param {boolean} opts.lineInterpolator - Set to the name of a d3.line.curve interpolator to curve lines (see main interface for details).
       * @param {string|number} opts.missingValues - A value which indicates how gaps in temporal data are treated (see main interface for details).
@@ -9918,6 +9924,7 @@
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+      
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
       * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
@@ -10006,6 +10013,11 @@
 
       if ('composition' in opts) {
         composition = opts.composition;
+        remakeChart = true;
+      }
+
+      if ('spreadOverlap' in opts) {
+        spreadOverlap = opts.spreadOverlap;
         remakeChart = true;
       }
 

@@ -11,3 +11,5 @@ For API details - [JSDoc API documentation](https://biologicalrecordscentre.gith
 - [Trend charts](example-5.html)
 - [Yearly charts](example-6.html)
 - [BBS style latitude vs altitude charts](example-7.html)
+- [Temporal charts](example-8.html)
+- [Temporal charts interactive](example-9.html)
