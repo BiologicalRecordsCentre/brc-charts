@@ -9564,6 +9564,8 @@
    * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+   * <li> <b>taxon</b> - an optional property that can be used to limit the metric display to a particular taxon. This
+   * is meant to be used in conjunction with the opts.taxa value of [null] - see above.
    * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
    * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
@@ -9635,7 +9637,9 @@
    * </ul>
    * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
    * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
-   * If empty, graphs for all taxa are created. (Default - [].)
+   * If empty, graphs for all taxa are created. If set to an array with a single null value - [null] - then
+   * each metric must have a property called 'taxon' which specifies the taxon to be displayed for that metric.
+   * In this way, multiple taxa can be displayed on the same graph. (Default - [].)
    * @param {string} opts.periodType - Indicates the type of period data to be specified. Can be 'year', 'month' or 'week'. (Default - 'year'.)
    * @param {number} opts.minPeriod - Indicates the earliest period to use on the x axis. If left unset, the earliest period in the dataset is used. (Default - null.)
    * @param {number} opts.maxPeriod - Indicates the latest period to use on the x axis. If left unset, the latest period in the dataset is used. (Default - null.)
@@ -19875,7 +19879,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.17.0";
+  var version = "0.18.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
