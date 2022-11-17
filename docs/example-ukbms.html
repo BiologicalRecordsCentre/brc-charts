@@ -469,6 +469,7 @@
           optsWeekly.metrics.forEach(m => {
             delete m.points
           })
+          delete yearlyMetricsTemplate.points
           delete weeklyMetricsTemplate.points
         }
         if ( d3.select("#cbBand").property("checked")) {
