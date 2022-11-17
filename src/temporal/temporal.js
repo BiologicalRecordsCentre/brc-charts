@@ -58,9 +58,13 @@ import { highlightItem } from './highlightitem'
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * (Optional - default is 'blue'.)
  * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
- * (Optional - default is 0.5.)
+ * (Optional - default is 1.)
  * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
  * (Optional - default is 1.)
+ * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of 
+ * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+ * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric. 
+ * (Optional - default is 0.5.)
  * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
  * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
  * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
