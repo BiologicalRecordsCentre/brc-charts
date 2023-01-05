@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BRC Charts Library UKBMS test</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    input[type="checkbox"] {
+      margin-left: 1em;
+    }
+    .brc-chart-temporal {
+      overflow: visible;
+    }
+    .temporal-graphic.lowlight {
+      opacity:0 !important;
+    }
+    .brc-legend-item.temporal-graphic.lowlight {
+      opacity:0.3 !important;
+    }
+    .temporal-line.highlight {
+      opacity: 1;
+      stroke: 'black';
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    
+    <!--D3 JS required exernal dependency of BRC Charts library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS-->
+    <script src="./../dist/brccharts.min.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+
+    <select id='taxa' onchange='taxonChanged()'></select>
+
+    <h3>Indices</h3>
+    <div id="yearly"></div>
+    
+    <h3>Flight periods</h3>
+    <div id="weekly"></div>
+     
+    <script>
+      let apiWeekly, apiYearly, names, indices, phenology, trends
+
+      const yearlyMetricsTemplate = {
+        taxon: 'Small Tortoiseshell',
+        label: 'Small Tortoiseshell',
+        prop: 'TRMOBS', 
+        points: 'TRMOBS',
+        colour: 'black', 
+        fill: 'black',
+        fillOpacity: 0.3,
+        opacity: 1,
+        lineWidth: 1,
+        bandFill: 'silver', 
+        bandStroke: 'rgb(200,200,200)',
+        bandOpacity: 0.3,
+        bandStrokeOpacity: 1,
+        bandStrokeWidth: 1,
+      }
+ 
+      const horizonalAt2 = {
+        gradient: 0,
+        intercept: 2,
+        colour: 'silver',
+        width: 1,
+        opacity: 1
+      }
+  
+      const optsYearly = {
+        selector: '#yearly',
+        width: 300,
+        height: 220,
+        taxa: [null],
+        minMaxY: null,
+        perRow: 2,
+        showLegend: false,
+        legendFontSize: 11,
+        interactivity: 'mousemove', 
+        showTaxonLabel: false,
+        chartStyle: 'line',
+        axisLeftLabel: 'Relative frequency',
+        margin: {left: 50, right: 0, bottom: 20, top: 20},
+        xPadPercent: 3,
+        yPadPercent: 3,
+        minPeriodTrans: 1975,
+        maxPeriodTrans: 2022,
+        metrics: [yearlyMetricsTemplate],
+        overrideHighlight: true,
+        missingValues: 'bridge',
+        verticals: [
+          {
+            colour: 'rgb(255, 228, 196)',
+            start: 2012,
+            width: 9,
+          },
+          {
+            colour: 'silver',
+            start: 2012
+          },
+          {
+            colour: 'silver',
+            start: 2021
+          }
+        ],
+        //dataTrendLines
+      }; // Semi-colon important
+
+      // Weekly
+      const weeklyMetricsTemplate1 = {
+        taxon: 'Small Tortoiseshell',
+        prop: 'brood0_all', 
+        colour: 'blue', 
+        opacity: 1,
+        lineWidth: 1,
+      }
+      const weeklyMetricsTemplate2 = {
+        taxon: 'Small Tortoiseshell',
+        prop: 'brood0_last', 
+        colour: 'red', 
+        opacity: 1,
+        lineWidth: 1,
+      }
+
+      var optsWeekly = {
+        selector: '#weekly',
+        width: 300,
+        height: 220,
+        taxa: [null],
+        minMaxY: null,
+        perRow: 2,
+        showLegend: false,
+        legendFontSize: 11,
+        interactivity: 'mousemove', 
+        showTaxonLabel: false,
+        chartStyle: 'line',
+        axisLeftLabel: 'Counts',
+        margin: {left: 50, right: 0, bottom: 20, top: 20},
+        xPadPercent: 3,
+        yPadPercent: 3,
+        minPeriodTrans: 1975,
+        maxPeriodTrans: 2022,
+        minY: 0,
+        axisLeftLabel: 'NM',
+        periodType: 'week',
+        //monthScaleRange: [4,9],
+        metrics: [weeklyMetricsTemplate1, weeklyMetricsTemplate2],
+        overrideHighlight: true,
+        missingValues: 'bridge',
+      };
+
+      (async () => {
+
+        // Load data
+        // Species name mapping
+        pd1 = d3.csv('./data/ukbms/UKBMS_spp_names.csv')
+        // Abundance index
+        pd2 = d3.csv('./data/ukbms/20221212/all_ci.csv')
+        // Abundance index trends
+        pd3 = d3.csv('./data/ukbms/20221212/all_trends_pub.csv')
+        // Phenology data
+        pd4 = d3.csv('./data/ukbms/20221212/all_results.csv')
+        pd5 = d3.csv('./data/ukbms/20221212/all_results_max.csv')
+        const data = await Promise.all([pd1, pd2, pd3, pd4, pd5])
+
+        // Create names lookup object keyed on bmscode
+        names = {}
+        data[0].forEach(d => {
+          names[d.BMSCODE]= {
+            scientific: d.SCI_NAME,
+            common: d.COMMON_NAME
+          }
+        })
+        data[0].unshift(
+          {
+            COMMON_NAME: ''
+          }
+        )
+
+        // Update taxa dropdown
+        d3.select('#taxa').selectAll('.taxon')
+          .data(data[0])
+          .enter()
+            .append('option')
+            .classed('taxon', true)
+            .text(d => d.COMMON_NAME)
+            .attr('value', d => d.COMMON_NAME)
+
+        d3.select('.taxon[value="Small Tortoiseshell"').attr('selected', 'selected')
+ 
+        // Create indices data (converting names)
+        indices = data[1].filter(d => d.COUNTRY === 'UK').map(d => {
+          return {
+            TRMOBS: Number(d.TRMOBS),
+            taxon: names[d.SPECIES].common,
+            period: Number(d.YEAR)
+          }
+        })
+
+        // Store trends data
+        trends = data[2]
+
+        // Create phenology data (converting names)
+        phenology = []
+        function addPhenologyData(data, isLastYear) {
+          data.forEach(d => {
+            // Convert numbers to numerics
+            d.DAYNUM = Number(d.DAYNUM)
+            d.BROOD = Number(d.BROOD)
+            d.FITTED = Number(d.FITTED)
+
+            const colName = `brood${d.BROOD}_${isLastYear ? 'last' : 'all'}`
+            const taxon = names[d.SPECIES].common
+            const period = Math.floor((d.DAYNUM + (13 * 7))/7)
+            const found = phenology.find(p => p.taxon === taxon && p.period === period)
+            if (found) {
+              found[colName] += d.FITTED
+            } else {
+              const rec = {
+                taxon: taxon,
+                period: period,
+                brood0_all: 0,
+                brood1_all: 0,
+                brood2_all: 0,
+                brood0_last: 0,
+                brood1_last: 0,
+                brood2_last: 0
+              }
+              
+              rec[colName] = d.FITTED
+              phenology.push(rec)
+            }
+          })
+        }
+        addPhenologyData(data[3], false) 
+        addPhenologyData(data[4], true) 
+        //console.log(phenology)
+
+        // Generate charts
+        optsYearly.data = indices
+        optsYearly.dataTrendLines = yearlyLines('Small Tortoiseshell') // 2 is sp index for small tortoiseshell
+        
+        d3.select('#yearly').html('')
+        apiYearly = brccharts.temporal(optsYearly)
+
+        optsWeekly.data = phenology
+
+        d3.select('#weekly').html('')
+        apiWeekly = brccharts.temporal(optsWeekly)
+
+      })()
+
+      function yearlyLines(taxon) {
+        
+        const dataTrend = trends.filter(d => d.COUNTRY === 'UK').filter(d => names[d.SPECIES].common === taxon)
+        console.log(dataTrend)
+
+        return [horizonalAt2, ...dataTrend.map(d => {
+          //y = mx + c
+          // c = y -mx
+          const m = (Number(d.LAST_YEAR_FITTED) - Number(d.FIRST_YEAR_FITTED)) / (Number(d.LAST_YEAR) - Number(d.FIRST_YEAR))
+          console.log(m)
+          const c = Number(d.FIRST_YEAR_FITTED) - m * Number(d.FIRST_YEAR)
+          
+          return {
+            gradient: m,
+            intercept: c,
+            // p1: Number(d.FIRST_YEAR),
+            // v1: Number(d.FIRST_YEAR_FITTED),
+            // p2: Number(d.LAST_YEAR),
+            // v2: Number(d.LAST_YEAR_FITTED),
+            colour: 'red',
+            width: 1,
+            opacity: 1
+          }
+        })]
+      }
+
+      function taxonChanged() {
+        const taxon = d3.select("#taxa").property("value")
+
+        // Return if already in metrics or opts.taxa
+        if (optsYearly.metrics.find(m => m.taxon === taxon)) return
+        if (optsYearly.taxa.find(t => t === taxon)) return
+
+        const colours=d3.scaleOrdinal(d3.schemeCategory10)
+
+        if (taxon === '') {
+          optsYearly.metrics = []
+          optsWeekly.metrics = []
+          optsYearly.dataTrendLines = []
+        } else {
+          let ym = {...yearlyMetricsTemplate}
+          let wm1 = {...weeklyMetricsTemplate1}
+          let wm2 = {...weeklyMetricsTemplate2}
+          ym.taxon = taxon
+          ym.label = taxon
+          wm1.taxon = taxon
+          wm2.taxon = taxon
+          optsYearly.metrics = [ym]
+          optsYearly.dataTrendLines = yearlyLines(taxon)
+          console.log(optsYearly.dataTrendLines)
+          optsWeekly.metrics = [wm1, wm2]
+        }
+
+        apiYearly.setChartOpts({metrics: optsYearly.metrics})
+        apiWeekly.setChartOpts({metrics: optsWeekly.metrics})
+
+        // Optionally reset min and max year
+        const filteredData = indices.filter(d => d.taxon === taxon)
+        apiYearly.setChartOpts({
+          minPeriod:  Math.min(...filteredData.map(d => d.period)), 
+          maxPeriod: Math.max(...filteredData.map(d => d.period))
+        })
+      }
+    </script>
+  </div>
+</body>
+</html>

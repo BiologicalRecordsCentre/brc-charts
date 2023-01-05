@@ -234,7 +234,7 @@ export function makeTemporal (
       // PeriodType is month or week.
       // For month or week periodTypes, axis is generated in two parts,
       // one for the ticks and one for the annotation because
-      // default places tick in centre of text. bAxis1 takes
+      // default axes tick in centre of text. bAxis1 takes
       // care of the text.
       bAxis = xAxisMonthNoText(width, monthScaleRange)
       bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial', monthScaleRange)

@@ -273,6 +273,7 @@
 
         // Load example data
         pd1 = d3.csv('./data/ukbms/UK_all_spp_coll_ind.csv')
+        //pd1 = d3.csv('./data/ukbms/20221212/all_ci.csv')
         pd2 = d3.csv('./data/ukbms/UK_all_spp_NM_curves.csv')
         pd3 = d3.csv('./data/ukbms/UKBMS_spp_names.csv')
         const data = await Promise.all([pd1, pd2, pd3])

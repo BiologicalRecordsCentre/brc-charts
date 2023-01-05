@@ -25,6 +25,8 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
     }
   })
 
+  console.log('chartTrendLineSup', chartTrendLineSup)
+
   // Supplementary trend lines
   gTemporal.selectAll('.temporal-trend-lines-sup')
     .data(chartTrendLineSup)

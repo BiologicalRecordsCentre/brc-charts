@@ -91,7 +91,7 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
- * <li> <b>period</b> - a number indicating a week or a year.
+ * <li> <b>period</b> - a number indicating a week, nonth or a year.
  * <li> <b>c1</b> - a metric for a given period (can have any name). 
  * <li> <b>c2</b> - a metric for a given period (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
@@ -100,7 +100,7 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
- * <li> <b>period</b> - a number indicating a week or a year.
+ * <li> <b>period</b> - a number indicating a week, month or a year.
  * <li> <b>y</b> - y value for a given period. 
  * <li> <b>upper</b> - a value for upper confidence band.
  * <li> <b>lower</b> - a value for lower confidence band.
