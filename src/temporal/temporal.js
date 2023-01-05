@@ -109,8 +109,12 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
- * <li> <b>gradient</b> - a gradient for the line.
- * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line. 
+ * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+ * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+ * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+ * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+ * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+ * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
  * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
  * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -420,7 +424,8 @@ export function temporal({
   * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
-  * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+  * @param {Array.<Object>} opts.verticals - Specifies an array of data objects (see main interface for details).
+  * @param {Array.<Object>} opts.trendLines - Specifies an array of data objects (see main interface for details).
   
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.

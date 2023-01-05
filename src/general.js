@@ -441,7 +441,7 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
     periods.push(i)
   }
   let scaleD3, scaleFn, bandwidthFn
-  if (periodType === 'month' || periodType === 'week') {
+  if (periodType === 'month' || periodType === 'week' || periodType === 'day') {
 
     const m2d = filterMonth2day(monthScaleRange, true)
     scaleD3 = d3.scaleLinear().domain([m2d[0], m2d[m2d.length - 1]]).range([1, width])
@@ -479,13 +479,20 @@ function periodToDay(p, periodType, chartStyle) {
       // style is line or area
       return (p-1)*7 + 1 + 3.5
     }
-  } else {
-    // period === month
+  } else if(periodType === 'month') {
     if (chartStyle === 'bar') {
       return month2day[p-1]
     } else {
       // style is line or area
       return month2day[p-1] + ((month2day[p] - month2day[p-1]) / 2)
+    }
+  } else {
+    // perioType is 'day'
+    if (chartStyle === 'bar') {
+      return p
+    } else {
+      // style is line or area
+      return p+0.5
     }
   }
 }
@@ -493,8 +500,10 @@ function periodToDay(p, periodType, chartStyle) {
 function periodToWidth(p, periodType, xScale) {
   if (periodType === 'week') {
     return xScale(7) - xScale(0) - 1
-  } else {
+  } else if (periodType === 'month') {
     return xScale(month2day[p]) - xScale(month2day[p-1]) - 1
+  } else {
+    return xScale(1) - xScale(0) - 1
   }
 }
 

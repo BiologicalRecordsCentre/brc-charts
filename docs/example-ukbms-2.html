@@ -37,11 +37,32 @@
 
     <select id='taxa' onchange='taxonChanged()'></select>
 
-    <h3>Indices</h3>
-    <div id="yearly"></div>
+    <h3>Trend tab</h3>
+    <div style="display: flex">
+      <div id="yearly" style="flex: 1; max-width: 400px;"></div>
+      <div style="flex: 1; max-width: 300px; margin-top: 50px;">
+        <img class="butterfly-image" style="float: right" width="130px" src="data/ukbms/cutouts/Small Tortoiseshell_Iain H Leach (512px).png">
+        This chart shows the index of abundance (LCI = Log Collated Index) 
+        over time. It shows fluctuations in populations from year to year, 
+        and is scaled so that the average index over the whole series is 
+        equal to 2 (horizontal line). Further details on the analysis of 
+        UKBMS data can be found [here]
+      </div>
+    </div>
     
-    <h3>Flight periods</h3>
-    <div id="weekly"></div>
+    
+    <h3>Phenology tab</h3>
+    <div style="display: flex">
+      <div id="weekly" style="flex: 1; max-width: 400px;"></div>
+      <div style="flex: 1; max-width: 300px; margin-top: 50px;">
+        <img class="butterfly-image" style="float: right" width="130px" src="data/ukbms/cutouts/Small Tortoiseshell_Iain H Leach (512px).png">
+        This chart shows the average number of butterflies seen on transects 
+        between Arpil and October across all sites (fitted values from a 
+        Generalised Additive Model). The blue line gives average counts 
+        over the full BMS series (1976 to date) and the red line gives 
+        the average for the last year.
+      </div>
+    </div>
      
     <script>
       let apiWeekly, apiYearly, names, indices, phenology, trends
@@ -63,27 +84,19 @@
         bandStrokeWidth: 1,
       }
  
-      const horizonalAt2 = {
-        gradient: 0,
-        intercept: 2,
-        colour: 'silver',
-        width: 1,
-        opacity: 1
-      }
-  
       const optsYearly = {
         selector: '#yearly',
         width: 300,
         height: 220,
         taxa: [null],
         minMaxY: null,
-        perRow: 2,
+        perRow: 1,
         showLegend: false,
         legendFontSize: 11,
         interactivity: 'mousemove', 
         showTaxonLabel: false,
         chartStyle: 'line',
-        axisLeftLabel: 'Relative frequency',
+        axisLeftLabel: 'Log10 Collated Index',
         margin: {left: 50, right: 0, bottom: 20, top: 20},
         xPadPercent: 3,
         yPadPercent: 3,
@@ -106,8 +119,7 @@
             colour: 'silver',
             start: 2021
           }
-        ],
-        //dataTrendLines
+        ]
       }; // Semi-colon important
 
       // Weekly
@@ -132,7 +144,7 @@
         height: 220,
         taxa: [null],
         minMaxY: null,
-        perRow: 2,
+        perRow: 1,
         showLegend: false,
         legendFontSize: 11,
         interactivity: 'mousemove', 
@@ -145,9 +157,9 @@
         minPeriodTrans: 1975,
         maxPeriodTrans: 2022,
         minY: 0,
-        axisLeftLabel: 'NM',
-        periodType: 'week',
-        //monthScaleRange: [4,9],
+        axisLeftLabel: 'Counts',
+        periodType: 'day',
+        monthScaleRange: [3,10],
         metrics: [weeklyMetricsTemplate1, weeklyMetricsTemplate2],
         overrideHighlight: true,
         missingValues: 'bridge',
@@ -172,7 +184,8 @@
         data[0].forEach(d => {
           names[d.BMSCODE]= {
             scientific: d.SCI_NAME,
-            common: d.COMMON_NAME
+            common: d.COMMON_NAME,
+            image: d.image
           }
         })
         data[0].unshift(
@@ -189,6 +202,7 @@
             .classed('taxon', true)
             .text(d => d.COMMON_NAME)
             .attr('value', d => d.COMMON_NAME)
+            .attr('data-image', d => d.image)
 
         d3.select('.taxon[value="Small Tortoiseshell"').attr('selected', 'selected')
  
@@ -215,7 +229,8 @@
 
             const colName = `brood${d.BROOD}_${isLastYear ? 'last' : 'all'}`
             const taxon = names[d.SPECIES].common
-            const period = Math.floor((d.DAYNUM + (13 * 7))/7)
+            //const period = Math.floor((d.DAYNUM + (13 * 7))/7)
+            const period = Math.floor(d.DAYNUM + (13 * 7))
             const found = phenology.find(p => p.taxon === taxon && p.period === period)
             if (found) {
               found[colName] += d.FITTED
@@ -257,24 +272,28 @@
       function yearlyLines(taxon) {
         
         const dataTrend = trends.filter(d => d.COUNTRY === 'UK').filter(d => names[d.SPECIES].common === taxon)
-        console.log(dataTrend)
+        //console.log(dataTrend)
 
+        const horizonalAt2 = {
+          gradient: 0,
+          intercept: 2,
+          colour: 'silver',
+          width: 1,
+          opacity: 1
+        }
         return [horizonalAt2, ...dataTrend.map(d => {
-          //y = mx + c
-          // c = y -mx
+          //c = y-mx
           const m = (Number(d.LAST_YEAR_FITTED) - Number(d.FIRST_YEAR_FITTED)) / (Number(d.LAST_YEAR) - Number(d.FIRST_YEAR))
-          console.log(m)
           const c = Number(d.FIRST_YEAR_FITTED) - m * Number(d.FIRST_YEAR)
-          
           return {
             gradient: m,
             intercept: c,
-            // p1: Number(d.FIRST_YEAR),
-            // v1: Number(d.FIRST_YEAR_FITTED),
-            // p2: Number(d.LAST_YEAR),
-            // v2: Number(d.LAST_YEAR_FITTED),
-            colour: 'red',
-            width: 1,
+            p1: Number(d.FIRST_YEAR),
+            v1: Number(d.FIRST_YEAR_FITTED),
+            p2: Number(d.LAST_YEAR),
+            v2: Number(d.LAST_YEAR_FITTED),
+            colour: 'blue',
+            width: 2,
             opacity: 1
           }
         })]
@@ -282,40 +301,44 @@
 
       function taxonChanged() {
         const taxon = d3.select("#taxa").property("value")
+        const image = d3.select("#taxa:selected").property("data-image")
 
-        // Return if already in metrics or opts.taxa
-        if (optsYearly.metrics.find(m => m.taxon === taxon)) return
-        if (optsYearly.taxa.find(t => t === taxon)) return
+        var sel = document.getElementById('taxa')
+        console.log('image', sel.options[sel.selectedIndex])
 
         const colours=d3.scaleOrdinal(d3.schemeCategory10)
 
-        if (taxon === '') {
-          optsYearly.metrics = []
-          optsWeekly.metrics = []
-          optsYearly.dataTrendLines = []
-        } else {
-          let ym = {...yearlyMetricsTemplate}
+        let wm = []
+        let ym = []
+        let ytl = []
+        if (taxon !== '') {
+          ym = {...yearlyMetricsTemplate}
           let wm1 = {...weeklyMetricsTemplate1}
           let wm2 = {...weeklyMetricsTemplate2}
           ym.taxon = taxon
           ym.label = taxon
           wm1.taxon = taxon
           wm2.taxon = taxon
-          optsYearly.metrics = [ym]
-          optsYearly.dataTrendLines = yearlyLines(taxon)
-          console.log(optsYearly.dataTrendLines)
-          optsWeekly.metrics = [wm1, wm2]
+          ym = [ym]
+          ytl = yearlyLines(taxon)
+          wm = [wm1, wm2]
         }
 
-        apiYearly.setChartOpts({metrics: optsYearly.metrics})
-        apiWeekly.setChartOpts({metrics: optsWeekly.metrics})
+        apiYearly.setChartOpts({metrics: ym, dataTrendLines: ytl})
+        apiWeekly.setChartOpts({metrics: wm})
 
-        // Optionally reset min and max year
-        const filteredData = indices.filter(d => d.taxon === taxon)
-        apiYearly.setChartOpts({
-          minPeriod:  Math.min(...filteredData.map(d => d.period)), 
-          maxPeriod: Math.max(...filteredData.map(d => d.period))
-        })
+        console.log(names, taxon)
+        const name=names.find(n=>n.common === taxon)
+        console.log(name, taxon)
+        d3.select('.butterfly-image').attr('src', `data/ukbms/cutouts/${name.image}`)
+        
+
+        // // Optionally reset min and max year
+        // const filteredData = indices.filter(d => d.taxon === taxon)
+        // apiYearly.setChartOpts({
+        //   minPeriod:  Math.min(...filteredData.map(d => d.period)), 
+        //   maxPeriod: Math.max(...filteredData.map(d => d.period))
+        // })
       }
     </script>
   </div>

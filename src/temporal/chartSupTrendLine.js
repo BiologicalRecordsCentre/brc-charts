@@ -1,31 +1,33 @@
 import { transPromise } from '../general'
 
-export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding) {
+export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle) {
+
+  //console.log('dataTrendLinesFiltered', dataTrendLinesFiltered)
 
   // Construct data structure for supplementary trend lines.
   // TODO - if at some point we parameterise display styles,
   // then it must be specified in here.
-  const chartTrendLineSup = dataTrendLinesFiltered.map(d => {
-    // y = mx + c
-    const minx = minPeriod - xPadding
-    const maxx = maxPeriod + xPadding
-    const x1 = xScale(minx)
-    let x2
-    if (chartStyle === 'bar') {
-      x2 = xScale(maxx) + xScale.bandwidth(maxx)
-    } else {
-      x2 = xScale(maxx)
-    }
-    return {
-      colour: d.colour ? d.colour : 'red',
-      width: d.width ? d.width : '1',
-      opacity: d.opacity ? d.opacity : '1',
-      pathEnter:  `M ${x1} ${height} L ${x2} ${height}`,
-      path: `M ${x1} ${yScale( d.y1)} L ${x2} ${yScale( d.y2)}`,
-    }
-  })
-
-  console.log('chartTrendLineSup', chartTrendLineSup)
+  const chartTrendLineSup = dataTrendLinesFiltered.filter(d => {
+      // p1 and p2 can be infinite if data is empty
+      return isFinite(d.p1) && isFinite(d.p2)
+    })
+    .map(d => {
+      // y = mx + c
+      const x1 = xScale(d.p1)
+      let x2
+      if (chartStyle === 'bar') {
+        x2 = xScale(d.p2) + xScale.bandwidth(d.p2)
+      } else {
+        x2 = xScale(d.p2)
+      }
+      return {
+        colour: d.colour ? d.colour : 'red',
+        width: d.width ? d.width : '1',
+        opacity: d.opacity ? d.opacity : '1',
+        pathEnter:  `M ${x1} ${height} L ${x2} ${height}`,
+        path: `M ${x1} ${yScale(d.y1)} L ${x2} ${yScale(d.y2)}`,
+      }
+    })
 
   // Supplementary trend lines
   gTemporal.selectAll('.temporal-trend-lines-sup')

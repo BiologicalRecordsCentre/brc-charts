@@ -542,7 +542,7 @@
 
     var scaleD3, scaleFn, bandwidthFn;
 
-    if (periodType === 'month' || periodType === 'week') {
+    if (periodType === 'month' || periodType === 'week' || periodType === 'day') {
       var m2d = filterMonth2day(monthScaleRange, true);
       scaleD3 = d3.scaleLinear().domain([m2d[0], m2d[m2d.length - 1]]).range([1, width]);
 
@@ -582,13 +582,20 @@
         // style is line or area
         return (p - 1) * 7 + 1 + 3.5;
       }
-    } else {
-      // period === month
+    } else if (periodType === 'month') {
       if (chartStyle === 'bar') {
         return month2day[p - 1];
       } else {
         // style is line or area
         return month2day[p - 1] + (month2day[p] - month2day[p - 1]) / 2;
+      }
+    } else {
+      // perioType is 'day'
+      if (chartStyle === 'bar') {
+        return p;
+      } else {
+        // style is line or area
+        return p + 0.5;
       }
     }
   }
@@ -596,8 +603,10 @@
   function periodToWidth(p, periodType, xScale) {
     if (periodType === 'week') {
       return xScale(7) - xScale(0) - 1;
-    } else {
+    } else if (periodType === 'month') {
       return xScale(month2day[p]) - xScale(month2day[p - 1]) - 1;
+    } else {
+      return xScale(1) - xScale(0) - 1;
     }
   }
 
@@ -8921,21 +8930,23 @@
     });
   }
 
-  function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding) {
+  function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle) {
+    //console.log('dataTrendLinesFiltered', dataTrendLinesFiltered)
     // Construct data structure for supplementary trend lines.
     // TODO - if at some point we parameterise display styles,
     // then it must be specified in here.
-    var chartTrendLineSup = dataTrendLinesFiltered.map(function (d) {
+    var chartTrendLineSup = dataTrendLinesFiltered.filter(function (d) {
+      // p1 and p2 can be infinite if data is empty
+      return isFinite(d.p1) && isFinite(d.p2);
+    }).map(function (d) {
       // y = mx + c
-      var minx = minPeriod - xPadding;
-      var maxx = maxPeriod + xPadding;
-      var x1 = xScale(minx);
+      var x1 = xScale(d.p1);
       var x2;
 
       if (chartStyle === 'bar') {
-        x2 = xScale(maxx) + xScale.bandwidth(maxx);
+        x2 = xScale(d.p2) + xScale.bandwidth(d.p2);
       } else {
-        x2 = xScale(maxx);
+        x2 = xScale(d.p2);
       }
 
       return {
@@ -9052,14 +9063,14 @@
 
   function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
   axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans) {
-    // Pre-process data.
+    // xPadding is calculated before yPadding because it is needed early
+    var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100; // Pre-process data.
     // Filter to named taxon and to min and max period and sort in period order
     // Adjust metrics data to accoutn for metricExpress value.
+
     var dataFiltered = JSON.parse(JSON.stringify(data)).filter(function (d) {
       return taxon ? d.taxon === taxon : true;
-    }) //######
-    //.filter(d => d.taxon === taxon) //######
-    .filter(function (d) {
+    }).filter(function (d) {
       return d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
@@ -9067,11 +9078,12 @@
     // hightest values (required in spread display)
 
     metricsPlus.forEach(function (m) {
-      //##########
       // If taxon named in metric, further filter data to the named taxon.
       var dataFilteredMetric = dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
-      });
+      }); //console.log('m.taxon', m.taxon)
+      //console.log('dataFilteredMetric', dataFilteredMetric)
+
       var denominator;
 
       if (metricExpression === 'proportion') {
@@ -9106,8 +9118,6 @@
     dataFiltered.forEach(function (d) {
       metricsPlus.forEach(function (m, i) {
         if (!m.taxon || d.taxon === m.taxon) {
-          //####
-          //if (i === 0) {
           if (!d.displacement) {
             d.displacement = [0];
           } else {
@@ -9117,30 +9127,51 @@
       });
     }); // Filter dataPoints data on taxon (if specified) and to within min and max period.
 
-    var dataPointsFiltered = dataPoints //#####
-    .filter(function (d) {
+    var dataPointsFiltered = dataPoints.filter(function (d) {
       return (taxon && d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
-    }); // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
-    // array of gradients and intercepts to an array of arrays of two point lines
+    }); // Filter dataTrendLines data on taxon (if specified) and convert from an 
+    // array of gradients and intercepts to an array of arrays of two point lines.
+    // If the coords of the lines are included in dataTrendLines rather than
+    // gradients and intercepts, then these values are used. 
 
     var dataTrendLinesFiltered = dataTrendLines.filter(function (d) {
       return taxon && d.taxon ? d.taxon === taxon : true;
-    }) //###
-    .map(function (d) {
+    }).map(function (d) {
+      var y1, y2, p1, p2;
+
+      if (d.p1 && d.p2 && d.v1 && d.v2) {
+        p1 = d.p1;
+        p2 = d.p2;
+        y1 = d.v1;
+        y2 = d.v2;
+      } else {
+        p1 = minPeriod - xPadding;
+        p2 = maxPeriod + xPadding;
+
+        if (d.gradient === 0) {
+          y1 = d.intercept;
+          y2 = d.intercept;
+        } else {
+          y1 = d.gradient * minPeriod + d.intercept;
+          y2 = d.gradient * maxPeriod + d.intercept;
+        }
+      }
+
       return {
         taxon: d.taxon,
         colour: d.colour,
         width: d.width,
         opacity: d.opacity,
-        y1: d.gradient * minPeriod + d.intercept,
-        y2: d.gradient * maxPeriod + d.intercept
+        y1: y1,
+        y2: y2,
+        p1: p1,
+        p2: p2
       };
     }); // Filter verticals on taxon (if specified) and to within min and max period.
 
-    var verticalsFiltered = verticals //######
-    .filter(function (d) {
+    var verticalsFiltered = verticals.filter(function (d) {
       return d.taxon && taxon ? d.taxon === taxon : true;
     }).sort(function (a, b) {
       return a.period > b.period ? 1 : -1;
@@ -9175,7 +9206,6 @@
           // of the metric on top, so we create an array to hold all
           // the possible values that could be the maximum value.
           if (!m.taxon || d.taxon === m.taxon) {
-            //####
             if (v(d[m.bandUpper])) {
               extensionValues.push(cumulativeTotals[i] + d[m.bandUpper]);
             }
@@ -9189,8 +9219,7 @@
           }
         });
       });
-    } //##########
-
+    }
 
     var maxMetricYs = metricsPlus.map(function (m) {
       return Math.max.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
@@ -9224,8 +9253,7 @@
       return d.y1;
     })), _toConsumableArray(dataTrendLinesFiltered.map(function (d) {
       return d.y2;
-    })))); //############
-
+    }))));
     var minMetricYs = metricsPlus.map(function (m) {
       return Math.min.apply(Math, _toConsumableArray(dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
@@ -9271,9 +9299,9 @@
 
     for (var i = minPeriod; i <= maxPeriod; i++) {
       periods.push(i);
-    }
+    } // yPadding (xPadding calculated earlier when needed)
 
-    var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100;
+
     var yPadding = (maxYscale - minYscale) * yPadPercent / 100;
     var xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width);
     var yScale = spreadScale(minYscale, maxYscale, yPadding, metricsPlus, height, composition, spreadOverlap); // Top axis
@@ -9295,7 +9323,7 @@
         // PeriodType is month or week.
         // For month or week periodTypes, axis is generated in two parts,
         // one for the ticks and one for the annotation because
-        // default places tick in centre of text. bAxis1 takes
+        // default axes tick in centre of text. bAxis1 takes
         // care of the text.
         bAxis = xAxisMonthNoText(width, monthScaleRange);
         bAxis1 = xAxisMonthText(width, axisBottom === 'tick', axisLabelFontSize, 'Arial', monthScaleRange);
@@ -9354,7 +9382,7 @@
     generateBars(dataFiltered, metricsPlus, gBars, t, xScale, yScale, height, pTrans, minYscale, svgChart, interactivity, chartStyle, composition);
     generateLines(dataFiltered, metricsPlus, gLines, t, xScale, yScale, height, pTrans, minYscale, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition);
     generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
-    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding);
+    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle);
     generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans);
     generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans);
 
@@ -9571,9 +9599,13 @@
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
    * (Optional - default is 'blue'.)
    * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
-   * (Optional - default is 0.5.)
+   * (Optional - default is 1.)
    * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
    * (Optional - default is 1.)
+   * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of 
+   * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+   * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric. 
+   * (Optional - default is 0.5.)
    * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
    * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
    * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
@@ -9600,7 +9632,7 @@
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
-   * <li> <b>period</b> - a number indicating a week or a year.
+   * <li> <b>period</b> - a number indicating a week, nonth or a year.
    * <li> <b>c1</b> - a metric for a given period (can have any name). 
    * <li> <b>c2</b> - a metric for a given period (can have any name).
    * ... - there must be at least one metric column, but there can be any number of them.
@@ -9609,7 +9641,7 @@
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
-   * <li> <b>period</b> - a number indicating a week or a year.
+   * <li> <b>period</b> - a number indicating a week, month or a year.
    * <li> <b>y</b> - y value for a given period. 
    * <li> <b>upper</b> - a value for upper confidence band.
    * <li> <b>lower</b> - a value for lower confidence band.
@@ -9618,8 +9650,12 @@
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
-   * <li> <b>gradient</b> - a gradient for the line.
-   * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line. 
+   * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+   * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+   * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+   * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+   * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+   * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
    * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
    * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -9927,7 +9963,8 @@
       * @param {Array.<Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
-      * @param {Array.<Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+      * @param {Array.<Object>} opts.verticals - Specifies an array of data objects (see main interface for details).
+      * @param {Array.<Object>} opts.trendLines - Specifies an array of data objects (see main interface for details).
       
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.

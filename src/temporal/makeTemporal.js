@@ -51,21 +51,26 @@ export function makeTemporal (
   spreadOverlap,
   pTrans
 ) {
+  
+  // xPadding is calculated before yPadding because it is needed early
+  const xPadding = (maxPeriod-minPeriod) * xPadPercent/100
+  
   // Pre-process data.
   // Filter to named taxon and to min and max period and sort in period order
   // Adjust metrics data to accoutn for metricExpress value.
   const dataFiltered = JSON.parse(JSON.stringify(data))
-    .filter(d => taxon ? d.taxon === taxon : true) //######
-    //.filter(d => d.taxon === taxon) //######
+    .filter(d => taxon ? d.taxon === taxon : true)
     .filter(d => (d.period >= minPeriod && d.period <= maxPeriod))
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
   // Adjust metric values and record, in metric structure,
   // hightest values (required in spread display)
 
   metricsPlus.forEach(m => {
-    //##########
     // If taxon named in metric, further filter data to the named taxon.
     const dataFilteredMetric = dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true)
+
+    //console.log('m.taxon', m.taxon)
+    //console.log('dataFilteredMetric', dataFilteredMetric)
 
     let denominator 
     if (metricExpression === 'proportion') {
@@ -87,8 +92,7 @@ export function makeTemporal (
   // Add data displacement values for cummulative displays such as stacked
   dataFiltered.forEach(d => {
     metricsPlus.forEach((m,i) => {
-      if (!m.taxon || d.taxon === m.taxon) { //####
-        //if (i === 0) {
+      if (!m.taxon || d.taxon === m.taxon) {
         if (!d.displacement) {
           d.displacement = [0]
         } else {
@@ -100,28 +104,49 @@ export function makeTemporal (
 
   // Filter dataPoints data on taxon (if specified) and to within min and max period.
   const dataPointsFiltered = dataPoints
-    //#####
     .filter(d =>  (taxon && d.taxon ? d.taxon === taxon : true) && d.period >= minPeriod && d.period <= maxPeriod)
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
-  // Filter dataTrendLinesFiltered data on taxon (if specified) and convert from an 
-  // array of gradients and intercepts to an array of arrays of two point lines
+  // Filter dataTrendLines data on taxon (if specified) and convert from an 
+  // array of gradients and intercepts to an array of arrays of two point lines.
+  // If the coords of the lines are included in dataTrendLines rather than
+  // gradients and intercepts, then these values are used. 
+
   const dataTrendLinesFiltered = dataTrendLines
-    .filter(d => taxon && d.taxon ? d.taxon === taxon : true) //###
+    .filter(d => taxon && d.taxon ? d.taxon === taxon : true)
     .map(d => {
+      let y1, y2, p1, p2
+      if (d.p1 && d.p2 && d.v1 && d.v2 ) {
+        p1 = d.p1
+        p2 = d.p2
+        y1 = d.v1
+        y2 = d.v2
+      } else {
+        p1 = minPeriod - xPadding
+        p2 = maxPeriod + xPadding
+        if(d.gradient === 0) {
+          y1 = d.intercept
+          y2 = d.intercept
+        } else {
+          y1 = d.gradient * minPeriod + d.intercept 
+          y2 = d.gradient * maxPeriod + d.intercept
+        }
+      }
+
       return {
         taxon: d.taxon,
         colour: d.colour,
         width: d.width,
         opacity: d.opacity,
-        y1: d.gradient * minPeriod + d.intercept,
-        y2: d.gradient * maxPeriod + d.intercept
+        y1: y1,
+        y2: y2,
+        p1: p1,
+        p2: p2
       }
     })
 
   // Filter verticals on taxon (if specified) and to within min and max period.
   const verticalsFiltered = verticals
-    //######
     .filter(d =>  (d.taxon && taxon ? d.taxon === taxon : true))
     .sort((a, b) => (a.period > b.period) ? 1 : -1)
 
@@ -151,7 +176,7 @@ export function makeTemporal (
         // than the one stacked on top can extend beyond the limit
         // of the metric on top, so we create an array to hold all
         // the possible values that could be the maximum value.
-        if (!m.taxon || d.taxon === m.taxon) { //####
+        if (!m.taxon || d.taxon === m.taxon) {
           if (v(d[m.bandUpper])) {
             extensionValues.push(cumulativeTotals[i] + d[m.bandUpper])
           }
@@ -165,7 +190,6 @@ export function makeTemporal (
     })
   }
 
-  //##########
   const maxMetricYs = metricsPlus.map(m => Math.max(
     ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.bandUpper])).map(d => d[m.bandUpper]),
@@ -182,7 +206,6 @@ export function makeTemporal (
     ...dataTrendLinesFiltered.map(d => d.y1),
     ...dataTrendLinesFiltered.map(d => d.y2)
   )
-  //############
   const minMetricYs = metricsPlus.map(m => Math.min(
     ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.prop])).map(d => d[m.prop]),
     ...dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true).filter(d => v(d[m.bandLower])).map(d => d[m.bandLower]),
@@ -210,7 +233,7 @@ export function makeTemporal (
     periods.push(i)
   }
 
-  const xPadding = (maxPeriod-minPeriod) * xPadPercent/100
+  // yPadding (xPadding calculated earlier when needed)
   const yPadding = (maxYscale-minYscale) * yPadPercent/100
 
   const xScale = temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPadding, monthScaleRange, width)
@@ -297,7 +320,7 @@ export function makeTemporal (
   generateBars(dataFiltered, metricsPlus, gBars, t, xScale, yScale, height, pTrans, minYscale,  svgChart, interactivity, chartStyle, composition)
   generateLines(dataFiltered, metricsPlus, gLines, t, xScale, yScale, height, pTrans, minYscale, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition)
   generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition)
-  generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, minPeriod, maxPeriod, xPadding)
+  generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle)
   generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans)
   generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans)
 
