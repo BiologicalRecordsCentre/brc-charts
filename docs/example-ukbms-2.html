@@ -301,10 +301,8 @@
 
       function taxonChanged() {
         const taxon = d3.select("#taxa").property("value")
-        const image = d3.select("#taxa:selected").property("data-image")
-
-        var sel = document.getElementById('taxa')
-        console.log('image', sel.options[sel.selectedIndex])
+        const image = d3.select("option:checked").attr("data-image")
+        console.log('image', image)
 
         const colours=d3.scaleOrdinal(d3.schemeCategory10)
 
@@ -326,13 +324,8 @@
 
         apiYearly.setChartOpts({metrics: ym, dataTrendLines: ytl})
         apiWeekly.setChartOpts({metrics: wm})
-
-        console.log(names, taxon)
-        const name=names.find(n=>n.common === taxon)
-        console.log(name, taxon)
-        d3.select('.butterfly-image').attr('src', `data/ukbms/cutouts/${name.image}`)
+        d3.selectAll('.butterfly-image').attr('src', `data/ukbms/cutouts/${image}`)
         
-
         // // Optionally reset min and max year
         // const filteredData = indices.filter(d => d.taxon === taxon)
         // apiYearly.setChartOpts({
