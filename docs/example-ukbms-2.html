@@ -67,7 +67,7 @@
     <script>
       let apiWeekly, apiYearly, names, indices, phenology, trends
 
-      const yearlyMetricsTemplate = {
+      const yearlyMetrics = {
         taxon: 'Small Tortoiseshell',
         label: 'Small Tortoiseshell',
         prop: 'TRMOBS', 
@@ -102,7 +102,7 @@
         yPadPercent: 3,
         minPeriodTrans: 1975,
         maxPeriodTrans: 2022,
-        metrics: [yearlyMetricsTemplate],
+        metrics: [yearlyMetrics],
         overrideHighlight: true,
         missingValues: 'bridge',
         verticals: [
@@ -123,14 +123,14 @@
       }; // Semi-colon important
 
       // Weekly
-      const weeklyMetricsTemplate1 = {
+      const weeklyMetrics1 = {
         taxon: 'Small Tortoiseshell',
         prop: 'brood0_all', 
         colour: 'blue', 
         opacity: 1,
         lineWidth: 1,
       }
-      const weeklyMetricsTemplate2 = {
+      const weeklyMetrics2 = {
         taxon: 'Small Tortoiseshell',
         prop: 'brood0_last', 
         colour: 'red', 
@@ -160,7 +160,7 @@
         axisLeftLabel: 'Counts',
         periodType: 'day',
         monthScaleRange: [3,10],
-        metrics: [weeklyMetricsTemplate1, weeklyMetricsTemplate2],
+        metrics: [weeklyMetrics1, weeklyMetrics2],
         overrideHighlight: true,
         missingValues: 'bridge',
       };
@@ -185,7 +185,8 @@
           names[d.BMSCODE]= {
             scientific: d.SCI_NAME,
             common: d.COMMON_NAME,
-            image: d.image
+            image: d.image,
+            dblbrood: false,
           }
         })
         data[0].unshift(
@@ -201,10 +202,10 @@
             .append('option')
             .classed('taxon', true)
             .text(d => d.COMMON_NAME)
-            .attr('value', d => d.COMMON_NAME)
+            .attr('value', d => d.BMSCODE)
             .attr('data-image', d => d.image)
-
-        d3.select('.taxon[value="Small Tortoiseshell"').attr('selected', 'selected')
+        
+        d3.select('.taxon[value="2"').attr('selected', 'selected')
  
         // Create indices data (converting names)
         indices = data[1].filter(d => d.COUNTRY === 'UK').map(d => {
@@ -229,7 +230,6 @@
 
             const colName = `brood${d.BROOD}_${isLastYear ? 'last' : 'all'}`
             const taxon = names[d.SPECIES].common
-            //const period = Math.floor((d.DAYNUM + (13 * 7))/7)
             const period = Math.floor(d.DAYNUM + (13 * 7))
             const found = phenology.find(p => p.taxon === taxon && p.period === period)
             if (found) {
@@ -245,15 +245,18 @@
                 brood1_last: 0,
                 brood2_last: 0
               }
-              
               rec[colName] = d.FITTED
               phenology.push(rec)
+            }
+            // If this is data from second brood, update
+            // the names collection to indicated double-brooded.
+            if (d.BROOD === 2) {
+              names[d.SPECIES].dblbrood = true
             }
           })
         }
         addPhenologyData(data[3], false) 
-        addPhenologyData(data[4], true) 
-        //console.log(phenology)
+        addPhenologyData(data[4], true)
 
         // Generate charts
         optsYearly.data = indices
@@ -300,26 +303,39 @@
       }
 
       function taxonChanged() {
-        const taxon = d3.select("#taxa").property("value")
-        const image = d3.select("option:checked").attr("data-image")
-        console.log('image', image)
-
-        const colours=d3.scaleOrdinal(d3.schemeCategory10)
+        const taxon = names[d3.select("#taxa").property("value")].common
+        const image = names[d3.select("#taxa").property("value")].image
+        const dblbrood = names[d3.select("#taxa").property("value")].dblbrood
 
         let wm = []
         let ym = []
         let ytl = []
         if (taxon !== '') {
-          ym = {...yearlyMetricsTemplate}
-          let wm1 = {...weeklyMetricsTemplate1}
-          let wm2 = {...weeklyMetricsTemplate2}
+          ym = {...yearlyMetrics}
           ym.taxon = taxon
           ym.label = taxon
-          wm1.taxon = taxon
-          wm2.taxon = taxon
           ym = [ym]
           ytl = yearlyLines(taxon)
-          wm = [wm1, wm2]
+
+          const wm1 = {...weeklyMetrics1}
+          const wm2 = {...weeklyMetrics2}
+          wm1.taxon = taxon
+          wm2.taxon = taxon
+
+          if (dblbrood) {
+            wm1.prop = 'brood1_all'
+            wm2.prop = 'brood1_last'
+            const wm3 = {...weeklyMetrics1}
+            const wm4 = {...weeklyMetrics2}
+            wm3.taxon = taxon
+            wm4.taxon = taxon
+            wm3.prop = 'brood2_all'
+            wm4.prop = 'brood2_last'
+            wm = [wm1, wm2, wm3, wm4]
+          } else {
+            wm = [wm1, wm2]
+          }
+          
         }
 
         apiYearly.setChartOpts({metrics: ym, dataTrendLines: ytl})
