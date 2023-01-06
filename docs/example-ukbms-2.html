@@ -342,12 +342,12 @@
         apiWeekly.setChartOpts({metrics: wm})
         d3.selectAll('.butterfly-image').attr('src', `data/ukbms/cutouts/${image}`)
         
-        // // Optionally reset min and max year
-        // const filteredData = indices.filter(d => d.taxon === taxon)
-        // apiYearly.setChartOpts({
-        //   minPeriod:  Math.min(...filteredData.map(d => d.period)), 
-        //   maxPeriod: Math.max(...filteredData.map(d => d.period))
-        // })
+        // Optionally reset min and max year
+        const filteredData = indices.filter(d => d.taxon === taxon)
+        apiYearly.setChartOpts({
+          minPeriod:  Math.min(...filteredData.map(d => d.period)), 
+          maxPeriod: Math.max(...filteredData.map(d => d.period))
+        })
       }
     </script>
   </div>
