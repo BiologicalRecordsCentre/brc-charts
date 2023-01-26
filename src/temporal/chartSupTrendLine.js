@@ -34,7 +34,8 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
     .data(chartTrendLineSup)
     .join(
       enter => enter.append('path')
-        .attr("d", d => d.pathEnter)
+        //.attr("d", d => d.pathEnter)
+        .attr("d", d => d.path)
         .attr('class', 'temporal-trend-lines-sup')
         .style('stroke', d => d.colour)
         .style('stroke-width', d => d.width)
@@ -43,7 +44,7 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
       exit => exit
         .call(exit => transPromise(exit.transition(t)
         .style("opacity", 0)
-        .attr("d", d => d.pathEnter)
+        //.attr("d", d => d.pathEnter)
         .remove(), pTrans))
     )
     // Join returns merged enter and update selection

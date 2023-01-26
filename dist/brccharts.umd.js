@@ -8508,7 +8508,7 @@
     }, function (exit) {
       return exit.call(function (exit) {
         return transPromise(exit.transition(t) //.attr("d", d => d.bandPathEnter)
-        .style("opacity", 0).remove(), pTrans);
+        .attr("opacity", 0).remove(), pTrans);
       });
     }).call(function (merge) {
       return transPromise(merge.transition(t) // The selection returned by the join function is the merged
@@ -8542,7 +8542,7 @@
       }, function (exit) {
         return exit.call(function (exit) {
           return transPromise(exit.transition(t) //.attr("d", d => d.bandBordersEnter[iLine])
-          .style("opacity", 0).remove(), pTrans);
+          .attr("opacity", 0).remove(), pTrans);
         });
       }).call(function (merge) {
         return transPromise(merge.transition(t) // The selection returned by the join function is the merged
@@ -8577,7 +8577,7 @@
       }, function (exit) {
         return exit.call(function (exit) {
           return transPromise(exit.transition(t) //.attr("d", d => d.pathEnter)
-          .style("opacity", 0).remove(), pTrans);
+          .attr("opacity", 0).remove(), pTrans);
         });
       }).call(function (merge) {
         return transPromise(merge.transition(t) // The selection returned by the join function is the merged
@@ -8585,7 +8585,7 @@
         .attr("d", function (d) {
           return d.path;
         }).attr("opacity", function (d) {
-          return d.strokeOpacity;
+          return d.opacity;
         }).attr("stroke", function (d) {
           return d.colour;
         }).attr("stroke-width", function (d) {
@@ -8610,7 +8610,7 @@
       }, function (exit) {
         return exit.call(function (exit) {
           return transPromise(exit.transition(t) //.attr("d", d => d.pathEnter)
-          .style("opacity", 0).remove(), pTrans);
+          .attr("opacity", 0).remove(), pTrans);
         });
       }).call(function (merge) {
         return transPromise(merge.transition(t) // The selection returned by the join function is the merged
@@ -8959,8 +8959,9 @@
     }); // Supplementary trend lines
 
     gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
-      return enter.append('path').attr("d", function (d) {
-        return d.pathEnter;
+      return enter.append('path') //.attr("d", d => d.pathEnter)
+      .attr("d", function (d) {
+        return d.path;
       }).attr('class', 'temporal-trend-lines-sup').style('stroke', function (d) {
         return d.colour;
       }).style('stroke-width', function (d) {
@@ -8970,9 +8971,8 @@
       return update;
     }, function (exit) {
       return exit.call(function (exit) {
-        return transPromise(exit.transition(t).style("opacity", 0).attr("d", function (d) {
-          return d.pathEnter;
-        }).remove(), pTrans);
+        return transPromise(exit.transition(t).style("opacity", 0) //.attr("d", d => d.pathEnter)
+        .remove(), pTrans);
       });
     }) // Join returns merged enter and update selection
     .call(function (merge) {

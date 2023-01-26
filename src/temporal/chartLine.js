@@ -223,7 +223,7 @@ export function generateLines(
       exit => exit
         .call(exit => transPromise(exit.transition(t)
           //.attr("d", d => d.bandPathEnter)
-          .style("opacity", 0)
+          .attr("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
@@ -251,7 +251,7 @@ export function generateLines(
         exit => exit
           .call(exit =>  transPromise(exit.transition(t)
             //.attr("d", d => d.bandBordersEnter[iLine])
-            .style("opacity", 0)
+            .attr("opacity", 0)
             .remove(), pTrans))
          ).call(merge => transPromise(merge.transition(t)
           // The selection returned by the join function is the merged
@@ -279,13 +279,13 @@ export function generateLines(
       exit => exit
         .call(exit => transPromise(exit.transition(t)
           //.attr("d", d => d.pathEnter)
-          .style("opacity", 0)
+          .attr("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
       // enter and update selections
       .attr("d", d => d.path)
-      .attr("opacity", d => d.strokeOpacity)
+      .attr("opacity", d => d.opacity)
       .attr("stroke", d => d.colour)
       .attr("stroke-width", d => d.strokeWidth), pTrans))
 
@@ -306,7 +306,7 @@ export function generateLines(
       exit => exit
         .call(exit => transPromise(exit.transition(t)
           //.attr("d", d => d.pathEnter)
-          .style("opacity", 0)
+          .attr("opacity", 0)
           .remove(), pTrans))
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
