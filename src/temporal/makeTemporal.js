@@ -69,9 +69,6 @@ export function makeTemporal (
     // If taxon named in metric, further filter data to the named taxon.
     const dataFilteredMetric = dataFiltered.filter(d => m.taxon ? d.taxon === m.taxon : true)
 
-    //console.log('m.taxon', m.taxon)
-    //console.log('dataFilteredMetric', dataFilteredMetric)
-
     let denominator 
     if (metricExpression === 'proportion') {
       denominator = dataFilteredMetric.map(d => d[m.prop]).reduce((a, v) => a + v, 0)

@@ -261,10 +261,10 @@ export function temporal({
   function makeChart () {
 
     // Set min and max period from data if not set
-    if (!minPeriod) {
+    if (!minPeriod || minPeriod === Infinity) {
       minPeriod = Math.min(...data.map(d => d.period))
     }
-    if (!maxPeriod) {
+    if (!maxPeriod || maxPeriod === -Infinity) {
       maxPeriod = Math.max(...data.map(d => d.period))
     }
 

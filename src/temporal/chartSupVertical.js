@@ -47,6 +47,8 @@ export function generateSupVerticals(verticals, gTemporal, t, xScale, height, pT
     // The selection returned by the join function is the merged
     // enter and update selections
     .call(merge => transPromise(merge.transition(t)
+      .attr("d", d => d.path)
+      .style('stroke', d => d.colour)
       .style('opacity', 1), pTrans))
 
   // Vertical bands
@@ -69,5 +71,10 @@ export function generateSupVerticals(verticals, gTemporal, t, xScale, height, pT
     ).call(merge => transPromise(merge.transition(t)
       // The selection returned by the join function is the merged
       // enter and update selections
+      .attr('width', d => d.width)
+      .attr('height', height)
+      .attr('fill', d => d.colour)
+      .attr('y', 0)
+      .attr('x', d => d.x)
       .attr("opacity", 1), pTrans))
 }

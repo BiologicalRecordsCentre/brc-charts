@@ -9035,7 +9035,11 @@
     }) // The selection returned by the join function is the merged
     // enter and update selections
     .call(function (merge) {
-      return transPromise(merge.transition(t).style('opacity', 1), pTrans);
+      return transPromise(merge.transition(t).attr("d", function (d) {
+        return d.path;
+      }).style('stroke', function (d) {
+        return d.colour;
+      }).style('opacity', 1), pTrans);
     }); // Vertical bands
 
     gTemporal.selectAll('.temporal-vertical-band-sup').data(chartVerticalBands, function (d) {
@@ -9057,7 +9061,13 @@
     }).call(function (merge) {
       return transPromise(merge.transition(t) // The selection returned by the join function is the merged
       // enter and update selections
-      .attr("opacity", 1), pTrans);
+      .attr('width', function (d) {
+        return d.width;
+      }).attr('height', height).attr('fill', function (d) {
+        return d.colour;
+      }).attr('y', 0).attr('x', function (d) {
+        return d.x;
+      }).attr("opacity", 1), pTrans);
     });
   }
 
@@ -9081,9 +9091,7 @@
       // If taxon named in metric, further filter data to the named taxon.
       var dataFilteredMetric = dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
-      }); //console.log('m.taxon', m.taxon)
-      //console.log('dataFilteredMetric', dataFilteredMetric)
-
+      });
       var denominator;
 
       if (metricExpression === 'proportion') {
@@ -9851,13 +9859,13 @@
 
     function makeChart() {
       // Set min and max period from data if not set
-      if (!minPeriod) {
+      if (!minPeriod || minPeriod === Infinity) {
         minPeriod = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
           return d.period;
         })));
       }
 
-      if (!maxPeriod) {
+      if (!maxPeriod || maxPeriod === -Infinity) {
         maxPeriod = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
           return d.period;
         })));
