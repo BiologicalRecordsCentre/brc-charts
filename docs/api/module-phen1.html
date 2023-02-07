@@ -510,7 +510,8 @@
 
             
 
-            <td class="description last">Indicates whether to stack metrics or superimpose them. If true, the metrics are stacked. Thisis only relevant for charts of style 'bars' or 'areas'. It has no effect on charts with the style 'lines'. (Default - false.)</td>
+            <td class="description last">Indicates whether to stack metrics or superimpose them. If true, the metrics are stacked. This
+is only relevant for charts of style 'bars' or 'areas'. It has no effect on charts with the style 'lines'. (Default - false.)</td>
         </tr>
 
     
@@ -1045,7 +1046,8 @@
 
             
 
-            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display bands for each monthas a background on the chart. (Default is an empty array.)</td>
+            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display bands for each month
+as a background on the chart. (Default is an empty array.)</td>
         </tr>
 
     
@@ -1068,7 +1070,8 @@
 
             
 
-            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display vertical lines todelineat each month as a background on the chart. (Default is an empty array.)</td>
+            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display vertical lines to
+delineat each month as a background on the chart. (Default is an empty array.)</td>
         </tr>
 
     
@@ -1183,7 +1186,8 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created.</td>
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for. 
+If empty, graphs for all taxa are created.</td>
         </tr>
 
     
@@ -1206,7 +1210,17 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which a line should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>label</b> - a label for this metric.<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.</ul>Note that if a metric has no data for a given taxon, then the graphics representing it will bemarked with the CSS class 'phen-path-no-data'. You can use this to style as you see fit.</td>
+            <td class="description last">An array of objects, each describing a numeric property in the input
+data for which a line should be generated on the chart.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+<li> <b>label</b> - a label for this metric.
+<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+<li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.
+</ul>
+Note that if a metric has no data for a given taxon, then the graphics representing it will be
+marked with the CSS class 'phen-path-no-data'. You can use this to style as you see fit.</td>
         </tr>
 
     
@@ -1229,7 +1243,16 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,<li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,<li> <b>c1</b> - a count for a given time period (can have any name). <li> <b>c2</b> - a count for a given time period (can have any name).... - there must be at least one count column, but there can be any number of them.</ul></td>
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
+<li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
+<li> <b>c1</b> - a count for a given time period (can have any name). 
+<li> <b>c2</b> - a count for a given time period (can have any name).
+... - there must be at least one count column, but there can be any number of them.
+</ul></td>
         </tr>
 
     
@@ -1343,7 +1366,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+Return the full height of the chart svg.
 </div>
 
 
@@ -1431,7 +1455,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+Return the full width of the chart svg.
 </div>
 
 
@@ -1519,7 +1544,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Download the chart as an image file.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+Download the chart as an image file.
 </div>
 
 
@@ -1594,7 +1620,10 @@
 
             
 
-            <td class="description last">Name of the file (without extension) to generate and download.If the filename is falsey (e.g. blank), it will not automatically download thefile. (Allows caller to do something else with the data URL which is returnedas the promise's resolved value.)</td>
+            <td class="description last">Name of the file (without extension) to generate and download.
+If the filename is falsey (e.g. blank), it will not automatically download the
+file. (Allows caller to do something else with the data URL which is returned
+as the promise's resolved value.)</td>
         </tr>
 
     
@@ -1701,7 +1730,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+options object, it's value is not changed.
 </div>
 
 
@@ -2185,7 +2216,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.For single species charts, this allows you to change the taxon displayed.
+    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+For single species charts, this allows you to change the taxon displayed.
 </div>
 
 
@@ -2568,7 +2600,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -18,9 +18,14 @@ export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal,
 
   metricsPlus.forEach((m,i) => {
 
-    //####
+    // Filter to taxon and also filter out any that are outside min/max period if specified
     const dataFiltered = dataFilteredAll.filter(d => m.taxon ? d.taxon === m.taxon : true)
-
+      .filter(d => {
+        if (m.periodMin && d.period <  m.periodMin) return false
+        if (m.periodMax && d.period > m.periodMax) return false
+        return true
+      })
+    
     // Construct data structure for points.
     const bErrorBars = m.errorBarUpper && m.errorBarLower
     const bPoints = m.points
@@ -70,7 +75,7 @@ export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal,
         const ret = {
           x: x,
           period: d.period,
-          prop: `${m.prop}-${m.index}`,
+          prop: m.id ? m.id : `${m.prop}-${m.index}`,
         }
 
         if (bPoints) {

@@ -32,7 +32,7 @@ export function generateBars(dataFilteredAll, metricsPlus, gTemporal, t, xScale,
         return {
           colour: m.colour,
           opacity: m.fillOpacity,
-          prop:`${m.prop}-${m.index}`,
+          prop: m.id ? m.id : `${m.prop}-${m.index}`,
           period: d.period,
           n: n,
           height: barHeight

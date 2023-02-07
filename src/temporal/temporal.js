@@ -51,8 +51,12 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+ * <li> <b>id</b> - a unique identifier for the property. This is only necessary if metrics can be interactively added or removed on a chart.
+ * Under these circumstances, transitions and highlighting can get mixed up if each metric does not have a consistent unique id.
  * <li> <b>taxon</b> - an optional property that can be used to limit the metric display to a particular taxon. This
  * is meant to be used in conjunction with the opts.taxa value of [null] - see above.
+ * <li> <b>periodMin</b> a value for period, before which points should not be displayed.
+ * <li> <b>periodMax</b> a value for period, after which points should not be displayed.
  * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
  * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
@@ -108,6 +112,8 @@ import { highlightItem } from './highlightitem'
  * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
+ * <li> <b>id<b> - if the trend line is to be associated with a particular metric, then set this value to match the
+ * id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
  * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
  * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
@@ -364,6 +370,7 @@ export function temporal({
       }
       return {
         index: i,
+        id: m.id, // An optional metrics property - useful if metrics can change
         prop: m.prop,
         label: m.label ?  m.label : m.prop,
         opacity: m.opacity !== 'undefined' ? m.opacity : 1,
@@ -382,7 +389,9 @@ export function temporal({
         points: m.points,
         errorBarUpper: m.errorBarUpper,
         errorBarLower: m.errorBarLower,
-        taxon: m.taxon ? m.taxon : null
+        taxon: m.taxon ? m.taxon : null,
+        periodMin: m.periodMin,
+        periodMax: m.periodMax
       }
     })
 

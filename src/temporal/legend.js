@@ -24,7 +24,7 @@ export function makeLegend (
   // legend width.
   const legendItems = gen.cloneData(metricsPlus)
   legendItems.forEach(m => {
-    m.prop = `${m.prop}-${m.index}`
+    m.prop = m.id ? m.id : `${m.prop}-${m.index}`
   })
 
   let rows = 0

@@ -30,10 +30,6 @@ export function generateLines(
   const gLinesLines = addG('gLinesLines', gTemporal)
 
   const lineValues = (points, iPart) => {
-    // console.log(iPart, points)
-    // points.forEach(d => {
-    //   console.log(d.n, yScale(d.n, iPart), height)
-    // })
     const d3LineGen = d3.line()
       .x(d => xScale(d.period))
       .y(d => yScale(d.n, iPart))
@@ -49,26 +45,33 @@ export function generateLines(
   let chartBands = []
   let chartLineFills = []
 
-  //console.log('metricsPlus', metricsPlus)
- 
   metricsPlus.forEach((m, iMetric) => {
 
-    //####
     const dataFiltered = dataFilteredAll.filter(d => m.taxon ? d.taxon === m.taxon : true)
 
     // Construct data structure for line/area charts.
     let pointSets
     if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
       pointSets = adjustForTrans(periods.map(p => {
-        // Replace any missing values (for a given period)
-        // with the missing value specified (can be a value
-        // or 'bridge' or 'break')
+        
         const d = dataFiltered.find(d => d.period === p)
-        return {
+        const ret = {
           period: p,
-          n: d ? d[m.prop] : missingValues,
           displacement: d ? d.displacement[iMetric] : null
         }
+        if(!d){
+          // Replace any missing values (for a given period)
+          // with the missing value specified (can be a value
+          // or 'bridge' or 'break').
+          ret.n = missingValues
+        } else if ((m.periodMin && p <  m.periodMin) || (m.periodMax && p > m.periodMax)) {
+          // If metric has periodMin or periodMax specfied, then replace values beyond
+          // this range with specifed missing value.
+          ret.n = missingValues
+        } else {
+          ret.n = d[m.prop]
+        }
+        return ret
       }))
     } else {
       pointSets = []
@@ -91,7 +94,7 @@ export function generateLines(
         colour: m.colour,
         opacity: m.opacity,
         strokeWidth: m.strokeWidth,
-        prop: `${m.prop}-${m.index}`,
+        prop: m.id ? m.id : `${m.prop}-${m.index}`,
         index: m.index,
         part: i,
         yMin: yminY,
@@ -120,7 +123,7 @@ export function generateLines(
         chartLineFills.push({
           opacity: m.fillOpacity,
           fill: m.fill,
-          prop: `${m.prop}-${m.index}`,
+          prop: m.id ? m.id : `${m.prop}-${m.index}`,
           index: m.index,
           part: i,
           yMin: yminY,
@@ -141,19 +144,47 @@ export function generateLines(
 
       const upperLine = periods.map(p => {
         const d = dataFiltered.find(d => d.period === p)
-        return {
+        const ret = {
           period: p,
-          n: d ? d[m.bandUpper] : missingValues,
+          //n: d ? d[m.bandUpper] : missingValues,
           displacement: d ? d.displacement[iMetric] : null
         }
+
+        if(!d){
+          // Replace any missing values (for a given period)
+          // with the missing value specified (can be a value
+          // or 'bridge' or 'break').
+          ret.n = missingValues
+        } else if ((m.periodMin && p <  m.periodMin) || (m.periodMax && p > m.periodMax)) {
+          // If metric has periodMin or periodMax specfied, then replace values beyond
+          // this range with specifed missing value.
+          ret.n = missingValues
+        } else {
+          ret.n = d[m.bandUpper]
+        }
+        return ret
       })
       const lowerLine = [...periods].map(p => {
         const d = dataFiltered.find(d => d.period === p)
-        return {
+        const ret = {
           period: p,
-          n: d ? d[m.bandLower] : missingValues,
+          //n: d ? d[m.bandLower] : missingValues,
           displacement: d ? d.displacement[iMetric] : null
         }
+
+        if(!d){
+          // Replace any missing values (for a given period)
+          // with the missing value specified (can be a value
+          // or 'bridge' or 'break').
+          ret.n = missingValues
+        } else if ((m.periodMin && p <  m.periodMin) || (m.periodMax && p > m.periodMax)) {
+          // If metric has periodMin or periodMax specfied, then replace values beyond
+          // this range with specifed missing value.
+          ret.n = missingValues
+        } else {
+          ret.n = d[m.bandLower]
+        }
+        return ret
       })
 
       const pointsLowerSet = adjustForTrans(lowerLine)
@@ -196,7 +227,7 @@ export function generateLines(
           fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
           strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
           strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-          prop: `${m.prop}-${m.index}`,
+          prop: m.id ? m.id : `${m.prop}-${m.index}`,
           part: i,
           bandPath: lineValues(pointsUpper, iMetric) + lineValues([...pointsLower].reverse(), iMetric).replace('M', 'L'),
           bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues([...pointsLowerEnter].reverse(), iMetric).replace('M', 'L'),
@@ -324,20 +355,24 @@ export function generateLines(
     // of points.
 
     // First restructure the passed in points to an array of arrays.
+    // Fist check to see that all values are not 'bridge' which can
+    // happen for empty metrics.
     let pntsSplit = []
-    pntsIn.forEach(p => {
-      if (p.n === 'break') {
-        // Add a new array
-        pntsSplit.push([])
-      } else {
-        if (pntsSplit.length === 0) {
-          // Fist value so first add a new array
+    if (pntsIn.filter(p => p.n === 'bridge').length !== pntsIn.length) {
+      pntsIn.forEach(p => {
+        if (p.n === 'break') {
+          // Add a new array
           pntsSplit.push([])
+        } else {
+          if (pntsSplit.length === 0) {
+            // Fist value so first add a new array
+            pntsSplit.push([])
+          }
+          // Add point to array
+          pntsSplit[pntsSplit.length - 1].push(p)
         }
-        // Add point to array
-        pntsSplit[pntsSplit.length - 1].push(p)
-      }
-    })
+      })
+    }
 
     // At this point pntsSplit could have empty arrays, e.g. if there
     // where consecutive 'breaks' so weed these out.

@@ -927,7 +927,8 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created.</td>
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for. 
+If empty, graphs for all taxa are created.</td>
         </tr>
 
     
@@ -950,7 +951,24 @@
 
             
 
-            <td class="description last">An array of objects, each describing a property in the inputdata for which a band should be generated on the chart.Each of the objects in the metrics array must be sepecified with the properties shown below.<ul><li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).<li> <b>label</b> - a label for this property.<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.<li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, itshould be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.Numbering should start at one and increase in increments of 1. For split bands it is also used to position the bandsfrom top to bottom</ul>The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each isdrawn over the previous so for overlapping properties (split = false), the one you want to draw on top shouldcome last.</td>
+            <td class="description last">An array of objects, each describing a property in the input
+data for which a band should be generated on the chart.
+Each of the objects in the metrics array must be sepecified with the properties shown below.
+<ul>
+<li> <b>prop</b> - the name of the property in the data (properties - 'p1' or 'p2' in the example below).
+<li> <b>label</b> - a label for this property.
+<li> <b>colour</b> - colour to give the band for this property. Any accepted way of specifying web colours can be used.
+<li> <b>opacity</b> - Optional opacity to give the band for this property. A value between 0 and 1 - default is 1.
+<li> <b>svg</b> - Optional string defining an SVG path of an icon to use in place of a colour swatch in the legend.
+<li> <b>svgScale</b> - Optional number defining a scaling factor to apply to SVG icon (relative to others) - default is 1.
+<li> <b>legendOrder</b> - Optional number used to sort the legend items. Low to high = left to right. If supplied, it
+should be supplied for all metrics items otherwise results undefined. If not defined, default is to reverse the order.
+Numbering should start at one and increase in increments of 1. For split bands it is also used to position the bands
+from top to bottom
+</ul>
+The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
+drawn over the previous so for overlapping properties (split = false), the one you want to draw on top should
+come last.</td>
         </tr>
 
     
@@ -973,7 +991,20 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. There should only be one object per taxon. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>p1</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).<li> <b>p2</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).... - there must be at leas one property column, but there can be any number of them.</ul>The objects in each data band array have the following structure:<ul><li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.<li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends. </ul></td>
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. 
+There should only be one object per taxon. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> <b>p1</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).
+<li> <b>p2</b> - an array of date band objects (see below), indicating start and end weeks for the property (can have any name).
+... - there must be at leas one property column, but there can be any number of them.
+</ul>
+The objects in each data band array have the following structure:
+<ul>
+<li> <b>start</b> - a number between 1 and 365 indicating the day of the year the band starts.
+<li> <b>end</b> - a number between 1 and 365 indicating the day of the year the band ends.
+ </ul></td>
         </tr>
 
     
@@ -1087,7 +1118,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen2 function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+Return the full height of the chart svg.
 </div>
 
 
@@ -1175,7 +1207,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen2 function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+Return the full width of the chart svg.
 </div>
 
 
@@ -1263,7 +1296,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen2 function</b>.Download the chart as an image file.
+    <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+Download the chart as an image file.
 </div>
 
 
@@ -1338,7 +1372,10 @@
 
             
 
-            <td class="description last">Name of the file (without extension) to generate and download.If the filename is falsey (e.g. blank), it will not automatically download thefile. (Allows caller to do something else with the data URL which is returnedas the promise's resolved value.)</td>
+            <td class="description last">Name of the file (without extension) to generate and download.
+If the filename is falsey (e.g. blank), it will not automatically download the
+file. (Allows caller to do something else with the data URL which is returned
+as the promise's resolved value.)</td>
         </tr>
 
     
@@ -1445,7 +1482,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen2 function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+options object, it's value is not changed.
 </div>
 
 
@@ -1883,7 +1922,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen2 function</b>.For single species charts, this allows you to change the taxon displayed.
+    <b>This function is exposed as a method on the API returned from the phen2 function</b>.
+For single species charts, this allows you to change the taxon displayed.
 </div>
 
 
@@ -2266,7 +2306,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

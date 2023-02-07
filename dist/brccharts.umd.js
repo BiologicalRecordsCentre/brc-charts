@@ -8200,6 +8200,7 @@
     });
   }
   function highlightItem$3(id, highlight, svgChart) {
+    //console.log('highlightItem', id, highlight)
     svgChart.selectAll('.temporal-graphic').classed('lowlight', false);
     svgChart.selectAll('.temporal-graphic').classed('highlight', false);
 
@@ -8243,7 +8244,7 @@
           return {
             colour: m.colour,
             opacity: m.fillOpacity,
-            prop: "".concat(m.prop, "-").concat(m.index),
+            prop: m.id ? m.id : "".concat(m.prop, "-").concat(m.index),
             period: d.period,
             n: n,
             height: barHeight
@@ -8299,10 +8300,6 @@
     var gLinesLines = addG('gLinesLines', gTemporal);
 
     var lineValues = function lineValues(points, iPart) {
-      // console.log(iPart, points)
-      // points.forEach(d => {
-      //   console.log(d.n, yScale(d.n, iPart), height)
-      // })
       var d3LineGen = d3.line().x(function (d) {
         return xScale(d.period);
       }).y(function (d) {
@@ -8320,10 +8317,8 @@
 
     var chartLines = [];
     var chartBands = [];
-    var chartLineFills = []; //console.log('metricsPlus', metricsPlus)
-
+    var chartLineFills = [];
     metricsPlus.forEach(function (m, iMetric) {
-      //####
       var dataFiltered = dataFilteredAll.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
       }); // Construct data structure for line/area charts.
@@ -8332,17 +8327,28 @@
 
       if (dataFiltered.length && (chartStyle === 'line' || chartStyle === 'area')) {
         pointSets = adjustForTrans(periods.map(function (p) {
-          // Replace any missing values (for a given period)
-          // with the missing value specified (can be a value
-          // or 'bridge' or 'break')
           var d = dataFiltered.find(function (d) {
             return d.period === p;
           });
-          return {
+          var ret = {
             period: p,
-            n: d ? d[m.prop] : missingValues,
             displacement: d ? d.displacement[iMetric] : null
           };
+
+          if (!d) {
+            // Replace any missing values (for a given period)
+            // with the missing value specified (can be a value
+            // or 'bridge' or 'break').
+            ret.n = missingValues;
+          } else if (m.periodMin && p < m.periodMin || m.periodMax && p > m.periodMax) {
+            // If metric has periodMin or periodMax specfied, then replace values beyond
+            // this range with specifed missing value.
+            ret.n = missingValues;
+          } else {
+            ret.n = d[m.prop];
+          }
+
+          return ret;
         }));
       } else {
         pointSets = [];
@@ -8367,7 +8373,7 @@
           colour: m.colour,
           opacity: m.opacity,
           strokeWidth: m.strokeWidth,
-          prop: "".concat(m.prop, "-").concat(m.index),
+          prop: m.id ? m.id : "".concat(m.prop, "-").concat(m.index),
           index: m.index,
           part: i,
           yMin: yminY,
@@ -8399,7 +8405,7 @@
           chartLineFills.push({
             opacity: m.fillOpacity,
             fill: m.fill,
-            prop: "".concat(m.prop, "-").concat(m.index),
+            prop: m.id ? m.id : "".concat(m.prop, "-").concat(m.index),
             index: m.index,
             part: i,
             yMin: yminY,
@@ -8422,22 +8428,52 @@
           var d = dataFiltered.find(function (d) {
             return d.period === p;
           });
-          return {
+          var ret = {
             period: p,
-            n: d ? d[m.bandUpper] : missingValues,
+            //n: d ? d[m.bandUpper] : missingValues,
             displacement: d ? d.displacement[iMetric] : null
           };
+
+          if (!d) {
+            // Replace any missing values (for a given period)
+            // with the missing value specified (can be a value
+            // or 'bridge' or 'break').
+            ret.n = missingValues;
+          } else if (m.periodMin && p < m.periodMin || m.periodMax && p > m.periodMax) {
+            // If metric has periodMin or periodMax specfied, then replace values beyond
+            // this range with specifed missing value.
+            ret.n = missingValues;
+          } else {
+            ret.n = d[m.bandUpper];
+          }
+
+          return ret;
         });
 
         var lowerLine = _toConsumableArray(periods).map(function (p) {
           var d = dataFiltered.find(function (d) {
             return d.period === p;
           });
-          return {
+          var ret = {
             period: p,
-            n: d ? d[m.bandLower] : missingValues,
+            //n: d ? d[m.bandLower] : missingValues,
             displacement: d ? d.displacement[iMetric] : null
           };
+
+          if (!d) {
+            // Replace any missing values (for a given period)
+            // with the missing value specified (can be a value
+            // or 'bridge' or 'break').
+            ret.n = missingValues;
+          } else if (m.periodMin && p < m.periodMin || m.periodMax && p > m.periodMax) {
+            // If metric has periodMin or periodMax specfied, then replace values beyond
+            // this range with specifed missing value.
+            ret.n = missingValues;
+          } else {
+            ret.n = d[m.bandLower];
+          }
+
+          return ret;
         });
 
         var pointsLowerSet = adjustForTrans(lowerLine);
@@ -8478,7 +8514,7 @@
             fillOpacity: m.bandOpacity !== undefined ? m.bandOpacity : 0.5,
             strokeOpacity: m.bandStrokeOpacity !== undefined ? m.bandStrokeOpacity : 1,
             strokeWidth: m.bandStrokeWidth !== undefined ? m.bandStrokeWidth : 1,
-            prop: "".concat(m.prop, "-").concat(m.index),
+            prop: m.id ? m.id : "".concat(m.prop, "-").concat(m.index),
             part: i,
             bandPath: lineValues(pointsUpper, iMetric) + lineValues(_toConsumableArray(pointsLower).reverse(), iMetric).replace('M', 'L'),
             bandPathEnter: lineValues(pointsUpperEnter, iMetric) + lineValues(_toConsumableArray(pointsLowerEnter).reverse(), iMetric).replace('M', 'L'),
@@ -8635,22 +8671,30 @@
       // of points in the main array if there are breaks in the input array
       // of points.
       // First restructure the passed in points to an array of arrays.
+      // Fist check to see that all values are not 'bridge' which can
+      // happen for empty metrics.
       var pntsSplit = [];
-      pntsIn.forEach(function (p) {
-        if (p.n === 'break') {
-          // Add a new array
-          pntsSplit.push([]);
-        } else {
-          if (pntsSplit.length === 0) {
-            // Fist value so first add a new array
+
+      if (pntsIn.filter(function (p) {
+        return p.n === 'bridge';
+      }).length !== pntsIn.length) {
+        pntsIn.forEach(function (p) {
+          if (p.n === 'break') {
+            // Add a new array
             pntsSplit.push([]);
-          } // Add point to array
+          } else {
+            if (pntsSplit.length === 0) {
+              // Fist value so first add a new array
+              pntsSplit.push([]);
+            } // Add point to array
 
 
-          pntsSplit[pntsSplit.length - 1].push(p);
-        }
-      }); // At this point pntsSplit could have empty arrays, e.g. if there
+            pntsSplit[pntsSplit.length - 1].push(p);
+          }
+        });
+      } // At this point pntsSplit could have empty arrays, e.g. if there
       // where consecutive 'breaks' so weed these out.
+
 
       pntsSplit = pntsSplit.filter(function (a) {
         return a.length > 0;
@@ -8723,9 +8767,13 @@
     }
 
     metricsPlus.forEach(function (m, i) {
-      //####
+      // Filter to taxon and also filter out any that are outside min/max period if specified
       var dataFiltered = dataFilteredAll.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
+      }).filter(function (d) {
+        if (m.periodMin && d.period < m.periodMin) return false;
+        if (m.periodMax && d.period > m.periodMax) return false;
+        return true;
       }); // Construct data structure for points.
 
       var bErrorBars = m.errorBarUpper && m.errorBarLower;
@@ -8783,7 +8831,7 @@
           var ret = {
             x: x,
             period: d.period,
-            prop: "".concat(m.prop, "-").concat(m.index)
+            prop: m.id ? m.id : "".concat(m.prop, "-").concat(m.index)
           };
 
           if (bPoints) {
@@ -8930,7 +8978,7 @@
     });
   }
 
-  function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle) {
+  function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
     //console.log('dataTrendLinesFiltered', dataTrendLinesFiltered)
     // Construct data structure for supplementary trend lines.
     // TODO - if at some point we parameterise display styles,
@@ -8950,6 +8998,7 @@
       }
 
       return {
+        id: d.id,
         colour: d.colour ? d.colour : 'red',
         width: d.width ? d.width : '1',
         opacity: d.opacity ? d.opacity : '1',
@@ -8958,11 +9007,17 @@
       };
     }); // Supplementary trend lines
 
-    gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup).join(function (enter) {
+    gTemporal.selectAll('.temporal-trend-lines-sup').data(chartTrendLineSup, function (d) {
+      return d.id;
+    }).join(function (enter) {
       return enter.append('path') //.attr("d", d => d.pathEnter)
       .attr("d", function (d) {
         return d.path;
-      }).attr('class', 'temporal-trend-lines-sup').style('stroke', function (d) {
+      }).attr('class', function (d) {
+        return d.id ? "temporal-".concat(d.id) : '';
+      }).classed('temporal-trend-lines-sup', true).classed('temporal-graphic', function (d) {
+        return d.id ? true : false;
+      }).style('stroke', function (d) {
         return d.colour;
       }).style('stroke-width', function (d) {
         return d.width;
@@ -8986,6 +9041,7 @@
         return d.width;
       }), pTrans);
     });
+    addEventHandlers$3(gTemporal.selectAll(".temporal-trend-lines-sup"), 'id', svgChart, interactivity);
   }
 
   function generateSupVerticals(verticals, gTemporal, t, xScale, height, pTrans) {
@@ -9168,6 +9224,7 @@
       }
 
       return {
+        id: d.id,
         taxon: d.taxon,
         colour: d.colour,
         width: d.width,
@@ -9187,6 +9244,13 @@
 
     function v(d) {
       return typeof d === 'number';
+    }
+
+    function inRange(m, d) {
+      var ret = true;
+      if (m.periodMin && d.period < m.periodMin) ret = false;
+      if (m.periodMax && d.period > m.periodMax) ret = false;
+      return ret;
     } // This next section is all about working out the minimum and maximum Y values
     // (minYscale and maxYscale) which are required for generating the Y scale. It is 
     // complicated because it depends on the type of data used and the display
@@ -9196,7 +9260,7 @@
     var missing = [];
 
     if (typeof missingValues !== 'undefined' && missingValues !== 'break' && missingValues !== 'bridge') {
-      // Myabe need to be more nuanced here - only adding missing value if it is actually used
+      // Maybe need to be more nuanced here - only adding missing value if it is actually used
       // to replace missing values in dataset.
       missing = [Number(missingValues)];
     }
@@ -9234,18 +9298,24 @@
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.prop]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.bandUpper]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.bandUpper];
       })), _toConsumableArray(dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.errorBarUpper]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.errorBarUpper];
       }))));
@@ -9267,22 +9337,30 @@
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.prop]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.prop];
       })).concat(_toConsumableArray(dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.bandLower]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.bandLower];
       })), _toConsumableArray(dataFiltered.filter(function (d) {
         return m.taxon ? d.taxon === m.taxon : true;
       }).filter(function (d) {
         return v(d[m.errorBarLower]);
+      }).filter(function (d) {
+        return inRange(m, d);
       }).map(function (d) {
         return d[m.errorBarLower];
       })), _toConsumableArray(missing)));
-    });
+    }); //console.log('dataFiltered', dataFiltered)
+    //console.log('minMetricYs', minMetricYs)
+
     var minYA = minY !== null ? [minY] : [];
     var minYscale = Math.min.apply(Math, minYA.concat(_toConsumableArray(minMetricYs), _toConsumableArray(dataPointsFiltered.map(function (d) {
       return d.y;
@@ -9390,7 +9468,7 @@
     generateBars(dataFiltered, metricsPlus, gBars, t, xScale, yScale, height, pTrans, minYscale, svgChart, interactivity, chartStyle, composition);
     generateLines(dataFiltered, metricsPlus, gLines, t, xScale, yScale, height, pTrans, minYscale, periods, minPeriodTrans, maxPeriodTrans, lineInterpolator, missingValues, svgChart, interactivity, chartStyle, composition);
     generatePointsAndErrors(dataFiltered, metricsPlus, gPointsAndErrors, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity, composition);
-    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle);
+    generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity);
     generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans);
     generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans);
 
@@ -9503,7 +9581,7 @@
 
     var legendItems = cloneData(metricsPlus);
     legendItems.forEach(function (m) {
-      m.prop = "".concat(m.prop, "-").concat(m.index);
+      m.prop = m.id ? m.id : "".concat(m.prop, "-").concat(m.index);
     });
     var rows = 0;
     var lineWidth = -swatchSize;
@@ -9600,8 +9678,12 @@
    * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+   * <li> <b>id</b> - a unique identifier for the property. This is only necessary if metrics can be interactively added or removed on a chart.
+   * Under these circumstances, transitions and highlighting can get mixed up if each metric does not have a consistent unique id.
    * <li> <b>taxon</b> - an optional property that can be used to limit the metric display to a particular taxon. This
    * is meant to be used in conjunction with the opts.taxa value of [null] - see above.
+   * <li> <b>periodMin</b> a value for period, before which points should not be displayed.
+   * <li> <b>periodMax</b> a value for period, after which points should not be displayed.
    * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
    * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
@@ -9657,6 +9739,8 @@
    * @param {Array.<Object>} opts.dataTrendLines - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
+   * <li> <b>id<b> - if the trend line is to be associated with a particular metric, then set this value to match the
+   * id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
    * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
    * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
@@ -9916,6 +10000,8 @@
 
         return {
           index: i,
+          id: m.id,
+          // An optional metrics property - useful if metrics can change
           prop: m.prop,
           label: m.label ? m.label : m.prop,
           opacity: m.opacity !== 'undefined' ? m.opacity : 1,
@@ -9934,7 +10020,9 @@
           points: m.points,
           errorBarUpper: m.errorBarUpper,
           errorBarLower: m.errorBarLower,
-          taxon: m.taxon ? m.taxon : null
+          taxon: m.taxon ? m.taxon : null,
+          periodMin: m.periodMin,
+          periodMax: m.periodMax
         };
       });
       var grey = d3.scaleLinear().range(['#808080', '#E0E0E0']).domain([1, iFading]);
@@ -19924,7 +20012,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.18.0";
+  var version = "0.19.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

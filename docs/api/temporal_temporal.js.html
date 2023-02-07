@@ -79,8 +79,12 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
  * &lt;ul>
  * &lt;li> &lt;b>prop&lt;/b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+ * &lt;li> &lt;b>id&lt;/b> - a unique identifier for the property. This is only necessary if metrics can be interactively added or removed on a chart.
+ * Under these circumstances, transitions and highlighting can get mixed up if each metric does not have a consistent unique id.
  * &lt;li> &lt;b>taxon&lt;/b> - an optional property that can be used to limit the metric display to a particular taxon. This
  * is meant to be used in conjunction with the opts.taxa value of [null] - see above.
+ * &lt;li> &lt;b>periodMin&lt;/b> a value for period, before which points should not be displayed.
+ * &lt;li> &lt;b>periodMax&lt;/b> a value for period, after which points should not be displayed.
  * &lt;li> &lt;b>label&lt;/b> - a label for this metric. (Optional - the default label will be the property name.)
  * &lt;li> &lt;b>colour&lt;/b> - optional colour to give the graphic for this metric. Any accepted way of 
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
@@ -119,7 +123,7 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * &lt;ul>
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
- * &lt;li> &lt;b>period&lt;/b> - a number indicating a week or a year.
+ * &lt;li> &lt;b>period&lt;/b> - a number indicating a week, nonth or a year.
  * &lt;li> &lt;b>c1&lt;/b> - a metric for a given period (can have any name). 
  * &lt;li> &lt;b>c2&lt;/b> - a metric for a given period (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
@@ -128,7 +132,7 @@ import { highlightItem } from './highlightitem'
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * &lt;ul>
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
- * &lt;li> &lt;b>period&lt;/b> - a number indicating a week or a year.
+ * &lt;li> &lt;b>period&lt;/b> - a number indicating a week, month or a year.
  * &lt;li> &lt;b>y&lt;/b> - y value for a given period. 
  * &lt;li> &lt;b>upper&lt;/b> - a value for upper confidence band.
  * &lt;li> &lt;b>lower&lt;/b> - a value for lower confidence band.
@@ -136,9 +140,15 @@ import { highlightItem } from './highlightitem'
  * @param {Array.&lt;Object>} opts.dataTrendLines - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * &lt;ul>
+ * &lt;li> &lt;b>id&lt;b> - if the trend line is to be associated with a particular metric, then set this value to match the
+ * id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
- * &lt;li> &lt;b>gradient&lt;/b> - a gradient for the line.
- * &lt;li> &lt;b>intercept&lt;/b> - the y axis intercept value (at x = 0) for the line. 
+ * &lt;li> &lt;b>gradient&lt;/b> - a gradient for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2).
+ * &lt;li> &lt;b>intercept&lt;/b> - the y axis intercept value (at x = 0) for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2). 
+ * &lt;li> &lt;b>p1&lt;/b> - the lower period for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2). 
+ * &lt;li> &lt;b>p2&lt;/b> - the upper period for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2). 
+ * &lt;li> &lt;b>v1&lt;/b> - the lower value for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2). 
+ * &lt;li> &lt;b>v2&lt;/b> - the upper value for the line (either specify gradient &amp; intercept or p1, p2, v1 and v2). 
  * &lt;li> &lt;b>colour&lt;/b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * &lt;li> &lt;b>width&lt;/b> - the width the line the line in pixels. (Default - 1.)
  * &lt;li> &lt;b>opacity&lt;/b> - the opacity of the line. (Default - 1.)
@@ -285,10 +295,10 @@ export function temporal({
   function makeChart () {
 
     // Set min and max period from data if not set
-    if (!minPeriod) {
+    if (!minPeriod || minPeriod === Infinity) {
       minPeriod = Math.min(...data.map(d => d.period))
     }
-    if (!maxPeriod) {
+    if (!maxPeriod || maxPeriod === -Infinity) {
       maxPeriod = Math.max(...data.map(d => d.period))
     }
 
@@ -388,6 +398,7 @@ export function temporal({
       }
       return {
         index: i,
+        id: m.id, // An optional metrics property - useful if metrics can change
         prop: m.prop,
         label: m.label ?  m.label : m.prop,
         opacity: m.opacity !== 'undefined' ? m.opacity : 1,
@@ -406,7 +417,9 @@ export function temporal({
         points: m.points,
         errorBarUpper: m.errorBarUpper,
         errorBarLower: m.errorBarLower,
-        taxon: m.taxon ? m.taxon : null
+        taxon: m.taxon ? m.taxon : null,
+        periodMin: m.periodMin,
+        periodMax: m.periodMax
       }
     })
 
@@ -448,7 +461,8 @@ export function temporal({
   * @param {Array.&lt;Object>} opts.metrics - Specifies an array of metrics objects (see main interface for details).
   * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @param {Array.&lt;Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
-  * @param {Array.&lt;Object>} opts.verticals - Specifies an array of data objects for showing vertical lines and bands on a chart.
+  * @param {Array.&lt;Object>} opts.verticals - Specifies an array of data objects (see main interface for details).
+  * @param {Array.&lt;Object>} opts.trendLines - Specifies an array of data objects (see main interface for details).
   
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the temporal function&lt;/b>.
@@ -659,7 +673,7 @@ export function temporal({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

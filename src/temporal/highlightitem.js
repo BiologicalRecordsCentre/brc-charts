@@ -22,6 +22,8 @@ export function addEventHandlers(sel, prop, svgChart, interactivity) {
 
 export function highlightItem(id, highlight, svgChart) {
 
+  //console.log('highlightItem', id, highlight)
+
   svgChart.selectAll('.temporal-graphic')
     .classed('lowlight', false)
   svgChart.selectAll('.temporal-graphic')

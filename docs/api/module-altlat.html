@@ -1143,7 +1143,15 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)For each taxon, there is assumed to be a single data item for each rounded distance/altitude combination for which there is a metric value.<ul><li> <b>taxon</b> - The taxon for which this point refers.<li> <b>distance</b> - The distance north (OS northing) in kilometers rounded down to the nearest 50 km.<li> <b>altitude</b> - The altitude (asl) in metres rounded down to the nearest 100 m.<li> <b>metric</b> - a metric (number) for the given distance and altitude. </ul></td>
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+For each taxon, there is assumed to be a single data item for each rounded distance/altitude combination for which there is a metric value.
+<ul>
+<li> <b>taxon</b> - The taxon for which this point refers.
+<li> <b>distance</b> - The distance north (OS northing) in kilometers rounded down to the nearest 50 km.
+<li> <b>altitude</b> - The altitude (asl) in metres rounded down to the nearest 100 m.
+<li> <b>metric</b> - a metric (number) for the given distance and altitude. 
+</ul></td>
         </tr>
 
     
@@ -1166,7 +1174,14 @@
 
             
 
-            <td class="description last">Specifies an array of objects defining ranges for displaying the metrics.Each of the objects in the data array must be sepecified with the properties shown below. (The order affects how they appear in the legend.)<ul><li> <b>min</b> - The minimum metric value to be included in this range.<li> <b>max</b> - The maximum metric value to be included in this range.<li> <b>radius</b> - The radius of the dot to be drawn for this range.<li> <b>legend</b> - Text for the legend item for this range. </ul></td>
+            <td class="description last">Specifies an array of objects defining ranges for displaying the metrics.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order affects how they appear in the legend.)
+<ul>
+<li> <b>min</b> - The minimum metric value to be included in this range.
+<li> <b>max</b> - The maximum metric value to be included in this range.
+<li> <b>radius</b> - The radius of the dot to be drawn for this range.
+<li> <b>legend</b> - Text for the legend item for this range. 
+</ul></td>
         </tr>
 
     
@@ -1189,7 +1204,8 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created. (Default - [].)</td>
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for. 
+If empty, graphs for all taxa are created. (Default - [].)</td>
         </tr>
 
     
@@ -1303,7 +1319,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.This function takes a single list of tetrad references and returns a promise that resolves to adata object suitable for displaying with the chart.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+This function takes a single list of tetrad references and returns a promise that resolves to a
+data object suitable for displaying with the chart.
 </div>
 
 
@@ -1440,7 +1458,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+Return the full height of the chart svg.
 </div>
 
 
@@ -1528,7 +1547,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+Return the full width of the chart svg.
 </div>
 
 
@@ -1616,7 +1636,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.Download the chart as an image file.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+Download the chart as an image file.
 </div>
 
 
@@ -1691,7 +1712,10 @@
 
             
 
-            <td class="description last">Name of the file (without extension) to generate and download.If the filename is falsey (e.g. blank), it will not automatically download thefile. (Allows caller to do something else with the data URL which is returnedas the promise's resolved value.)</td>
+            <td class="description last">Name of the file (without extension) to generate and download.
+If the filename is falsey (e.g. blank), it will not automatically download the
+file. (Allows caller to do something else with the data URL which is returned
+as the promise's resolved value.)</td>
         </tr>
 
     
@@ -1798,7 +1822,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+options object, it's value is not changed.
 </div>
 
 
@@ -2259,7 +2285,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the altlat function</b>.This allows you to change the taxon displayed.
+    <b>This function is exposed as a method on the API returned from the altlat function</b>.
+This allows you to change the taxon displayed.
 </div>
 
 
@@ -2665,7 +2692,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

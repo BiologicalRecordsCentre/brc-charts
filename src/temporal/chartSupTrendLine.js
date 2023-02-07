@@ -1,6 +1,7 @@
 import { transPromise } from '../general'
+import { addEventHandlers } from './highlightitem'
 
-export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle) {
+export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemporal, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity) {
 
   //console.log('dataTrendLinesFiltered', dataTrendLinesFiltered)
 
@@ -21,6 +22,7 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
         x2 = xScale(d.p2)
       }
       return {
+        id: d.id,
         colour: d.colour ? d.colour : 'red',
         width: d.width ? d.width : '1',
         opacity: d.opacity ? d.opacity : '1',
@@ -31,12 +33,14 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
 
   // Supplementary trend lines
   gTemporal.selectAll('.temporal-trend-lines-sup')
-    .data(chartTrendLineSup)
+    .data(chartTrendLineSup, d => d.id)
     .join(
       enter => enter.append('path')
         //.attr("d", d => d.pathEnter)
         .attr("d", d => d.path)
-        .attr('class', 'temporal-trend-lines-sup')
+        .attr('class', d => d.id ? `temporal-${d.id}` : '')
+        .classed('temporal-trend-lines-sup', true)
+        .classed('temporal-graphic', d => d.id ? true : false)
         .style('stroke', d => d.colour)
         .style('stroke-width', d => d.width)
         .attr("opacity", 0),
@@ -53,4 +57,6 @@ export function generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gTemp
       .attr("opacity", d => d.opacity)
       .style('stroke', d => d.colour)
       .style('stroke-width', d => d.width), pTrans))
+
+  addEventHandlers(gTemporal.selectAll(".temporal-trend-lines-sup"), 'id', svgChart, interactivity)
 }

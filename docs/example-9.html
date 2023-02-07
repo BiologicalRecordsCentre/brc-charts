@@ -121,6 +121,7 @@
       optsInteractive.metrics = []
       for (i=0; i<metricNo; i++) {
         optsInteractive.metrics.push({
+          taxon: 'dummy',
           prop: `prop${i+1}`, 
           label: `prop${i+1}`, 
           colour: d3.schemeCategory10[(i+1%10)-1], 
@@ -209,32 +210,52 @@
         periodMax = 2020
         periodMin = 1990
       }
+
+      // To test different year periods for different metrics
+
+      optsInteractive.metrics.forEach(d=>{
+        if (periodType === 'year') {
+          d.periodMax = periodMax - 10 + Math.round(Math.random() * 10),
+          d.periodMin = periodMin + Math.round(Math.random() * 10)
+        } else {
+          d.periodMax = periodMax
+          d.periodMin = periodMin
+        }
+      })
+
       const nRange = nMax-nMin
-      const pRange = periodMax-periodMin
       optsInteractive.data = []
       let nPrev = {}
       for (i=periodMin; i<=periodMax; i++) {
         const p = {taxon: taxon, period: i}
         for (j=1; j<=metricNo; j++) {
           const prop = `prop${j}`
-          let n;
-          if (i===periodMin) {
-            n = Math.random() * nRange
+          if (i >= optsInteractive.metrics[j-1].periodMin && i <= optsInteractive.metrics[j-1].periodMax) {
+            let n;
+            if (i===optsInteractive.metrics[j-1].periodMin ) {
+              n = Math.random() * nRange
+            } else {
+              dn = Math.random() * nRange/10
+              n = Math.random() > 0.5 ? nPrev[prop] + dn : nPrev[prop] - dn
+            }
+            if (n < nMin) n = nMin
+            if (n > nMax) n = nMax
+            nPrev[prop] = n
+            p[prop] = n
+            p[`${prop}-upper`] = n + (Math.random() * 0.5 + 0.1) * n
+            p[`${prop}-lower`] = n - (Math.random() * 0.5 + 0.1) * n
           } else {
-            dn = Math.random() * nRange/10
-            n = Math.random() > 0.5 ? nPrev[prop] + dn : nPrev[prop] - dn
+            p[prop] = null
+            p[`${prop}-upper`] = null
+            p[`${prop}-lower`] = null
           }
-          if (n < nMin) n = nMin
-          if (n > nMax) n = nMax
-          nPrev[prop] = n
-          p[prop] = n
-          p[`${prop}-upper`] = n + (Math.random() * 0.5 + 0.1) * n
-          p[`${prop}-lower`] = n - (Math.random() * 0.5 + 0.1) * n
         }
         if (!withGaps || Math.random() < 0.9) {
           optsInteractive.data.push(p)
         } 
       }
+
+
       //console.log(optsInteractive.data)
     }
   </script>

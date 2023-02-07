@@ -832,7 +832,9 @@
 
             
 
-            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)</td>
+            <td class="description last">If set to 'on' line is drawn without ticks. 
+If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)</td>
         </tr>
 
     
@@ -855,7 +857,9 @@
 
             
 
-            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)</td>
+            <td class="description last">If set to 'on' line is drawn without ticks. 
+If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)</td>
         </tr>
 
     
@@ -970,7 +974,13 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>year</b> - a four digit number indicating a year.<li> <b>count</b> - a count for the given year. </ul></td>
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> <b>year</b> - a four digit number indicating a year.
+<li> <b>count</b> - a count for the given year. 
+</ul></td>
         </tr>
 
     
@@ -993,7 +1003,8 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. If empty, graphs for all taxa are created. (Default - [].)</td>
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for. 
+If empty, graphs for all taxa are created. (Default - [].)</td>
         </tr>
 
     
@@ -1016,7 +1027,8 @@
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)</td>
+            <td class="description last">An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
+If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)</td>
         </tr>
 
     
@@ -1085,7 +1097,8 @@
 
             
 
-            <td class="description last">Indicates whether or not to plot the actual number of records for each taxon and, if so, the style of chart to use.Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'bar'.)</td>
+            <td class="description last">Indicates whether or not to plot the actual number of records for each taxon and, if so, the style of chart to use.
+Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'bar'.)</td>
         </tr>
 
     
@@ -1108,7 +1121,8 @@
 
             
 
-            <td class="description last">Indicates whether or not to plot the proportion of all records in the group accounted for by each taxon and, if so, the style of chart to use.Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'line'.)</td>
+            <td class="description last">Indicates whether or not to plot the proportion of all records in the group accounted for by each taxon and, if so, the style of chart to use.
+Can be 'line' for a line graph or 'bar' for a bar chart. Any other value means that the metric will not be plotted. (Default - 'line'.)</td>
         </tr>
 
     
@@ -1504,7 +1518,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the trend function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the trend function</b>.
+Return the full height of the chart svg.
 </div>
 
 
@@ -1592,7 +1607,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the trend function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the trend function</b>.
+Return the full width of the chart svg.
 </div>
 
 
@@ -1680,7 +1696,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the trend function</b>.Download the chart as an image file.
+    <b>This function is exposed as a method on the API returned from the trend function</b>.
+Download the chart as an image file.
 </div>
 
 
@@ -1755,7 +1772,10 @@
 
             
 
-            <td class="description last">Name of the file (without extension) to generate and download.If the filename is falsey (e.g. blank), it will not automatically download thefile. (Allows caller to do something else with the data URL which is returnedas the promise's resolved value.)</td>
+            <td class="description last">Name of the file (without extension) to generate and download.
+If the filename is falsey (e.g. blank), it will not automatically download the
+file. (Allows caller to do something else with the data URL which is returned
+as the promise's resolved value.)</td>
         </tr>
 
     
@@ -1862,7 +1882,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the trend function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the trend function</b>.
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+options object, it's value is not changed.
 </div>
 
 
@@ -2301,7 +2323,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the trend function</b>.For single species charts, this allows you to change the taxon displayed.
+    <b>This function is exposed as a method on the API returned from the trend function</b>.
+For single species charts, this allows you to change the taxon displayed.
 </div>
 
 
@@ -2662,7 +2685,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

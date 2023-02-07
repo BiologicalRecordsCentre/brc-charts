@@ -878,7 +878,8 @@
 
             
 
-            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.If empty, graphs for all taxa are created.</td>
+            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
+If empty, graphs for all taxa are created.</td>
         </tr>
 
     
@@ -901,7 +902,19 @@
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the inputdata for which taxa and/or count accumulation lines should be generated on the chart.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).<li> <b>labelTaxa</b> - a label for the taxa accumulation metric.<li> <b>labelCounts</b> - a label for the counts accumulation metric.<li> <b>key</b> - a base key for this metric. If the options are updated using the setChartOpts API method, then if this value is set, it is used to uniquely identify the graphic elements. If not set, then the label is used.<li> <b>ColourTaxa</b> - optional colour to give the line for the taxa accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>ColourCounts</b> - optional colour to give the line for the counts accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.<li> <b>styleTaxa</b> - options style to give the line for the taxa accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.<li> <b>styleCounts</b> - options style to give the line for the counts accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.</ul></td>
+            <td class="description last">An array of objects, each describing a numeric property in the input
+data for which taxa and/or count accumulation lines should be generated on the chart.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
+<li> <b>labelTaxa</b> - a label for the taxa accumulation metric.
+<li> <b>labelCounts</b> - a label for the counts accumulation metric.
+<li> <b>key</b> - a base key for this metric. If the options are updated using the setChartOpts API method, then if this value is set, it is used to uniquely identify the graphic elements. If not set, then the label is used.
+<li> <b>ColourTaxa</b> - optional colour to give the line for the taxa accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+<li> <b>ColourCounts</b> - optional colour to give the line for the counts accumulation metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+<li> <b>styleTaxa</b> - options style to give the line for the taxa accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
+<li> <b>styleCounts</b> - options style to give the line for the counts accumulation metric. Accepted value is 'dashed' which results in a dashed line. Anything else results in a solid line.
+</ul></td>
         </tr>
 
     
@@ -924,7 +937,15 @@
 
             
 
-            <td class="description last">Specifies an array of data objects.Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)<ul><li> <b>taxon</b> - name of a taxon.<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.<li> <b>c1</b> - a count for a given time period (can have any name). <li> <b>c2</b> - a count for a given time period (can have any name).... - there can be any number of these count columns.</ul></td>
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
+<li> <b>c1</b> - a count for a given time period (can have any name). 
+<li> <b>c2</b> - a count for a given time period (can have any name).
+... - there can be any number of these count columns.
+</ul></td>
         </tr>
 
     
@@ -1038,7 +1059,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the accum function</b>.Return the full height of the chart svg.
+    <b>This function is exposed as a method on the API returned from the accum function</b>.
+Return the full height of the chart svg.
 </div>
 
 
@@ -1126,7 +1148,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the accum function</b>.Return the full width of the chart svg.
+    <b>This function is exposed as a method on the API returned from the accum function</b>.
+Return the full width of the chart svg.
 </div>
 
 
@@ -1214,7 +1237,8 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the accum function</b>.Download the chart as an image file.
+    <b>This function is exposed as a method on the API returned from the accum function</b>.
+Download the chart as an image file.
 </div>
 
 
@@ -1289,7 +1313,10 @@
 
             
 
-            <td class="description last">Name of the file (without extension) to generate and download.If the filename is falsey (e.g. blank), it will not automatically download thefile. (Allows caller to do something else with the data URL which is returnedas the promise's resolved value.)</td>
+            <td class="description last">Name of the file (without extension) to generate and download.
+If the filename is falsey (e.g. blank), it will not automatically download the
+file. (Allows caller to do something else with the data URL which is returned
+as the promise's resolved value.)</td>
         </tr>
 
     
@@ -1396,7 +1423,9 @@
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the accum function</b>.Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the options object, it's value is not changed.
+    <b>This function is exposed as a method on the API returned from the accum function</b>.
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+options object, it's value is not changed.
 </div>
 
 
@@ -2036,7 +2065,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Nov 17 2022 11:49:59 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
