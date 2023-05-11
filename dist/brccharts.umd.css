@@ -136,21 +136,6 @@ svg {
 
 .brc-chart-accum .y-axis.highlight {
     font-weight:bold;
-}.brc-chart-trend path {
-    fill: none;
-}
-
-.brc-chart-trend {
-    overflow: visible;
-}
-.brc-chart-trend .highlight {
-    /* stroke: black;
-    stroke-width: 3; */
-    opacity: 1;
-}
-
-.brc-chart-trend .lowlight {
-    opacity: 0.1;
 }
 .chart-overflow svg {
     overflow: visible;
@@ -211,6 +196,21 @@ svg circle.lowlighted {
 .brc-chart-links-popup ul {
     padding-left: 0;
     list-style-position: inside;
+}.brc-chart-trend path {
+    fill: none;
+}
+
+.brc-chart-trend {
+    overflow: visible;
+}
+.brc-chart-trend .highlight {
+    /* stroke: black;
+    stroke-width: 3; */
+    opacity: 1;
+}
+
+.brc-chart-trend .lowlight {
+    opacity: 0.1;
 }/* .brc-chart-yearly path {
     fill: none;
 } */
@@ -230,6 +230,12 @@ svg circle.lowlighted {
     opacity: 0.2;
     stroke-opacity: 0.2;
     fill-opacity: 0.2;
+}.brc-chart-altlat .highlight {
+    opacity: 1;
+}
+
+.brc-chart-altlat .lowlight {
+    opacity: 0.1;
 }.brc-chart-temporal {
     overflow: visible;
 }
@@ -247,10 +253,3 @@ svg circle.lowlighted {
 /* .brc-chart-temporal .brc-legend-item-rect.highlight {
     fill:black;
 } */
-.brc-chart-altlat .highlight {
-    opacity: 1;
-}
-
-.brc-chart-altlat .lowlight {
-    opacity: 0.1;
-}
