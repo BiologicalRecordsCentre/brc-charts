@@ -26,28 +26,28 @@ export function highlightItem(id, highlight, svgChart) {
   svgChart.selectAll('.phen-metric path')
     .classed('lowlight', highlight)
 
-  svgChart.selectAll(`.phen-metric-${gen.safeId(id)} path`)
+  svgChart.selectAll(`.phen-metric-${id} path`)
     .classed('lowlight', false)
 
   svgChart.selectAll(`.phen-metric path`)
     .classed('highlight', false)
 
-  if (gen.safeId(id)) {
-    svgChart.selectAll(`.phen-metric-${gen.safeId(id)} path`)
+  if (id) {
+    svgChart.selectAll(`.phen-metric-${id} path`)
       .classed('highlight', highlight)
   }
 
   svgChart.selectAll('.phen-metric rect')
     .classed('lowlight', highlight)
 
-  svgChart.selectAll(`.phen-metric-${gen.safeId(id)} rect`)
+  svgChart.selectAll(`.phen-metric-${id} rect`)
     .classed('lowlight', false)
 
   svgChart.selectAll(`.phen-metric rect`)
     .classed('highlight', false)
 
-  if (gen.safeId(id)) {
-    svgChart.selectAll(`.phen-metric-${gen.safeId(id)} rect`)
+  if (id) {
+    svgChart.selectAll(`.phen-metric-${id} rect`)
       .classed('highlight', highlight)
   }
   
@@ -55,12 +55,12 @@ export function highlightItem(id, highlight, svgChart) {
     .classed('lowlight', highlight)
 
   if (id) {
-    svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+    svgChart.selectAll(`.brc-legend-item-${id}`)
       .classed('lowlight', false)
   }
 
   if (id) {
-    svgChart.selectAll(`.brc-legend-item-${gen.safeId(id)}`)
+    svgChart.selectAll(`.brc-legend-item-${id}`)
       .classed('highlight', highlight)
   } else {
     svgChart.selectAll(`.brc-legend-item`)

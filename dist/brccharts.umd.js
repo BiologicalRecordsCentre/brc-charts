@@ -1652,29 +1652,29 @@
   }
   function highlightItem$1(id, highlight, svgChart) {
     svgChart.selectAll('.phen-metric path').classed('lowlight', highlight);
-    svgChart.selectAll(".phen-metric-".concat(safeId(id), " path")).classed('lowlight', false);
+    svgChart.selectAll(".phen-metric-".concat(id, " path")).classed('lowlight', false);
     svgChart.selectAll(".phen-metric path").classed('highlight', false);
 
-    if (safeId(id)) {
-      svgChart.selectAll(".phen-metric-".concat(safeId(id), " path")).classed('highlight', highlight);
+    if (id) {
+      svgChart.selectAll(".phen-metric-".concat(id, " path")).classed('highlight', highlight);
     }
 
     svgChart.selectAll('.phen-metric rect').classed('lowlight', highlight);
-    svgChart.selectAll(".phen-metric-".concat(safeId(id), " rect")).classed('lowlight', false);
+    svgChart.selectAll(".phen-metric-".concat(id, " rect")).classed('lowlight', false);
     svgChart.selectAll(".phen-metric rect").classed('highlight', false);
 
-    if (safeId(id)) {
-      svgChart.selectAll(".phen-metric-".concat(safeId(id), " rect")).classed('highlight', highlight);
+    if (id) {
+      svgChart.selectAll(".phen-metric-".concat(id, " rect")).classed('highlight', highlight);
     }
 
     svgChart.selectAll('.brc-legend-item').classed('lowlight', highlight);
 
     if (id) {
-      svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('lowlight', false);
+      svgChart.selectAll(".brc-legend-item-".concat(id)).classed('lowlight', false);
     }
 
     if (id) {
-      svgChart.selectAll(".brc-legend-item-".concat(safeId(id))).classed('highlight', highlight);
+      svgChart.selectAll(".brc-legend-item-".concat(id)).classed('highlight', highlight);
     } else {
       svgChart.selectAll(".brc-legend-item").classed('highlight', false);
     }
