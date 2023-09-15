@@ -32,9 +32,8 @@ export function bar({
 
   return {
     updateChart: updateChart,
-    saveImage: (asSvg, filename) => {
-      console.log('generate density image')
-      saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename) 
+    saveImage: (asSvg, filename, info) => {
+      return saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename, null, info)
     }
   }
 }
@@ -45,54 +44,60 @@ function makeChart(data, labelPosition, selector, elid, width, height, padding, 
   const svgHeight = height + margin.top + margin.bottom
 
   // Append the chart svg
-  const svgTrend = d3.select(`${selector}`)
+  const svgBar = d3.select(`${selector}`)
     .append('svg')
     .attr('id', elid)
     .style('font-family', 'sans-serif')
 
   // Size the chart svg
   if (expand) {
-    svgTrend.attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
+    // The original width and height may be needed elsewhere but if viewBox is used, will
+    // not be available through the width and height attributes of the svg, so add them as
+    // data attributes.
+    svgBar.attr('data-width', svgWidth)
+    svgBar.attr('data-height', svgHeight)
+
+    svgBar.attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
   } else {
-    svgTrend.attr("width", svgWidth)
-    svgTrend.attr("height", svgHeight)
+    svgBar.attr("width", svgWidth)
+    svgBar.attr("height", svgHeight)
   }
 
   // Axis labels
   if (axisLeftLabel) {
-    svgTrend.append("text")
+    svgBar.append("text")
       .attr("transform", `translate(${axisLabelFontSize},${margin.top + height/2}) rotate(270)`)
       .style("text-anchor", "middle")
       .style('font-size', axisLabelFontSize)
-      .text(axisLeftLabel) 
+      .text(axisLeftLabel)
   }
 
   // Create axes and position within SVG
   let tAxis, bAxis, lAxis, rAxis
   if (axisLeft === 'on' || axisLeft === 'tick') {
-    lAxis = svgTrend.append("g")
+    lAxis = svgBar.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
   }
   if (axisBottom === 'on' || axisBottom === 'tick') {
-    bAxis = svgTrend.append("g")
+    bAxis = svgBar.append("g")
       .attr("transform", `translate(${margin.left},${margin.top + height})`)
   }
   if (axisTop === 'on') {
-    tAxis = svgTrend.append("g")
+    tAxis = svgBar.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
   }
   if (axisRight === 'on') {
-    rAxis = svgTrend.append("g")
+    rAxis = svgBar.append("g")
       .attr("transform", `translate(${margin.left + width}, ${margin.top})`)
   }
 
   // Create g element for chart elements
-  const gChart = svgTrend.append("g")
+  const gChart = svgBar.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
   // Create the API function for updating chart
-  const updateChart = makeUpdateChart(labelPosition, svgTrend, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart)
-  
+  const updateChart = makeUpdateChart(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart)
+
   // Update the chart with current data
   updateChart(data)
 
@@ -128,9 +133,9 @@ function makeUpdateChart(
     const xScale = d3.scaleLinear().domain([0, 1]).range([0, width])
     const yScale = d3.scaleLinear().domain([yMaxBuff, 0]).range([0, height])
     const xScaleBottom = d3.scaleBand()
-      .domain(data.map(d => d.label))      
-      .range([0, width])                       
-      .padding([padding])  
+      .domain(data.map(d => d.label))
+      .range([0, width])
+      .padding([padding])
 
     // Generate axes
     if (tAxis) {
@@ -146,7 +151,7 @@ function makeUpdateChart(
         .scale(xScaleBottom)
         .tickSizeOuter(0)), pTrans)
 
-      const labels = bAxis.selectAll("text")	
+      const labels = bAxis.selectAll("text")
       if (labelPosition["text-anchor"]) labels.style("text-anchor", labelPosition["text-anchor"])
       if (labelPosition["dx"]) labels.attr("dx", labelPosition["dx"])
       if (labelPosition["dy"]) labels.attr("dy", labelPosition["dy"])
@@ -181,7 +186,7 @@ function makeUpdateChart(
       d.width = xScaleBottom.bandwidth()
       d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero
     })
-    
+
     pTrans = [...d3Bars(data, gChart, t), ...pTrans]
 
     return Promise.allSettled(pTrans)
@@ -245,6 +250,6 @@ function d3Bars(data, gChart, t) {
       .attr('y', d => d.y)
       .attr('width', d => d.width)
       .attr('height', d => d.height), pTrans))
-  
+
   return pTrans
 }

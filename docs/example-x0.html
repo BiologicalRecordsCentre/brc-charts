@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>General example</title>
+</head>
+<body>
+
+  <button onclick="Download()">Download image</button>
+  <div id="chart1"></div>
+
+  <!--D3 JS required exernal dependency of BRC Charts library-->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!--BRC Charts library JS and CSS-->
+  <script src="./../dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+
+  <script>
+    bar = brccharts.bar({
+    selector: '#chart1',
+    data: [
+    {
+        "value": 0,
+        "label": "Strong decline",
+        "stroke": "grey",
+        "strokeWidth": 1,
+        "fill": "rgb(230,230,230)",
+        "x": 6.862745098039198,
+        "y": 250,
+        "ye": 250,
+        "width": 61.76470588235294,
+        "height": 0
+    },
+    {
+        "value": 0,
+        "label": "Moderate decline",
+        "stroke": "grey",
+        "strokeWidth": 1,
+        "fill": "rgb(230,230,230)",
+        "x": 75.49019607843135,
+        "y": 250,
+        "ye": 250,
+        "width": 61.76470588235294,
+        "height": 0
+    },
+    {
+        "value": 0,
+        "label": "Stable",
+        "stroke": "grey",
+        "strokeWidth": 1,
+        "fill": "rgb(230,230,230)",
+        "x": 144.1176470588235,
+        "y": 250,
+        "ye": 250,
+        "width": 61.76470588235294,
+        "height": 0
+    },
+    {
+        "value": 0,
+        "label": "Moderate increase",
+        "stroke": "grey",
+        "strokeWidth": 1,
+        "fill": "rgb(230,230,230)",
+        "x": 212.74509803921566,
+        "y": 250,
+        "ye": 250,
+        "width": 61.76470588235294,
+        "height": 0
+    },
+    {
+        "value": 100,
+        "label": "Strong increase",
+        "stroke": "grey",
+        "strokeWidth": 1,
+        "fill": "rgb(230,230,230)",
+        "x": 281.37254901960785,
+        "y": 0,
+        "ye": 250,
+        "width": 61.76470588235294,
+        "height": 250
+    }
+],
+    width: 350,
+    height: 250,
+    padding: 0.1,
+    margin: {left: 50, right: 10, top: 10, bottom: 90},
+    expand: false,
+    axisLeft: 'tick',
+    axisBottom: 'tick',
+    axisRight: 'none',
+    axisTop: 'none',
+    axisLeftLabel: 'Frequency',
+    axisLabelFontSize: 12,
+    labelPosition: {'text-anchor': 'end', dx: '-1em', dy: '0.2em', transform: 'rotate(-55)'}
+  })
+
+  function Download() {
+
+    const info = {
+      text: 'Info test mary had a little lamb whose fleece was white as snow.',
+      textFormatted: '',
+      margin: 10,
+      fontSize: 10,
+      //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+    }
+
+    ret = bar.saveImage(false, 'bar-test', info)
+      .then((dataUrl) => {
+        //alert('download complete')
+        console.log(dataUrl)
+      })
+  }
+  </script>
+</body>
+</html>

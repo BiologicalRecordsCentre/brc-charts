@@ -38,9 +38,8 @@ export function density({
 
   return {
     updateChart: updateChart,
-    saveImage: (asSvg, filename) => {
-      console.log('generate density image')
-      saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename) 
+    saveImage: (asSvg, filename, info) => {
+      return saveChartImage(d3.select(`#${elid}`), expand, asSvg, filename, null, info)
     }
   }
 }
@@ -65,6 +64,11 @@ function makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, heig
 
   // Size the chart svg
   if (expand) {
+    // The original width and height may be needed elsewhere but if viewBox is used, will
+    // not be available through the width and height attributes of the svg, so add them as
+    // data attributes.
+    svgDensity.attr('data-width', svgWidth)
+    svgDensity.attr('data-height', svgHeight)
     svgDensity.attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`)
   } else {
     svgDensity.attr("width", svgWidth)
@@ -77,21 +81,21 @@ function makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, heig
       .attr("transform", `translate(${axisLabelFontSize},${margin.top + height/2}) rotate(270)`)
       .style("text-anchor", "middle")
       .style('font-size', axisLabelFontSize)
-      .text(axisLeftLabel) 
+      .text(axisLeftLabel)
   }
   if (axisBottomLabel) {
     svgDensity.append("text")
       .attr("transform", `translate(${margin.left + width/2},${margin.top + height + margin.bottom - axisLabelFontSize})`)
       .style("text-anchor", "middle")
       .style('font-size', axisLabelFontSize)
-      .text(axisBottomLabel) 
+      .text(axisBottomLabel)
   }
 
   // Create axes and position within SVG
   let tAxis, bAxis, lAxis, rAxis
   if (axisLeft === 'on' || axisLeft === 'tick') {
     lAxis = svgDensity.append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`) 
+      .attr("transform", `translate(${margin.left},${margin.top})`)
   }
   if (axisBottom === 'on' || axisBottom === 'tick') {
     bAxis = svgDensity.append("g")
@@ -114,7 +118,7 @@ function makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, heig
 
   // Create the API function for updating chart
   const updateChart = makeUpdateChart(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles)
-  
+
   // Update the chart with current data
   updateChart(data, xMin, xMax, xlines, ylines, scaleHeight)
 
@@ -146,13 +150,13 @@ function makeUpdateChart(
     // Set ylines and xlines to empty array if not set
     if (!xlines) xlines = []
     if (!ylines) ylines = []
-    
+
     // Data - do any data pre-processing here
     const dataWork = data
-    
+
     // Adjustments - do any min/max adjustments here
     let xMinBuff, xMaxBuff
-    if (xMin !== null && xMax !== null && typeof xMin !== 'undefined' && typeof xMax !== 'undefined') { 
+    if (xMin !== null && xMax !== null && typeof xMin !== 'undefined' && typeof xMax !== 'undefined') {
       xMinBuff = xMin
       xMaxBuff = xMax
     } else {
@@ -218,7 +222,7 @@ function makeUpdateChart(
     if (tAxis) {
        transPromise(tAxis.transition(t)
         .call(d3.axisTop()
-        .scale(data.length ? custScale : xScale) 
+        .scale(data.length ? custScale : xScale)
         .tickSize([0])
         .ticks(5)
         .tickSizeOuter(0)), pTrans)
@@ -263,7 +267,7 @@ function makeUpdateChart(
       // console.log('densities', densities[0])
       // console.log('linepath', linePath(densities[0]))
     }
-    
+
     // Generate density lines
     pTrans = [...pTrans, ...d3Density(gChart1, densities, linePaths, styles, t)]
 

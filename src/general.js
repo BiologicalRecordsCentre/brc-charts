@@ -11,7 +11,7 @@ export function cloneData(data) {
 
 export const month2day = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 366]
 const ysDomain = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  
+
 function filterYsDomain(monthScaleRange) {
   const minMonth = monthScaleRange[0]
   const maxMonth = monthScaleRange[1]
@@ -89,7 +89,7 @@ export function xAxisMonth(width, ticks, fontSize, font) {
 }
 
 export function xAxisMonthNoText(width, monthScaleRange) {
- 
+
   const filteredYsDomain = filterYsDomain(monthScaleRange)
   const filteredMonth2day = filterMonth2day(monthScaleRange)
   const dayRange = getDayRange(monthScaleRange)
@@ -103,7 +103,7 @@ export function xAxisMonthNoText(width, monthScaleRange) {
   xAxis.ticks(filteredYsDomain)
     .tickSize(width >= 200 ? 13 : 5, 0)
     .tickFormat(() => '')
- 
+
   return xAxis
 }
 
@@ -119,7 +119,7 @@ export function xAxisMonthText(width, ticks, fontSize, font, monthScaleRange) {
     monthMid2day.push((filteredMonth2day[i] + (filteredMonth2day[i+1]-filteredMonth2day[i])/2))
   }
   monthMid2day.push(dayRange + 1)
-  
+
   const ysRange = monthMid2day.map(d => (d-1)/dayRange * width)
   const xScaleTime = d3.scaleOrdinal().domain(filteredYsDomain).range(ysRange)
 
@@ -150,7 +150,7 @@ export function xAxisMonthText(width, ticks, fontSize, font, monthScaleRange) {
   if (ticks) {
     xAxis.ticks(filteredYsDomain)
       .tickSize(0)
-      .tickFormat(month => { 
+      .tickFormat(month => {
         if (month === '') {
           return ''
         } else if (width / monthNumber > maxFullMonth + 4) {
@@ -198,7 +198,7 @@ export function xAxisYear(width, ticks, min, max, bars) {
     } else {
       ticks = 2
     }
-    xAxis.ticks(ticks) 
+    xAxis.ticks(ticks)
 
     xAxis.tickFormat(year => year.toString())
 
@@ -250,7 +250,7 @@ export function makeText (text, classText, fontSize, textAlign, textWidth, svg) 
   if (!svgText.size()) {
     svgText = svg.append('svg').attr("class", classText)
   }
-  
+
   const lines = wrapText(text, svgText, textWidth, fontSize)
 
   const uText = svgText.selectAll(`.${classText}-line`)
@@ -305,39 +305,52 @@ export function positionMainElements(svg, expand, headPad) {
     svgSubtitle.attr("y", Number(svgTitle.attr("height")))
     svgChart.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space)
     svgFooter.attr("y", Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + space +  Number(svgChart.attr("height")))
-  
+
     const height = Number(svgTitle.attr("height")) +
-      Number(svgSubtitle.attr("height")) + 
-      Number(svgChart.attr("height")) + 
+      Number(svgSubtitle.attr("height")) +
+      Number(svgChart.attr("height")) +
       Number(svgFooter.attr("height")) +
       2 * space
 
     if (expand) {
+      // The original width and height may be needed elsewhere but if viewBox is used, will
+      // not be available through the width and height attributes of the svg, so add them as
+      // data attributes.
+      svg.attr('data-width', svgChart.attr("width"))
+      svg.attr('data-height', height)
+
       svg.attr("viewBox", "0 0 " + Number(svgChart.attr("width")) + " " +  height)
     } else {
       svg.attr("width", Number(svgChart.attr("width")))
       svg.attr("height", height)
     }
-
 }
 
-export function saveChartImage(svg, expand, asSvg, filename, font) {
+export function saveChartImage(svg, expand, asSvg, filename, font, info) {
+
+  //console.log('saveChartImage', info)
+
+  const pInfoAdded = addInfo(svg, expand, info)
 
   return new Promise((resolve) => {
-    if (asSvg) {
-      const blob1 =  serialize(svg, font)
-      if(filename) {
-        download(blob1, filename)
-      }
-      resolve(blob1)
-    } else {
-      rasterize(svg).then(blob2 => {
+    pInfoAdded.then(() => {
+      if (asSvg) {
+        const blob1 =  serialize(svg, font)
         if(filename) {
-          download(blob2, filename)
+          download(blob1, filename)
         }
-        resolve(blob2) 
-      })
-    }
+        removeInfo(svg, expand, info)
+        resolve(blob1)
+      } else {
+        rasterize(svg).then(blob2 => {
+          if(filename) {
+            download(blob2, filename, info)
+          }
+          removeInfo(svg, expand, info)
+          resolve(blob2)
+        })
+      }
+    })
   })
 
   function download(data, filename) {
@@ -350,21 +363,21 @@ export function saveChartImage(svg, expand, asSvg, filename, font) {
     const xmlns = "http://www.w3.org/2000/xmlns/"
     const xlinkns = "http://www.w3.org/1999/xlink"
     const svgns = "http://www.w3.org/2000/svg"
-  
+
     const domSvg = svg.node()
     const cloneSvg = domSvg.cloneNode(true)
     const d3Clone = d3.select(cloneSvg)
     // Explicitly change text in clone to required font
     const fontOut = font ? font  : 'Arial, Helvetica, sans-serif'
     d3Clone.selectAll('text').style(fontOut)
-  
+
     cloneSvg.setAttributeNS(xmlns, "xmlns", svgns)
     cloneSvg.setAttributeNS(xmlns, "xmlns:xlink", xlinkns)
     const serializer = new window.XMLSerializer
     const string = serializer.serializeToString(cloneSvg)
     return new Blob([string], {type: "image/svg+xml"})
   }
-  
+
   function rasterize(svg, font) {
     let resolve, reject
     const domSvg = svg.node()
@@ -399,14 +412,182 @@ export function saveChartImage(svg, expand, asSvg, filename, font) {
     // Dispatch click event on the link
     // This is necessary as link.click() does not work on the latest firefox
     link.dispatchEvent(
-      new MouseEvent('click', { 
-        bubbles: true, 
-        cancelable: true, 
-        view: window 
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
       })
     )
     // Remove link from body
     document.body.removeChild(link)
+  }
+}
+
+function addInfo(svg, expand, svgInfo) {
+
+  if (!svgInfo) return Promise.resolve()
+
+  let infoText
+  if (svgInfo.text) {
+    infoText = svgInfo.text.split(' ')
+  } else if (svgInfo.textFormatted && svgInfo.textFormatted.length) {
+    infoText = []
+    svgInfo.textFormatted.forEach(it => {
+      const format = it.substr(0,2)
+      infoText = [...infoText, ...it.substr(2).split(' ').map(its => `${format}${its}`)].filter(it => it.length)
+    })
+  } else {
+    infoText = []
+  }
+
+  //console.log('infoText', infoText)
+
+  const margin = svgInfo.margin ? svgInfo.margin : 0
+  const fontSize = svgInfo.fontSize ? svgInfo.fontSize : 12
+
+  // Current dimensions of chart SVG
+  let width, height
+  if (expand) {
+    height = Number(svg.attr("data-height"))
+    width = Number(svg.attr("data-width"))
+  } else {
+    height = Number(svg.attr("height"))
+    width = Number(svg.attr("width"))
+  }
+
+  //console.log('width and height', width, height)
+
+  // Create svg g and text objects and positions
+  const gInfo = svg.append('g')
+  gInfo.attr('id', 'svgInfo')
+  gInfo.attr('transform', `translate(0 ${height})`)
+
+  let mask = gInfo.append('rect').attr('x', 0).attr('y', 0).attr('width', width)
+    .style('fill', 'white')
+
+  let tInfo = gInfo.append('text').attr('x', margin).attr('y', margin)
+  let yLastLine = margin
+
+  infoText.forEach((w,i) => {
+    const ts = tInfo.append('tspan').style('font-size', fontSize).style('font-family', 'Arial').style('alignment-baseline', 'hanging')
+    let word
+    if (w.startsWith('<i>')) {
+      ts.style('font-style', 'italic')
+      word = w.replace('<i>', '').replace('</i>', '')
+    } else if (w.startsWith('i#')) {
+      ts.style('font-style', 'italic')
+      word = w.replace('i#', '')
+    } else if (w.startsWith('b#')) {
+      ts.style('font-weight', 'bold')
+      word = w.replace('b#', '')
+    } else if (w.startsWith('I#')) {
+      ts.style('font-weight', 'bold')
+      ts.style('font-style', 'italic')
+      word = w.replace('I#', '')
+    } else if (w.startsWith('n#')) {
+      word = w.replace('n#', '')
+    } else {
+      word = w
+    }
+    if (i) {
+      ts.text(` ${word}`)
+    } else {
+      ts.text(word)
+    }
+
+    if (tInfo.node().getBBox().width > width - 2 * margin) {
+      // If the latest word has caused the text element
+      // to exceed the width of the SVG, remove it and
+      // create a new line for it.
+      ts.remove()
+      const lineHeight = tInfo.node().getBBox().height
+      tInfo = gInfo.append('text')
+      yLastLine = yLastLine + lineHeight
+      tInfo.attr('x', margin)
+      tInfo.attr('y', yLastLine)
+      const tsn = tInfo.append('tspan').style('font-size', fontSize).style('font-family', 'Arial').style('alignment-baseline', 'hanging')
+      tsn.html(ts.html())
+    }
+  })
+
+  const infoHeight = yLastLine + tInfo.node().getBBox().height + margin
+  const h = height+infoHeight
+
+  //svg.attr('height', h)
+  if (expand) {
+    svg.attr("viewBox", "0 0 " + width + " " +  h)
+  } else {
+    svg.attr("height", h)
+  }
+
+  if (svgInfo.img) {
+    // Image
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = function() {
+
+        let scale = 1
+        if (this.width > width - 2 * margin) {
+          scale = (width - 2 * margin) / this.width
+        }
+        const imgWidth = scale * this.width
+        const imgHeight = scale * this.height
+
+        const iInfo = gInfo.append('image')
+        iInfo.attr('x', margin)
+        iInfo.attr('y', infoHeight)
+        iInfo.attr('width', imgWidth)
+        iInfo.attr('height', imgHeight)
+        // Use dataURL rather than file path URL so that image can be
+        // serialised when using the saveMap method
+        iInfo.attr('href', getDataUrl(this))
+
+        infoHeight = infoHeight + margin + imgHeight
+        //svg.attr('height', height + infoHeight)
+        if (expand) {
+          svg.attr("viewBox", "0 0 " + width + " " +  (height  + infoHeight))
+        } else {
+          svg.attr("height", height + infoHeight)
+        }
+
+        mask.style("height", infoHeight)
+
+        resolve()
+      }
+      img.src = svgInfo.img
+    })
+  } else {
+    // No image - return resolved promise
+    return Promise.resolve()
+  }
+
+  function getDataUrl(img) {
+    // Create canvas
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    // Set width and height
+    canvas.width = img.width
+    canvas.height = img.height
+    // Draw the image - use png format to support background transparency
+    ctx.drawImage(img, 0, 0)
+    return canvas.toDataURL('image/png')
+  }
+}
+
+function removeInfo(svg, expand, svgInfo) {
+
+  //console.log('svgInfo', svgInfo)
+  if (!svgInfo) return Promise.resolve()
+
+  svg.select('#svgInfo').remove()
+
+  if (expand) {
+    const height = Number(svg.attr("data-height"))
+    const width = Number(svg.attr("data-width"))
+    svg.attr("viewBox", "0 0 " + width + " " +  height)
+  } else {
+    const height = Number(svg.attr("height"))
+    svg.attr("height", height)
   }
 }
 
@@ -432,9 +613,9 @@ export function temporalScale(chartStyle, periodType, minPeriod, maxPeriod, xPad
   // This function returns an object that provides all the functionality of a d3 scale but it is
   // tailored to the needs of the temporal chart. The return object has the following properties:
   // * d3 - this is the raw d3 scale function that lies at the hear of all the functionality.
-  // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary 
+  // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary
   //   preprocessing on passed value before passing to the d3 scale bandwidth function.
-  // * v - a replacement for the d3 scale function which does any necessary 
+  // * v - a replacement for the d3 scale function which does any necessary
   //   preprocessing on passed value before passing to the d3 scale function.
   let periods = []
   for (let i = minPeriod; i <= maxPeriod; i++) {
@@ -508,11 +689,11 @@ function periodToWidth(p, periodType, xScale) {
 }
 
 export function spreadScale(minY, maxY, yPadding, metrics, height, composition, spreadOverlap) {
-  
+
   let fn, fnAxis, tickFormat, spreadHeight
 
   if (composition === 'spread' && metrics.length > 1) {
-    
+
     // Work out height in 'sread units' - su.
     const overlap = Number(spreadOverlap)
     const bottom = 0.2
@@ -520,9 +701,9 @@ export function spreadScale(minY, maxY, yPadding, metrics, height, composition, 
     const suLastMetric = isFinite(maxmax) ? metrics[metrics.length-1].maxValue / maxmax * (1 + overlap) : 0
     const suPenultimateMetric = isFinite(maxmax) ? metrics[metrics.length-2].maxValue / maxmax * (1 + overlap) - 1 : 0
     const suLast = Math.max(suLastMetric, suPenultimateMetric)
-    const suHeight = metrics.length - 1 + suLast + bottom 
+    const suHeight = metrics.length - 1 + suLast + bottom
     const spreadOffset = height / suHeight
-    spreadHeight = (1 + overlap) * spreadOffset 
+    spreadHeight = (1 + overlap) * spreadOffset
 
     fn = (v, iMetric) => {
       const d3fn = d3.scaleLinear().domain([minY - yPadding, maxY + yPadding]).range([spreadHeight, 0])
@@ -553,7 +734,7 @@ export function spreadScale(minY, maxY, yPadding, metrics, height, composition, 
     if (maxY-minY > 20) {
       tickFormat = 'd'
     } else if (maxY-minY > 1) {
-      tickFormat = '.1f' 
+      tickFormat = '.1f'
     } else {
       tickFormat = '.2f'
     }
@@ -567,7 +748,7 @@ export function spreadScale(minY, maxY, yPadding, metrics, height, composition, 
 }
 
 export function addG (id, g) {
-  if (g.select(`#${id}`).size()) { 
+  if (g.select(`#${id}`).size()) {
     return g.select(`#${id}`)
   } else {
     return g.append('g').attr('id', id)

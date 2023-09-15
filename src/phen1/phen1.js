@@ -8,7 +8,7 @@ import { preProcessMetrics } from './metricsplus'
 import { makeLegend } from './legend'
 
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
@@ -56,7 +56,7 @@ import { makeLegend } from './legend'
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
  * data for which a line should be generated on the chart.
@@ -75,7 +75,7 @@ import { makeLegend } from './legend'
  * <li> <b>taxon</b> - name of a taxon.
  * <li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
  * <li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
- * <li> <b>c1</b> - a count for a given time period (can have any name). 
+ * <li> <b>c1</b> - a count for a given time period (can have any name).
  * <li> <b>c2</b> - a count for a given time period (can have any name).
  * ... - there must be at least one count column, but there can be any number of them.
  * </ul>
@@ -147,10 +147,10 @@ export function phen1({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible')
-  
+
   makeChart()
 
-  // Texts must come after chart because 
+  // Texts must come after chart because
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -181,7 +181,7 @@ export function phen1({
     const pTrans = []
 
     const svgsTaxa = taxa.map(t => {
-      return makePhen (t, taxa, data, metrics, svgChart, width, height, 
+      return makePhen (t, taxa, data, metrics, svgChart, width, height,
         ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
         style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
         axisLabelFontSize, axisLeftLabel, interactivity, pTrans, monthFontSize, font)
@@ -197,7 +197,7 @@ export function phen1({
     }
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -228,7 +228,7 @@ export function phen1({
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -260,7 +260,7 @@ export function phen1({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-    
+
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
@@ -342,17 +342,17 @@ export function phen1({
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
   /**
    * @typedef {Object} api
    * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

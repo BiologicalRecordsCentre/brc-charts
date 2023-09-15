@@ -9,7 +9,7 @@ import { highlightItem} from './highlightitem'
 //https://www.d3-graph-gallery.com/graph/pie_annotation.html
 //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
@@ -49,7 +49,7 @@ import { highlightItem} from './highlightitem'
  * <li> <b>set</b> - a number to indicate to which 'dataset' this item belongs. Used when concentric donuts are requred.
  * <li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.
  * <li> <b>number</b> - a numeric value associated with the item.
- * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, 
+ * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500,
  * RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.
  * <li> <b>image</b> - this optional property allows you to specify the url of an image file
  * which can be displayed when a user selects the associated item.
@@ -120,7 +120,7 @@ export function pie({
 
   makeChart(data)
   const textWidth = Number(svgChart.attr("width"))
-  // Texts must come after chart and legend because the 
+  // Texts must come after chart and legend because the
   // width of those is required to do wrap text
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
   gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
@@ -130,7 +130,7 @@ export function pie({
   function makeChart(data) {
 
     dataPrev = makePie (data, dataPrev, sort, strokeWidth, radius, innerRadius, innerRadius2, svg, svgChart, imageWidth, interactivity, duration, label, labelColour, labelFontSize, callback)
-    
+
     makeLegend (data, svg, svgChart, legendWidth, labelFontSize, legendSwatchSize, legendSwatchGap, legendTitle, legendTitle2, legendTitleFontSize, duration, interactivity, dataPrev, imageWidth, callback)
     const svgPie = svgChart.select('.brc-chart-pie')
     const svgLegend = svgChart.select('.brc-chart-legend')
@@ -178,7 +178,7 @@ export function pie({
   * @param {string} opts.legendTitle2 - Specifies text, if required, for a legend title for second dataset (inner concentric donut).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects.
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -273,16 +273,16 @@ export function pie({
   * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
   /**
    * @typedef {Object} api
    * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

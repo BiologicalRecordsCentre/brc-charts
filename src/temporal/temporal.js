@@ -6,7 +6,7 @@ import { makeTemporal } from './makeTemporal'
 import { makeLegend } from './legend'
 import { highlightItem } from './highlightitem'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'temporal-chart'.)
@@ -36,9 +36,9 @@ import { highlightItem } from './highlightitem'
  * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
  * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
- * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -58,45 +58,45 @@ import { highlightItem } from './highlightitem'
  * <li> <b>periodMin</b> a value for period, before which points should not be displayed.
  * <li> <b>periodMax</b> a value for period, after which points should not be displayed.
  * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
- * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+ * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * (Optional - default is 'blue'.)
- * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+ * <li> <b>opacity</b> - optional opacity to give the graphic for this metric.
  * (Optional - default is 1.)
- * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+ * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph.
  * (Optional - default is 1.)
- * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of 
+ * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
- * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric. 
+ * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric.
  * (Optional - default is 0.5.)
  * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
- * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
+ * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
  * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
- * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
- * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
+ * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'silver'.)
- * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'grey'.)
- * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+ * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
  * (Optional - default is 0.5.)
- * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+ * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
  * (Optional - default is 1.)
- * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+ * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
  * (Optional - default is 1.)
  * <li> <b>points</b> - a boolean value which indicates whether or not a point is to be displayed (over the line or bar).
  * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
- * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+ * of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
 * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
- * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+ * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>period</b> - a number indicating a week, nonth or a year.
- * <li> <b>c1</b> - a metric for a given period (can have any name). 
+ * <li> <b>c1</b> - a metric for a given period (can have any name).
  * <li> <b>c2</b> - a metric for a given period (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
  * </ul>
@@ -105,7 +105,7 @@ import { highlightItem } from './highlightitem'
  * <ul>
  * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>period</b> - a number indicating a week, month or a year.
- * <li> <b>y</b> - y value for a given period. 
+ * <li> <b>y</b> - y value for a given period.
  * <li> <b>upper</b> - a value for upper confidence band.
  * <li> <b>lower</b> - a value for lower confidence band.
  * </ul>
@@ -116,11 +116,11 @@ import { highlightItem } from './highlightitem'
  * id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
  * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
  * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
- * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
- * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
- * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
- * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
- * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+ * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+ * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+ * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+ * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+ * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
  * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
  * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -132,12 +132,12 @@ import { highlightItem } from './highlightitem'
  * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
  * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
- * than map to the first day for each month.) 
+ * than map to the first day for each month.)
  * <li> <b>width</b> - the width of the band to be drawn. If absent or zero, then a line is drawn rather than a band. Specified in the
- * same units as the 'start' value. (Default - 0.). 
+ * same units as the 'start' value. (Default - 0.).
  * </ul>
  * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created. If set to an array with a single null value - [null] - then
  * each metric must have a property called 'taxon' which specifies the taxon to be displayed for that metric.
  * In this way, multiple taxa can be displayed on the same graph. (Default - [].)
@@ -201,7 +201,7 @@ export function temporal({
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
-  chartStyle = 'bar', 
+  chartStyle = 'bar',
   headPad = 0,
   duration = 1000,
   interactivity = 'none',
@@ -256,7 +256,7 @@ export function temporal({
 
   preProcessMetrics()
   makeChart()
-  // Texts must come after chartbecause 
+  // Texts must come after chartbecause
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -341,7 +341,7 @@ export function temporal({
     ) + subChartPad : 0
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -356,9 +356,9 @@ export function temporal({
   }
 
   function preProcessMetrics () {
-    // Look for 'fading' colour in taxa and colour appropriately 
+    // Look for 'fading' colour in taxa and colour appropriately
     // in fading shades of grey.
-    
+
     let iFading = 0
     metricsPlus = metrics.map((m,i) => {
       let iFade, strokeWidth
@@ -435,10 +435,10 @@ export function temporal({
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.verticals - Specifies an array of data objects (see main interface for details).
   * @param {Array.<Object>} opts.trendLines - Specifies an array of data objects (see main interface for details).
-  
+
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -540,7 +540,7 @@ export function temporal({
       chartStyle = opts.chartStyle
       remakeChart = true
     }
-    
+
     if ('taxa' in opts) {
       taxa = opts.taxa
       highlightItem(null, false, svgChart)
@@ -608,18 +608,18 @@ export function temporal({
   * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
 
   /**
    * @typedef {Object} api
    * @property {module:temporal~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:temporal~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:temporal~setChartOpts} setChartOpts - Sets various options for the chart. 
-   * @property {module:temporal~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:temporal~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:temporal~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:temporal~setChartOpts} setChartOpts - Sets various options for the chart.
+   * @property {module:temporal~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:temporal~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

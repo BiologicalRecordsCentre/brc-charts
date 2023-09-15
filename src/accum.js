@@ -3,17 +3,17 @@
 import * as d3 from 'd3'
 import * as gen from './general'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
  * @param {number} opts.width - The width of the main chart area in pixels (excludes margins).
  * @param {number} opts.height - The height of the main chart area in pixels (excludes margins).
- * @param {Object} opts.margin - An object indicating the margins to add around the main chart area. 
- * @param {number} opts.margin.left - Left margin in pixels. 
- * @param {number} opts.margin.right - Right margin in pixels. 
- * @param {number} opts.margin.top - Top margin in pixels. 
- * @param {number} opts.margin.bottom - Bottom margin in pixels. 
+ * @param {Object} opts.margin - An object indicating the margins to add around the main chart area.
+ * @param {number} opts.margin.left - Left margin in pixels.
+ * @param {number} opts.margin.right - Right margin in pixels.
+ * @param {number} opts.margin.top - Top margin in pixels.
+ * @param {number} opts.margin.bottom - Bottom margin in pixels.
  * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
  * @param {string} opts.title - Title for the chart.
  * @param {string} opts.subtitle - Subtitle for the chart.
@@ -55,7 +55,7 @@ import * as gen from './general'
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
- * <li> <b>c1</b> - a count for a given time period (can have any name). 
+ * <li> <b>c1</b> - a count for a given time period (can have any name).
  * <li> <b>c2</b> - a count for a given time period (can have any name).
  * ... - there can be any number of these count columns.
  * </ul>
@@ -97,7 +97,7 @@ export function accum({
 } = {}) {
 
   let metricsPlus
-  
+
   const mainDiv = d3.select(`${selector}`)
     .append('div')
     .attr('id', elid)
@@ -117,7 +117,7 @@ export function accum({
   preProcessMetrics()
   makeChart()
 
-  // Texts must come after chart because 
+  // Texts must come after chart because
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width"))
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -126,9 +126,9 @@ export function accum({
   gen.positionMainElements(svg, expand)
 
   function preProcessMetrics () {
-    // Look for 'fading' colour in taxa and colour appropriately 
+    // Look for 'fading' colour in taxa and colour appropriately
     // in fading shades of grey.
-    
+
     let iFadingTaxa = 0
     let iFadingCounts = 0
     let iFadeTaxa, iFadeCounts, strokeWidth
@@ -181,8 +181,8 @@ export function accum({
   function makeChart () {
 
     const showTaxa = (show === 'taxa' || show === 'both')
-    const showCounts = (show === 'counts' || show === 'both') 
-    let lineData = [] 
+    const showCounts = (show === 'counts' || show === 'both')
+    let lineData = []
 
     metricsPlus.forEach(m => {
 
@@ -275,7 +275,7 @@ export function accum({
 
     const yScaleRight = swapYaxes ? yScaleTaxa : yScaleCount
     const yScaleLeft = swapYaxes ?  yScaleCount : yScaleTaxa
-    
+
     // Left axis
     let yAxisLeft
     if (axisLeft === 'on' || axisLeft === 'tick') {
@@ -314,7 +314,7 @@ export function accum({
           .tickSizeOuter(0)
       }
     }
-    
+
     // Line path generators
     let lineTaxa
     if (showTaxa) {
@@ -346,11 +346,11 @@ export function accum({
         .classed('brc-chart-accum-g', true)
       init = true
     }
-    
+
     // Create/update the line paths with D3
     const mlines = gAccum.selectAll("path")
       .data(lineData,  d => d.key)
-      
+
     const eLines = mlines.enter()
       .append("path")
       //.attr("class", d => `accum-path accum-path-${d.id}`)
@@ -406,7 +406,7 @@ export function accum({
 
       // Position chart
       gAccum.attr("transform", `translate(${axisLeftPadX},${legendHeight + axisTopPadY})`)
-      
+
       // Create axes and position within SVG
       const leftYaxisTrans = `translate(${axisLeftPadX},${legendHeight + axisTopPadY})`
       const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${legendHeight + axisTopPadY + height/2}) rotate(270)`
@@ -426,7 +426,7 @@ export function accum({
             .classed(axisLabelClass, true)
             .style("text-anchor", "middle")
             .style('font-size', axisLabelFontSize)
-            .text(axisLeftLabel) 
+            .text(axisLeftLabel)
           tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans)
         }
       }
@@ -444,7 +444,7 @@ export function accum({
             .classed(axisLabelClass, true)
             .style("text-anchor", "middle")
             .style('font-size', axisLabelFontSize)
-            .text(axisRightLabel) 
+            .text(axisRightLabel)
           tYaxisCountLabel.attr("transform", rightYaxisLabelTrans)
         }
       }
@@ -517,7 +517,7 @@ export function accum({
 
       lineWidth = lineWidth + swatchSize + swatchSize * swatchFact + widthText
     })
-    
+
     const ls = svgChart.selectAll('.brc-legend-item-rect')
       .data(metricsReversed, m => m.key)
       .join(enter => {
@@ -558,7 +558,7 @@ export function accum({
 
     svgChart.selectAll(`.accum-path-${key}`)
       .classed('lowlight', false)
-  
+
     svgChart.selectAll(`.accum-path`)
       .classed('highlight', false)
 
@@ -566,7 +566,7 @@ export function accum({
       svgChart.selectAll(`.accum-path-${key}`)
         .classed('highlight', highlight)
     }
-    
+
     // Legend items
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
@@ -636,7 +636,7 @@ export function accum({
   * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -718,17 +718,17 @@ export function accum({
   * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
   /**
    * @typedef {Object} api
    * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

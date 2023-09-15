@@ -3,7 +3,7 @@
 import * as d3 from 'd3'
 import * as gen from './general'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'trend-chart'.)
@@ -33,11 +33,11 @@ import * as gen from './general'
  * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
  * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+ * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
+ * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1).
  * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)
- * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
- * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+ * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
+ * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1).
  * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -48,11 +48,11 @@ import * as gen from './general'
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>year</b> - a four digit number indicating a year.
- * <li> <b>count</b> - a count for the given year. 
+ * <li> <b>count</b> - a count for the given year.
  * </ul>
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created. (Default - [].)
- * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
+ * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated.
  * If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)
  * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
  * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
@@ -103,8 +103,8 @@ export function trend({
   axisBottom = 'tick',
   axisRight = 'percentages',
   axisTop = '',
-  showCounts = 'bar', 
-  showProps = 'line', 
+  showCounts = 'bar',
+  showProps = 'line',
   styleCounts = {colour: 'CornflowerBlue', opacity: 1},
   styleProps = {colour: 'black', opacity: 1, strokeWidth: 2},
   duration = 1000,
@@ -150,7 +150,7 @@ export function trend({
   makeTexts()
 
   function makeTexts() {
-    // Texts must come after chartbecause 
+    // Texts must come after chartbecause
     // the chart width is required
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -228,7 +228,7 @@ export function trend({
     const legendHeight = showLegend ? makeLegend(perRow * (subChartWidth + subChartPad)) + subChartPad : 0
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -442,7 +442,7 @@ export function trend({
         .attr('width', xScaleBar.bandwidth())
         .attr('height', d => height - d.n)
         .attr("fill", d => d.colour)
-  
+
     gTrendPath.selectAll("path")
       .data(chartLines, d => d.type)
       .join(
@@ -478,7 +478,7 @@ export function trend({
 
     addEventHandlers(gTrend.selectAll("path"), 'type')
     addEventHandlers(gTrend.selectAll("rect"), 'type')
-        
+
     if (init) {
 
       // Constants for positioning
@@ -499,7 +499,7 @@ export function trend({
         const labelHeight = taxonLabel.node().getBBox().height
         taxonLabel.attr("transform", `translate(${axisLeftPadX}, ${labelHeight})`)
       }
-      
+
        // Size SVG
       svgTrend
         .attr('width', width + axisLeftPadX + axisRightPadX)
@@ -507,7 +507,7 @@ export function trend({
 
       // Position chart
       gTrend.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
-      
+
       // Create axes and position within SVG
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
       const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
@@ -549,7 +549,7 @@ export function trend({
         .classed('trend-type-props',  axisLeft !== 'counts')
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
-        .text(axisLeftLabel) 
+        .text(axisLeftLabel)
       tYaxisLeftLabel.attr("transform", leftYaxisLabelTrans)
 
       const tYaxisRightLabel = svgTrend.append("text")
@@ -557,7 +557,7 @@ export function trend({
         .classed('trend-type-props',  axisRight !== 'counts')
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
-        .text(axisRightLabel) 
+        .text(axisRightLabel)
       tYaxisRightLabel.attr("transform", rightYaxisLabelTrans)
 
     } else if (taxa.length === 1) {
@@ -587,12 +587,12 @@ export function trend({
       .duration(duration)
       .call(rAxis)
     }
-    
+
     return svgTrend
   }
 
   function makeLegend (legendWidth) {
-    
+
     const swatchSize = 20
     const swatchFact = 1.3
 
@@ -641,7 +641,7 @@ export function trend({
 
     // Legend does not need to be recreated if it already exists
     if (!svgChart.selectAll('.brc-legend-item').size()) {
-    
+
       const ls = svgChart.selectAll('.brc-legend-item-rect')
         .data(items, i => gen.safeId(i.label))
         .join(enter => {
@@ -724,7 +724,7 @@ export function trend({
   * @param {string} opts.group - A list of taxa to used to calculate group totals for percentage of group records.
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -759,7 +759,7 @@ export function trend({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-    
+
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     gen.makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
@@ -839,18 +839,18 @@ export function trend({
   * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
 
   /**
    * @typedef {Object} api
    * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

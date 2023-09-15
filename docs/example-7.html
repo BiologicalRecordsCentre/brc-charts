@@ -35,7 +35,7 @@
       external dependency of the BRC Charts library. In this example they are all included from CDNs.
     </p>
     <p>
-      The altitude vs latitude chart is based on that which appears in the 
+      The altitude vs latitude chart is based on that which appears in the
       <a href="https://www.britishbryologicalsociety.org.uk/publications/atlas-of-british-and-irish-bryophytes/">Atlas of British and irish Bryophytes</a>
       The cells on the chart represent tetrads which are all in the same altitudinal and latitudinal ranges.
       Each cell represents an altitudinal range spanning 100 m and a latitudinal range spanning 50 km. Circles in each cell
@@ -46,9 +46,9 @@
 
     <div id="chart1" style="margin-top: 1em"></div>
     <p>
-      Use the buttons below to display various example datasets. 
+      Use the buttons below to display various example datasets.
       <i>Tetrad distribution</i> simply shows the distribution of tetrads in the altitude/latitudinal space
-      in England, Wales and Scotland. 
+      in England, Wales and Scotland.
       The first three taxon datasets use data that are pre-processed
       and the last one uses raw tetrad data (see section on data format).
     </p>
@@ -79,7 +79,7 @@
     <input type="radio" id="ranges5" name="ranges" value="ranges5">
     <label for="ranges5">Example 5</label>
     <p>
-      <b>Interactivity</b>. The interactivity really brings something to this chart above a printed static 
+      <b>Interactivity</b>. The interactivity really brings something to this chart above a printed static
       version - allowing the user to view only selected ranges which often better exposes any pattern.
       As usual the interactivity can be switch off or activated either on mouse click or mouse movement. I have
       added a new interactivity behaviour - toggle - which allows individual ranges to be toggled on an off therefore
@@ -96,12 +96,12 @@
 
     <h3>Data formats</h3>
     <p>
-      Data must be provided to the methods which create or update the 
-      chart (the main <i>atlat</i> creation method and the <i>setChartOpts</i> method 
+      Data must be provided to the methods which create or update the
+      chart (the main <i>atlat</i> creation method and the <i>setChartOpts</i> method
       on the object returned by the <i>atlat</i> method)
       as an array of objects of the kind shown below. There should
       be one of these objects corresponding to each of the background cells on
-      the chart for which tetrads have been recorded. 
+      the chart for which tetrads have been recorded.
       Each cell in the data is denoted by the lower limit of
       its distance (latitude) and altitude ranges.
     </p>
@@ -112,10 +112,10 @@
   taxon: "species A"
 }</code></pre>
     <p>
-      Of course getting data into this 
+      Of course getting data into this
       format can be difficult - you have to be able to relate tetrad grid
       references to their altitudes and latitude (distance north). Therefore
-      the chart also provdes a convenience method to convert an array of 
+      the chart also provdes a convenience method to convert an array of
       tetrad grid references into an array of objects like that shown above
       by comparison
       to a CSV which details the altitude of every GB tetrad (the CSV
@@ -165,7 +165,8 @@
         // margin: {left: 65, right: 10, top: 45, bottom: 65},
         // legendBaseline: 'central',
         // legendXoffset: 1000,
-        // legendYoffset: 1180
+        // legendYoffset: 1180,
+        expand: true
       }
     var altlatChart = brccharts.altlat(opts)
 
@@ -217,7 +218,7 @@
         legend: '>1500'
       }
     ]
- 
+
     var ranges = {
       ranges1: [
         {
@@ -362,7 +363,7 @@
         }
       ]
     }
-    
+
     function TetradDistribution() {
       showingTetrads=true
       d3.json('../src/altlat.json').then(data => {
@@ -384,7 +385,7 @@
     function Taxon(file, taxon, isRaw) {
       showingTetrads=false
       d3.select('#loading').style('display', '')
-      
+
       if (isRaw) {
         d3.csv(file, function(r) {
           return r.tetrad
@@ -405,7 +406,7 @@
           displayProcessed(data)
         })
       }
-    
+
       function displayProcessed(data) {
         altlatChart.setChartOpts({title: taxon, data: data, ranges: ranges[d3.select('input[name="ranges"]:checked').node().value]})
           .then(() => {
@@ -414,9 +415,18 @@
           })
       }
     }
-  
+
     function Download() {
-      altlatChart.saveImage(true, 'altlat')
+
+      const info = {
+        text: 'Info test mary had a little lamb whose fleece was white as snow.',
+        textFormatted: '',
+        margin: 10,
+        fontSize: 10,
+        //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
+      }
+
+      altlatChart.saveImage(false, 'altlat', null)
         .then((dataUrl) => {
           //alert('download complete')
           console.log(dataUrl)

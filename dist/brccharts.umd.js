@@ -91,6 +91,10 @@
     return target;
   }
 
+  function _readOnlyError(name) {
+    throw new TypeError("\"" + name + "\" is read-only");
+  }
+
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
@@ -413,31 +417,42 @@
     var height = Number(svgTitle.attr("height")) + Number(svgSubtitle.attr("height")) + Number(svgChart.attr("height")) + Number(svgFooter.attr("height")) + 2 * space;
 
     if (expand) {
+      // The original width and height may be needed elsewhere but if viewBox is used, will
+      // not be available through the width and height attributes of the svg, so add them as
+      // data attributes.
+      svg.attr('data-width', svgChart.attr("width"));
+      svg.attr('data-height', height);
       svg.attr("viewBox", "0 0 " + Number(svgChart.attr("width")) + " " + height);
     } else {
       svg.attr("width", Number(svgChart.attr("width")));
       svg.attr("height", height);
     }
   }
-  function saveChartImage(svg, expand, asSvg, filename, font) {
+  function saveChartImage(svg, expand, asSvg, filename, font, info) {
+    //console.log('saveChartImage', info)
+    var pInfoAdded = addInfo(svg, expand, info);
     return new Promise(function (resolve) {
-      if (asSvg) {
-        var blob1 = serialize(svg, font);
+      pInfoAdded.then(function () {
+        if (asSvg) {
+          var blob1 = serialize(svg, font);
 
-        if (filename) {
-          download(blob1, filename);
-        }
-
-        resolve(blob1);
-      } else {
-        rasterize(svg).then(function (blob2) {
           if (filename) {
-            download(blob2, filename);
+            download(blob1, filename);
           }
 
-          resolve(blob2);
-        });
-      }
+          removeInfo(svg, expand, info);
+          resolve(blob1);
+        } else {
+          rasterize(svg).then(function (blob2) {
+            if (filename) {
+              download(blob2, filename);
+            }
+
+            removeInfo(svg, expand, info);
+            resolve(blob2);
+          });
+        }
+      });
     });
 
     function download(data, filename) {
@@ -508,6 +523,171 @@
       document.body.removeChild(link);
     }
   }
+
+  function addInfo(svg, expand, svgInfo) {
+    if (!svgInfo) return Promise.resolve();
+    var infoText;
+
+    if (svgInfo.text) {
+      infoText = svgInfo.text.split(' ');
+    } else if (svgInfo.textFormatted && svgInfo.textFormatted.length) {
+      infoText = [];
+      svgInfo.textFormatted.forEach(function (it) {
+        var format = it.substr(0, 2);
+        infoText = [].concat(_toConsumableArray(infoText), _toConsumableArray(it.substr(2).split(' ').map(function (its) {
+          return "".concat(format).concat(its);
+        }))).filter(function (it) {
+          return it.length;
+        });
+      });
+    } else {
+      infoText = [];
+    } //console.log('infoText', infoText)
+
+
+    var margin = svgInfo.margin ? svgInfo.margin : 0;
+    var fontSize = svgInfo.fontSize ? svgInfo.fontSize : 12; // Current dimensions of chart SVG
+
+    var width, height;
+
+    if (expand) {
+      height = Number(svg.attr("data-height"));
+      width = Number(svg.attr("data-width"));
+    } else {
+      height = Number(svg.attr("height"));
+      width = Number(svg.attr("width"));
+    } //console.log('width and height', width, height)
+    // Create svg g and text objects and positions
+
+
+    var gInfo = svg.append('g');
+    gInfo.attr('id', 'svgInfo');
+    gInfo.attr('transform', "translate(0 ".concat(height, ")"));
+    var mask = gInfo.append('rect').attr('x', 0).attr('y', 0).attr('width', width).style('fill', 'white');
+    var tInfo = gInfo.append('text').attr('x', margin).attr('y', margin);
+    var yLastLine = margin;
+    infoText.forEach(function (w, i) {
+      var ts = tInfo.append('tspan').style('font-size', fontSize).style('font-family', 'Arial').style('alignment-baseline', 'hanging');
+      var word;
+
+      if (w.startsWith('<i>')) {
+        ts.style('font-style', 'italic');
+        word = w.replace('<i>', '').replace('</i>', '');
+      } else if (w.startsWith('i#')) {
+        ts.style('font-style', 'italic');
+        word = w.replace('i#', '');
+      } else if (w.startsWith('b#')) {
+        ts.style('font-weight', 'bold');
+        word = w.replace('b#', '');
+      } else if (w.startsWith('I#')) {
+        ts.style('font-weight', 'bold');
+        ts.style('font-style', 'italic');
+        word = w.replace('I#', '');
+      } else if (w.startsWith('n#')) {
+        word = w.replace('n#', '');
+      } else {
+        word = w;
+      }
+
+      if (i) {
+        ts.text(" ".concat(word));
+      } else {
+        ts.text(word);
+      }
+
+      if (tInfo.node().getBBox().width > width - 2 * margin) {
+        // If the latest word has caused the text element
+        // to exceed the width of the SVG, remove it and
+        // create a new line for it.
+        ts.remove();
+        var lineHeight = tInfo.node().getBBox().height;
+        tInfo = gInfo.append('text');
+        yLastLine = yLastLine + lineHeight;
+        tInfo.attr('x', margin);
+        tInfo.attr('y', yLastLine);
+        var tsn = tInfo.append('tspan').style('font-size', fontSize).style('font-family', 'Arial').style('alignment-baseline', 'hanging');
+        tsn.html(ts.html());
+      }
+    });
+    var infoHeight = yLastLine + tInfo.node().getBBox().height + margin;
+    var h = height + infoHeight; //svg.attr('height', h)
+
+    if (expand) {
+      svg.attr("viewBox", "0 0 " + width + " " + h);
+    } else {
+      svg.attr("height", h);
+    }
+
+    if (svgInfo.img) {
+      // Image
+      return new Promise(function (resolve) {
+        var img = new Image();
+
+        img.onload = function () {
+          var scale = 1;
+
+          if (this.width > width - 2 * margin) {
+            scale = (width - 2 * margin) / this.width;
+          }
+
+          var imgWidth = scale * this.width;
+          var imgHeight = scale * this.height;
+          var iInfo = gInfo.append('image');
+          iInfo.attr('x', margin);
+          iInfo.attr('y', infoHeight);
+          iInfo.attr('width', imgWidth);
+          iInfo.attr('height', imgHeight); // Use dataURL rather than file path URL so that image can be
+          // serialised when using the saveMap method
+
+          iInfo.attr('href', getDataUrl(this));
+          infoHeight = (_readOnlyError("infoHeight"), infoHeight + margin + imgHeight); //svg.attr('height', height + infoHeight)
+
+          if (expand) {
+            svg.attr("viewBox", "0 0 " + width + " " + (height + infoHeight));
+          } else {
+            svg.attr("height", height + infoHeight);
+          }
+
+          mask.style("height", infoHeight);
+          resolve();
+        };
+
+        img.src = svgInfo.img;
+      });
+    } else {
+      // No image - return resolved promise
+      return Promise.resolve();
+    }
+
+    function getDataUrl(img) {
+      // Create canvas
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d'); // Set width and height
+
+      canvas.width = img.width;
+      canvas.height = img.height; // Draw the image - use png format to support background transparency
+
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL('image/png');
+    }
+  }
+
+  function removeInfo(svg, expand, svgInfo) {
+    //console.log('svgInfo', svgInfo)
+    if (!svgInfo) return Promise.resolve();
+    svg.select('#svgInfo').remove();
+
+    if (expand) {
+      var height = Number(svg.attr("data-height"));
+      var width = Number(svg.attr("data-width"));
+      svg.attr("viewBox", "0 0 " + width + " " + height);
+    } else {
+      var _height = Number(svg.attr("height"));
+
+      svg.attr("height", _height);
+    }
+  }
+
   function transPromise(transition, pArray) {
     // If the transition has any elements in selection, then
     // create a promise that resolves when the transition of
@@ -530,9 +710,9 @@
     // This function returns an object that provides all the functionality of a d3 scale but it is
     // tailored to the needs of the temporal chart. The return object has the following properties:
     // * d3 - this is the raw d3 scale function that lies at the hear of all the functionality.
-    // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary 
+    // * bandwidth - a replacement for the d3 scale bandwidth function which does any necessary
     //   preprocessing on passed value before passing to the d3 scale bandwidth function.
-    // * v - a replacement for the d3 scale function which does any necessary 
+    // * v - a replacement for the d3 scale function which does any necessary
     //   preprocessing on passed value before passing to the d3 scale function.
     var periods = [];
 
@@ -1321,7 +1501,7 @@
   /** @module pie */
   //https://github.com/d3/d3-shape/blob/v2.0.0/README.md#pie
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
@@ -1361,7 +1541,7 @@
    * <li> <b>set</b> - a number to indicate to which 'dataset' this item belongs. Used when concentric donuts are requred.
    * <li> <b>name</b> - the name of the data item uniquely identifies it and is shown in the legend.
    * <li> <b>number</b> - a numeric value associated with the item.
-   * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500, 
+   * <li> <b>colour</b> - an optional colour for the symbol which can be hex format, e.g. #FFA500,
    * RGB format, e.g. rgb(100, 255, 0) or a named colour, e.g. red. If not specified, a colour will be assigned.
    * <li> <b>image</b> - this optional property allows you to specify the url of an image file
    * which can be displayed when a user selects the associated item.
@@ -1451,7 +1631,7 @@
       }
     });
     makeChart(data);
-    var textWidth = Number(svgChart.attr("width")); // Texts must come after chart and legend because the 
+    var textWidth = Number(svgChart.attr("width")); // Texts must come after chart and legend because the
     // width of those is required to do wrap text
 
     makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
@@ -1504,7 +1684,7 @@
       * @param {string} opts.legendTitle2 - Specifies text, if required, for a legend title for second dataset (inner concentric donut).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects.
       * @description <b>This function is exposed as a method on the API returned from the pie function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -1614,15 +1794,15 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:pie~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:pie~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:pie~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:pie~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -2345,7 +2525,7 @@
   }
 
   /** @module phen1 */
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
@@ -2393,7 +2573,7 @@
    * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input
    * data for which a line should be generated on the chart.
@@ -2412,7 +2592,7 @@
    * <li> <b>taxon</b> - name of a taxon.
    * <li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
    * <li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
-   * <li> <b>c1</b> - a count for a given time period (can have any name). 
+   * <li> <b>c1</b> - a count for a given time period (can have any name).
    * <li> <b>c2</b> - a count for a given time period (can have any name).
    * ... - there must be at least one count column, but there can be any number of them.
    * </ul>
@@ -2522,7 +2702,7 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible');
-    makeChart(); // Texts must come after chart because 
+    makeChart(); // Texts must come after chart because
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
@@ -2594,7 +2774,7 @@
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -2724,16 +2904,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -2747,7 +2927,7 @@
   }
 
   /** @module phen2 */
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
@@ -2782,7 +2962,7 @@
    * @param {number} opts.duration - The duration of each transition phase in milliseconds.
    * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
    * @param {string} opts.backColour - Background colour of the chart. Any accepted way of specifying web colours can be used. (Default - white.)
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created.
    * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
    * data for which a band should be generated on the chart.
@@ -2801,9 +2981,9 @@
    * </ul>
    * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
    * drawn over the previous so for overlapping properties (split = false), the one you want to draw on top should
-   * come last. 
+   * come last.
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
-   * Each of the objects in the data array must be sepecified with the properties shown below. 
+   * Each of the objects in the data array must be sepecified with the properties shown below.
    * There should only be one object per taxon. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
@@ -2902,7 +3082,7 @@
       }
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
-    makeChart(); // Texts must come after chart because 
+    makeChart(); // Texts must come after chart because
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
@@ -3280,7 +3460,7 @@
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -3400,16 +3580,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename, font);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:phen2~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:phen2~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:phen2~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -3422,17 +3602,17 @@
     };
   }
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
    * @param {number} opts.width - The width of the main chart area in pixels (excludes margins).
    * @param {number} opts.height - The height of the main chart area in pixels (excludes margins).
-   * @param {Object} opts.margin - An object indicating the margins to add around the main chart area. 
-   * @param {number} opts.margin.left - Left margin in pixels. 
-   * @param {number} opts.margin.right - Right margin in pixels. 
-   * @param {number} opts.margin.top - Top margin in pixels. 
-   * @param {number} opts.margin.bottom - Bottom margin in pixels. 
+   * @param {Object} opts.margin - An object indicating the margins to add around the main chart area.
+   * @param {number} opts.margin.left - Left margin in pixels.
+   * @param {number} opts.margin.right - Right margin in pixels.
+   * @param {number} opts.margin.top - Top margin in pixels.
+   * @param {number} opts.margin.bottom - Bottom margin in pixels.
    * @param {boolean} opts.expand - Indicates whether or not the chart will expand to fill parent element and scale as that element resized.
    * @param {string} opts.title - Title for the chart.
    * @param {string} opts.subtitle - Subtitle for the chart.
@@ -3474,7 +3654,7 @@
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>week</b> - a number between 1 and 53 indicating the week of the year.
-   * <li> <b>c1</b> - a count for a given time period (can have any name). 
+   * <li> <b>c1</b> - a count for a given time period (can have any name).
    * <li> <b>c2</b> - a count for a given time period (can have any name).
    * ... - there can be any number of these count columns.
    * </ul>
@@ -3559,7 +3739,7 @@
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart');
     preProcessMetrics();
-    makeChart(); // Texts must come after chart because 
+    makeChart(); // Texts must come after chart because
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width"));
@@ -3569,7 +3749,7 @@
     positionMainElements(svg, expand);
 
     function preProcessMetrics() {
-      // Look for 'fading' colour in taxa and colour appropriately 
+      // Look for 'fading' colour in taxa and colour appropriately
       // in fading shades of grey.
       var iFadingTaxa = 0;
       var iFadingCounts = 0;
@@ -4028,7 +4208,7 @@
       * @param {Array.<Object>} opts.metrics - An array of objects, each describing a numeric property in the input data (see main interface for details).
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the accum function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -4120,16 +4300,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:accum~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:accum~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:accum~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:accum~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:accum~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -4634,7 +4814,7 @@
     };
   }
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
    * @param {string} opts.elid - The id for the dom object created. (Default - 'trend-chart'.)
@@ -4664,11 +4844,11 @@
    * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
    * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
    * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
-   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
-   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
+   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1).
    * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'percentages'.)
-   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
-   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1). 
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
+   * If set to 'counts' line and ticks drawn for counts scale. If set to 'proportions' line and ticks drawn for proportion scale (0-1).
    * If set to 'percentages' line and ticks drawn for percentage scale (1-100). Any other value results in no axis. (Default - 'counts'.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -4679,11 +4859,11 @@
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>year</b> - a four digit number indicating a year.
-   * <li> <b>count</b> - a count for the given year. 
+   * <li> <b>count</b> - a count for the given year.
    * </ul>
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created. (Default - [].)
-   * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated. 
+   * @param {Array.<string>} opts.group - An array of taxa (names), indicating which taxa comprise the whole group for which proportion stats are calculated.
    * If empty, all taxa are part of the group from which proportion data is calculated. (Default - [].)
    * @param {number} opts.minYear- Indicates the earliest year to use on the y axis. If left unset, the earliest year in the dataset is used. (Default - null.)
    * @param {number} opts.maxYear- Indicates the latest year to use on the y axis. If left unset, the latest year in the dataset is used. (Default - null.)
@@ -4823,7 +5003,7 @@
     makeTexts();
 
     function makeTexts() {
-      // Texts must come after chartbecause 
+      // Texts must come after chartbecause
       // the chart width is required
       var textWidth = Number(svg.select('.mainChart').attr("width"));
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
@@ -5379,7 +5559,7 @@
       * @param {string} opts.group - A list of taxa to used to calculate group totals for percentage of group records.
       * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
       * @description <b>This function is exposed as a method on the API returned from the trend function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -5512,16 +5692,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:trend~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:trend~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:trend~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:trend~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:trend~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -6272,9 +6452,8 @@
     var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight);
     return {
       updateChart: updateChart,
-      saveImage: function saveImage(asSvg, filename) {
-        console.log('generate density image');
-        saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename);
+      saveImage: function saveImage(asSvg, filename, info) {
+        return saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename, null, info);
       }
     };
   }
@@ -6302,6 +6481,11 @@
     var svgDensity = d3.select("".concat(selector)).append('svg').attr('id', elid).style('font-family', 'sans-serif'); // Size the chart svg
 
     if (expand) {
+      // The original width and height may be needed elsewhere but if viewBox is used, will
+      // not be available through the width and height attributes of the svg, so add them as
+      // data attributes.
+      svgDensity.attr('data-width', svgWidth);
+      svgDensity.attr('data-height', svgHeight);
       svgDensity.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
     } else {
       svgDensity.attr("width", svgWidth);
@@ -6610,9 +6794,8 @@
     var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
     return {
       updateChart: updateChart,
-      saveImage: function saveImage(asSvg, filename) {
-        console.log('generate density image');
-        saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename);
+      saveImage: function saveImage(asSvg, filename, info) {
+        return saveChartImage(d3.select("#".concat(elid)), expand, asSvg, filename, null, info);
       }
     };
   }
@@ -6621,43 +6804,48 @@
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
-    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid).style('font-family', 'sans-serif'); // Size the chart svg
+    var svgBar = d3.select("".concat(selector)).append('svg').attr('id', elid).style('font-family', 'sans-serif'); // Size the chart svg
 
     if (expand) {
-      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
+      // The original width and height may be needed elsewhere but if viewBox is used, will
+      // not be available through the width and height attributes of the svg, so add them as
+      // data attributes.
+      svgBar.attr('data-width', svgWidth);
+      svgBar.attr('data-height', svgHeight);
+      svgBar.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
     } else {
-      svgTrend.attr("width", svgWidth);
-      svgTrend.attr("height", svgHeight);
+      svgBar.attr("width", svgWidth);
+      svgBar.attr("height", svgHeight);
     } // Axis labels
 
 
     if (axisLeftLabel) {
-      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
+      svgBar.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
     } // Create axes and position within SVG
 
 
     var tAxis, bAxis, lAxis, rAxis;
 
     if (axisLeft === 'on' || axisLeft === 'tick') {
-      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+      lAxis = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     }
 
     if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
+      bAxis = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
     }
 
     if (axisTop === 'on') {
-      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
+      tAxis = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     }
 
     if (axisRight === 'on') {
-      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
+      rAxis = svgBar.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
     } // Create g element for chart elements
 
 
-    var gChart = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
+    var gChart = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$3(labelPosition, svgTrend, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+    var updateChart = makeUpdateChart$3(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
 
     updateChart(data); // Return the api
 
@@ -7656,7 +7844,7 @@
     return swatchSize * swatchFact * (rows + 1);
   }
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
    * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
@@ -7686,9 +7874,9 @@
    * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
    * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
    * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
-   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)
-   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -7707,41 +7895,41 @@
    * <ul>
    * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
    * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
-   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
    * (Optional - default is 'blue'.)
-   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric.
    * (Optional - default is 0.5.)
-   * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+   * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph.
    * (Optional - default is 1.)
    * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
-   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
+   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
    * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
-   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
-   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
-   * specifying web colours can be used. 
+   * of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
+   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+   * specifying web colours can be used.
    * (Optional - default is 'silver'.)
-   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
-   * specifying web colours can be used. 
+   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+   * specifying web colours can be used.
    * (Optional - default is 'grey'.)
-   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
    * (Optional - default is 0.5.)
-   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
    * (Optional - default is 1.)
-   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
    * (Optional - default is 1.)
    * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
    * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
-   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
   * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
-   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>year</b> - a four digit number indicating a year.
-   * <li> <b>c1</b> - a metric for a given year (can have any name). 
+   * <li> <b>c1</b> - a metric for a given year (can have any name).
    * <li> <b>c2</b> - a metric for a given year (can have any name).
    * ... - there must be at least one metric column, but there can be any number of them.
    * </ul>
@@ -7750,7 +7938,7 @@
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>year</b> - a four digit number indicating a year.
-   * <li> <b>y</b> - y value for a given year. 
+   * <li> <b>y</b> - y value for a given year.
    * <li> <b>upper</b> - a value for upper confidence band.
    * <li> <b>lower</b> - a value for lower confidence band.
    * </ul>
@@ -7759,12 +7947,12 @@
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>gradient</b> - a gradient for the line.
-   * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+   * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line.
    * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
    * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
    * </ul>
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created. (Default - [].)
 
    * @param {number} opts.minYear Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)
@@ -7905,7 +8093,7 @@
     });
     var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly');
     preProcessMetrics();
-    makeChart(); // Texts must come after chartbecause 
+    makeChart(); // Texts must come after chartbecause
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
@@ -7957,7 +8145,7 @@
     }
 
     function preProcessMetrics() {
-      // Look for 'fading' colour in taxa and colour appropriately 
+      // Look for 'fading' colour in taxa and colour appropriately
       // in fading shades of grey.
       var iFading = 0;
       metricsPlus = metrics.map(function (m) {
@@ -8014,7 +8202,7 @@
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -8161,16 +8349,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
-     * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart.
+     * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -9633,7 +9821,7 @@
     return swatchSize * swatchFact * (rows + 1);
   }
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
    * @param {string} opts.elid - The id for the dom object created. (Default - 'temporal-chart'.)
@@ -9663,9 +9851,9 @@
    * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
    * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
    * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
-   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+   * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
-   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+   * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
    * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
    * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
    * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -9685,45 +9873,45 @@
    * <li> <b>periodMin</b> a value for period, before which points should not be displayed.
    * <li> <b>periodMax</b> a value for period, after which points should not be displayed.
    * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
-   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+   * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
    * (Optional - default is 'blue'.)
-   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+   * <li> <b>opacity</b> - optional opacity to give the graphic for this metric.
    * (Optional - default is 1.)
-   * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+   * <li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph.
    * (Optional - default is 1.)
-   * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of 
+   * <li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of
    * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
-   * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric. 
+   * <li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric.
    * (Optional - default is 0.5.)
    * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
-   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
+   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
    * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
-   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
-   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
-   * specifying web colours can be used. 
+   * of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
+   * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+   * specifying web colours can be used.
    * (Optional - default is 'silver'.)
-   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
-   * specifying web colours can be used. 
+   * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+   * specifying web colours can be used.
    * (Optional - default is 'grey'.)
-   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+   * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
    * (Optional - default is 0.5.)
-   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+   * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
    * (Optional - default is 1.)
-   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+   * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
    * (Optional - default is 1.)
    * <li> <b>points</b> - a boolean value which indicates whether or not a point is to be displayed (over the line or bar).
    * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
-   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+   * of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
   * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
-   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+   * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
    * </ul>
    * @param {Array.<Object>} opts.data - Specifies an array of data objects.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
    * <ul>
    * <li> <b>taxon</b> - name of a taxon.
    * <li> <b>period</b> - a number indicating a week, nonth or a year.
-   * <li> <b>c1</b> - a metric for a given period (can have any name). 
+   * <li> <b>c1</b> - a metric for a given period (can have any name).
    * <li> <b>c2</b> - a metric for a given period (can have any name).
    * ... - there must be at least one metric column, but there can be any number of them.
    * </ul>
@@ -9732,7 +9920,7 @@
    * <ul>
    * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>period</b> - a number indicating a week, month or a year.
-   * <li> <b>y</b> - y value for a given period. 
+   * <li> <b>y</b> - y value for a given period.
    * <li> <b>upper</b> - a value for upper confidence band.
    * <li> <b>lower</b> - a value for lower confidence band.
    * </ul>
@@ -9743,11 +9931,11 @@
    * id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
    * <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
    * <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
-   * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-   * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-   * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-   * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-   * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+   * <li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+   * <li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+   * <li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+   * <li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+   * <li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
    * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
    * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -9759,12 +9947,12 @@
    * <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
    * <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
    * this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
-   * than map to the first day for each month.) 
+   * than map to the first day for each month.)
    * <li> <b>width</b> - the width of the band to be drawn. If absent or zero, then a line is drawn rather than a band. Specified in the
-   * same units as the 'start' value. (Default - 0.). 
+   * same units as the 'start' value. (Default - 0.).
    * </ul>
    * The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created. If set to an array with a single null value - [null] - then
    * each metric must have a property called 'taxon' which specifies the taxon to be displayed for that metric.
    * In this way, multiple taxa can be displayed on the same graph. (Default - [].)
@@ -9932,7 +10120,7 @@
     var svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-temporal');
     svgChart.classed('use-highlighting', !overrideHighlight);
     preProcessMetrics();
-    makeChart(); // Texts must come after chartbecause 
+    makeChart(); // Texts must come after chartbecause
     // the chart width is required
 
     var textWidth = Number(svg.select('.mainChart').attr("width") - headPad);
@@ -9985,7 +10173,7 @@
     }
 
     function preProcessMetrics() {
-      // Look for 'fading' colour in taxa and colour appropriately 
+      // Look for 'fading' colour in taxa and colour appropriately
       // in fading shades of grey.
       var iFading = 0;
       metricsPlus = metrics.map(function (m, i) {
@@ -10061,10 +10249,10 @@
       * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.verticals - Specifies an array of data objects (see main interface for details).
       * @param {Array.<Object>} opts.trendLines - Specifies an array of data objects (see main interface for details).
-      
+    
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the temporal function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -10267,16 +10455,16 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:temporal~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:temporal~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:temporal~setChartOpts} setChartOpts - Sets various options for the chart. 
-     * @property {module:temporal~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:temporal~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:temporal~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:temporal~setChartOpts} setChartOpts - Sets various options for the chart.
+     * @property {module:temporal~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:temporal~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 
@@ -19235,7 +19423,7 @@
   	]
   ];
 
-  /** 
+  /**
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
    * @param {string} opts.elid - The id for the dom object created. (Default - 'altlat-chart'.)
@@ -19285,7 +19473,7 @@
    * <li> <b>taxon</b> - The taxon for which this point refers.
    * <li> <b>distance</b> - The distance north (OS northing) in kilometers rounded down to the nearest 50 km.
    * <li> <b>altitude</b> - The altitude (asl) in metres rounded down to the nearest 100 m.
-   * <li> <b>metric</b> - a metric (number) for the given distance and altitude. 
+   * <li> <b>metric</b> - a metric (number) for the given distance and altitude.
    * </ul>
    * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics.
    * Each of the objects in the data array must be sepecified with the properties shown below. (The order affects how they appear in the legend.)
@@ -19293,9 +19481,9 @@
    * <li> <b>min</b> - The minimum metric value to be included in this range.
    * <li> <b>max</b> - The maximum metric value to be included in this range.
    * <li> <b>radius</b> - The radius of the dot to be drawn for this range.
-   * <li> <b>legend</b> - Text for the legend item for this range. 
+   * <li> <b>legend</b> - Text for the legend item for this range.
    * </ul>
-   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+   * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
    * If empty, graphs for all taxa are created. (Default - [].)
    * @returns {module:altlat~api} api - Returns an API for the chart.
    */
@@ -19402,7 +19590,7 @@
     var xScale = d3.scaleLinear().domain([0, 1250]).range([0, width]);
     var yScale = d3.scaleLinear().domain([0, 1200]).range([height, 0]);
     makeChart().then(function () {
-      // Texts must come after chartbecause 
+      // Texts must come after chartbecause
       // the chart width is required
       var textWidth = Number(svg.select('.mainChart').attr("width"));
       makeText(title, 'titleText', titleFontSize, titleAlign, textWidth, svg);
@@ -19870,7 +20058,7 @@
       * @param {Array.<Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
       * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the altlat function</b>.
-      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+      * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
       * options object, it's value is not changed.
       */
 
@@ -19987,17 +20175,17 @@
       */
 
 
-    function saveImage(asSvg, filename) {
-      return saveChartImage(svg, expand, asSvg, filename);
+    function saveImage(asSvg, filename, info) {
+      return saveChartImage(svg, expand, asSvg, filename, font, info);
     }
     /**
      * @typedef {Object} api
      * @property {module:altlat~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-     * @property {module:altlat~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-     * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart. 
-     * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
-     * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references. 
-     * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+     * @property {module:altlat~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+     * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart.
+     * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts.
+     * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references.
+     * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG.
      */
 
 

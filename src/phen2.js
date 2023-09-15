@@ -3,7 +3,7 @@
 import * as d3 from 'd3'
 import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonthNoText, xAxisMonthText, cloneData, transPromise } from './general'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
@@ -38,7 +38,7 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonthNoTex
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
  * @param {string} opts.backColour - Background colour of the chart. Any accepted way of specifying web colours can be used. (Default - white.)
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created.
  * @param {Array.<Object>} opts.metrics - An array of objects, each describing a property in the input
  * data for which a band should be generated on the chart.
@@ -57,9 +57,9 @@ import { safeId, makeText, positionMainElements, saveChartImage, xAxisMonthNoTex
  * </ul>
  * The order in which the metrics are specified determines the order in which properties are drawn on the chart. Each is
  * drawn over the previous so for overlapping properties (split = false), the one you want to draw on top should
- * come last. 
+ * come last.
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
- * Each of the objects in the data array must be sepecified with the properties shown below. 
+ * Each of the objects in the data array must be sepecified with the properties shown below.
  * There should only be one object per taxon. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
@@ -133,9 +133,9 @@ export function phen2({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart')
-  
+
   makeChart()
-  // Texts must come after chart because 
+  // Texts must come after chart because
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -178,9 +178,9 @@ export function phen2({
     if (displayLegend) {
       legendHeight = makeLegend(perRow * (subChartWidth + subChartPad) - headPad) + subChartPad
     }
- 
+
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -272,7 +272,7 @@ export function phen2({
         .classed('brc-chart-phen2-g', true)
       init = true
     }
-    
+
     // Create/update the band rectangles with D3
     const mrects = gPhen2.selectAll("rect")
       .data(rectData,  d => d.id)
@@ -295,7 +295,7 @@ export function phen2({
       .attr("y", d => split ? d.iMetric * height/metricsPlus.length : 0)
       .attr("opacity", d => d.opacity)
       .attr("fill", d => d.colour), pTrans)
-    
+
     transPromise(mrects.exit()
       .transition()
       .duration(duration)
@@ -307,7 +307,7 @@ export function phen2({
       // Constants for positioning
       const axisPadX = chartPad
       const axisPadY = axisBottom === 'tick' ? 15 : 0
-      let labelPadY 
+      let labelPadY
 
       // Taxon title
       if (showTaxonLabel) {
@@ -325,7 +325,7 @@ export function phen2({
       } else {
         labelPadY = 0
       }
-      
+
       // Size SVG
       svgPhen2
         .attr('width', width + axisPadX + 1)
@@ -333,7 +333,7 @@ export function phen2({
 
       // Position chart
       gPhen2.attr("transform", `translate(${axisPadX},${labelPadY})`)
-      
+
       // Create axes and position within SVG
       if (xAxis1 && xAxis2) {
         // const gXaxis = svgPhen2.append("g")
@@ -392,7 +392,7 @@ export function phen2({
   }
 
   function makeLegend (legendWidth) {
-    
+
     const swatchSize = 20
     const swatchFact = 1.3
 
@@ -406,7 +406,7 @@ export function phen2({
     const metricsSorted = cloneData(metricsPlus)
       .filter(m => m.label)
       .sort((a,b) => a.legendOrder > b.legendOrder ? 1 : -1)
-  
+
     // Get the bbox of any SVG icons in metrics
     metricsSorted.filter(m => m.svg).forEach(m => {
       const path = svgChart.append('path').attr('d', m.svg).style('visibility', 'hidden')
@@ -506,7 +506,7 @@ export function phen2({
 
     svgChart.selectAll(`.phen-rect-${cls}`)
       .classed('lowlight', false)
-  
+
     svgChart.selectAll(`.phen-rect`)
       .classed('highlight', false)
 
@@ -514,7 +514,7 @@ export function phen2({
       svgChart.selectAll(`.phen-rect-${cls}`)
         .classed('highlight', highlight)
     }
-    
+
     svgChart.selectAll('.brc-legend-item')
       .classed('lowlight', highlight)
 
@@ -567,7 +567,7 @@ export function phen2({
   * @param {Array.<Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -672,17 +672,17 @@ export function phen2({
   * @description <b>This function is exposed as a method on the API returned from the phen2 function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return saveChartImage(svg, expand, asSvg, filename, font) 
+  function saveImage(asSvg, filename, info){
+    return saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
   /**
    * @typedef {Object} api
    * @property {module:phen2~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:phen2~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:phen2~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:phen2~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:phen2~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:phen2~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,

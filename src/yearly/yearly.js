@@ -6,7 +6,7 @@ import { makeYearly } from './makeYearly'
 import { makeLegend } from './legend'
 import { highlightItem } from './highlightitem'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
@@ -36,9 +36,9 @@ import { highlightItem } from './highlightitem'
  * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
  * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)
- * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -57,41 +57,41 @@ import { highlightItem } from './highlightitem'
  * <ul>
  * <li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
  * <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
- * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+ * <li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * (Optional - default is 'blue'.)
- * <li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+ * <li> <b>opacity</b> - optional opacity to give the graphic for this metric.
  * (Optional - default is 0.5.)
- * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+ * <li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph.
  * (Optional - default is 1.)
  * <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
- * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
+ * of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
  * <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
- * of a confidence band. Can only be used where <i>showCounts</i> is 'line'. 
- * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
+ * <li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'silver'.)
- * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * <li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'grey'.)
- * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+ * <li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
  * (Optional - default is 0.5.)
- * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+ * <li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
  * (Optional - default is 1.)
- * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+ * <li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
  * (Optional - default is 1.)
  * <li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
  * <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
- * of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+ * of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
 * <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
- * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+ * of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
  * </ul>
  * @param {Array.<Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>year</b> - a four digit number indicating a year.
- * <li> <b>c1</b> - a metric for a given year (can have any name). 
+ * <li> <b>c1</b> - a metric for a given year (can have any name).
  * <li> <b>c2</b> - a metric for a given year (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
  * </ul>
@@ -100,7 +100,7 @@ import { highlightItem } from './highlightitem'
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>year</b> - a four digit number indicating a year.
- * <li> <b>y</b> - y value for a given year. 
+ * <li> <b>y</b> - y value for a given year.
  * <li> <b>upper</b> - a value for upper confidence band.
  * <li> <b>lower</b> - a value for lower confidence band.
  * </ul>
@@ -109,12 +109,12 @@ import { highlightItem } from './highlightitem'
  * <ul>
  * <li> <b>taxon</b> - name of a taxon.
  * <li> <b>gradient</b> - a gradient for the line.
- * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line. 
+ * <li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line.
  * <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
  * <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
  * </ul>
- * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.<string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created. (Default - [].)
 
  * @param {number} opts.minYear Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)
@@ -163,7 +163,7 @@ export function yearly({
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
-  showCounts = 'bar', 
+  showCounts = 'bar',
   headPad = 0,
   duration = 1000,
   interactivity = 'none',
@@ -205,10 +205,10 @@ export function yearly({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly')
-  
+
   preProcessMetrics()
   makeChart()
-  // Texts must come after chartbecause 
+  // Texts must come after chartbecause
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -285,7 +285,7 @@ export function yearly({
     ) + subChartPad : 0
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -300,9 +300,9 @@ export function yearly({
   }
 
   function preProcessMetrics () {
-    // Look for 'fading' colour in taxa and colour appropriately 
+    // Look for 'fading' colour in taxa and colour appropriately
     // in fading shades of grey.
-    
+
     let iFading = 0
     metricsPlus = metrics.map(m => {
       let iFade, strokeWidth
@@ -361,7 +361,7 @@ export function yearly({
   * @param {Array.<Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -484,18 +484,18 @@ export function yearly({
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
 
   /**
    * @typedef {Object} api
    * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
-   * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart.
+   * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,
