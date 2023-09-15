@@ -6789,9 +6789,11 @@
         _ref$data = _ref.data,
         data = _ref$data === void 0 ? [] : _ref$data,
         _ref$labelPosition = _ref.labelPosition,
-        labelPosition = _ref$labelPosition === void 0 ? {} : _ref$labelPosition;
+        labelPosition = _ref$labelPosition === void 0 ? {} : _ref$labelPosition,
+        _ref$tooltip = _ref.tooltip,
+        tooltip = _ref$tooltip === void 0 ? false : _ref$tooltip;
 
-    var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration);
+    var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip);
     return {
       updateChart: updateChart,
       saveImage: function saveImage(asSvg, filename, info) {
@@ -6800,7 +6802,7 @@
     };
   }
 
-  function makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+  function makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -6845,14 +6847,14 @@
 
     var gChart = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$3(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart); // Update the chart with current data
+    var updateChart = makeUpdateChart$3(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip); // Update the chart with current data
 
     updateChart(data); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$3(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart) {
+  function makeUpdateChart$3(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip) {
     return function (data) {
       // d3 transition object
       var t = svg.transition().duration(duration);
@@ -6902,12 +6904,12 @@
         d.width = xScaleBottom.bandwidth();
         d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero;
       });
-      pTrans = [].concat(_toConsumableArray(d3Bars(data, gChart, t)), _toConsumableArray(pTrans));
+      pTrans = [].concat(_toConsumableArray(d3Bars(data, gChart, t, tooltip)), _toConsumableArray(pTrans));
       return Promise.allSettled(pTrans);
     };
   }
 
-  function d3Bars(data, gChart, t) {
+  function d3Bars(data, gChart, t, tooltip) {
     var pTrans = [];
     gChart.selectAll(".bar").data(data).join(function (enter) {
       return enter.append('rect').attr('class', 'bar').style('fill', function (d) {
@@ -6941,7 +6943,14 @@
       }).attr('height', function (d) {
         return d.height;
       }), pTrans);
-    });
+    }); // Tooltips
+
+    if (tooltip) {
+      gChart.selectAll(".bar").append('title').text(function (d) {
+        return "".concat(d.label, ": ").concat(d.value, "%");
+      });
+    }
+
     gChart.selectAll(".barLabel").data(data).join(function (enter) {
       return enter.append('text').attr('class', 'barLabel').style('opacity', 0).attr('x', function (d) {
         return d.x;

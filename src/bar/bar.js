@@ -25,10 +25,11 @@ export function bar({
   axisLeftLabel = '',
   duration = 1000,
   data = [],
-  labelPosition = {}
+  labelPosition = {},
+  tooltip = false,
 } = {}) {
 
-  const updateChart = makeChart(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration)
+  const updateChart = makeChart(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip)
 
   return {
     updateChart: updateChart,
@@ -38,7 +39,7 @@ export function bar({
   }
 }
 
-function makeChart(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration) {
+function makeChart(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip) {
 
   const svgWidth = width + margin.left + margin.right
   const svgHeight = height + margin.top + margin.bottom
@@ -96,7 +97,7 @@ function makeChart(data, labelPosition, selector, elid, width, height, padding, 
     .attr("transform", `translate(${margin.left},${margin.top})`)
 
   // Create the API function for updating chart
-  const updateChart = makeUpdateChart(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart)
+  const updateChart = makeUpdateChart(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip)
 
   // Update the chart with current data
   updateChart(data)
@@ -118,7 +119,8 @@ function makeUpdateChart(
   rAxis,
   axisBottom,
   duration,
-  gChart
+  gChart,
+  tooltip
 ) {
 
   return (data) => {
@@ -187,13 +189,13 @@ function makeUpdateChart(
       d.height = height - yScale(d.value) ? height - yScale(d.value) : barHeightOnZero
     })
 
-    pTrans = [...d3Bars(data, gChart, t), ...pTrans]
+    pTrans = [...d3Bars(data, gChart, t, tooltip), ...pTrans]
 
     return Promise.allSettled(pTrans)
   }
 }
 
-function d3Bars(data, gChart, t) {
+function d3Bars(data, gChart, t, tooltip) {
 
   const pTrans = []
 
@@ -210,7 +212,6 @@ function d3Bars(data, gChart, t) {
         .attr('y', d => d.ye)
         .attr('width', d => d.width)
         .attr('height', 0),
-
       update => update,
       exit => exit
         .call(exit => transPromise(exit.transition(t)
@@ -224,6 +225,13 @@ function d3Bars(data, gChart, t) {
       .attr('y', d => d.y)
       .attr('width', d => d.width)
       .attr('height', d => d.height), pTrans))
+
+
+  // Tooltips
+  if (tooltip) {
+  gChart.selectAll(`.bar`)
+    .append('title').text(d => `${d.label}: ${d.value}%`)
+  }
 
   gChart.selectAll(`.barLabel`)
     .data(data)
