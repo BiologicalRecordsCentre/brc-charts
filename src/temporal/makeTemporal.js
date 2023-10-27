@@ -78,7 +78,9 @@ export function makeTemporal (
       denominator = 1
     }
     dataFilteredMetric.forEach(d => {
-      d[m.prop] = d[m.prop] / denominator
+      if (d[m.prop] !== null) {
+        d[m.prop] = d[m.prop] / denominator
+      }
     })
     // Record max data value in metric
     const errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFilteredMetric.map(d => d[m.errorBarUpper]) : []

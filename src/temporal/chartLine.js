@@ -64,6 +64,8 @@ export function generateLines(
           // with the missing value specified (can be a value
           // or 'bridge' or 'break').
           ret.n = missingValues
+        } else if (d[m.prop] === null) {
+          ret.n = missingValues
         } else if ((m.periodMin && p <  m.periodMin) || (m.periodMax && p > m.periodMax)) {
           // If metric has periodMin or periodMax specfied, then replace values beyond
           // this range with specifed missing value.

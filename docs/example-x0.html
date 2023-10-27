@@ -6,7 +6,6 @@
 </head>
 <body>
 
-  <button onclick="Download()">Download image</button>
   <div id="chart1"></div>
 
   <!--D3 JS required exernal dependency of BRC Charts library-->
@@ -17,101 +16,724 @@
   <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
 
   <script>
-    bar = brccharts.bar({
-    selector: '#chart1',
-    data: [
-    {
-        "value": 10,
-        "label": "Strong decline",
-        "stroke": "grey",
-        "strokeWidth": 1,
-        "fill": "rgb(230,230,230)",
-        "x": 6.862745098039198,
-        "y": 250,
-        "ye": 250,
-        "width": 61.76470588235294,
-        "height": 250
-    },
-    {
-        "value": 40,
-        "label": "Moderate decline",
-        "stroke": "grey",
-        "strokeWidth": 1,
-        "fill": "rgb(230,230,230)",
-        "x": 75.49019607843135,
-        "y": 250,
-        "ye": 250,
-        "width": 61.76470588235294,
-        "height": 250
-    },
-    {
-        "value": 0,
-        "label": "Stable",
-        "stroke": "grey",
-        "strokeWidth": 1,
-        "fill": "rgb(230,230,230)",
-        "x": 144.1176470588235,
-        "y": 250,
-        "ye": 250,
-        "width": 61.76470588235294,
-        "height": 0
-    },
-    {
-        "value": 80,
-        "label": "Moderate increase",
-        "stroke": "grey",
-        "strokeWidth": 1,
-        "fill": "rgb(230,230,230)",
-        "x": 212.74509803921566,
-        "y": 250,
-        "ye": 250,
-        "width": 61.76470588235294,
-        "height": 250
-    },
-    {
-        "value": 100,
-        "label": "Strong increase",
-        "stroke": "grey",
-        "strokeWidth": 1,
-        "fill": "rgb(230,230,230)",
-        "x": 281.37254901960785,
-        "y": 0,
-        "ye": 250,
-        "width": 61.76470588235294,
-        "height": 250
-    }
-],
-    width: 350,
-    height: 250,
-    padding: 0.1,
-    margin: {left: 50, right: 10, top: 10, bottom: 90},
-    expand: false,
-    axisLeft: 'tick',
-    axisBottom: 'tick',
-    axisRight: 'none',
-    axisTop: 'none',
-    axisLeftLabel: 'Frequency',
-    axisLabelFontSize: 12,
-    labelPosition: {'text-anchor': 'end', dx: '-1em', dy: '0.2em', transform: 'rotate(-55)'},
-    tooltip: true
-  })
 
-  function Download() {
+    const data = [
+        {
+            "TRMOBS": 1.9,
+            "taxon": "75",
+            "period": 1976,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.86,
+            "taxon": "75",
+            "period": 1977,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.95,
+            "taxon": "75",
+            "period": 1978,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.03,
+            "taxon": "75",
+            "period": 1979,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.96,
+            "taxon": "75",
+            "period": 1980,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.99,
+            "taxon": "75",
+            "period": 1981,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.13,
+            "taxon": "75",
+            "period": 1982,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.06,
+            "taxon": "75",
+            "period": 1983,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.14,
+            "taxon": "75",
+            "period": 1984,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.97,
+            "taxon": "75",
+            "period": 1985,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.92,
+            "taxon": "75",
+            "period": 1986,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.89,
+            "taxon": "75",
+            "period": 1987,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.95,
+            "taxon": "75",
+            "period": 1988,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2,
+            "taxon": "75",
+            "period": 1989,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.02,
+            "taxon": "75",
+            "period": 1990,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.21,
+            "taxon": "75",
+            "period": 1991,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.22,
+            "taxon": "75",
+            "period": 1992,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.93,
+            "taxon": "75",
+            "period": 1993,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.93,
+            "taxon": "75",
+            "period": 1994,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.95,
+            "taxon": "75",
+            "period": 1995,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.04,
+            "taxon": "75",
+            "period": 1996,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.02,
+            "taxon": "75",
+            "period": 1997,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.12,
+            "taxon": "75",
+            "period": 1998,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.12,
+            "taxon": "75",
+            "period": 1999,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.04,
+            "taxon": "75",
+            "period": 2000,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.94,
+            "taxon": "75",
+            "period": 2001,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.92,
+            "taxon": "75",
+            "period": 2002,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.06,
+            "taxon": "75",
+            "period": 2003,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.06,
+            "taxon": "75",
+            "period": 2004,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.07,
+            "taxon": "75",
+            "period": 2005,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.02,
+            "taxon": "75",
+            "period": 2006,
+            "COUNTRY": "UK",
+            "siteobs": 2.08
+        },
+        {
+            "TRMOBS": 1.94,
+            "taxon": "75",
+            "period": 2007,
+            "COUNTRY": "UK",
+            "siteobs": 1.99
+        },
+        {
+            "TRMOBS": 1.98,
+            "taxon": "75",
+            "period": 2008,
+            "COUNTRY": "UK",
+            "siteobs": 2.28
+        },
+        {
+            "TRMOBS": 1.92,
+            "taxon": "75",
+            "period": 2009,
+            "COUNTRY": "UK",
+            "siteobs": 2.01
+        },
+        {
+            "TRMOBS": 1.82,
+            "taxon": "75",
+            "period": 2010,
+            "COUNTRY": "UK",
+            "siteobs": 1.78
+        },
+        {
+            "TRMOBS": 1.92,
+            "taxon": "75",
+            "period": 2011,
+            "COUNTRY": "UK",
+            "siteobs": 1.9
+        },
+        {
+            "TRMOBS": 1.99,
+            "taxon": "75",
+            "period": 2012,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 2.01,
+            "taxon": "75",
+            "period": 2013,
+            "COUNTRY": "UK",
+            "siteobs": 1.81
+        },
+        {
+            "TRMOBS": 1.98,
+            "taxon": "75",
+            "period": 2014,
+            "COUNTRY": "UK",
+            "siteobs": 2.07
+        },
+        {
+            "TRMOBS": 2.02,
+            "taxon": "75",
+            "period": 2015,
+            "COUNTRY": "UK",
+            "siteobs": 1.88
+        },
+        {
+            "TRMOBS": 1.87,
+            "taxon": "75",
+            "period": 2016,
+            "COUNTRY": "UK",
+            "siteobs": 1.52
+        },
+        {
+            "TRMOBS": 2.06,
+            "taxon": "75",
+            "period": 2017,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.99,
+            "taxon": "75",
+            "period": 2018,
+            "COUNTRY": "UK",
+            "siteobs": 1.48
+        },
+        {
+            "TRMOBS": 2.13,
+            "taxon": "75",
+            "period": 2019,
+            "COUNTRY": "UK",
+            "siteobs": 1.68
+        },
+        {
+            "TRMOBS": 2.06,
+            "taxon": "75",
+            "period": 2020,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.98,
+            "taxon": "75",
+            "period": 2021,
+            "COUNTRY": "UK",
+            "siteobs": null
+        },
+        {
+            "TRMOBS": 1.94,
+            "taxon": "75",
+            "period": 2022,
+            "COUNTRY": "UK",
+            "siteobs": null
+        }
+    ]
 
-    const info = {
-      text: 'Info test mary had a little lamb whose fleece was white as snow.',
-      textFormatted: '',
-      margin: 10,
-      fontSize: 10,
-      //img: `${ds.bsbi_atlas.dataRoot}combined-logos.png`
-    }
+    const data2 = [
+      {
+          "TRMOBS": 2.1,
+          "taxon": "54",
+          "period": 1976,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.11,
+          "taxon": "54",
+          "period": 1977,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.96,
+          "taxon": "54",
+          "period": 1978,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.93,
+          "taxon": "54",
+          "period": 1979,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.92,
+          "taxon": "54",
+          "period": 1980,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.82,
+          "taxon": "54",
+          "period": 1981,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.02,
+          "taxon": "54",
+          "period": 1982,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2,
+          "taxon": "54",
+          "period": 1983,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.1,
+          "taxon": "54",
+          "period": 1984,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.07,
+          "taxon": "54",
+          "period": 1985,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.83,
+          "taxon": "54",
+          "period": 1986,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.75,
+          "taxon": "54",
+          "period": 1987,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.92,
+          "taxon": "54",
+          "period": 1988,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.86,
+          "taxon": "54",
+          "period": 1989,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.92,
+          "taxon": "54",
+          "period": 1990,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.08,
+          "taxon": "54",
+          "period": 1991,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.11,
+          "taxon": "54",
+          "period": 1992,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.95,
+          "taxon": "54",
+          "period": 1993,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.85,
+          "taxon": "54",
+          "period": 1994,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.95,
+          "taxon": "54",
+          "period": 1995,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.12,
+          "taxon": "54",
+          "period": 1996,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.04,
+          "taxon": "54",
+          "period": 1997,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.94,
+          "taxon": "54",
+          "period": 1998,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.92,
+          "taxon": "54",
+          "period": 1999,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.06,
+          "taxon": "54",
+          "period": 2000,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.97,
+          "taxon": "54",
+          "period": 2001,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.95,
+          "taxon": "54",
+          "period": 2002,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.92,
+          "taxon": "54",
+          "period": 2003,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.06,
+          "taxon": "54",
+          "period": 2004,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.05,
+          "taxon": "54",
+          "period": 2005,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.05,
+          "taxon": "54",
+          "period": 2006,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.01,
+          "taxon": "54",
+          "period": 2007,
+          "COUNTRY": "UK",
+          "siteobs": 0.48
+      },
+      {
+          "TRMOBS": 1.87,
+          "taxon": "54",
+          "period": 2008,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.98,
+          "taxon": "54",
+          "period": 2009,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 1.94,
+          "taxon": "54",
+          "period": 2010,
+          "COUNTRY": "UK",
+          "siteobs": 0.48
+      },
+      {
+          "TRMOBS": 1.95,
+          "taxon": "54",
+          "period": 2011,
+          "COUNTRY": "UK",
+          "siteobs": 0
+      },
+      {
+          "TRMOBS": 1.74,
+          "taxon": "54",
+          "period": 2012,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.08,
+          "taxon": "54",
+          "period": 2013,
+          "COUNTRY": "UK",
+          "siteobs": 0.48
+      },
+      {
+          "TRMOBS": 2.14,
+          "taxon": "54",
+          "period": 2014,
+          "COUNTRY": "UK",
+          "siteobs": 0.3
+      },
+      {
+          "TRMOBS": 2.18,
+          "taxon": "54",
+          "period": 2015,
+          "COUNTRY": "UK",
+          "siteobs": 0
+      },
+      {
+          "TRMOBS": 2.05,
+          "taxon": "54",
+          "period": 2016,
+          "COUNTRY": "UK",
+          "siteobs": 0.3
+      },
+      {
+          "TRMOBS": 2.09,
+          "taxon": "54",
+          "period": 2017,
+          "COUNTRY": "UK",
+          "siteobs": 0
+      },
+      {
+          "TRMOBS": 2.11,
+          "taxon": "54",
+          "period": 2018,
+          "COUNTRY": "UK",
+          "siteobs": 0
+      },
+      {
+          "TRMOBS": 2.22,
+          "taxon": "54",
+          "period": 2019,
+          "COUNTRY": "UK",
+          "siteobs": 0.48
+      },
+      {
+          "TRMOBS": 2.12,
+          "taxon": "54",
+          "period": 2020,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.1,
+          "taxon": "54",
+          "period": 2021,
+          "COUNTRY": "UK",
+          "siteobs": null
+      },
+      {
+          "TRMOBS": 2.09,
+          "taxon": "54",
+          "period": 2022,
+          "COUNTRY": "UK",
+          "siteobs": null
+      }
+    ]
+    
+    const metrics = [
+      {
+        taxon: '54',
+        id: 'siteobs',
+        prop: 'siteobs', 
+        points: 'siteobs',
+        colour: 'magenta',
+        pointColour: 'magenta',
+        opacity: 1,
+        strokeWidth: 2
+      },
+      {
+        taxon: '54',
+        id: 'TRMOBS',
+        prop: 'TRMOBS', 
+        points: 'TRMOBS',
+        colour: 'black', 
+        opacity: 1,
+        strokeWidth: 1
+      }
+    ]
 
-    ret = bar.saveImage(false, 'bar-test', info)
-      .then((dataUrl) => {
-        //alert('download complete')
-        console.log(dataUrl)
-      })
-  }
+    const periods = data.map(d => d.period)
+    metrics[0].periodMin = Math.min(...periods)
+    metrics[0].periodMax = Math.max(...periods)
+
+
+    const lci = brccharts.temporal({
+      selector: '#chart1',
+      data: data2,
+      metrics: metrics,
+      width: 500,
+      height: 300,
+      taxa: ['75', '54'],
+      minMaxY: null,
+      perRow: 1,
+      showLegend: false,
+      interactivity: 'mousemove',
+      showTaxonLabel: false,
+      chartStyle: 'line',
+      axisLeftLabel: 'Log10 Collated Index',
+      axisLabelFontSize: 12,
+      margin: {left: 50, right: 0, bottom: 20, top: 5},
+      xPadPercent: 3,
+      yPadPercent: 3,
+      minPeriodTrans: 1975,
+      maxPeriodTrans: 2022,
+      overrideHighlight: true,
+      missingValues: 'break',
+      expand: true
+    })
+
+  
   </script>
 </body>
 </html>

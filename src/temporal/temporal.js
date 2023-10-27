@@ -376,6 +376,7 @@ export function temporal({
         opacity: m.opacity !== 'undefined' ? m.opacity : 1,
         fillOpacity: m.fillOpacity !== 'undefined' ? m.fillOpacity : 0.5,
         colour: m.colour ? m.colour : 'blue',
+        pointColour: m.pointColour ? m.pointColour : 'black',
         fill: m.fill,
         fading: iFade,
         strokeWidth: strokeWidth,

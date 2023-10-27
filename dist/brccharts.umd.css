@@ -1,10 +1,4 @@
-.blah {
-    background: red;
-}
-
-svg {
-    font-family: Arial, Helvetica, sans-serif;
-}.brc-chart-pie {
+.brc-chart-pie {
   width: 100%
 }
 
@@ -40,7 +34,13 @@ svg {
 }
 
 
+.blah {
+    background: red;
+}
 
+svg {
+    font-family: Arial, Helvetica, sans-serif;
+}
 .brc-chart-phen1 path.highlight.phen-path-line {
     stroke: black;
     stroke-width: 3;
@@ -230,12 +230,6 @@ svg circle.lowlighted {
     opacity: 0.2;
     stroke-opacity: 0.2;
     fill-opacity: 0.2;
-}.brc-chart-altlat .highlight {
-    opacity: 1;
-}
-
-.brc-chart-altlat .lowlight {
-    opacity: 0.1;
 }.brc-chart-temporal {
     overflow: visible;
 }
@@ -253,3 +247,10 @@ svg circle.lowlighted {
 /* .brc-chart-temporal .brc-legend-item-rect.highlight {
     fill:black;
 } */
+.brc-chart-altlat .highlight {
+    opacity: 1;
+}
+
+.brc-chart-altlat .lowlight {
+    opacity: 0.1;
+}

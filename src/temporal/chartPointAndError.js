@@ -25,7 +25,8 @@ export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal,
         if (m.periodMax && d.period > m.periodMax) return false
         return true
       })
-    
+      .filter(d => d[m.prop] !== null)
+      
     // Construct data structure for points.
     const bErrorBars = m.errorBarUpper && m.errorBarLower
     const bPoints = m.points
@@ -87,6 +88,9 @@ export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal,
           ret.path = `M ${x} ${l} L ${x} ${u}`
         }
 
+        ret.colour = m.pointColour
+        ret.strokeWidth = m.strokeWidth
+
         return ret
       })
       if (bPoints) chartPoints = [...chartPoints, ...points]
@@ -133,8 +137,8 @@ export function generatePointsAndErrors(dataFilteredAll, metricsPlus, gTemporal,
         //.attr('cy', height)
         .attr('r', 3)
         .style('fill', 'white')
-        .style('stroke', 'black')
-        .style('stroke-width', 1)
+        .style('stroke', d => d.colour)
+        .style('stroke-width', d => d.strokeWidth)
         .style('opacity', 0),
       update => update,
       exit => exit

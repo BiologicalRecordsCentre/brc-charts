@@ -8537,6 +8537,8 @@
             // with the missing value specified (can be a value
             // or 'bridge' or 'break').
             ret.n = missingValues;
+          } else if (d[m.prop] === null) {
+            ret.n = missingValues;
           } else if (m.periodMin && p < m.periodMin || m.periodMax && p > m.periodMax) {
             // If metric has periodMin or periodMax specfied, then replace values beyond
             // this range with specifed missing value.
@@ -8971,6 +8973,8 @@
         if (m.periodMin && d.period < m.periodMin) return false;
         if (m.periodMax && d.period > m.periodMax) return false;
         return true;
+      }).filter(function (d) {
+        return d[m.prop] !== null;
       }); // Construct data structure for points.
 
       var bErrorBars = m.errorBarUpper && m.errorBarLower;
@@ -9040,6 +9044,8 @@
             ret.path = "M ".concat(x, " ").concat(l, " L ").concat(x, " ").concat(u);
           }
 
+          ret.colour = m.pointColour;
+          ret.strokeWidth = m.strokeWidth;
           return ret;
         });
         if (bPoints) chartPoints = [].concat(_toConsumableArray(chartPoints), _toConsumableArray(points));
@@ -9084,7 +9090,11 @@
       }).attr('cy', function (d) {
         return d.y;
       }) //.attr('cy', height)
-      .attr('r', 3).style('fill', 'white').style('stroke', 'black').style('stroke-width', 1).style('opacity', 0);
+      .attr('r', 3).style('fill', 'white').style('stroke', function (d) {
+        return d.colour;
+      }).style('stroke-width', function (d) {
+        return d.strokeWidth;
+      }).style('opacity', 0);
     }, function (update) {
       return update;
     }, function (exit) {
@@ -9362,7 +9372,9 @@
       }
 
       dataFilteredMetric.forEach(function (d) {
-        d[m.prop] = d[m.prop] / denominator;
+        if (d[m.prop] !== null) {
+          d[m.prop] = d[m.prop] / denominator;
+        }
       }); // Record max data value in metric
 
       var errorBarUppers = m.errorBarUpper && m.errorBarLower ? dataFilteredMetric.map(function (d) {
@@ -10204,6 +10216,7 @@
           opacity: m.opacity !== 'undefined' ? m.opacity : 1,
           fillOpacity: m.fillOpacity !== 'undefined' ? m.fillOpacity : 0.5,
           colour: m.colour ? m.colour : 'blue',
+          pointColour: m.pointColour ? m.pointColour : 'black',
           fill: m.fill,
           fading: iFade,
           strokeWidth: strokeWidth,
