@@ -856,7 +856,6 @@
       spreadHeight = height;
     }
 
-    console.log('tickFormat', tickFormat);
     fn.yAxis = fnAxis;
     fn.tickFormat = tickFormat;
     fn.height = spreadHeight;
@@ -20227,7 +20226,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.19.0";
+  var version = "0.20.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
