@@ -735,8 +735,12 @@ export function spreadScale(minY, maxY, yPadding, metrics, height, composition, 
       tickFormat = 'd'
     } else if (maxY-minY > 1) {
       tickFormat = '.1f'
-    } else {
+    } else if (maxY-minY > 0.1) {
       tickFormat = '.2f'
+    } else if (maxY-minY > 0.01) {
+      tickFormat = '.3f'
+    } else {
+      tickFormat = '.4f'
     }
     spreadHeight = height
   }
