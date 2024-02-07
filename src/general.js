@@ -542,15 +542,15 @@ function addInfo(svg, expand, svgInfo) {
         // serialised when using the saveMap method
         iInfo.attr('href', getDataUrl(this))
 
-        infoHeight = infoHeight + margin + imgHeight
+        const calcInfoHeight = infoHeight + margin + imgHeight
         //svg.attr('height', height + infoHeight)
         if (expand) {
-          svg.attr("viewBox", "0 0 " + width + " " +  (height  + infoHeight))
+          svg.attr("viewBox", "0 0 " + width + " " +  (height  + calcInfoHeight))
         } else {
-          svg.attr("height", height + infoHeight)
+          svg.attr("height", height + calcInfoHeight)
         }
 
-        mask.style("height", infoHeight)
+        mask.style("height", calcInfoHeight)
 
         resolve()
       }

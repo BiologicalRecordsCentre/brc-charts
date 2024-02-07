@@ -91,10 +91,6 @@
     return target;
   }
 
-  function _readOnlyError(name) {
-    throw new TypeError("\"" + name + "\" is read-only");
-  }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
@@ -640,15 +636,15 @@
           // serialised when using the saveMap method
 
           iInfo.attr('href', getDataUrl(this));
-          infoHeight = (_readOnlyError("infoHeight"), infoHeight + margin + imgHeight); //svg.attr('height', height + infoHeight)
+          var calcInfoHeight = infoHeight + margin + imgHeight; //svg.attr('height', height + infoHeight)
 
           if (expand) {
-            svg.attr("viewBox", "0 0 " + width + " " + (height + infoHeight));
+            svg.attr("viewBox", "0 0 " + width + " " + (height + calcInfoHeight));
           } else {
-            svg.attr("height", height + infoHeight);
+            svg.attr("height", height + calcInfoHeight);
           }
 
-          mask.style("height", infoHeight);
+          mask.style("height", calcInfoHeight);
           resolve();
         };
 
