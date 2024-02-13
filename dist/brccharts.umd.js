@@ -9335,7 +9335,7 @@
   }
 
   function makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans) {
+  axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans, watermark) {
     // xPadding is calculated before yPadding because it is needed early
     var xPadding = (maxPeriod - minPeriod) * xPadPercent / 100; // Pre-process data.
     // Filter to named taxon and to min and max period and sort in period order
@@ -9667,6 +9667,7 @@
     // The order they are added affects there position in the display stack
     // Those added last are displayed on top.
 
+    var gWatermark = addG('gTemporalWatermark', gTemporal);
     var gVerticals = addG('gSupVerticals', gTemporal);
     var gBars = addG('gTemporalBars', gTemporal);
     var gLines = addG('gTemporalLines', gTemporal);
@@ -9686,7 +9687,32 @@
       var axisLeftPadX = margin.left ? margin.left : 0;
       var axisRightPadX = margin.right ? margin.right : 0;
       var axisBottomPadY = margin.bottom ? margin.bottom : 0;
-      var axisTopPadY = margin.top ? margin.top : 0; // Taxon title
+      var axisTopPadY = margin.top ? margin.top : 0; // Watermark
+
+      if (watermark.text) {
+        var wmark = gWatermark.append('text');
+        wmark.text(watermark.text);
+
+        if (watermark.font) {
+          wmark.style('font-family', watermark.font);
+        }
+
+        wmark.style('font-size', watermark.fontSize ? "".concat(watermark.fontSize, "px") : '20px');
+        wmark.style('font-weight', watermark.fontWeight ? watermark.fontWeight : 'bolder');
+
+        if (watermark.colour) {
+          wmark.style('fill', watermark.colour);
+        }
+
+        wmark.style('fill-opacity', watermark.opacity ? watermark.opacity : '0.3');
+        var wmarkWidth = wmark.node().getBBox().width;
+        var wmarkHeight = wmark.node().getBBox().height;
+        var wMarkY = wmark.node().getBBox().y;
+        var rotation = watermark.rotation ? watermark.rotation : 0;
+        wmark.style('transform-origin', "".concat(wmarkWidth / 2, "px ").concat(wmarkHeight / 2 + wMarkY, "px"));
+        wmark.style('transform', "translate(".concat(width / 2 - wmarkWidth / 2, "px, ").concat(height / 2 - wmarkHeight / 2 - wMarkY, "px) rotate(").concat(rotation, "deg)"));
+      } // Taxon title
+
 
       if (showTaxonLabel) {
         var taxonLabel = svgTemporal.append('text').classed('brc-chart-temporal-label', true).text(taxon).style('font-size', taxonLabelFontSize).style('font-style', taxonLabelItalics ? 'italic' : '');
@@ -10003,6 +10029,17 @@
    * can provide your own CSS to do it. Target .temporal-graphic.lowlight and .temporal-graphic.highlight. (Default - false.)
    * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
    * metrics on a chart of composition type 'spread'. (Default - 0.8.)
+   * @param {Object} watermark - Options for creating a watermark on the chart. (Default - {}.)
+   * The watermark object can have any of the properties shown below. (The order is not important.) The only mandatory
+   * property (if a watermark is required) is 'text'.
+   * <ul>
+   * <li> <b>text<b> - a string specifying the text that comprises the watermark.
+   * <li> <b>font<b> - a string specifying the font family. If ommitted, the default font is used.
+   * <li> <b>fontSize<b> - an integer specifying font size (in pixels). (Default - 20.)
+   * <li> <b>fontWeight<b> - a string that specifies the font weight. (Default - 'bolder'.)
+   * <li> <b>colour<b> - a string that specifies the text colour. Any accepted web format can be used. (Default - 'black'.)
+   * <li> <b>opacity<b> - a number between 0 and 1 that indicates the opacity of the text. (Default 0.2.)
+   * <li> <b>rotation<b> - a number between 0 and 359 that indicates the rotation of the text in degrees. (Default 0.)
    * @returns {module:temporal~api} api - Returns an API for the chart.
    */
 
@@ -10122,7 +10159,9 @@
         _ref$overrideHighligh = _ref.overrideHighlight,
         overrideHighlight = _ref$overrideHighligh === void 0 ? false : _ref$overrideHighligh,
         _ref$spreadOverlap = _ref.spreadOverlap,
-        spreadOverlap = _ref$spreadOverlap === void 0 ? 0.8 : _ref$spreadOverlap;
+        spreadOverlap = _ref$spreadOverlap === void 0 ? 0.8 : _ref$spreadOverlap,
+        _ref$watermark = _ref.watermark,
+        watermark = _ref$watermark === void 0 ? {} : _ref$watermark;
 
     // xPadPercent and yPadPercent can not be used with charts of bar type.
     if (chartStyle === 'bar') {
@@ -10177,7 +10216,7 @@
       var pTrans = [];
       var svgsTaxa = taxa.map(function (taxon) {
         return makeTemporal(svgChart, taxon, taxa, data, dataPoints, dataTrendLines, periodType, monthScaleRange, minPeriod, maxPeriod, minPeriodTrans, maxPeriodTrans, minY, maxY, minMaxY, xPadPercent, yPadPercent, metricsPlus, width, height, axisTop, axisBottom, chartStyle, axisLeft, //yAxisOpts,
-        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans);
+        axisRight, duration, interactivity, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics, axisLabelFontSize, axisLeftLabel, axisRightLabel, missingValues, lineInterpolator, verticals, metricExpression, composition, spreadOverlap, pTrans, watermark);
       });
       var subChartWidth = Number(svgsTaxa[0].attr("width"));
       var subChartHeight = Number(svgsTaxa[0].attr("height"));
@@ -20222,7 +20261,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.20.1";
+  var version = "0.21.1";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";

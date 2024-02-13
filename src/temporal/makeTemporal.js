@@ -49,7 +49,8 @@ export function makeTemporal (
   metricExpression,
   composition,
   spreadOverlap,
-  pTrans
+  pTrans,
+  watermark
 ) {
   
   // xPadding is calculated before yPadding because it is needed early
@@ -321,6 +322,7 @@ export function makeTemporal (
   // Add specific g elements to gTemporal for different chart element groups
   // The order they are added affects there position in the display stack
   // Those added last are displayed on top.
+  const gWatermark = addG('gTemporalWatermark', gTemporal)
   const gVerticals = addG('gSupVerticals', gTemporal)
   const gBars = addG('gTemporalBars', gTemporal)
   const gLines = addG('gTemporalLines', gTemporal)
@@ -335,7 +337,7 @@ export function makeTemporal (
   generateSupTrendLines(dataTrendLinesFiltered, metricsPlus, gSupTrendLines, t, xScale, yScale, height, pTrans, chartStyle, svgChart, interactivity)
   generateSupPointsAndErrors(dataPointsFiltered, gSupPointsAndErrors, t, xScale, yScale, height, pTrans)
   generateSupVerticals(verticalsFiltered, gVerticals, t, xScale, height, pTrans)
-
+  
   if (init) {
 
     // Constants for positioning
@@ -343,6 +345,30 @@ export function makeTemporal (
     const axisRightPadX = margin.right ? margin.right : 0
     const axisBottomPadY = margin.bottom ? margin.bottom : 0
     const axisTopPadY = margin.top ? margin.top : 0
+
+    // Watermark
+    if (watermark.text) {
+
+      const wmark = gWatermark.append('text')
+      wmark.text(watermark.text)
+      if (watermark.font) {
+        wmark.style('font-family', watermark.font)
+      }
+      wmark.style('font-size', watermark.fontSize ? `${watermark.fontSize}px` : '20px')
+      wmark.style('font-weight', watermark.fontWeight ? watermark.fontWeight : 'bolder')
+      if (watermark.colour) {
+        wmark.style('fill', watermark.colour)
+      }
+      wmark.style('fill-opacity', watermark.opacity ? watermark.opacity : '0.3')
+
+      const wmarkWidth = wmark.node().getBBox().width
+      const wmarkHeight = wmark.node().getBBox().height
+      const wMarkY =  wmark.node().getBBox().y
+
+      const rotation = watermark.rotation ? watermark.rotation : 0
+      wmark.style('transform-origin', `${wmarkWidth/2}px ${wmarkHeight/2+wMarkY}px`)
+      wmark.style('transform', `translate(${width/2-wmarkWidth/2}px, ${height/2-wmarkHeight/2-wMarkY}px) rotate(${rotation}deg)`)
+    }
 
     // Taxon title
     if (showTaxonLabel) {

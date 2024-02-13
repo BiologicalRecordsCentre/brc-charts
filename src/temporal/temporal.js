@@ -167,6 +167,17 @@ import { highlightItem } from './highlightitem'
  * can provide your own CSS to do it. Target .temporal-graphic.lowlight and .temporal-graphic.highlight. (Default - false.)
  * @param {number} opts.spreadOverlap - a number between 0 and 1 that indicates how much overlap is permitted on graphics for different
  * metrics on a chart of composition type 'spread'. (Default - 0.8.)
+ * @param {Object} watermark - Options for creating a watermark on the chart. (Default - {}.)
+ * The watermark object can have any of the properties shown below. (The order is not important.) The only mandatory
+ * property (if a watermark is required) is 'text'.
+ * <ul>
+ * <li> <b>text<b> - a string specifying the text that comprises the watermark.
+ * <li> <b>font<b> - a string specifying the font family. If ommitted, the default font is used.
+ * <li> <b>fontSize<b> - an integer specifying font size (in pixels). (Default - 20.)
+ * <li> <b>fontWeight<b> - a string that specifies the font weight. (Default - 'bolder'.)
+ * <li> <b>colour<b> - a string that specifies the text colour. Any accepted web format can be used. (Default - 'black'.)
+ * <li> <b>opacity<b> - a number between 0 and 1 that indicates the opacity of the text. (Default 0.2.)
+ * <li> <b>rotation<b> - a number between 0 and 359 that indicates the rotation of the text in degrees. (Default 0.)
  * @returns {module:temporal~api} api - Returns an API for the chart.
  */
 
@@ -228,6 +239,7 @@ export function temporal({
   composition = '',
   overrideHighlight = false,
   spreadOverlap = 0.8,
+  watermark = {}
 } = {}) {
 
   // xPadPercent and yPadPercent can not be used with charts of bar type.
@@ -324,7 +336,8 @@ export function temporal({
       metricExpression,
       composition,
       spreadOverlap,
-      pTrans
+      pTrans,
+      watermark
     ))
 
     const subChartWidth = Number(svgsTaxa[0].attr("width"))

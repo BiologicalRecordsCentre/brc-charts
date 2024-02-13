@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import * as gen from '../general'
 
 export function addEventHandlers(sel, prop, interactivity, svgChart) {
   sel
