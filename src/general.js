@@ -183,10 +183,12 @@ export function xAxisYear(width, ticks, min, max, bars) {
     .scale(xScale)
 
   if (ticks) {
-    const years = max - min
+    const years = max - min + 1
     const threshold = 30
 
     let ticks
+
+    console.log(width, years)
     if (width / years > threshold) {
       ticks = years
     } else if (width / years * 2 > threshold) {

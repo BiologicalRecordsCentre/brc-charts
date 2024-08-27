@@ -304,10 +304,12 @@
     var xAxis = d3.axisBottom().scale(xScale);
 
     if (ticks) {
-      var years = max - min;
+      var years = max - min + 1;
       var threshold = 30;
 
       var _ticks;
+
+      console.log(width, years);
 
       if (width / years > threshold) {
         _ticks = years;
