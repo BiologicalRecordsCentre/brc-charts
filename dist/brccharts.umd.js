@@ -20263,7 +20263,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.21.1";
+  var version = "0.21.2";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
