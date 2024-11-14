@@ -14,5 +14,4 @@ For API details - [JSDoc API documentation](https://biologicalrecordscentre.gith
 - [Temporal charts](example-8.html)
 - [Temporal charts interactive](example-9.html)
 
-
 [[Back to repo]](https://github.com/BiologicalRecordsCentre/brc-charts)
