@@ -1,4 +1,4 @@
-### BRC Charts library
+# BRC Charts library
 The BRC Charts library is a Javascript library for producing various charts tailored to biological records.
 
 ## Installing
