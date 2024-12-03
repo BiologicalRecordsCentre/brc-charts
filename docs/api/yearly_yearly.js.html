@@ -26,7 +26,12 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** @module yearly */
+            <pre class="prettyprint source linenums"><code>/** 
+ * @deprecated The yearly chart is deprecated in favour of the temporal chart.
+ * The temporal chart combines the phen1 and yearly charts and adds
+ * even more functionality.
+ * @module yearly
+ */
 
 import * as d3 from 'd3'
 import * as gen from '../general'
@@ -34,7 +39,8 @@ import { makeYearly } from './makeYearly'
 import { makeLegend } from './legend'
 import { highlightItem } from './highlightitem'
 
-/** 
+/**
+ * @deprecated yearly is deprecated in favour of the temporal chart.
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
@@ -64,9 +70,9 @@ import { highlightItem } from './highlightitem'
  * @param {string} opts.axisLeftLabel - Value for labelling left axis. (Default - ''.)
  * @param {string} opts.axisRightLabel - Value for labelling right axis. (Default - ''.)
  * @param {string} opts.axisLabelFontSize - Font size (pixels) for axist labels. (Default - 10.)
- * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)
- * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks. 
+ * @param {string} opts.axisRight - If set to 'on' line is drawn without ticks.
  * If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)
  * @param {string} opts.axisTop - If set to 'on' line is drawn otherwise not. (Default - ''.)
  * @param {string} opts.axisBottom - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)
@@ -85,41 +91,41 @@ import { highlightItem } from './highlightitem'
  * &lt;ul>
  * &lt;li> &lt;b>prop&lt;/b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
  * &lt;li> &lt;b>label&lt;/b> - a label for this metric. (Optional - the default label will be the property name.)
- * &lt;li> &lt;b>colour&lt;/b> - optional colour to give the graphic for this metric. Any accepted way of 
+ * &lt;li> &lt;b>colour&lt;/b> - optional colour to give the graphic for this metric. Any accepted way of
  * specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
  * (Optional - default is 'blue'.)
- * &lt;li> &lt;b>opacity&lt;/b> - optional opacity to give the graphic for this metric. 
+ * &lt;li> &lt;b>opacity&lt;/b> - optional opacity to give the graphic for this metric.
  * (Optional - default is 0.5.)
- * &lt;li> &lt;b>linewidth&lt;/b> - optional width of line for line for this metric if displayed as a line graph. 
+ * &lt;li> &lt;b>linewidth&lt;/b> - optional width of line for line for this metric if displayed as a line graph.
  * (Optional - default is 1.)
  * &lt;li> &lt;b>bandUpper&lt;/b> - optional name of a numeric property in the data which indicates the upper value
- * of a confidence band. Can only be used where &lt;i>showCounts&lt;/i> is 'line'. 
+ * of a confidence band. Can only be used where &lt;i>showCounts&lt;/i> is 'line'.
  * &lt;li> &lt;b>bandLower&lt;/b> - optional name of a numeric property in the data which indicates the lower value
- * of a confidence band. Can only be used where &lt;i>showCounts&lt;/i> is 'line'. 
- * &lt;li> &lt;b>bandFill&lt;/b> - optional colour to use for a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * of a confidence band. Can only be used where &lt;i>showCounts&lt;/i> is 'line'.
+ * &lt;li> &lt;b>bandFill&lt;/b> - optional colour to use for a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'silver'.)
- * &lt;li> &lt;b>bandStroke&lt;/b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
- * specifying web colours can be used. 
+ * &lt;li> &lt;b>bandStroke&lt;/b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+ * specifying web colours can be used.
  * (Optional - default is 'grey'.)
- * &lt;li> &lt;b>bandOpacity&lt;/b> - optional opacity to give the confidence band for this metric. 
+ * &lt;li> &lt;b>bandOpacity&lt;/b> - optional opacity to give the confidence band for this metric.
  * (Optional - default is 0.5.)
- * &lt;li> &lt;b>bandStrokeOpacity&lt;/b> - optional opacity to give the boundaries of the confidence band for this metric. 
+ * &lt;li> &lt;b>bandStrokeOpacity&lt;/b> - optional opacity to give the boundaries of the confidence band for this metric.
  * (Optional - default is 1.)
- * &lt;li> &lt;b>bandStrokewidth&lt;/b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+ * &lt;li> &lt;b>bandStrokewidth&lt;/b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
  * (Optional - default is 1.)
  * &lt;li> &lt;b>points&lt;/b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
  * &lt;li> &lt;b>errorBarUpper&lt;/b> - optional name of a numeric property in the data which indicates the upper value
- * of an error bar. Used in conjunction with the &lt;i>errorBarLower&lt;/i> property. 
+ * of an error bar. Used in conjunction with the &lt;i>errorBarLower&lt;/i> property.
 * &lt;li> &lt;b>errorBarLower&lt;/b> - optional name of a numeric property in the data which indicates the lower value
- * of an error bar. Used in conjunction with the &lt;i>errorBarUpper&lt;/i> property. 
+ * of an error bar. Used in conjunction with the &lt;i>errorBarUpper&lt;/i> property.
  * &lt;/ul>
  * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
  * &lt;ul>
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
  * &lt;li> &lt;b>year&lt;/b> - a four digit number indicating a year.
- * &lt;li> &lt;b>c1&lt;/b> - a metric for a given year (can have any name). 
+ * &lt;li> &lt;b>c1&lt;/b> - a metric for a given year (can have any name).
  * &lt;li> &lt;b>c2&lt;/b> - a metric for a given year (can have any name).
  * ... - there must be at least one metric column, but there can be any number of them.
  * &lt;/ul>
@@ -128,7 +134,7 @@ import { highlightItem } from './highlightitem'
  * &lt;ul>
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
  * &lt;li> &lt;b>year&lt;/b> - a four digit number indicating a year.
- * &lt;li> &lt;b>y&lt;/b> - y value for a given year. 
+ * &lt;li> &lt;b>y&lt;/b> - y value for a given year.
  * &lt;li> &lt;b>upper&lt;/b> - a value for upper confidence band.
  * &lt;li> &lt;b>lower&lt;/b> - a value for lower confidence band.
  * &lt;/ul>
@@ -137,12 +143,12 @@ import { highlightItem } from './highlightitem'
  * &lt;ul>
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
  * &lt;li> &lt;b>gradient&lt;/b> - a gradient for the line.
- * &lt;li> &lt;b>inercept&lt;/b> - the y axis intercept value (at x = 0) for the line. 
+ * &lt;li> &lt;b>inercept&lt;/b> - the y axis intercept value (at x = 0) for the line.
  * &lt;li> &lt;b>colour&lt;/b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
  * &lt;li> &lt;b>width&lt;/b> - the width the line the line in pixels. (Default - 1.)
  * &lt;li> &lt;b>opacity&lt;/b> - the opacity of the line. (Default - 1.)
  * &lt;/ul>
- * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created. (Default - [].)
 
  * @param {number} opts.minYear Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)
@@ -191,7 +197,7 @@ export function yearly({
   axisBottom = 'tick',
   axisRight = '',
   axisTop = '',
-  showCounts = 'bar', 
+  showCounts = 'bar',
   headPad = 0,
   duration = 1000,
   interactivity = 'none',
@@ -233,10 +239,10 @@ export function yearly({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart brc-chart-yearly')
-  
+
   preProcessMetrics()
   makeChart()
-  // Texts must come after chartbecause 
+  // Texts must come after chartbecause
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   gen.makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -313,7 +319,7 @@ export function yearly({
     ) + subChartPad : 0
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -328,9 +334,9 @@ export function yearly({
   }
 
   function preProcessMetrics () {
-    // Look for 'fading' colour in taxa and colour appropriately 
+    // Look for 'fading' colour in taxa and colour appropriately
     // in fading shades of grey.
-    
+
     let iFading = 0
     metricsPlus = metrics.map(m => {
       let iFade, strokeWidth
@@ -371,7 +377,9 @@ export function yearly({
     })
   }
 
-/** @function setChartOpts
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
   * @param {string} opts.subtitle - Subtitle for the chart.
@@ -389,7 +397,7 @@ export function yearly({
   * @param {Array.&lt;Object>} opts.dataPoints - Specifies an array of data objects (see main interface for details).
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the yearly function&lt;/b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -467,7 +475,9 @@ export function yearly({
     return pRet
   }
 
-/** @function setTaxon
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the yearly function&lt;/b>.
@@ -486,7 +496,9 @@ export function yearly({
     return pRet
   }
 
-/** @function getChartWidth
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function getChartWidth
   * @description &lt;b>This function is exposed as a method on the API returned from the yearly function&lt;/b>.
   * Return the full width of the chart svg.
   */
@@ -494,7 +506,9 @@ export function yearly({
     return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2]
   }
 
-/** @function getChartHeight
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function getChartHeight
   * @description &lt;b>This function is exposed as a method on the API returned from the yearly function&lt;/b>.
   * Return the full height of the chart svg.
   */
@@ -502,7 +516,9 @@ export function yearly({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
-/** @function saveImage
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
   * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -512,18 +528,19 @@ export function yearly({
   * @description &lt;b>This function is exposed as a method on the API returned from the yearly function&lt;/b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return gen.saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return gen.saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
 
   /**
+   * @deprecated yearly is deprecated in favour of the temporal chart.
    * @typedef {Object} api
    * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart. 
-   * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:yearly~setChartOpts} setChartOpts - Sets various options for the chart.
+   * @property {module:yearly~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:yearly~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,
@@ -549,7 +566,7 @@ export function yearly({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

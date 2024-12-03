@@ -34,7 +34,7 @@ import { getCentroid } from 'brc-atlas-bigr'
 import { constants } from './constants.js'
 import backData from './altlat.json'
 
-/** 
+/**
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'altlat-chart'.)
@@ -84,7 +84,7 @@ import backData from './altlat.json'
  * &lt;li> &lt;b>taxon&lt;/b> - The taxon for which this point refers.
  * &lt;li> &lt;b>distance&lt;/b> - The distance north (OS northing) in kilometers rounded down to the nearest 50 km.
  * &lt;li> &lt;b>altitude&lt;/b> - The altitude (asl) in metres rounded down to the nearest 100 m.
- * &lt;li> &lt;b>metric&lt;/b> - a metric (number) for the given distance and altitude. 
+ * &lt;li> &lt;b>metric&lt;/b> - a metric (number) for the given distance and altitude.
  * &lt;/ul>
  * @param {Array.&lt;Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics.
  * Each of the objects in the data array must be sepecified with the properties shown below. (The order affects how they appear in the legend.)
@@ -92,9 +92,9 @@ import backData from './altlat.json'
  * &lt;li> &lt;b>min&lt;/b> - The minimum metric value to be included in this range.
  * &lt;li> &lt;b>max&lt;/b> - The maximum metric value to be included in this range.
  * &lt;li> &lt;b>radius&lt;/b> - The radius of the dot to be drawn for this range.
- * &lt;li> &lt;b>legend&lt;/b> - Text for the legend item for this range. 
+ * &lt;li> &lt;b>legend&lt;/b> - Text for the legend item for this range.
  * &lt;/ul>
- * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created. (Default - [].)
  * @returns {module:altlat~api} api - Returns an API for the chart.
  */
@@ -162,9 +162,9 @@ export function altlat({
   // Value scales
   const xScale = d3.scaleLinear().domain([0, 1250]).range([0, width])
   const yScale = d3.scaleLinear().domain([0, 1200]).range([height, 0])
-  
+
   makeChart().then(() => {
-    // Texts must come after chartbecause 
+    // Texts must come after chartbecause
     // the chart width is required
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -174,7 +174,7 @@ export function altlat({
 
     svg.selectAll('rect, path, line').style('stroke-width', lineWidth)
   })
-  
+
   function makeChart () {
 
     // If taxa for graphs not set, set to all in dataset
@@ -190,7 +190,7 @@ export function altlat({
       const subChartHeight = Number(svgsTaxa[0].attr("height"))
 
       svgsTaxa.forEach((svgTaxon, i) => {
-        
+
         const col = i%perRow
         const row = Math.floor(i/perRow)
 
@@ -301,7 +301,7 @@ export function altlat({
           .attr('y', d => yScale(d[1]) - backSquareHeight)
           .attr('x', d => xScale(d[0])),
       )
-  
+
     // Create the metric circles
     const t = svgAltLat.transition()
       .duration(duration)
@@ -326,7 +326,7 @@ export function altlat({
         .attr("r", d => xScale(getRadius(d.metric)))
 
     addEventHandlers(gAltLat.selectAll(".brc-altlat-metric-circle"))
-        
+
     if (init) {
 
       // Constants for positioning
@@ -348,7 +348,7 @@ export function altlat({
         const labelHeight = taxonLabel.node().getBBox().height
         taxonLabel.attr("transform", `translate(${axisLeftPadX}, ${labelHeight})`)
       }
-      
+
       // Size SVG
       svgAltLat
         .attr('width', width + axisLeftPadX + axisRightPadX)
@@ -356,7 +356,7 @@ export function altlat({
 
       // Position chart and legend
       gAltLat.attr("transform", `translate(${axisLeftPadX},${axisTopPadY})`)
-      
+
       // Create axes and position within SVG
       const leftYaxisTrans = `translate(${axisLeftPadX},${axisTopPadY})`
       //const leftYaxisLabelTrans = `translate(${axisLabelFontSize},${axisTopPadY + height/2}) rotate(270)`
@@ -406,14 +406,14 @@ export function altlat({
         .style('font-size', axisLabelFontSize)
         .style('font-family', font)
         .style('dominant-baseline', 'hanging')
-        .text(axisLeftLabel) 
+        .text(axisLeftLabel)
       tYaxisLabel.attr("transform", leftYaxisLabelTrans)
 
       const tXaxisLabel = svgAltLat.append("text")
         .style("text-anchor", "middle")
         .style('font-size', axisLabelFontSize)
         .style('font-family', font)
-        .text(axisBottomLabel) 
+        .text(axisBottomLabel)
       tXaxisLabel.attr("transform", bottomXaxisLabelTrans)
 
     } else if (taxa.length === 1) {
@@ -582,7 +582,7 @@ export function altlat({
   */
   function dataFromTetrads(tetrads) {
 
-    let altlatTetrads 
+    let altlatTetrads
     if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
       altlatTetrads = `../dist/altlat-tetrads.csv`
     } else {
@@ -630,7 +630,7 @@ export function altlat({
           }
         }
         const tm = altlatSorted[tmi]
-    
+
         if (tm) {
           const c = getCentroid(t, 'gb')
           const distance = c.centroid[1]/1000
@@ -691,7 +691,7 @@ export function altlat({
   * @param {Array.&lt;Object>} opts.ranges - Specifies an array of objects defining ranges for displaying the metrics (see main interface for details).
   * @returns {Promise} promise resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the altlat function&lt;/b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -796,18 +796,18 @@ export function altlat({
   * @description &lt;b>This function is exposed as a method on the API returned from the altlat function&lt;/b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return saveChartImage(svg, expand, asSvg, filename, font, info)
   }
 
   /**
    * @typedef {Object} api
    * @property {module:altlat~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:altlat~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references. 
-   * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:altlat~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:altlat~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:altlat~setTaxon} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:altlat~dataFromTetrads} dataFromTetrads - Generates data in the format required for the chart from a raw list of tetrad references.
+   * @property {module:altlat~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,
@@ -833,7 +833,7 @@ export function altlat({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

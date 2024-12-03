@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: phen1</title>
+    <title>JSDoc: Module: yearly </title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: phen1</h1>
+    <h1 class="page-title">Module: yearly </h1>
 
     
 
@@ -28,14 +28,60 @@
 
 <header>
     
-        
-    
 </header>
 
 <article>
     <div class="container-overview">
     
         
+            <div class="description">The yearly chart is deprecated in favour of the temporal chart.
+The temporal chart combines the phen1 and yearly charts and adds
+even more functionality.</div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
 
         
     
@@ -64,7 +110,7 @@
     
 
     
-    <h4 class="name" id=".phen1"><span class="type-signature">(static) </span>phen1<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-phen1.html#~api">module:phen1~api</a>}</span></h4>
+    <h4 class="name" id=".yearly"><span class="type-signature">(static) </span>yearly<span class="signature">(opts)</span><span class="type-signature"> &rarr; {module:yearly~api}</span></h4>
     
 
     
@@ -162,7 +208,7 @@
 
             
 
-            <td class="description last">The CSS selector of the element which will be the parent of the SVG.</td>
+            <td class="description last">The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)</td>
         </tr>
 
     
@@ -185,7 +231,7 @@
 
             
 
-            <td class="description last">The id for the dom object created.</td>
+            <td class="description last">The id for the dom object created. (Default - 'yearly-chart'.)</td>
         </tr>
 
     
@@ -208,7 +254,7 @@
 
             
 
-            <td class="description last">The width of each sub-chart area in pixels.</td>
+            <td class="description last">The width of each sub-chart area in pixels. (Default - 300.)</td>
         </tr>
 
     
@@ -231,7 +277,7 @@
 
             
 
-            <td class="description last">The height of the each sub-chart area in pixels.</td>
+            <td class="description last">The height of the each sub-chart area in pixels. (Default - 200.)</td>
         </tr>
 
     
@@ -296,7 +342,7 @@
 
             
 
-            <td class="description last">Left margin in pixels. (Default - 35.)</td>
+            <td class="description last">Left margin in pixels. (Default - 40.)</td>
         </tr>
 
     
@@ -319,7 +365,7 @@
 
             
 
-            <td class="description last">Right margin in pixels. (Default - 0.)</td>
+            <td class="description last">Right margin in pixels. (Default - 40.)</td>
         </tr>
 
     
@@ -365,7 +411,7 @@
 
             
 
-            <td class="description last">Bottom margin in pixels. (Default - 5.)</td>
+            <td class="description last">Bottom margin in pixels. (Default - 20.)</td>
         </tr>
 
     
@@ -395,30 +441,7 @@
 
             
 
-            <td class="description last">The number of sub-charts per row.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ytype</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
+            <td class="description last">The number of sub-charts per row. (Default - 2.)</td>
         </tr>
 
     
@@ -441,77 +464,7 @@
 
             
 
-            <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spread</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indicates whether multiple metrics are to be spread vertically across the chart.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>style</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indicates the type of graphics to be used for the chart. Can be 'lines', 'bars' or 'areas'. (Default - 'lines'.)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>stacked</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indicates whether to stack metrics or superimpose them. If true, the metrics are stacked. This
-is only relevant for charts of style 'bars' or 'areas'. It has no effect on charts with the style 'lines'. (Default - false.)</td>
+            <td class="description last">Indicates whether or not the chart will expand to fill parent element and scale as that element resized. (Default - false.)</td>
         </tr>
 
     
@@ -534,7 +487,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Title for the chart.</td>
+            <td class="description last">Title for the chart. (Default - ''.)</td>
         </tr>
 
     
@@ -557,7 +510,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Subtitle for the chart.</td>
+            <td class="description last">Subtitle for the chart. (Default - ''.)</td>
         </tr>
 
     
@@ -580,7 +533,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Footer for the chart.</td>
+            <td class="description last">Footer for the chart. (Default - ''.)</td>
         </tr>
 
     
@@ -603,7 +556,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Font size (pixels) of chart title.</td>
+            <td class="description last">Font size (pixels) of chart title. (Default - 24.)</td>
         </tr>
 
     
@@ -626,7 +579,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Font size (pixels) of chart sub-title.</td>
+            <td class="description last">Font size (pixels) of chart subtitle. (Default - 16.)</td>
         </tr>
 
     
@@ -649,7 +602,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Font size (pixels) of chart footer.</td>
+            <td class="description last">Font size (pixels) of chart footer. (Default - 10.)</td>
         </tr>
 
     
@@ -672,7 +625,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Alignment of chart title: either 'left', 'right' or 'centre'.</td>
+            <td class="description last">Alignment of chart title: either 'left', 'right' or 'centre'. (Default - 'left'.)</td>
         </tr>
 
     
@@ -695,7 +648,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Alignment of chart subtitle: either 'left', 'right' or 'centre'.</td>
+            <td class="description last">Alignment of chart subtitle: either 'left', 'right' or 'centre'. (Default - 'left'.)</td>
         </tr>
 
     
@@ -718,7 +671,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Alignment of chart footer: either 'left', 'right' or 'centre'.</td>
+            <td class="description last">Alignment of chart footer: either 'left', 'right' or 'centre'. (Default - 'left'.)</td>
         </tr>
 
     
@@ -741,125 +694,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Whether or not to show taxon label above each sub-graph.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>taxonLabelFontSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Font size (pixels) of taxon sub-chart label.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>taxonLabelItalics</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether or not to italicise taxon label.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisLabelFontSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Font size (pixels) for axist labels. (Default - 10.)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>monthFontSize</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Font size for month labels. Can be specified in any permitted SVG units. (Default - 12.)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>font</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Font to use for chart. (Default - sans-serif.)</td>
+            <td class="description last">Whether or not to show taxon label above each sub-graph. (Default - true.)</td>
         </tr>
 
     
@@ -882,7 +717,53 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Whether or not to show the legend.</td>
+            <td class="description last">Whether or not to show an overall chart legend. (Default - true.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelFontSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Font size (pixels) of taxon sub-chart label. (Default - 10.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxonLabelItalics</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not to italicise taxon label.(Default - true.)</td>
         </tr>
 
     
@@ -905,102 +786,7 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">Font size (pixels) of legend item text.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>lineWidth</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Sets the stroke-width of all lines on the chart. Can use any permitted SVG stroke-width units. (Default - 1.)* @param {string} opts.axisLeft - If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisBottom</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisRight</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>axisTop</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If set to 'on' line is drawn otherwise not.</td>
+            <td class="description last">Font size (pixels) of legend item text. (Default - 16.)</td>
         </tr>
 
     
@@ -1030,13 +816,13 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
         <tr>
             
-                <td class="name"><code>bands</code></td>
+                <td class="name"><code>axisRightLabel</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">string</span>
 
 
             
@@ -1046,21 +832,20 @@ is only relevant for charts of style 'bars' or 'areas'. It has no effect on char
 
             
 
-            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display bands for each month
-as a background on the chart. (Default is an empty array.)</td>
+            <td class="description last">Value for labelling right axis. (Default - ''.)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>lines</code></td>
+                <td class="name"><code>axisLabelFontSize</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;string></span>
+<span class="param-type">string</span>
 
 
             
@@ -1070,15 +855,173 @@ as a background on the chart. (Default is an empty array.)</td>
 
             
 
-            <td class="description last">An array of up to 12 colours (any standard colour notation), used to display vertical lines to
-delineat each month as a background on the chart. (Default is an empty array.)</td>
+            <td class="description last">Font size (pixels) for axist labels. (Default - 10.)</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>monthLineWidth</code></td>
+                <td class="name"><code>axisLeft</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks.
+If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'count'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisRight</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks.
+If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisTop</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn otherwise not. (Default - ''.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>axisBottom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set to 'on' line is drawn without ticks. If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>yAxisOpts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies options for scaling and displaying left axis.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>numFormat</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates format for displaying numeric values (uses d3 format values - https://github.com/d3/d3-format). (Default is 'd'.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minMax</code></td>
             
 
             <td class="type">
@@ -1094,7 +1037,60 @@ delineat each month as a background on the chart. (Default is an empty array.)</
 
             
 
-            <td class="description last">The width of lines used to delineate months.</td>
+            <td class="description last">Indicates a minumum value for the maximum value. Set to null for no minimum value. (Default is 5.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fixedMin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Sets a fixed minimum. Set to null for no fixed minimum. (Default is 0.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>padding</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Sets padding to add to the y axis limits as a proportion of data range. (Default is 0.)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1140,7 +1136,30 @@ delineat each month as a background on the chart. (Default is an empty array.)</
 
             
 
-            <td class="description last">The duration of each transition phase in milliseconds.</td>
+            <td class="description last">The duration of each transition phase in milliseconds. (Default - 1000.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showCounts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The type of the graphic 'bar' for a barchart and 'line' for a line graph. (Default - 'bar'.)</td>
         </tr>
 
     
@@ -1163,31 +1182,7 @@ delineat each month as a background on the chart. (Default is an empty array.)</
 
             
 
-            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>taxa</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;string></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for.
-If empty, graphs for all taxa are created.</td>
+            <td class="description last">Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'. (Default - 'none'.)</td>
         </tr>
 
     
@@ -1211,16 +1206,40 @@ If empty, graphs for all taxa are created.</td>
             
 
             <td class="description last">An array of objects, each describing a numeric property in the input
-data for which a line should be generated on the chart.
-Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+data for which graphics should be generated on the chart.
+Each of the objects in the data array can be sepecified with the properties shown below. (The order is not important.)
 <ul>
-<li> <b>prop</b> - the name of the numeric property in the data (count properties - 'c1' or 'c2' in the example below).
-<li> <b>label</b> - a label for this metric.
-<li> <b>colour</b> - optional colour to give the line for this metric. Any accepted way of specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
-<li> <b>fill</b> - optional colour to colour the graph area for this metric. Any accepted way of specifying web colours can be used.
-</ul>
-Note that if a metric has no data for a given taxon, then the graphics representing it will be
-marked with the CSS class 'phen-path-no-data'. You can use this to style as you see fit.</td>
+<li> <b>prop</b> - the name of the numeric property in the data (metric properties - 'c1' or 'c2' in the example below).
+<li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
+<li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
+specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
+(Optional - default is 'blue'.)
+<li> <b>opacity</b> - optional opacity to give the graphic for this metric.
+(Optional - default is 0.5.)
+<li> <b>linewidth</b> - optional width of line for line for this metric if displayed as a line graph.
+(Optional - default is 1.)
+<li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
+of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
+<li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
+of a confidence band. Can only be used where <i>showCounts</i> is 'line'.
+<li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+specifying web colours can be used.
+(Optional - default is 'silver'.)
+<li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+specifying web colours can be used.
+(Optional - default is 'grey'.)
+<li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
+(Optional - default is 0.5.)
+<li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
+(Optional - default is 1.)
+<li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
+(Optional - default is 1.)
+<li> <b>points</b> - optional name of a numeric property in the data which indicates where a point is to be displayed.
+<li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
+of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
+<li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
+of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
+</ul></td>
         </tr>
 
     
@@ -1247,12 +1266,311 @@ marked with the CSS class 'phen-path-no-data'. You can use this to style as you 
 Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
 <ul>
 <li> <b>taxon</b> - name of a taxon.
-<li> either <b>week</b> - a number between 1 and 53 indicating the week of the year,
-<li> or <b>month</b> - a number between 1 and 12 indicating the month of the year,
-<li> <b>c1</b> - a count for a given time period (can have any name).
-<li> <b>c2</b> - a count for a given time period (can have any name).
-... - there must be at least one count column, but there can be any number of them.
+<li> <b>year</b> - a four digit number indicating a year.
+<li> <b>c1</b> - a metric for a given year (can have any name).
+<li> <b>c2</b> - a metric for a given year (can have any name).
+... - there must be at least one metric column, but there can be any number of them.
 </ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataPoints</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> <b>year</b> - a four digit number indicating a year.
+<li> <b>y</b> - y value for a given year.
+<li> <b>upper</b> - a value for upper confidence band.
+<li> <b>lower</b> - a value for lower confidence band.
+</ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataTrendLines</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies an array of data objects.
+Each of the objects in the data array must be sepecified with the properties shown below. (The order is not important.)
+<ul>
+<li> <b>taxon</b> - name of a taxon.
+<li> <b>gradient</b> - a gradient for the line.
+<li> <b>inercept</b> - the y axis intercept value (at x = 0) for the line.
+<li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
+<li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
+<li> <b>opacity</b> - the opacity of the line. (Default - 1.)
+</ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>taxa</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for.
+If empty, graphs for all taxa are created. (Default - [].)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minYear</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the earliest year to use on the x axis. If left unset, the earliest year in the dataset is used. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxYear</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the latest year to use on the x axis. If left unset, the latest year in the dataset is used. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minYearTrans</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set, this indicates the lowest possible year. It is only useful if transitioning between datasets with different
+year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxYearTrans</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If set, this indicates the highest possible year. It is only useful if transitioning between datasets with different
+year ranges - its purpose is to facilitate smooth transitions of lines and bands in these cases. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the lowest value to use on the y axis. If left unset, the lowest value in the dataset is used. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxCount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indicates the highest value to use on the y axis. If left unset, the highest value in the dataset is used. (Default - null.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>xPadPercent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Padding to add either side of min and max year value - expressed as percentage of year range. Can only be used on line charts. (Default - 0.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>yPadPercent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Padding to add either side of min and max y value - expressed as percentage of y range. Can only be used on line charts. (Default - 0.)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>missingValues</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A value which indicates how gaps in yearly data are treated. Can either be the string value 'break' which
+causes trend lines to break where no value, 'bridge' which causes gaps to be bridged with straight line or a numeric value. (Default - 0.)</td>
         </tr>
 
     
@@ -1288,7 +1606,7 @@ Each of the objects in the data array must be sepecified with the properties sho
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -1302,7 +1620,7 @@ Each of the objects in the data array must be sepecified with the properties sho
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line91">line 91</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line141">line 141</a>
     </li></ul></dd>
     
 
@@ -1342,7 +1660,7 @@ Each of the objects in the data array must be sepecified with the properties sho
     </dt>
     <dd>
         
-<span class="param-type"><a href="module-phen1.html#~api">module:phen1~api</a></span>
+<span class="param-type">module:yearly~api</span>
 
 
     </dd>
@@ -1368,7 +1686,7 @@ Each of the objects in the data array must be sepecified with the properties sho
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+    <b>This function is exposed as a method on the API returned from the yearly function</b>.
 Return the full height of the chart svg.
 </div>
 
@@ -1401,7 +1719,7 @@ Return the full height of the chart svg.
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -1415,7 +1733,7 @@ Return the full height of the chart svg.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line337">line 337</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line481">line 481</a>
     </li></ul></dd>
     
 
@@ -1459,7 +1777,7 @@ Return the full height of the chart svg.
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+    <b>This function is exposed as a method on the API returned from the yearly function</b>.
 Return the full width of the chart svg.
 </div>
 
@@ -1492,7 +1810,7 @@ Return the full width of the chart svg.
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -1506,7 +1824,7 @@ Return the full width of the chart svg.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line327">line 327</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line471">line 471</a>
     </li></ul></dd>
     
 
@@ -1550,7 +1868,7 @@ Return the full width of the chart svg.
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+    <b>This function is exposed as a method on the API returned from the yearly function</b>.
 Download the chart as an image file.
 </div>
 
@@ -1658,7 +1976,7 @@ as the promise's resolved value.)</td>
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -1672,7 +1990,7 @@ as the promise's resolved value.)</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line347">line 347</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line491">line 491</a>
     </li></ul></dd>
     
 
@@ -1738,7 +2056,7 @@ as the promise's resolved value.)</td>
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+    <b>This function is exposed as a method on the API returned from the yearly function</b>.
 Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
 options object, it's value is not changed.
 </div>
@@ -2025,13 +2343,13 @@ options object, it's value is not changed.
 
         <tr>
             
-                <td class="name"><code>ytype</code></td>
+                <td class="name"><code>minYear</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">number</span>
 
 
             
@@ -2041,20 +2359,20 @@ options object, it's value is not changed.
 
             
 
-            <td class="description last">Type of metric to show on the y axis, can be 'count', 'proportion' or 'normalized'.</td>
+            <td class="description last">Indicates the earliest year to use on the y axis.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>spread</code></td>
+                <td class="name"><code>maxYear</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">number</span>
 
 
             
@@ -2064,7 +2382,7 @@ options object, it's value is not changed.
 
             
 
-            <td class="description last">Indicates whether multiple metrics are to be spread vertically across the chart.</td>
+            <td class="description last">Indicates the latest year to use on the y axis.</td>
         </tr>
 
     
@@ -2087,7 +2405,7 @@ options object, it's value is not changed.
 
             
 
-            <td class="description last">An array of objects, each describing a numeric property in the input data (see main interface for details).</td>
+            <td class="description last">Specifies an array of metrics objects (see main interface for details).</td>
         </tr>
 
     
@@ -2095,6 +2413,29 @@ options object, it's value is not changed.
         <tr>
             
                 <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Specifies an array of data objects (see main interface for details).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dataPoints</code></td>
             
 
             <td class="type">
@@ -2146,7 +2487,7 @@ options object, it's value is not changed.
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -2160,7 +2501,7 @@ options object, it's value is not changed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line220">line 220</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line352">line 352</a>
     </li></ul></dd>
     
 
@@ -2189,7 +2530,7 @@ options object, it's value is not changed.
 
         
 <div class="param-desc">
-    promise resolves when all transitions complete.
+    promise that resolves when all transitions complete.
 </div>
 
 
@@ -2226,7 +2567,7 @@ options object, it's value is not changed.
 
 
 <div class="description">
-    <b>This function is exposed as a method on the API returned from the phen1 function</b>.
+    <b>This function is exposed as a method on the API returned from the yearly function</b>.
 For single species charts, this allows you to change the taxon displayed.
 </div>
 
@@ -2308,7 +2649,7 @@ For single species charts, this allows you to change the taxon displayed.
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -2322,7 +2663,7 @@ For single species charts, this allows you to change the taxon displayed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line308">line 308</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line450">line 450</a>
     </li></ul></dd>
     
 
@@ -2351,7 +2692,7 @@ For single species charts, this allows you to change the taxon displayed.
 
         
 <div class="param-desc">
-    promise resolves when all transitions complete.
+    promise that resolves when all transitions complete.
 </div>
 
 
@@ -2435,7 +2776,7 @@ For single species charts, this allows you to change the taxon displayed.
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~getChartWidth">module:phen1~getChartWidth</a></span>
+<span class="param-type">module:yearly~getChartWidth</span>
 
 
             
@@ -2458,7 +2799,7 @@ For single species charts, this allows you to change the taxon displayed.
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~getChartHeight">module:phen1~getChartHeight</a></span>
+<span class="param-type">module:yearly~getChartHeight</span>
 
 
             
@@ -2481,7 +2822,7 @@ For single species charts, this allows you to change the taxon displayed.
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
+<span class="param-type">module:yearly~setChartOpts</span>
 
 
             
@@ -2491,7 +2832,7 @@ For single species charts, this allows you to change the taxon displayed.
 
             
 
-            <td class="description last">Sets text options for the chart.</td>
+            <td class="description last">Sets various options for the chart.</td>
         </tr>
 
     
@@ -2504,7 +2845,7 @@ For single species charts, this allows you to change the taxon displayed.
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~setChartOpts">module:phen1~setChartOpts</a></span>
+<span class="param-type">module:yearly~setChartOpts</span>
 
 
             
@@ -2527,7 +2868,7 @@ For single species charts, this allows you to change the taxon displayed.
             <td class="type">
             
                 
-<span class="param-type"><a href="module-phen1.html#~saveImage">module:phen1~saveImage</a></span>
+<span class="param-type">module:yearly~saveImage</span>
 
 
             
@@ -2564,7 +2905,7 @@ For single species charts, this allows you to change the taxon displayed.
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>phen1 is deprecated in favour of the temporal chart.</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>yearly is deprecated in favour of the temporal chart.</li></ul></dd>
     
 
     
@@ -2578,7 +2919,7 @@ For single species charts, this allows you to change the taxon displayed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="phen1_phen1.js.html">phen1/phen1.js</a>, <a href="phen1_phen1.js.html#line363">line 363</a>
+        <a href="yearly_yearly.js.html">yearly/yearly.js</a>, <a href="yearly_yearly.js.html#line508">line 508</a>
     </li></ul></dd>
     
 
@@ -2608,13 +2949,13 @@ For single species charts, this allows you to change the taxon displayed.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-altlat.html">altlat</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-temporal.html">temporal</a></li><li><a href="module-trend.html">trend</a></li><li><a href="module-yearly.html">yearly</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-accum.html">accum</a></li><li><a href="module-altlat.html">altlat</a></li><li><a href="module-links.html">links</a></li><li><a href="module-phen1.html">phen1</a></li><li><a href="module-phen2.html">phen2</a></li><li><a href="module-pie.html">pie</a></li><li><a href="module-temporal.html">temporal</a></li><li><a href="module-trend.html">trend</a></li><li><a href="yearly%2520.html">yearly </a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:48:36 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

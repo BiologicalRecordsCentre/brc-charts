@@ -64,7 +64,7 @@
     
 
     
-    <h4 class="name" id=".temporal"><span class="type-signature">(static) </span>temporal<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="module-temporal.html#~api">module:temporal~api</a>}</span></h4>
+    <h4 class="name" id=".temporal"><span class="type-signature">(static) </span>temporal<span class="signature">(opts, watermark)</span><span class="type-signature"> &rarr; {<a href="module-temporal.html#~api">module:temporal~api</a>}</span></h4>
     
 
     
@@ -832,7 +832,7 @@
 
             
 
-            <td class="description last">If set to 'on' line is drawn without ticks. 
+            <td class="description last">If set to 'on' line is drawn without ticks.
 If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - 'tick'.)</td>
         </tr>
 
@@ -856,7 +856,7 @@ If set to 'tick' line and ticks drawn. Any other value results in no axis. (Defa
 
             
 
-            <td class="description last">If set to 'on' line is drawn without ticks. 
+            <td class="description last">If set to 'on' line is drawn without ticks.
 If set to 'tick' line and ticks drawn. Any other value results in no axis. (Default - ''.)</td>
         </tr>
 
@@ -1030,38 +1030,38 @@ is meant to be used in conjunction with the opts.taxa value of [null] - see abov
 <li> <b>periodMin</b> a value for period, before which points should not be displayed.
 <li> <b>periodMax</b> a value for period, after which points should not be displayed.
 <li> <b>label</b> - a label for this metric. (Optional - the default label will be the property name.)
-<li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of 
+<li> <b>colour</b> - optional colour to give the graphic for this metric. Any accepted way of
 specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
 (Optional - default is 'blue'.)
-<li> <b>opacity</b> - optional opacity to give the graphic for this metric. 
+<li> <b>opacity</b> - optional opacity to give the graphic for this metric.
 (Optional - default is 1.)
-<li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph. 
+<li> <b>strokewidth</b> - optional width of line for line for this metric if displayed as a line graph.
 (Optional - default is 1.)
-<li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of 
+<li> <b>fill</b> - optional colour to give the area fill on area charts for this metric. Any accepted way of
 specifying web colours can be used. Use the special term 'fading' to successively fading shades of grey.
-<li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric. 
+<li> <b>fillOpacity</b> - optional opacity to give the area fill on area charts for this metric.
 (Optional - default is 0.5.)
 <li> <b>bandUpper</b> - optional name of a numeric property in the data which indicates the upper value
-of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
+of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
 <li> <b>bandLower</b> - optional name of a numeric property in the data which indicates the lower value
-of a confidence band. Can only be used where <i>chartStyle</i> is 'line'. 
-<li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of 
-specifying web colours can be used. 
+of a confidence band. Can only be used where <i>chartStyle</i> is 'line'.
+<li> <b>bandFill</b> - optional colour to use for a confidence band. Any accepted way of
+specifying web colours can be used.
 (Optional - default is 'silver'.)
-<li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of 
-specifying web colours can be used. 
+<li> <b>bandStroke</b> - optional colour to use for the uppder and lower boundaries of a confidence band. Any accepted way of
+specifying web colours can be used.
 (Optional - default is 'grey'.)
-<li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric. 
+<li> <b>bandOpacity</b> - optional opacity to give the confidence band for this metric.
 (Optional - default is 0.5.)
-<li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric. 
+<li> <b>bandStrokeOpacity</b> - optional opacity to give the boundaries of the confidence band for this metric.
 (Optional - default is 1.)
-<li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph. 
+<li> <b>bandStrokewidth</b> - optional width of line for bounary lines of the confidence band this metric if displayed as a line graph.
 (Optional - default is 1.)
 <li> <b>points</b> - a boolean value which indicates whether or not a point is to be displayed (over the line or bar).
 <li> <b>errorBarUpper</b> - optional name of a numeric property in the data which indicates the upper value
-of an error bar. Used in conjunction with the <i>errorBarLower</i> property. 
+of an error bar. Used in conjunction with the <i>errorBarLower</i> property.
 <li> <b>errorBarLower</b> - optional name of a numeric property in the data which indicates the lower value
-of an error bar. Used in conjunction with the <i>errorBarUpper</i> property. 
+of an error bar. Used in conjunction with the <i>errorBarUpper</i> property.
 </ul></td>
         </tr>
 
@@ -1090,7 +1090,7 @@ Each of the objects in the data array must be sepecified with the properties sho
 <ul>
 <li> <b>taxon</b> - name of a taxon.
 <li> <b>period</b> - a number indicating a week, nonth or a year.
-<li> <b>c1</b> - a metric for a given period (can have any name). 
+<li> <b>c1</b> - a metric for a given period (can have any name).
 <li> <b>c2</b> - a metric for a given period (can have any name).
 ... - there must be at least one metric column, but there can be any number of them.
 </ul></td>
@@ -1121,7 +1121,7 @@ Each of the objects in the data array must be sepecified with the properties sho
 <ul>
 <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
 <li> <b>period</b> - a number indicating a week, month or a year.
-<li> <b>y</b> - y value for a given period. 
+<li> <b>y</b> - y value for a given period.
 <li> <b>upper</b> - a value for upper confidence band.
 <li> <b>lower</b> - a value for lower confidence band.
 </ul></td>
@@ -1154,11 +1154,11 @@ Each of the objects in the data array must be sepecified with the properties sho
 id property of the metric. Then the line(s) will be included in highlighting/lowlighting for the metric.
 <li> <b>taxon</b> - name of a taxon. This is optional. If not specified, then data are shown regardless of selected taxon.
 <li> <b>gradient</b> - a gradient for the line (either specify gradient & intercept or p1, p2, v1 and v2).
-<li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-<li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-<li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-<li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
-<li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2). 
+<li> <b>intercept</b> - the y axis intercept value (at x = 0) for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+<li> <b>p1</b> - the lower period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+<li> <b>p2</b> - the upper period for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+<li> <b>v1</b> - the lower value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
+<li> <b>v2</b> - the upper value for the line (either specify gradient & intercept or p1, p2, v1 and v2).
 <li> <b>colour</b> - the colour of the line the line. Any accepted way of specifying web colours can be used. (Default - red.)
 <li> <b>width</b> - the width the line the line in pixels. (Default - 1.)
 <li> <b>opacity</b> - the opacity of the line. (Default - 1.)
@@ -1192,9 +1192,9 @@ Each of the objects in the data array must be sepecified with the properties sho
 <li> <b>colour</b> - the colour of the line or band. Any accepted way of specifying web colours can be used. (Default - red.)
 <li> <b>start</b> - a value to indicate the position on the x axis where the line will be drawn (or band start). For periodType of 'year'
 this value is specified in units of years. For periodType of 'month' or 'week', this value is specified in *days*. (See below for values
-than map to the first day for each month.) 
+than map to the first day for each month.)
 <li> <b>width</b> - the width of the band to be drawn. If absent or zero, then a line is drawn rather than a band. Specified in the
-same units as the 'start' value. (Default - 0.). 
+same units as the 'start' value. (Default - 0.).
 </ul>
 The numbers used for the first of the month for each month Jan to Dec are: 1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306 and 336.</td>
         </tr>
@@ -1219,7 +1219,7 @@ The numbers used for the first of the month for each month Jan to Dec are: 1, 32
 
             
 
-            <td class="description last">An array of taxa (names), indicating which taxa create charts for. 
+            <td class="description last">An array of taxa (names), indicating which taxa create charts for.
 If empty, graphs for all taxa are created. If set to an array with a single null value - [null] - then
 each metric must have a property called 'taxon' which specifies the taxon to be displayed for that metric.
 In this way, multiple taxa can be displayed on the same graph. (Default - [].)</td>
@@ -1636,6 +1636,39 @@ metrics on a chart of composition type 'spread'. (Default - 0.8.)</td>
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>watermark</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Options for creating a watermark on the chart. (Default - {}.)
+The watermark object can have any of the properties shown below. (The order is not important.) The only mandatory
+property (if a watermark is required) is 'text'.
+<ul>
+<li> <b>text<b> - a string specifying the text that comprises the watermark.
+<li> <b>font<b> - a string specifying the font family. If ommitted, the default font is used.
+<li> <b>fontSize<b> - an integer specifying font size (in pixels). (Default - 20.)
+<li> <b>fontWeight<b> - a string that specifies the font weight. (Default - 'bolder'.)
+<li> <b>colour<b> - a string that specifies the text colour. Any accepted web format can be used. (Default - 'black'.)
+<li> <b>opacity<b> - a number between 0 and 1 that indicates the opacity of the text. (Default 0.2.)
+<li> <b>rotation<b> - a number between 0 and 359 that indicates the rotation of the text in degrees. (Default 0.)</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -1673,7 +1706,7 @@ metrics on a chart of composition type 'spread'. (Default - 0.8.)</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line173">line 173</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line184">line 184</a>
     </li></ul></dd>
     
 
@@ -1784,7 +1817,7 @@ Return the full height of the chart svg.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line593">line 593</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line607">line 607</a>
     </li></ul></dd>
     
 
@@ -1873,7 +1906,7 @@ Return the full width of the chart svg.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line585">line 585</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line599">line 599</a>
     </li></ul></dd>
     
 
@@ -2037,7 +2070,7 @@ as the promise's resolved value.)</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line601">line 601</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line615">line 615</a>
     </li></ul></dd>
     
 
@@ -2104,7 +2137,7 @@ as the promise's resolved value.)</td>
 
 <div class="description">
     <b>This function is exposed as a method on the API returned from the temporal function</b>.
-Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
 options object, it's value is not changed.
 </div>
 
@@ -2759,7 +2792,7 @@ metrics on a chart of composition type 'spread'.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line410">line 410</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line424">line 424</a>
     </li></ul></dd>
     
 
@@ -2919,7 +2952,7 @@ For single species charts, this allows you to change the taxon displayed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line566">line 566</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line580">line 580</a>
     </li></ul></dd>
     
 
@@ -3173,7 +3206,7 @@ For single species charts, this allows you to change the taxon displayed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line616">line 616</a>
+        <a href="temporal_temporal.js.html">temporal/temporal.js</a>, <a href="temporal_temporal.js.html#line630">line 630</a>
     </li></ul></dd>
     
 
@@ -3209,7 +3242,7 @@ For single species charts, this allows you to change the taxon displayed.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -26,7 +26,12 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** @module phen1 */
+            <pre class="prettyprint source linenums"><code>/** 
+ * @deprecated The phen1 chart is deprecated in favour of the temporal chart.
+ * The temporal chart combines the phen1 and yearly charts and adds
+ * even more functionality.
+ * @module phen1 
+ */
 
 import * as d3 from 'd3'
 import { makeText,  positionMainElements, saveChartImage } from '../general'
@@ -36,7 +41,8 @@ import { preProcessMetrics } from './metricsplus'
 import { makeLegend } from './legend'
 
 
-/** 
+/**
+ * @deprecated phen1 is deprecated in favour of the temporal chart.
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
@@ -84,7 +90,7 @@ import { makeLegend } from './legend'
  * @param {number} opts.headPad - A left hand offset, in pixels, for title, subtitle, legend and footer. (Default 0.)
  * @param {number} opts.duration - The duration of each transition phase in milliseconds.
  * @param {string} opts.interactivity - Specifies how item highlighting occurs. Can be 'mousemove', 'mouseclick' or 'none'.
- * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for. 
+ * @param {Array.&lt;string>} opts.taxa - An array of taxa (names), indicating which taxa create charts for.
  * If empty, graphs for all taxa are created.
  * @param {Array.&lt;Object>} opts.metrics - An array of objects, each describing a numeric property in the input
  * data for which a line should be generated on the chart.
@@ -103,7 +109,7 @@ import { makeLegend } from './legend'
  * &lt;li> &lt;b>taxon&lt;/b> - name of a taxon.
  * &lt;li> either &lt;b>week&lt;/b> - a number between 1 and 53 indicating the week of the year,
  * &lt;li> or &lt;b>month&lt;/b> - a number between 1 and 12 indicating the month of the year,
- * &lt;li> &lt;b>c1&lt;/b> - a count for a given time period (can have any name). 
+ * &lt;li> &lt;b>c1&lt;/b> - a count for a given time period (can have any name).
  * &lt;li> &lt;b>c2&lt;/b> - a count for a given time period (can have any name).
  * ... - there must be at least one count column, but there can be any number of them.
  * &lt;/ul>
@@ -175,10 +181,10 @@ export function phen1({
   })
 
   const svgChart = svg.append('svg').attr('class', 'mainChart').style('overflow', 'visible')
-  
+
   makeChart()
 
-  // Texts must come after chart because 
+  // Texts must come after chart because
   // the chart width is required
   const textWidth = Number(svg.select('.mainChart').attr("width") - headPad)
   makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
@@ -209,7 +215,7 @@ export function phen1({
     const pTrans = []
 
     const svgsTaxa = taxa.map(t => {
-      return makePhen (t, taxa, data, metrics, svgChart, width, height, 
+      return makePhen (t, taxa, data, metrics, svgChart, width, height,
         ytype, spread, axisTop, axisBottom, axisLeft, axisRight, monthLineWidth, bands, lines,
         style, stacked, duration, margin, showTaxonLabel, taxonLabelFontSize, taxonLabelItalics,
         axisLabelFontSize, axisLeftLabel, interactivity, pTrans, monthFontSize, font)
@@ -225,7 +231,7 @@ export function phen1({
     }
 
     svgsTaxa.forEach((svgTaxon, i) => {
-      
+
       const col = i%perRow
       const row = Math.floor(i/perRow)
 
@@ -240,6 +246,7 @@ export function phen1({
   }
 
 /** @function setChartOpts
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
   * @param {string} opts.subtitle - Subtitle for the chart.
@@ -256,7 +263,7 @@ export function phen1({
   * @param {Array.&lt;Object>} opts.data - Specifies an array of data objects (see main interface for details).
   * @returns {Promise} promise resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
-  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the 
+  * Set's the value of the chart data, title, subtitle and/or footer. If an element is missing from the
   * options object, it's value is not changed.
   */
   function setChartOpts(opts){
@@ -288,7 +295,7 @@ export function phen1({
     if ('footerAlign' in opts) {
       footerAlign = opts.footerAlign
     }
-    
+
     const textWidth = Number(svg.select('.mainChart').attr("width"))
     makeText (title, 'titleText', titleFontSize, titleAlign, textWidth, svg)
     makeText (subtitle, 'subtitleText', subtitleFontSize, subtitleAlign, textWidth, svg)
@@ -327,6 +334,7 @@ export function phen1({
   }
 
 /** @function setTaxon
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
   * @param {string} opts.taxon - The taxon to display.
   * @returns {Promise} promise resolves when all transitions complete.
   * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
@@ -344,7 +352,9 @@ export function phen1({
     return pRet
   }
 
-/** @function getChartWidth
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function getChartWidth
   * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full width of the chart svg.
   */
@@ -352,7 +362,9 @@ export function phen1({
     return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2]
   }
 
-/** @function getChartHeight
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function getChartHeight
   * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Return the full height of the chart svg.
   */
@@ -360,7 +372,9 @@ export function phen1({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
-/** @function saveImage
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
   * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -370,17 +384,18 @@ export function phen1({
   * @description &lt;b>This function is exposed as a method on the API returned from the phen1 function&lt;/b>.
   * Download the chart as an image file.
   */
-  function saveImage(asSvg, filename){
-    return saveChartImage(svg, expand, asSvg, filename) 
+  function saveImage(asSvg, filename, info){
+    return saveChartImage(svg, expand, asSvg, filename, null, info)
   }
 
   /**
+   * @deprecated phen1 is deprecated in favour of the temporal chart.
    * @typedef {Object} api
    * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
-   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart. 
-   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart. 
-   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts. 
-   * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG. 
+   * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
+   * @property {module:phen1~setChartOpts} setChartOpts - Sets text options for the chart.
+   * @property {module:phen1~setChartOpts} setTaxon - Changes the displayed taxon for single taxon charts.
+   * @property {module:phen1~saveImage} saveImage - Generates and downloads and image file for the SVG.
    */
   return {
     getChartHeight: getChartHeight,
@@ -406,7 +421,7 @@ export function phen1({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Tue Feb 07 2023 06:59:08 GMT-0800 (Pacific Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

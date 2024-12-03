@@ -1,4 +1,9 @@
-/** @module yearly */
+/** 
+ * @deprecated The yearly chart is deprecated in favour of the temporal chart.
+ * The temporal chart combines the phen1 and yearly charts and adds
+ * even more functionality.
+ * @module yearly
+ */
 
 import * as d3 from 'd3'
 import * as gen from '../general'
@@ -7,6 +12,7 @@ import { makeLegend } from './legend'
 import { highlightItem } from './highlightitem'
 
 /**
+ * @deprecated yearly is deprecated in favour of the temporal chart.
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
  * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
@@ -343,7 +349,9 @@ export function yearly({
     })
   }
 
-/** @function setChartOpts
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function setChartOpts
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
   * @param {string} opts.subtitle - Subtitle for the chart.
@@ -439,7 +447,9 @@ export function yearly({
     return pRet
   }
 
-/** @function setTaxon
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function setTaxon
   * @param {string} opts.taxon - The taxon to display.
   * @returns {Promise} promise that resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
@@ -458,7 +468,9 @@ export function yearly({
     return pRet
   }
 
-/** @function getChartWidth
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function getChartWidth
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Return the full width of the chart svg.
   */
@@ -466,7 +478,9 @@ export function yearly({
     return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2]
   }
 
-/** @function getChartHeight
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function getChartHeight
   * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
   * Return the full height of the chart svg.
   */
@@ -474,7 +488,9 @@ export function yearly({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
-/** @function saveImage
+/** 
+  * @deprecated yearly is deprecated in favour of the temporal chart.
+  * @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
   * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -490,6 +506,7 @@ export function yearly({
 
 
   /**
+   * @deprecated yearly is deprecated in favour of the temporal chart.
    * @typedef {Object} api
    * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart.

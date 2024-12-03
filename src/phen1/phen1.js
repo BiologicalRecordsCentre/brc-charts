@@ -1,4 +1,9 @@
-/** @module phen1 */
+/** 
+ * @deprecated The phen1 chart is deprecated in favour of the temporal chart.
+ * The temporal chart combines the phen1 and yearly charts and adds
+ * even more functionality.
+ * @module phen1 
+ */
 
 import * as d3 from 'd3'
 import { makeText,  positionMainElements, saveChartImage } from '../general'
@@ -9,6 +14,7 @@ import { makeLegend } from './legend'
 
 
 /**
+ * @deprecated phen1 is deprecated in favour of the temporal chart.
  * @param {Object} opts - Initialisation options.
  * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
  * @param {string} opts.elid - The id for the dom object created.
@@ -212,6 +218,7 @@ export function phen1({
   }
 
 /** @function setChartOpts
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
   * @param {Object} opts - text options.
   * @param {string} opts.title - Title for the chart.
   * @param {string} opts.subtitle - Subtitle for the chart.
@@ -299,6 +306,7 @@ export function phen1({
   }
 
 /** @function setTaxon
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
   * @param {string} opts.taxon - The taxon to display.
   * @returns {Promise} promise resolves when all transitions complete.
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
@@ -316,7 +324,9 @@ export function phen1({
     return pRet
   }
 
-/** @function getChartWidth
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function getChartWidth
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * Return the full width of the chart svg.
   */
@@ -324,7 +334,9 @@ export function phen1({
     return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2]
   }
 
-/** @function getChartHeight
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function getChartHeight
   * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
   * Return the full height of the chart svg.
   */
@@ -332,7 +344,9 @@ export function phen1({
     return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3]
   }
 
-/** @function saveImage
+/** 
+  * @deprecated phen1 is deprecated in favour of the temporal chart.
+  * @function saveImage
   * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
   * @param {string} filename - Name of the file (without extension) to generate and download.
   * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -347,6 +361,7 @@ export function phen1({
   }
 
   /**
+   * @deprecated phen1 is deprecated in favour of the temporal chart.
    * @typedef {Object} api
    * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
    * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
