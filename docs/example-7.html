@@ -27,7 +27,7 @@
 <body>
   <div class="content">
 
-    <h1>Using the BRC Charts Library</h1>
+    <h1>Using the BRC Charts Library - altlat</h1>
     <h2>Altitude vs Latitude chart</h2>
     <p>
       Include the required Javascript libraries and CSS in the page. We need the BRC Charts JS libary, the associated
@@ -105,12 +105,12 @@
       Each cell in the data is denoted by the lower limit of
       its distance (latitude) and altitude ranges.
     </p>
-<pre><code class="javascript">{
+<pre>{
   distance: 1200,
   altitude: 100,
   metric: 15.4,
   taxon: "species A"
-}</code></pre>
+}</pre>
     <p>
       Of course getting data into this
       format can be difficult - you have to be able to relate tetrad grid
@@ -133,9 +133,13 @@
   <!--D3 JS required exernal dependency of BRC Charts library-->
   <script src="https://d3js.org/d3.v5.min.js"></script>
 
-  <!--BRC Charts library JS and CSS-->
-  <script src="./../dist/brccharts.min.umd.js"></script>
+  <!--BRC Charts library JS and CSS
+  Here we get the resources in this package-->
+  <script src="./../dist/brccharts.umd.js"></script>
   <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+  <!--But you can get them from the CDNs as shown below-->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
   <script>
     var showingTetrads = false

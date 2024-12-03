@@ -12,10 +12,10 @@
 <body>
   <div class="content">
 
-    <h1>Using the BRC Charts Library</h1>
+    <h1>Using the BRC Charts Library - temporal</h1>
     <h2>Temporal chart examples</h2>
     <p>
-      The <i>temporal</i> chart integrates the 
+      The <i>temporal</i> chart integrates the deprecated
       <i>phen1</i> and <i>yearly</i> charts into a single integrated and flexible chart.
       The examples on this page replicate some of the examples previously used to illustrate
       the <i>phen1</i> and <i>yearly</i> charts plus some extra.
@@ -85,6 +85,9 @@
     <br/><br/>
     <div id="ladybird4"></div>
 
+    <h4>Example - including a watermark</h4>
+    <div id='butterfly5'></div>
+
     <h4>Example - BSBI atlas</h4>
     <p>
       These examples demonstrate how the temporal chart can be used to create some of the
@@ -103,9 +106,13 @@
   <!--D3 JS required exernal dependency of BRC Charts library-->
   <script src="https://d3js.org/d3.v5.min.js"></script>
 
-  <!--BRC Charts library JS and CSS-->
-  <script src="./../dist/brccharts.min.umd.js"></script>
+  <!--BRC Charts library JS and CSS
+  Here we get the resources in this package-->
+  <script src="./../dist/brccharts.umd.js"></script>
   <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+  <!--But you can get them from the CDNs as shown below-->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
   <script>
 
@@ -399,6 +406,47 @@
     function exBp3button1Click(type) {
       exBp3.setChartOpts({metricExpression: type}).then(() => console.log('transition done'))
     }
+
+    // Example butterfly 5
+    d3.csv('./data/butterflies-16-20.csv', function(d){
+        for (p in d) {
+          if (p !== 'taxon') {
+            d[p] = Number(d[p])  // Ensures numeric columns from CSV are correctly typed
+          }
+          d.period = d.week
+        }
+        return d
+      }).then(function(data){
+        //console.log(data)
+        var phen = {
+          selector: '#butterfly5',
+          data: data.filter(d => d.period < 53),
+          taxa: ['Vanessa cardui', 'Aglais urticae'],
+          //yAxisOpts: {numFormat: 'd', minMax: null, fixedMin: null},
+          periodType: 'week',
+          lineInterpolator: 'curveMonotoneX',
+          chartStyle: 'line',
+          metrics: [
+            { prop: '2020', label: '2020', colour: 'red',  strokeWidth: 2 },
+            { prop: '2019', label: '2019', colour: '#4188A3', strokeWidth: 2 },
+            { prop: '2018', label: '2018', colour: 'fading' },
+            { prop: '2017', label: '2017', colour: 'fading' },
+            { prop: '2016', label: '2016', colour: 'fading' },
+          ],
+          showLegend: true,
+          interactivity: 'mousemove', 
+          taxonLabelFontSize: 16,
+          taxonLabelItalics: true,
+          width: 400,
+          height: 250,
+          perRow: 2,
+          margin: {left: 48, right: 0, top: 20, bottom: 15},
+          expand: true,
+          axisLeftLabel: 'Number of records per week',
+          watermark: {text: 'Experimental', font:'Courier', fontSize: 40, fontWeight: 'bolder', colour: 'black', opacity: 0.2, rotation: 315}
+        } 
+        brccharts.temporal(phen)
+      })
 
     // Examples ladybird 1,2, 3 and 4
     var exLy4

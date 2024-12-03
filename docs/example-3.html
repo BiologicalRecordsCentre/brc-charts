@@ -18,34 +18,12 @@
 </head>
 <body>
   <div class="content">
-    <h1>Using the BRC Charts Library</h1>
-    <h2>Acumulation charts for taxa richness and number of records</h2>
+    <h1>Using the BRC Charts Library - accum</h1>
+    Acumulation charts for taxa richness and number of records.
     <p>
-      Include the required Javascript libraries and CSS in the page. We need the BRC Charts JS libary, the associated
-      CSS and the D3 library which is an external
-      external dependency of the BRC Charts library. In this example they are all included from CDNs.
+      Explore the source of this page and examine the code comments to see how it works.
     </p>
-<pre>
-<code class="html">&lt;script src=&quot;https://d3js.org/d3.v5.min.js&quot;&gt;&lt;/script&gt;
-&lt;script src=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.js&quot;&gt;&lt;/script&gt;
-&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.css&quot;&gt;&lt;/script&gt;</code>
-</pre>
-    <p>
-      First we create a div element which will contain the chart.
-    </p>
-<pre>
-<code class="html">&lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;</code>
-</pre>
-
-    <p>
-      In the page's Javascript we call the <em>brccharts.accum</em> method, passing in the configuration options
-      which include the data we want to display.
-    </p>
-
-<pre>
-<code class="javascript">brccharts.accum({...})</code>
-</pre>
-
+    <h2>General use</h2>
     <p>
       The four examples below show how it is possible to configure the chart to show different
       combinations of taxa count and accumulation data from one or more years and also that
@@ -65,6 +43,7 @@
       <div id="chart3" class="flexi"></div>
       <div id="chart4" class="flexi"></div>
     </div>
+    <h2>Style options and user interactivity</h2>
     <p>
       The next example shows a bigger chart with more data. For each line specified for
       a chart, both the colour and style (solid or dashed) can be specified. If the special
@@ -72,6 +51,8 @@
       used for it, as in this example for all but the most recent year. 
     </p>
     <div id="chart5"></div>
+
+    <h2>Transitions & image download</h2>
     <p>
       The final example shows how plotted data transitions between different states. 
     </p>
@@ -84,11 +65,6 @@
     <div id="chart6"></div>
     <button onclick="chart6.saveImage(true, 'accum')">Download image</button>
 
-    <!--JS and CSS required for highlighting inline example code-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/a11y-light.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
 
     <!--Page CSS-->
     <link rel="stylesheet" href="example.css" />
@@ -96,9 +72,11 @@
     <!--D3 JS required exernal dependency of BRC Charts library-->
     <script src="https://d3js.org/d3.v5.min.js"></script>
 
-    <!--BRC Charts library JS and CSS-->
+    <!--BRC Charts library JS and CSS
+    Here we get the resources in this package-->
     <script src="./../dist/brccharts.umd.js"></script>
     <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!--But you can get them from the CDNs as shown below-->
     <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 

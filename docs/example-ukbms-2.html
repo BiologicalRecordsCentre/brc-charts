@@ -27,14 +27,16 @@
 </head>
 <body>
   <div class="content">
-    
-    <!--D3 JS required exernal dependency of BRC Charts library-->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
 
-    <!--BRC Charts library JS and CSS-->
-    <script src="./../dist/brccharts.min.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
-
+    <h1>Using the BRC Charts Library - temporal</h1>
+    <p>
+      This example page was created demonstrate possible use on 
+      UKBMS website for project members to evaulate.
+    </p>
+    <p>
+      Explore the source of this page and examine the code comments to see how it works.
+    </p>
+  
     <select id='taxa' onchange='taxonChanged()'></select>
 
     <h3>Trend tab</h3>
@@ -63,6 +65,20 @@
         the average for the last year.
       </div>
     </div>
+
+    <!--Page CSS-->
+    <link rel="stylesheet" href="example.css" />
+
+    <!--D3 JS required exernal dependency of BRC Charts library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS
+    Here we get the resources in this package-->
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!--But you can get them from the CDNs as shown below-->
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
      
     <script>
       let apiWeekly, apiYearly, names, indices, phenology, trends

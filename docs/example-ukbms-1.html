@@ -30,14 +30,16 @@
 <body>
   <div class="content">
     
-    <!--D3 JS required exernal dependency of BRC Charts library-->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-
-    <!--BRC Charts library JS and CSS-->
-    <script src="./../dist/brccharts.min.umd.js"></script>
-    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
-
-    <h3>Chart options</h3>
+    <h1>Using the BRC Charts Library - temporal</h1>
+    <p>
+      This example page was created to interactively test some of the temporal chart
+      layout options in order to present different possibilities to people involved
+      in the UKBMS website.
+    </p>
+    <p>
+      Explore the source of this page and examine the code comments to see how it works.
+    </p>
+    <h2>Chart options</h2>
     <p>
       The options on this page are <b>not proposed as a user-facing GUI</b>. They just
       provide a convenient means of evaluating different display and layout options. See below for more information on the options and data.
@@ -89,10 +91,10 @@
 
     <!-- <button onclick="buttonTest()">Test</button> -->
 
-    <h3>Indices</h3>
+    <h2>Indices</h2>
     <div id="yearly"></div>
     
-    <h3>Flight periods</h3>
+    <h2>Flight periods</h2>
     <div id="weekly"></div>
      
     <p>
@@ -178,6 +180,20 @@
       <li><a href="./example-8.html">Temporal charts<a></li>
       <li><a href="./example-9.html">Temporal charts interactive<a></li>
     </ul>
+
+    <!--Page CSS-->
+    <link rel="stylesheet" href="example.css" />
+
+    <!--D3 JS required exernal dependency of BRC Charts library-->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!--BRC Charts library JS and CSS
+    Here we get the resources in this package-->
+    <script src="./../dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="./../dist/brccharts.umd.css">
+    <!--But you can get them from the CDNs as shown below-->
+    <!-- <script src="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts@latest/dist/brccharts.umd.css"> -->
 
     <script>
       let apiWeekly, apiYearly, indices, phenology
