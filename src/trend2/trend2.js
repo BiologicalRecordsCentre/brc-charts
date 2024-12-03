@@ -5,6 +5,8 @@
 // initially constructed to facilitate the BSBI atlas website and is
 // currently undocumented.
 
+// THE FUNCTIONALITY IN THIS CHART IS NOW SUPERCEEDED BY THE TEMPORAL CHART.
+
 import * as d3 from 'd3'
 import { xAxisYear } from '../general'
 

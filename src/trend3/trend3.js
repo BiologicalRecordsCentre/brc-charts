@@ -2,8 +2,9 @@
 // This chart is designed to shown multiple gradient lines (data)
 // and, optionally, mean points with confidence bars (means).
 // Although many features of it have been generalised, it was
-// initially constructed to facilitate the BSBI atlas website and is
-// currently undocumented.
+// initially constructed to facilitate the BSBI atlas website and is undocumented.
+
+// THE FUNCTIONALITY IN THIS CHART IS NOW SUPERCEEDED BY THE TEMPORAL CHART.
 
 import * as d3 from 'd3'
 import { xAxisYear } from '../general'
