@@ -44,7 +44,7 @@ The chart can be used to visualise how tetrad occupancy varies according to both
 - [BBS style latitude vs altitude charts](example-7.html). 
 
 ## Deprecated charts
-When the library was first published, the functionality now provided by the temporal chart (`brccharts.temporal`)
+When the library was first published, the functionality now provided by the temporal chart
 was split across two chart types: 1) the 'phenology' chart (`brccharts.phen1`) provided charting ability for metrics
 across the year and 2) the 'yearly chart (`brccharts.yearly`) provided charting ability for metrics across years. These
 should no longer be used in new developments. Examples:
