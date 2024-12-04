@@ -66,7 +66,12 @@ The following rollup plugins are used in the build:
 - **rollup-plugin-css-only**: for rolling up CSS into a single file.
 - **@rollup/plugin-json**: for importing JSON.
 
-### Other files in project
+Rollup is configured to deploy the products of its build to the `dist` folder.
+
+### Assets
+The `dist` folder includes a resource file - `altlat-tetrads.csv` which can be required by the `altlat` chart. It is placed in this folder so that it can be served by the CDN.
+
+### Other files in the project root
 The following files are in the root folder: 
 
 - **README.md**: this readme file.
@@ -77,3 +82,4 @@ The following files are in the root folder:
 - **.eslintrc.json**: configures ESLint. These some stuff in here that's necessary to get jest and eslint to play nicely together. 
 - **babel.config.js**: the configuration in here seems to necessary to get Jest to work properly with ES2015 modules. 
 - **rollup.config.js**: rollup configuration.
+- **.gitignore**: a Git file to exclude certain files/folders from the repository.
