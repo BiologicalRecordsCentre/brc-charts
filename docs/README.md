@@ -71,7 +71,7 @@ it has been generalised and could be used in other contexts.
 
 ### Undocumented 'density' chart
 The density chart (`brccharts.density`) is designed to show one or more density plots
-derived from frequency data (data)
+derived from frequency data.
 It was created to facilitate the [Plant Atlas 2020 website](https://plantatlas2020.org/)
 (figure 3 on the 'trends' tab)
 and although some features have been generalised, it contains some
