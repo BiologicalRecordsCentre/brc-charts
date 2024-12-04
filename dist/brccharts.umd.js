@@ -2526,8 +2526,14 @@
     return swatchSize * swatchFact * (rows + 1);
   }
 
-  /** @module phen1 */
+  /** 
+   * @deprecated The phen1 chart is deprecated in favour of the temporal chart.
+   * The temporal chart combines the phen1 and yearly charts and adds
+   * even more functionality.
+   * @module phen1 
+   */
   /**
+   * @deprecated phen1 is deprecated in favour of the temporal chart.
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG.
    * @param {string} opts.elid - The id for the dom object created.
@@ -2760,6 +2766,7 @@
       return Promise.allSettled(pTrans);
     }
     /** @function setChartOpts
+      * @deprecated phen1 is deprecated in favour of the temporal chart.
       * @param {Object} opts - text options.
       * @param {string} opts.title - Title for the chart.
       * @param {string} opts.subtitle - Subtitle for the chart.
@@ -2856,6 +2863,7 @@
       return pRet;
     }
     /** @function setTaxon
+      * @deprecated phen1 is deprecated in favour of the temporal chart.
       * @param {string} opts.taxon - The taxon to display.
       * @returns {Promise} promise resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
@@ -2876,7 +2884,9 @@
 
       return pRet;
     }
-    /** @function getChartWidth
+    /** 
+      * @deprecated phen1 is deprecated in favour of the temporal chart.
+      * @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Return the full width of the chart svg.
       */
@@ -2885,7 +2895,9 @@
     function getChartWidth() {
       return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
     }
-    /** @function getChartHeight
+    /** 
+      * @deprecated phen1 is deprecated in favour of the temporal chart.
+      * @function getChartHeight
       * @description <b>This function is exposed as a method on the API returned from the phen1 function</b>.
       * Return the full height of the chart svg.
       */
@@ -2894,7 +2906,9 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
-    /** @function saveImage
+    /** 
+      * @deprecated phen1 is deprecated in favour of the temporal chart.
+      * @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
       * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -2910,6 +2924,7 @@
       return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
+     * @deprecated phen1 is deprecated in favour of the temporal chart.
      * @typedef {Object} api
      * @property {module:phen1~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:phen1~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
@@ -5716,691 +5731,6 @@
     };
   }
 
-  function trend2() {
-    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        _ref$selector = _ref.selector,
-        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
-        _ref$elid = _ref.elid,
-        elid = _ref$elid === void 0 ? 'trend2-chart' : _ref$elid,
-        _ref$width = _ref.width,
-        width = _ref$width === void 0 ? 300 : _ref$width,
-        _ref$height = _ref.height,
-        height = _ref$height === void 0 ? 200 : _ref$height,
-        _ref$margin = _ref.margin,
-        margin = _ref$margin === void 0 ? {
-      left: 35,
-      right: 0,
-      top: 20,
-      bottom: 5
-    } : _ref$margin,
-        _ref$expand = _ref.expand,
-        expand = _ref$expand === void 0 ? false : _ref$expand,
-        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
-        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
-        _ref$axisLeft = _ref.axisLeft,
-        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
-        _ref$axisBottom = _ref.axisBottom,
-        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
-        _ref$axisRight = _ref.axisRight,
-        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
-        _ref$axisTop = _ref.axisTop,
-        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
-        _ref$axisLeftLabel = _ref.axisLeftLabel,
-        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
-        _ref$duration = _ref.duration,
-        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
-        _ref$yearMin = _ref.yearMin,
-        yearMin = _ref$yearMin === void 0 ? null : _ref$yearMin,
-        _ref$yearMax = _ref.yearMax,
-        yearMax = _ref$yearMax === void 0 ? null : _ref$yearMax,
-        _ref$yMin = _ref.yMin,
-        yMin = _ref$yMin === void 0 ? null : _ref$yMin,
-        _ref$yMax = _ref.yMax,
-        yMax = _ref$yMax === void 0 ? null : _ref$yMax,
-        _ref$adjust = _ref.adjust,
-        adjust = _ref$adjust === void 0 ? true : _ref$adjust,
-        _ref$ylines = _ref.ylines,
-        ylines = _ref$ylines === void 0 ? [] : _ref$ylines,
-        _ref$data = _ref.data,
-        data = _ref$data === void 0 ? [] : _ref$data,
-        _ref$means = _ref.means,
-        means = _ref$means === void 0 ? [] : _ref$means,
-        _ref$style = _ref.style,
-        style = _ref$style === void 0 ? {} : _ref$style;
-
-    // Ensure default style properties are present
-    style.vStroke = style.vStroke ? style.vStroke : 'black';
-    style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2;
-    style.cStroke = style.cStroke ? style.cStroke : 'black';
-    style.cStrokeWidth = style.cStrokeWidth ? style.cStrokeWidth : 1;
-    style.cFill = style.cFill ? style.cFill : 'silver';
-    style.mFill = style.mFill ? style.mFill : 'white';
-    style.mRad = style.mRad ? style.mRad : 2;
-    style.mStroke = style.mStroke ? style.mStroke : 'black';
-    style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
-    style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
-    style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
-    var updateChart = makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
-    return {
-      updateChart: updateChart
-    };
-  }
-
-  function maxYear(data) {
-    return Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
-      return d.year;
-    })));
-  }
-
-  function minYear(data) {
-    return Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
-      return d.year;
-    })));
-  }
-
-  function maxY(data, means) {
-    var dMax = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
-      return d.upper ? d.upper : d.value;
-    })));
-    var mMax = Math.max.apply(Math, _toConsumableArray(means.map(function (d) {
-      return d.mean + d.sd;
-    })));
-    return Math.max(dMax, mMax);
-  }
-
-  function minY(data, means) {
-    var dMin = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
-      return d.lower ? d.lower : d.value;
-    })));
-    var mMin = Math.min.apply(Math, _toConsumableArray(means.map(function (d) {
-      return d.mean - d.sd;
-    })));
-    return Math.min(dMin, mMin);
-  }
-
-  function makeChart(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
-    var svgWidth = width + margin.left + margin.right;
-    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
-
-    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
-
-    if (expand) {
-      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
-    } else {
-      svgTrend.attr("width", svgWidth);
-      svgTrend.attr("height", svgHeight);
-    } // Axis labels
-
-
-    if (axisLeftLabel) {
-      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
-    } // Create axes and position within SVG
-
-
-    var tAxis, bAxis, lAxis, rAxis;
-
-    if (axisLeft === 'on' || axisLeft === 'tick') {
-      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    }
-
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
-    }
-
-    if (axisTop === 'on') {
-      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    }
-
-    if (axisRight === 'on') {
-      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
-    } // Create g element for chart elements
-
-
-    var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
-
-    var updateChart = makeUpdateChart(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
-
-    updateChart(data, means, yearMin, yearMax, yMin, yMax, adjust, ylines); // Return the api
-
-    return updateChart;
-  }
-
-  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
-    return function (data, means, yearMin, yearMax, yMin, yMax, adjust, ylines) {
-      // Set ylines to empty array if not set
-      if (!ylines) {
-        ylines = [];
-      } // Data
-
-
-      var dataWork = data.sort(function (a, b) {
-        return a.year > b.year ? 1 : -1;
-      }); // Adjustments
-
-      var yMinBuff, yMaxBuff;
-
-      if (yMin !== null && yMax !== null && typeof yMin !== 'undefined' && typeof yMax !== 'undefined') {
-        yMinBuff = yMin;
-        yMaxBuff = yMax;
-
-        if (adjust) {
-          if (minY(dataWork, means) < yMinBuff) yMinBuff = minY(dataWork, means);
-          if (maxY(dataWork, means) > yMaxBuff) yMaxBuff = maxY(dataWork, means); // Add a margin to min/max values
-
-          yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
-          yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
-        }
-      } else {
-        yMinBuff = minY(dataWork, means);
-        yMaxBuff = maxY(dataWork, means); // Add a margin to min/max values
-
-        yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
-        yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
-      }
-
-      var yearMinData = minYear(dataWork);
-      var yearMaxData = maxYear(dataWork);
-      var yearMinBuff, yearMaxBuff;
-
-      if (yearMin) {
-        yearMinBuff = yearMin;
-      } else {
-        yearMinBuff = Math.floor(yearMinData - (yearMaxData - yearMinData) / 50);
-      }
-
-      if (yearMax) {
-        yearMaxBuff = yearMax;
-      } else {
-        yearMaxBuff = Math.floor(yearMaxData + (yearMaxData - yearMinData) / 50);
-      } // Value scales
-
-
-      var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([yMinBuff, yMaxBuff]).range([height, 0]); // Generate axes
-
-      if (tAxis) {
-        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
-        .tickValues([]).tickSizeOuter(0));
-      }
-
-      if (bAxis) {
-        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMinBuff, yearMaxBuff, false));
-      }
-
-      if (lAxis) {
-        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
-      }
-
-      if (rAxis) {
-        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
-      } // Line path generator
-
-
-      var linePath = d3.line() //.curve(d3.curveMonotoneX)
-      .x(function (d) {
-        return xScale(d.y);
-      }).y(function (d) {
-        return yScale(d.v);
-      }); // Main data line
-
-      var vData = data.map(function (p) {
-        return {
-          y: p.year,
-          v: p.value
-        };
-      });
-      d3Line(gChart2, linePath, duration, vData, 'valueLine', style.vStroke, style.vStrokeWidth, 'none'); // Upper confidence line
-
-      var uData = data.map(function (p) {
-        return {
-          y: p.year,
-          v: p.upper
-        };
-      });
-      d3Line(gChart2, linePath, duration, uData, 'upperLine', style.cStroke, style.cStrokeWidth, 'none'); // Upper confidence line
-
-      var lData = data.map(function (p) {
-        return {
-          y: p.year,
-          v: p.lower
-        };
-      });
-      d3Line(gChart2, linePath, duration, lData, 'lowerLine', style.cStroke, style.cStrokeWidth, 'none'); // Confidence polygon
-
-      lData.sort(function (a, b) {
-        return b.y - a.y;
-      }); // Reverse order of lData
-
-      var pData = [].concat(_toConsumableArray(uData), _toConsumableArray(lData));
-      d3Line(gChart1, linePath, duration, pData, 'confidence', 'none', 0, style.cFill); // Mean and SDs
-
-      var tMeans = means.map(function (p) {
-        return {
-          x: xScale(p.year),
-          y: yScale(p.mean),
-          bar: linePath([{
-            y: p.year,
-            v: p.mean - p.sd
-          }, {
-            y: p.year,
-            v: p.mean + p.sd
-          }])
-        };
-      });
-      d3MeanSd(gChart2, linePath, duration, tMeans, style); // Add path to ylines and generate
-
-      ylines.forEach(function (l) {
-        l.path = linePath([{
-          y: yearMinBuff,
-          v: l.y
-        }, {
-          y: yearMaxBuff,
-          v: l.y
-        }]);
-      });
-      var tYlines = ylines.filter(function (l) {
-        return l.y >= yMinBuff && l.y <= yMaxBuff;
-      });
-      d3Yline(gChart1, tYlines, duration);
-    };
-  }
-
-  function d3Line(gChart, linePath, duration, data, lClass, stroke, strokeWidth, fill) {
-    var aData;
-
-    if (data.length === 0) {
-      aData = data;
-    } else {
-      aData = [data];
-    }
-
-    gChart.selectAll(".".concat(lClass)).data(aData).join(function (enter) {
-      return enter.append('path').attr("d", function (d) {
-        return linePath(d);
-      }).attr('class', lClass).style('fill', fill).style('stroke', stroke).style('stroke-width', strokeWidth).attr("opacity", 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr("d", function (d) {
-      return linePath(d);
-    }).attr("opacity", 1);
-  }
-
-  function d3MeanSd(gChart, linePath, duration, means, style) {
-    //console.log(means)
-    //console.log(style)
-    // SDs
-    gChart.selectAll('.sds').data(means).join(function (enter) {
-      return enter.append('path').attr('d', function (d) {
-        return d.bar;
-      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('d', function (d) {
-      return d.bar;
-    }).style('opacity', 1); // Means
-
-    gChart.selectAll('.means').data(means).join(function (enter) {
-      return enter.append('circle').attr('cx', function (d) {
-        return d.x;
-      }).attr('cy', function (d) {
-        return d.y;
-      }).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill).style('stroke', style.mStroke).style('stroke-width', style.mStrokeWidth).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('cx', function (d) {
-      return d.x;
-    }).attr('cy', function (d) {
-      return d.y;
-    }).style('opacity', 1);
-  }
-
-  function d3Yline(gChart, ylines, duration) {
-    // Horizontal y lines
-    gChart.selectAll('.ylines').data(ylines).join(function (enter) {
-      return enter.append('path').attr('d', function (d) {
-        return d.path;
-      }).attr('class', 'ylines').style('stroke', function (d) {
-        return d.stroke;
-      }).style('stroke-width', function (d) {
-        return d.strokeWidth;
-      }).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('d', function (d) {
-      return d.path;
-    }).style('opacity', 1);
-  }
-
-  function trend3() {
-    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        _ref$selector = _ref.selector,
-        selector = _ref$selector === void 0 ? 'body' : _ref$selector,
-        _ref$elid = _ref.elid,
-        elid = _ref$elid === void 0 ? 'trend3-chart' : _ref$elid,
-        _ref$width = _ref.width,
-        width = _ref$width === void 0 ? 300 : _ref$width,
-        _ref$height = _ref.height,
-        height = _ref$height === void 0 ? 200 : _ref$height,
-        _ref$margin = _ref.margin,
-        margin = _ref$margin === void 0 ? {
-      left: 35,
-      right: 0,
-      top: 20,
-      bottom: 5
-    } : _ref$margin,
-        _ref$expand = _ref.expand,
-        expand = _ref$expand === void 0 ? false : _ref$expand,
-        _ref$axisLabelFontSiz = _ref.axisLabelFontSize,
-        axisLabelFontSize = _ref$axisLabelFontSiz === void 0 ? 10 : _ref$axisLabelFontSiz,
-        _ref$axisLeft = _ref.axisLeft,
-        axisLeft = _ref$axisLeft === void 0 ? 'tick' : _ref$axisLeft,
-        _ref$axisBottom = _ref.axisBottom,
-        axisBottom = _ref$axisBottom === void 0 ? 'tick' : _ref$axisBottom,
-        _ref$axisRight = _ref.axisRight,
-        axisRight = _ref$axisRight === void 0 ? '' : _ref$axisRight,
-        _ref$axisTop = _ref.axisTop,
-        axisTop = _ref$axisTop === void 0 ? '' : _ref$axisTop,
-        _ref$axisLeftLabel = _ref.axisLeftLabel,
-        axisLeftLabel = _ref$axisLeftLabel === void 0 ? '' : _ref$axisLeftLabel,
-        _ref$duration = _ref.duration,
-        duration = _ref$duration === void 0 ? 1000 : _ref$duration,
-        _ref$yearMin = _ref.yearMin,
-        yearMin = _ref$yearMin === void 0 ? 1949 : _ref$yearMin,
-        _ref$yearMax = _ref.yearMax,
-        yearMax = _ref$yearMax === void 0 ? 2019 : _ref$yearMax,
-        _ref$yMin = _ref.yMin,
-        yMin = _ref$yMin === void 0 ? null : _ref$yMin,
-        _ref$yMax = _ref.yMax,
-        yMax = _ref$yMax === void 0 ? null : _ref$yMax,
-        _ref$adjust = _ref.adjust,
-        adjust = _ref$adjust === void 0 ? false : _ref$adjust,
-        _ref$ylines = _ref.ylines,
-        ylines = _ref$ylines === void 0 ? [] : _ref$ylines,
-        _ref$data = _ref.data,
-        data = _ref$data === void 0 ? [] : _ref$data,
-        _ref$means = _ref.means,
-        means = _ref$means === void 0 ? [] : _ref$means,
-        _ref$style = _ref.style,
-        style = _ref$style === void 0 ? {} : _ref$style;
-
-    // Ensure default style properties are present
-    style.vStroke = style.vStroke ? style.vStroke : 'black';
-    style.vStrokeWidth = style.vStrokeWidth ? style.vStrokeWidth : 2;
-    style.vOpacity = style.vOpacity ? style.vOpacity : 0.1;
-    style.mFill = style.mFill ? style.mFill : 'white';
-    style.mRad = style.mRad ? style.mRad : 2;
-    style.mStroke = style.mStroke ? style.mStroke : 'black';
-    style.mStrokeWidth = style.mStrokeWidth ? style.mStrokeWidth : 1;
-    style.sdStroke = style.sdStroke ? style.sdStroke : 'black';
-    style.sdStrokeWidth = style.sdStrokeWidth ? style.sdStrokeWidth : 1;
-    var updateChart = makeChart$1(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style);
-    return {
-      updateChart: updateChart
-    };
-  }
-
-  function maxY$1(data, means) {
-    var dMax = Math.max.apply(Math, _toConsumableArray(data.map(function (d) {
-      return Math.max(d[0].v, d[1].v);
-    })));
-    var mMax = Math.max.apply(Math, _toConsumableArray(means.map(function (d) {
-      return d.mean + d.sd;
-    })));
-    return Math.max(dMax, mMax);
-  }
-
-  function minY$1(data, means) {
-    var dMin = Math.min.apply(Math, _toConsumableArray(data.map(function (d) {
-      return Math.min(d[0].v, d[1].v);
-    })));
-    var mMin = Math.min.apply(Math, _toConsumableArray(means.map(function (d) {
-      return d.mean - d.sd;
-    })));
-    return Math.min(dMin, mMin);
-  }
-
-  function makeChart$1(yMin, yMax, adjust, yearMin, yearMax, data, means, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, style) {
-    var svgWidth = width + margin.left + margin.right;
-    var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
-
-    var svgTrend = d3.select("".concat(selector)).append('svg').attr('id', elid); // Size the chart svg
-
-    if (expand) {
-      svgTrend.attr("viewBox", "0 0 ".concat(svgWidth, " ").concat(svgHeight));
-    } else {
-      svgTrend.attr("width", svgWidth);
-      svgTrend.attr("height", svgHeight);
-    } // Axis labels
-
-
-    if (axisLeftLabel) {
-      svgTrend.append("text").attr("transform", "translate(".concat(axisLabelFontSize, ",").concat(margin.top + height / 2, ") rotate(270)")).style("text-anchor", "middle").style('font-size', axisLabelFontSize).text(axisLeftLabel);
-    } // Create axes and position within SVG
-
-
-    var tAxis, bAxis, lAxis, rAxis;
-
-    if (axisLeft === 'on' || axisLeft === 'tick') {
-      lAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    }
-
-    if (axisBottom === 'on' || axisBottom === 'tick') {
-      bAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top + height, ")"));
-    }
-
-    if (axisTop === 'on') {
-      tAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    }
-
-    if (axisRight === 'on') {
-      rAxis = svgTrend.append("g").attr("transform", "translate(".concat(margin.left + width, ", ").concat(margin.top, ")"));
-    } // Create g element for chart elements
-
-
-    var gChart1 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
-    var gChart2 = svgTrend.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
-
-    var updateChart = makeUpdateChart$1(svgTrend, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style); // Update the chart with current data
-
-    updateChart(data, means, yearMin, yearMax, yMin, yMax, adjust, ylines); // Return the api
-
-    return updateChart;
-  }
-
-  function makeUpdateChart$1(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, style) {
-    return function (data, means, yearMin, yearMax, yMin, yMax, adjust, ylines) {
-      // Set ylines to empty array if not set
-      if (!ylines) {
-        ylines = [];
-      } // Convert data from an array of gradients and intercepts to an array 
-      // of arrays of two point lines
-
-
-      var dataWork = data.map(function (d) {
-        var yStart = d.gradient * yearMin + d.intercept;
-        var yEnd = d.gradient * yearMax + d.intercept;
-        return [{
-          y: yearMin,
-          v: yStart
-        }, {
-          y: yearMax,
-          v: yEnd
-        }];
-      }); // Adjustments
-
-      var yMinBuff, yMaxBuff;
-
-      if (yMin !== null && yMax !== null && typeof yMin !== 'undefined' && typeof yMax !== 'undefined') {
-        yMinBuff = yMin;
-        yMaxBuff = yMax;
-
-        if (adjust) {
-          if (minY$1(dataWork, means) < yMinBuff) yMinBuff = minY$1(dataWork, means);
-          if (maxY$1(dataWork, means) > yMaxBuff) yMaxBuff = maxY$1(dataWork, means); // Add a margin to min/max values
-
-          yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
-          yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
-        }
-      } else {
-        yMinBuff = minY$1(dataWork, means);
-        yMaxBuff = maxY$1(dataWork, means); // Add a margin to min/max values
-
-        yMinBuff = yMinBuff - (yMaxBuff - yMinBuff) / 50;
-        yMaxBuff = yMaxBuff + (yMaxBuff - yMinBuff) / 50;
-      }
-
-      var yearMinBuff = yearMin;
-      var yearMaxBuff = yearMax; // Value scales
-
-      var xScale = d3.scaleLinear().domain([yearMinBuff, yearMaxBuff]).range([0, width]);
-      var yScale = d3.scaleLinear().domain([yMinBuff, yMaxBuff]).range([height, 0]); // Generate axes
-
-      if (tAxis) {
-        tAxis.call(d3.axisTop().scale(xScale) // Actual scale doesn't matter, but needs one
-        .tickValues([]).tickSizeOuter(0));
-      }
-
-      if (bAxis) {
-        bAxis.transition().duration(duration).call(xAxisYear(width, axisBottom === 'tick', yearMinBuff, yearMaxBuff, false));
-      }
-
-      if (lAxis) {
-        lAxis.transition().duration(duration).call(d3.axisLeft().scale(yScale).ticks(5));
-      }
-
-      if (rAxis) {
-        rAxis.call(d3.axisRight().scale(yScale).tickValues([]).tickSizeOuter(0));
-      } // Line path generator
-
-
-      var linePath = d3.line() //.curve(d3.curveMonotoneX)
-      .x(function (d) {
-        return xScale(d.y);
-      }).y(function (d) {
-        return yScale(d.v);
-      }); // Main data line
-
-      d3Line$1(gChart2, linePath, duration, dataWork, style); // Mean and SDs
-
-      var tMeans = means.map(function (p) {
-        return {
-          x: xScale(p.year),
-          y: yScale(p.mean),
-          bar: linePath([{
-            y: p.year,
-            v: p.mean - p.sd
-          }, {
-            y: p.year,
-            v: p.mean + p.sd
-          }]),
-          barStart: linePath([{
-            y: p.year,
-            v: yMinBuff
-          }, {
-            y: p.year,
-            v: yMinBuff
-          }])
-        };
-      });
-      d3MeanSd$1(gChart2, linePath, yScale(yMinBuff), duration, tMeans, style); // Add path to ylines and generate
-
-      ylines.forEach(function (l) {
-        l.path = linePath([{
-          y: yearMinBuff,
-          v: l.y
-        }, {
-          y: yearMaxBuff,
-          v: l.y
-        }]);
-      });
-      var tYlines = ylines.filter(function (l) {
-        return l.y >= yMinBuff && l.y <= yMaxBuff;
-      });
-      d3Yline$1(gChart1, tYlines, duration);
-    };
-  }
-
-  function d3Line$1(gChart, linePath, duration, data, style) {
-    gChart.selectAll('.trend-line').data(data).join(function (enter) {
-      return enter.append('path').attr("d", function (d) {
-        return linePath(d);
-      }).attr('class', 'trend-line').style('stroke', style.vStroke).style('stroke-width', style.vStrokeWidth).attr("opacity", 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr("d", function (d) {
-      return linePath(d);
-    }).attr("opacity", style.vOpacity);
-  }
-
-  function d3MeanSd$1(gChart, linePath, yMinBuff, duration, means, style) {
-    // SDs
-    gChart.selectAll('.sds').data(means).join(function (enter) {
-      return enter.append('path').attr('d', function (d) {
-        return d.bar;
-      }).attr('class', 'sds').style('stroke', style.sdStroke).style('stroke-width', style.sdStrokeWidth).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('d', function (d) {
-      return d.bar;
-    }).style('opacity', 1); // Means
-
-    gChart.selectAll('.means').data(means).join(function (enter) {
-      return enter.append('circle').attr('cx', function (d) {
-        return d.x;
-      }).attr('cy', function (d) {
-        return d.y;
-      }).attr('r', style.mRad).attr('class', 'means').style('fill', style.mFill).style('stroke', style.mStroke).style('stroke-width', style.mStrokeWidth).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('cx', function (d) {
-      return d.x;
-    }).attr('cy', function (d) {
-      return d.y;
-    }).style('opacity', 1);
-  }
-
-  function d3Yline$1(gChart, ylines, duration) {
-    // Horizontal y lines
-    gChart.selectAll('.ylines').data(ylines).join(function (enter) {
-      return enter.append('path').attr('d', function (d) {
-        return d.path;
-      }).attr('class', 'ylines').style('stroke', function (d) {
-        return d.stroke;
-      }).style('stroke-width', function (d) {
-        return d.strokeWidth;
-      }).style('opacity', 0);
-    }, function (update) {
-      return update;
-    }, function (exit) {
-      return exit.transition().duration(duration).style("opacity", 0).remove();
-    }) // Join returns merged enter and update selection
-    .transition().duration(duration).attr('d', function (d) {
-      return d.path;
-    }).style('opacity', 1);
-  }
-
   function density() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         _ref$selector = _ref.selector,
@@ -6451,7 +5781,7 @@
         _ref$scaleHeight = _ref.scaleHeight,
         scaleHeight = _ref$scaleHeight === void 0 ? false : _ref$scaleHeight;
 
-    var updateChart = makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight);
+    var updateChart = makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight);
     return {
       updateChart: updateChart,
       saveImage: function saveImage(asSvg, filename, info) {
@@ -6476,7 +5806,7 @@
     })));
   }
 
-  function makeChart$2(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight) {
+  function makeChart(xMin, xMax, data, xlines, ylines, selector, elid, width, height, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisBottomLabel, axisLabelFontSize, duration, styles, scaleHeight) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -6526,14 +5856,14 @@
     var gChart1 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")"));
     var gChart2 = svgDensity.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$2(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles); // Update the chart with current data
+    var updateChart = makeUpdateChart(svgDensity, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles); // Update the chart with current data
 
     updateChart(data, xMin, xMax, xlines, ylines, scaleHeight); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$2(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles) {
+  function makeUpdateChart(svg, width, height, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart1, gChart2, styles) {
     return function (data, xMin, xMax, xlines, ylines, scaleHeight) {
       // d3 transition object
       var t = svg.transition().duration(duration);
@@ -6653,12 +5983,12 @@
       ylines.forEach(function (l) {
         l.path = linePath([[xMinBuff, l.y], [xMaxBuff, l.y]]);
       });
-      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line$2(gChart1, ylines, 'ylines', t))); // Add path to xlines and generate
+      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line(gChart1, ylines, 'ylines', t))); // Add path to xlines and generate
 
       xlines.forEach(function (l) {
         l.path = linePath([[l.x, 0], [l.x, maxDensity * 1.02]]);
       });
-      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line$2(gChart1, xlines, 'xlines', t)));
+      pTrans = [].concat(_toConsumableArray(pTrans), _toConsumableArray(d3Line(gChart1, xlines, 'xlines', t)));
       return Promise.allSettled(pTrans);
     };
   }
@@ -6689,7 +6019,7 @@
     return pTrans;
   }
 
-  function d3Line$2(gChart, lines, lineClass, t) {
+  function d3Line(gChart, lines, lineClass, t) {
     var pTrans = []; // Horizontal y lines
 
     gChart.selectAll(".".concat(lineClass)).data(lines).join(function (enter) {
@@ -6795,7 +6125,7 @@
         _ref$tooltip = _ref.tooltip,
         tooltip = _ref$tooltip === void 0 ? false : _ref$tooltip;
 
-    var updateChart = makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip);
+    var updateChart = makeChart$1(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip);
     return {
       updateChart: updateChart,
       saveImage: function saveImage(asSvg, filename, info) {
@@ -6804,7 +6134,7 @@
     };
   }
 
-  function makeChart$3(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip) {
+  function makeChart$1(data, labelPosition, selector, elid, width, height, padding, barHeightOnZero, margin, expand, axisLeft, axisRight, axisTop, axisBottom, axisLeftLabel, axisLabelFontSize, duration, tooltip) {
     var svgWidth = width + margin.left + margin.right;
     var svgHeight = height + margin.top + margin.bottom; // Append the chart svg
 
@@ -6849,14 +6179,14 @@
 
     var gChart = svgBar.append("g").attr("transform", "translate(".concat(margin.left, ",").concat(margin.top, ")")); // Create the API function for updating chart
 
-    var updateChart = makeUpdateChart$3(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip); // Update the chart with current data
+    var updateChart = makeUpdateChart$1(labelPosition, svgBar, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip); // Update the chart with current data
 
     updateChart(data); // Return the api
 
     return updateChart;
   }
 
-  function makeUpdateChart$3(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip) {
+  function makeUpdateChart$1(labelPosition, svg, width, height, padding, barHeightOnZero, tAxis, bAxis, lAxis, rAxis, axisBottom, duration, gChart, tooltip) {
     return function (data) {
       // d3 transition object
       var t = svg.transition().duration(duration);
@@ -7856,6 +7186,7 @@
   }
 
   /**
+   * @deprecated yearly is deprecated in favour of the temporal chart.
    * @param {Object} opts - Initialisation options.
    * @param {string} opts.selector - The CSS selector of the element which will be the parent of the SVG. (Default - 'body'.)
    * @param {string} opts.elid - The id for the dom object created. (Default - 'yearly-chart'.)
@@ -8195,7 +7526,9 @@
         }
       });
     }
-    /** @function setChartOpts
+    /** 
+      * @deprecated yearly is deprecated in favour of the temporal chart.
+      * @function setChartOpts
       * @param {Object} opts - text options.
       * @param {string} opts.title - Title for the chart.
       * @param {string} opts.subtitle - Subtitle for the chart.
@@ -8308,7 +7641,9 @@
 
       return pRet;
     }
-    /** @function setTaxon
+    /** 
+      * @deprecated yearly is deprecated in favour of the temporal chart.
+      * @function setTaxon
       * @param {string} opts.taxon - The taxon to display.
       * @returns {Promise} promise that resolves when all transitions complete.
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
@@ -8330,7 +7665,9 @@
 
       return pRet;
     }
-    /** @function getChartWidth
+    /** 
+      * @deprecated yearly is deprecated in favour of the temporal chart.
+      * @function getChartWidth
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Return the full width of the chart svg.
       */
@@ -8339,7 +7676,9 @@
     function getChartWidth() {
       return svg.attr("width") ? svg.attr("width") : svg.attr("viewBox").split(' ')[2];
     }
-    /** @function getChartHeight
+    /** 
+      * @deprecated yearly is deprecated in favour of the temporal chart.
+      * @function getChartHeight
       * @description <b>This function is exposed as a method on the API returned from the yearly function</b>.
       * Return the full height of the chart svg.
       */
@@ -8348,7 +7687,9 @@
     function getChartHeight() {
       return svg.attr("height") ? svg.attr("height") : svg.attr("viewBox").split(' ')[3];
     }
-    /** @function saveImage
+    /** 
+      * @deprecated yearly is deprecated in favour of the temporal chart.
+      * @function saveImage
       * @param {boolean} asSvg - If true, file is generated as SVG, otherwise PNG.
       * @param {string} filename - Name of the file (without extension) to generate and download.
       * If the filename is falsey (e.g. blank), it will not automatically download the
@@ -8364,6 +7705,7 @@
       return saveChartImage(svg, expand, asSvg, filename, null, info);
     }
     /**
+     * @deprecated yearly is deprecated in favour of the temporal chart.
      * @typedef {Object} api
      * @property {module:yearly~getChartWidth} getChartWidth - Gets and returns the current width of the chart.
      * @property {module:yearly~getChartHeight} getChartHeight - Gets and returns the current height of the chart.
@@ -20263,7 +19605,7 @@
   }
 
   var name = "brc-d3";
-  var version = "0.21.2";
+  var version = "1.0.0";
   var description = "Javscript library for various D3 visualisations of biological record data.";
   var type = "module";
   var main = "dist/brccharts.umd.js";
@@ -20334,8 +19676,6 @@
   exports.pie = pie;
   exports.temporal = temporal;
   exports.trend = trend;
-  exports.trend2 = trend2;
-  exports.trend3 = trend3;
   exports.yearly = yearly;
 
   Object.defineProperty(exports, '__esModule', { value: true });

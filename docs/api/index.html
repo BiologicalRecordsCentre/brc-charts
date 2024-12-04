@@ -46,7 +46,7 @@
         <article><h1>BRC Charts library</h1>
 <p>The BRC Charts library is a Javascript library for producing various charts tailored to biological records.</p>
 <h2>Installing</h2>
-<p>You can get the javscript amd css builds from
+<p>You can get the javscript and css builds from
 the <a href="https://github.com/BiologicalRecordsCentre/brc-charts/tree/master/dist">GitHub repo</a>
 or include them in code directly from a CDN, e.g:</p>
 <pre class="prettyprint source"><code>&lt;script src=&quot;https://cdn.jsdelivr.net/gh/biologicalrecordscentre/brc-charts/dist/brccharts.umd.js&quot;>&lt;/script>
@@ -62,7 +62,60 @@ or include them in code directly from a CDN, e.g:</p>
 </code></pre>
 <h2>API documentation and code examples</h2>
 <p>For details of the API, view the <a href="https://biologicalrecordscentre.github.io/brc-charts/docs/api/">JSDoc API documentation</a>.</p>
-<p>There are also a number of <a href="https://biologicalrecordscentre.github.io/brc-charts/docs/">working examples</a>.</p></article>
+<p>There are also a number of <a href="https://biologicalrecordscentre.github.io/brc-charts/docs/">working examples</a>.</p>
+<h2>Notes for developers</h2>
+<h3>Documentation</h3>
+<p>The package uses JSDoc to produce the API documentation. JSDoc is not included in the package dependendies since developers normally install it globally in their development environment.</p>
+<h3>Typical build &amp; publish workflow</h3>
+<ul>
+<li><code>npm audit --omit=dev</code> (look for any important vulnerabilities)</li>
+<li><code>npm run lint</code></li>
+<li><code>npm run docs</code></li>
+<li>Update the version number in <code>package.json</code></li>
+<li>Ensure that <code>src/constants.hs</code> &amp; <code>src_e/e_constants.js</code> are set up correctly (i.e. for production - not development)</li>
+<li><code>npm run build</code> (after package update so that correct version is printed to console by library)</li>
+<li>Update <code>docs/Readme</code> (if required, e.g. to link new examples)</li>
+<li>Git add any new files, e.g. <code>git add *</code></li>
+<li>Git commit all changes, e.g. <code>git commit -a</code></li>
+<li>Git tag &lt;version&gt;, e.g. <code>git tag 1.2.1</code>. Tag must match version number in package (to ensure that version can be used to target it in CDN)</li>
+<li>Git push origin &lt;version&gt;, e.g. <code>git push origin 1.2.1</code> (pushes the tag commit)</li>
+<li><code>git push</code> (pushes to master branch)</li>
+<li>Run the following links to purge the jsdelivr CDN caches
+<ul>
+<li>https://purge.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@latest/dist/brcatlas.umd.js</li>
+<li>https://purge.jsdelivr.net/gh/biologicalrecordscentre/brc-atlas@latest/dist/brcatlas.umd.css</li>
+</ul>
+</li>
+</ul>
+<h3>Rollup</h3>
+<p>Rollup is used to build the transpiled library javascript assets for this package. Rollup is often preferred over webpack or other bundling tools for packaging libraries. The following javascript assets are produced by this rollup configuration:</p>
+<ul>
+<li><strong>brcatlas.umd.js</strong>: this is the browser-friendly javascript for the Britain &amp; Ireland atlas library which can be used from browsers (supports a couple of different export formats).</li>
+<li><strong>brcatlas.umd.min.js</strong>: same as previous but minified.</li>
+<li><strong>brcatlas.umd.min.js.map</strong>: this is a javascript map file. It can be used alonside the minified file to help with debugging.</li>
+<li><strong>brcatlas.umd.css</strong>: consolidated CSS file containing all project CSS for the Britain &amp; Ireland atlas library.</li>
+<li><strong>brcatlas_e.umd.js</strong>: this is the browser-friendly javascript for the European atlas library which can be used from browsers (supports a couple of different export formats).</li>
+<li><strong>brcatlas_e.umd.min.js</strong>: same as previous but minified.</li>
+<li><strong>brcatlas_e.umd.min.js.map</strong>: this is a javascript map file. It can be used alonside the minified file to help with debugging.</li>
+<li><strong>brcatlas_e.umd.css</strong>: consolidated CSS file containing all project CSS for the European atlas library.</li>
+</ul>
+<p>The following rollup plugins are used in the build:</p>
+<ul>
+<li><strong>@rollup/plugin-node-resolve</strong>: this allows rollup to resolve references to node libraries (in node_modules).</li>
+<li><strong>@rollup/plugin-commonjs</strong>: this allows rollup to convert CommonJS modules to ES6.</li>
+<li><strong>@rollup/plugin-babel</strong>: this is what allows rollup to transpile ES6/7 code to ES5 (for the browser packaging). This plugin has dependencies on '@babel/core' and '@babel/preset-env' which are included in the project's node package.</li>
+<li><strong>rollup-plugin-terser</strong>: this is used to produce the minified file.</li>
+<li><strong>rollup-plugin-css</strong>: for rolling up CSS into a single file.</li>
+<li><strong>rollup-plugin-json</strong>: for importing package JSON.</li>
+</ul>
+<h3>Other files in project</h3>
+<p>The following files are in the root folder:</p>
+<ul>
+<li><strong>_config.yml</strong>: used by GitHub pages to configure github pages</li>
+<li><strong>.eslintrc.json</strong>: configures ESLint. These some stuff in here that's necessary to get jest and eslint to play nicely together.</li>
+<li><strong>babel.config.js</strong>: the configuration in here seems to necessary to get Jest to work properly with ES2015 modules.</li>
+<li><strong>rollup.config.js</strong>: rollup configuration.</li>
+</ul></article>
     </section>
 
 
@@ -79,7 +132,7 @@ or include them in code directly from a CDN, e.g:</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Nov 14 2024 17:53:44 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 04 2024 10:51:08 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>

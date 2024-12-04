@@ -370,7 +370,7 @@
 
     function TetradDistribution() {
       showingTetrads=true
-      d3.json('../src/altlat.json').then(data => {
+      d3.json('../src/altlat/altlat.json').then(data => {
         var dataTrans = data.map(g => {
           return {
             distance: g[0],
