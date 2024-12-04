@@ -34,6 +34,8 @@ This project is configured as a *Node* project. To install and run it in a local
 ### Documentation
 The package uses JSDoc to produce the API documentation. JSDoc is not included in the package dependendies since developers normally install it globally in their development environment.
 
+The library includes some creation methods for charts which are either, experimental, deprecated or undocumented. For an account of all of the chart creation methods and their status, see the [working examples](https://biologicalrecordscentre.github.io/brc-charts/docs/).
+
 ### Typical build & publish workflow
 - `npm audit --omit=dev` (look for any important vulnerabilities)
 - `npm run lint`
